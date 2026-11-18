@@ -6,6 +6,18 @@ Point your app's `Purchases.proxyURL` at your own server and keep using the SDK 
 
 openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc.
 
+## Who it's for
+
+App developers who:
+
+- **Want to control their own purchase infrastructure.** Your purchase records, entitlements and store credentials live on servers you run, in a database you can query, back up and export. No outside service sits between your app and your customers.
+- **Don't want to share a percentage of their revenue.** openpurr has no revenue share and no per-transaction fees. The Lite edition is designed to fit Cloudflare's free plan, so a small app can run it for nothing.
+- **Don't want to depend on a commercial service.** It's open source: you can read the code, change it, and move it between Cloudflare and your own cloud.
+
+It's also a good fit if you already use the RevenueCat SDKs and want to keep them. openpurr works with the official, unmodified SDKs, so switching starts with changing one URL, not rewriting your purchase code.
+
+**It may not be for you (yet)** if you need paywall builders, A/B experiments, third-party analytics integrations or a support contract. Commercial platforms offer those today. See the [roadmap](ROADMAP.md) for what's coming.
+
 ## What it does
 
 - **Purchases:** validates StoreKit 2 transactions and Google Play purchases, and returns the `CustomerInfo` and entitlements the SDK expects.
