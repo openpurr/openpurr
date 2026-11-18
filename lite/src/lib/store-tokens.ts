@@ -94,8 +94,11 @@ export async function mintGoogleAssertion(sa: GoogleServiceAccount, opts: { noCa
   );
 }
 
-export async function exchangeGoogleAssertion(assertion: string): Promise<{ access_token: string; expires_in: number }> {
-  const res = await fetch("https://oauth2.googleapis.com/token", {
+export async function exchangeGoogleAssertion(
+  assertion: string,
+  fetchImpl: typeof fetch = fetch,
+): Promise<{ access_token: string; expires_in: number }> {
+  const res = await fetchImpl("https://oauth2.googleapis.com/token", {
     method: "POST",
     headers: { "content-type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({ grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer", assertion }),

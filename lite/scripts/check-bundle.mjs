@@ -14,7 +14,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-const MAX_KIB = Number(process.argv[process.argv.indexOf("--max") + 1]) || 100;
+// 125 KiB since M2 (Google Play). Measured: the store-notification routes and scheduled jobs are
+// about 24 KiB and 0.75 ms of a fresh isolate's CPU, and deferring them with dynamic import() doesn't
+// help (wrangler doesn't split bundles, so they're still parsed). They move to the back-office
+// Worker in M4a, which should bring the SDK Worker back near 90 KiB.
+const MAX_KIB = Number(process.argv[process.argv.indexOf("--max") + 1]) || 125;
 
 const outdir = mkdtempSync(join(tmpdir(), "openpurr-bundle-"));
 // The build step compiles the config; CI has no operator config, so use the example.

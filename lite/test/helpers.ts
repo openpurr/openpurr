@@ -4,7 +4,13 @@
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { buildApp } from "../src/app";
-import { TEST_APPLE_API_KEY_PEM, TEST_LEAF_KEY_PEM, TEST_ROOT_CERT_B64, TEST_X5C } from "../src/bench/fixtures.generated";
+import {
+  TEST_APPLE_API_KEY_PEM,
+  TEST_GOOGLE_SA_KEY_PEM,
+  TEST_LEAF_KEY_PEM,
+  TEST_ROOT_CERT_B64,
+  TEST_X5C,
+} from "../src/bench/fixtures.generated";
 import { parseConfig } from "../src/config";
 import type { AppleNotification, AppleRenewalInfo, AppleTransaction } from "../src/stores/apple";
 import { base64ToBytes, bytesToBase64Url, pemToDer } from "../src/lib/der";
@@ -301,3 +307,167 @@ export function appWithWebhooks(receiver: { fetch: typeof fetch }, webhook: Reco
 }
 
 export const envWithWebhookSecrets = (signing = WEBHOOK_SIGNING_KEY) => ({ ...env, WEBHOOK_AUTH, WEBHOOK_SECRET: signing });
+
+// --- Google Play Developer API -----------------------------------------------------------------
+
+export const GOOGLE_SA_EMAIL = "openpurr-test@test-project.iam.gserviceaccount.com";
+export const PACKAGE = "com.example.openpurr";
+
+/**
+ * A fake Google: the OAuth token endpoint plus Play Developer API routes keyed
+ * "<METHOD> <path after /applications/{package}>", e.g. "GET /purchases/subscriptionsv2/tokens/T1".
+ */
+export function fakeGoogleApi(routes: Record<string, (url: URL) => { status?: number; body: unknown }>) {
+  const requests: { method: string; path: string }[] = [];
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    const method = init?.method ?? "GET";
+    if (url.href === "https://oauth2.googleapis.com/token") {
+      return Response.json({ access_token: "ya29.test-token", expires_in: 3600, token_type: "Bearer" });
+    }
+    if (url.href === "https://www.googleapis.com/oauth2/v3/certs") {
+      return Response.json(await pubsubSigner().jwks(), { headers: { "cache-control": "public, max-age=3600" } });
+    }
+    const prefix = `/androidpublisher/v3/applications/${PACKAGE}`;
+    const path = decodeURIComponent(url.pathname.startsWith(prefix) ? url.pathname.slice(prefix.length) : url.pathname);
+    requests.push({ method, path });
+    const route = routes[`${method} ${path}`];
+    if (!route) return Response.json({ error: { code: 404, message: "Not found" } }, { status: 404 });
+    const { status = 200, body } = route(url);
+    return Response.json(body, { status });
+  }) as typeof fetch;
+  return { fetch: fetchImpl, requests };
+}
+
+/** An app whose Android app has Play Developer API access, talking to `api`. */
+export function appWithGooglePlay(api: { fetch: typeof fetch }, webhooks?: { fetch: typeof fetch }) {
+  return buildApp(googlePlayDeps(api, webhooks));
+}
+
+/** The dependencies behind appWithGooglePlay (for running scheduled jobs against the same setup). */
+export function googlePlayDeps(api: { fetch: typeof fetch }, webhooks?: { fetch: typeof fetch }) {
+  const raw = structuredClone(rawTestConfig) as any;
+  delete raw.apps.android.allow_unverified_purchases;
+  raw.apps.android.google_play_api = { service_account_secret: "GOOGLE_SERVICE_ACCOUNT", pubsub_push_account: "rtdn-push@test-project.iam.gserviceaccount.com" };
+  const combined = (async (input: RequestInfo | URL, init?: RequestInit) =>
+    String(input).startsWith(WEBHOOK_URL) && webhooks ? webhooks.fetch(input, init) : api.fetch(input, init)) as typeof fetch;
+  if (webhooks) {
+    raw.webhooks = [{ id: "backend", url: WEBHOOK_URL }];
+  }
+  const noRates = { name: "none", latest: async () => [], history: async () => [] };
+  return { config: parseConfig(raw), appleRoots, fetch: combined, rateLimiters: () => ({}), fx: noRates };
+}
+
+/** The Worker env with the Google service account secret set. */
+export const envWithGoogleKey = () => ({
+  ...env,
+  GOOGLE_SERVICE_ACCOUNT: JSON.stringify({ type: "service_account", client_email: GOOGLE_SA_EMAIL, private_key: TEST_GOOGLE_SA_KEY_PEM }),
+});
+
+/** A subscriptionsv2 answer. */
+export function playSubscription(o: {
+  productId?: string;
+  basePlanId?: string;
+  orderId?: string;
+  state?: string;
+  expiry?: number;
+  start?: number;
+  ack?: boolean;
+  test?: boolean;
+  autoRenew?: boolean;
+  phase?: "freeTrial" | "introductoryPrice" | "basePrice";
+  linkedPurchaseToken?: string;
+  autoResume?: number;
+}) {
+  const DAYMS = 864e5;
+  return {
+    kind: "androidpublisher#subscriptionPurchaseV2",
+    startTime: new Date(o.start ?? Date.now() - DAYMS).toISOString(),
+    regionCode: "US",
+    subscriptionState: o.state ?? "SUBSCRIPTION_STATE_ACTIVE",
+    acknowledgementState: o.ack ? "ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED" : "ACKNOWLEDGEMENT_STATE_PENDING",
+    ...(o.test === false ? {} : { testPurchase: {} }),
+    ...(o.linkedPurchaseToken ? { linkedPurchaseToken: o.linkedPurchaseToken } : {}),
+    ...(o.autoResume ? { pausedStateContext: { autoResumeTime: new Date(o.autoResume).toISOString() } } : {}),
+    lineItems: [
+      {
+        productId: o.productId ?? "pro",
+        expiryTime: new Date(o.expiry ?? Date.now() + 30 * DAYMS).toISOString(),
+        // Google order IDs are unique; the ledger keys transactions by them.
+        latestSuccessfulOrderId: o.orderId ?? `GPA.${crypto.randomUUID().slice(0, 18)}`,
+        autoRenewingPlan: { autoRenewEnabled: o.autoRenew ?? true, recurringPrice: { currencyCode: "USD", units: "4", nanos: 990000000 } },
+        offerDetails: { basePlanId: o.basePlanId ?? "monthly" },
+        offerPhase: { [o.phase ?? "basePrice"]: {} },
+      },
+    ],
+  };
+}
+
+// --- Pub/Sub push (Google RTDN) -----------------------------------------------------------------
+
+export const PUSH_ACCOUNT = "rtdn-push@test-project.iam.gserviceaccount.com";
+export const PUSH_AUDIENCE = "https://openpurr.test/notifications/google";
+
+let signer: { key: Promise<CryptoKeyPair>; kid: string } | undefined;
+
+/** Plays Google's part: an RSA key published as JWKS, used to sign Pub/Sub push tokens. */
+export function pubsubSigner() {
+  signer ??= {
+    kid: "test-kid-1",
+    key: crypto.subtle.generateKey(
+      { name: "RSASSA-PKCS1-v1_5", modulusLength: 2048, publicExponent: new Uint8Array([1, 0, 1]), hash: "SHA-256" },
+      true,
+      ["sign", "verify"],
+    ) as Promise<CryptoKeyPair>,
+  };
+  const s = signer;
+  return {
+    async jwks() {
+      const jwk = (await crypto.subtle.exportKey("jwk", (await s.key).publicKey)) as JsonWebKey;
+      return { keys: [{ kid: s.kid, kty: "RSA", alg: "RS256", use: "sig", n: jwk.n, e: jwk.e }] };
+    },
+    async token(claims: Record<string, unknown> = {}, opts: { kid?: string } = {}) {
+      const now = Math.floor(Date.now() / 1000);
+      const enc = (o: object) => bytesToBase64Url(new TextEncoder().encode(JSON.stringify(o)));
+      const input = `${enc({ alg: "RS256", kid: opts.kid ?? s.kid, typ: "JWT" })}.${enc({
+        iss: "https://accounts.google.com",
+        aud: PUSH_AUDIENCE,
+        email: PUSH_ACCOUNT,
+        email_verified: true,
+        sub: "1234567890",
+        iat: now,
+        exp: now + 3600,
+        ...claims,
+      })}`;
+      const sig = await crypto.subtle.sign("RSASSA-PKCS1-v1_5", (await s.key).privateKey, new TextEncoder().encode(input));
+      return `${input}.${bytesToBase64Url(new Uint8Array(sig))}`;
+    },
+  };
+}
+
+let messageCounter = 0;
+
+/** Delivers a Developer Notification the way a Pub/Sub push subscription does. */
+export async function postGoogleNotification(
+  app: { fetch: typeof testApp.fetch },
+  notification: Record<string, unknown>,
+  opts: { token?: string | null; messageId?: string; env?: object; rawData?: string } = {},
+) {
+  const token = opts.token === undefined ? await pubsubSigner().token() : opts.token;
+  const data = opts.rawData ?? btoa(JSON.stringify({ version: "1.0", packageName: PACKAGE, eventTimeMillis: String(Date.now()), ...notification }));
+  const ctx = createExecutionContext();
+  const res = await app.fetch(
+    new Request("https://openpurr.test/notifications/google", {
+      method: "POST",
+      headers: { "content-type": "application/json", ...(token ? { authorization: `Bearer ${token}` } : {}) },
+      body: JSON.stringify({
+        message: { data, messageId: opts.messageId ?? `msg-${++messageCounter}-${Date.now()}`, publishTime: new Date().toISOString() },
+        subscription: "projects/test-project/subscriptions/rtdn-push",
+      }),
+    }),
+    opts.env ?? envWithGoogleKey(),
+    ctx,
+  );
+  await waitOnExecutionContext(ctx);
+  return res;
+}

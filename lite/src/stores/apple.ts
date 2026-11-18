@@ -117,10 +117,11 @@ export interface AppleRenewalInfo {
   environment?: string;
 }
 
-export const APPLE_STATUS = { ACTIVE: 1, EXPIRED: 2, BILLING_RETRY: 3, GRACE_PERIOD: 4, REVOKED: 5 } as const;
+/** Apple's status codes, which the ledger uses for both stores. PAUSED (Google Play only) is ours. */
+export const APPLE_STATUS = { ACTIVE: 1, EXPIRED: 2, BILLING_RETRY: 3, GRACE_PERIOD: 4, REVOKED: 5, PAUSED: 6 } as const;
 
 export interface SubscriptionStateUpdate {
-  store: "app_store";
+  store: "app_store" | "play_store";
   original_transaction_id: string;
   status: number | null;
   auto_renew: number | null;
@@ -129,6 +130,8 @@ export interface SubscriptionStateUpdate {
   /** Whether a billing problem is current; the ledger keeps the first time it was seen. */
   billing_issue: boolean;
   grace_period_expires_at: number | null;
+  /** Google Play pause: when it resumes. */
+  auto_resume_at?: number | null;
   signed_at: number;
 }
 

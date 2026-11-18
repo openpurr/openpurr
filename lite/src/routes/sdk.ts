@@ -40,6 +40,17 @@ import { SECRET_KEY_PREFIX, touchSecretKey, verifySecretKey } from "../secret-ke
 import { invalidateSnapshot, readCustomerInfo, refreshSnapshot } from "../snapshot";
 import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
+import { GoogleMappingError } from "../stores/google";
+import { GoogleApiError } from "../stores/google-api";
+import {
+  acknowledge,
+  GoogleApiNotConfigured,
+  googleClientFor,
+  markReplaced,
+  PendingPurchase,
+  type PlayAck,
+  verifyPlayPurchase,
+} from "../stores/google-sync";
 import { AppleApiNotConfigured, appleClients, syncFromTransactionId, syncStatuses } from "../stores/apple-sync";
 
 type Ctx = Context<AppEnv>;
@@ -173,13 +184,19 @@ sdk.post("/receipts", async (c) => {
     return error(c, 400, BAD_REQUEST, "app_user_id and fetch_token are required.");
   }
   const app = c.get("app");
-  const result = app.store === "app_store" ? await appleReceipt(c, body, app) : googleReceipt(body, app);
+  const result = app.store === "app_store" ? await appleReceipt(c, body, app) : await googleReceipt(c, body, app);
   if ("status" in result) return error(c, result.status, result.code, result.message);
 
   // Unsynced attributes ride along with receipts. Invalid ones are skipped: they must never
   // fail a purchase.
   const { updates } = parseAttributes(body.attributes);
-  const customerId = await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates);
+  const extra = result.replaces ? [markReplaced(c.env.DB, result.replaces)] : [];
+  const customerId = await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates, extra);
+  // Google Play: acknowledge after recording, so a failure here never loses the purchase.
+  if (result.ack) {
+    const { ack } = result;
+    c.executionCtx.waitUntil(acknowledge(c.env.DB, googleClientFor(app, c.env, c.get("deps")), app.id, ack));
+  }
 
   // Rebuild the snapshot now and answer with it, so the device gets exactly what reads will serve.
   const info = await freshCustomerInfo(c, customerId, body.app_user_id);
@@ -202,6 +219,7 @@ async function recordForCustomer(
   transactions: NewTransaction[],
   states: SubscriptionStateUpdate[],
   attributes: Map<string, AttributeUpdate> = new Map(),
+  extraWrites: D1PreparedStatement[] = [],
 ) {
   const db = c.env.DB;
   const customer = await ensureCustomer(db, appUserId);
@@ -222,6 +240,7 @@ async function recordForCustomer(
   for (const t of chains.values()) writes.push(assignOwner(db, t, customer.id));
   for (const s of states) writes.push(upsertSubscriptionState(db, s));
   if (attributes.size) writes.push(writeAttributes(db, customer.id, attributes));
+  writes.push(...extraWrites);
   // Snapshots of everyone whose CustomerInfo changes: this customer, and anyone losing a purchase.
   const affected = new Set([customer.id, ...[...owners.values()].map((o) => o.id)]);
   for (const id of affected) if (!merged.has(id)) writes.push(invalidateSnapshot(db, id));
@@ -431,6 +450,9 @@ interface Receipt {
   states: SubscriptionStateUpdate[];
   /** The transaction the device posted, when there is exactly one. */
   postedTransactionId?: string;
+  /** Google Play: a purchase still to acknowledge, and the purchase token this one replaces. */
+  ack?: PlayAck | null;
+  replaces?: string | null;
 }
 
 async function appleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise<Receipt | Failure> {
@@ -523,15 +545,43 @@ async function storeKit1Receipt(c: Ctx, receiptBase64: string, app: AppConfig): 
   }
 }
 
-function googleReceipt(body: ReceiptBody, app: AppConfig): Receipt | Failure {
-  if (!app.allowUnverifiedPurchases) {
-    // Google Play validation lands in M2. Until then, 5xx keeps the purchase on the device.
-    return { status: 503, code: INTERNAL_SERVER_ERROR, message: "Google Play purchase validation isn't available yet." };
-  }
+async function googleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise<Receipt | Failure> {
   const ref = body.platform_product_ids?.[0];
   const productId = ref?.product_id ?? body.product_ids?.[0] ?? "";
   const product = app.products.get(productId);
+  // 5xx, not 4xx: a missing product is a config mistake, and the purchase must not be lost.
   if (!product) return { status: 500, code: INTERNAL_SERVER_ERROR, message: `Product ${productId} is not in the config.` };
+
+  if (app.googlePlayApi) {
+    let client;
+    try {
+      client = googleClientFor(app, c.env, c.get("deps"));
+    } catch (err) {
+      if (err instanceof GoogleApiNotConfigured) return { status: 503, code: INTERNAL_SERVER_ERROR, message: err.message };
+      throw err;
+    }
+    try {
+      const p = await verifyPlayPurchase(client, app, body.fetch_token!, productId);
+      return { transactions: p.transactions, states: p.states, postedTransactionId: p.postedTransactionId, ack: p.ack, replaces: p.replaces };
+    } catch (err) {
+      // Google doesn't know the token: not a real purchase of this app, so let the device drop it.
+      if (err instanceof GoogleApiError && err.notFound) return { status: 400, code: INVALID_RECEIPT, message: "Google Play doesn't recognize this purchase." };
+      if (err instanceof GoogleApiError && err.retryable) return { status: 503, code: INTERNAL_SERVER_ERROR, message: "Google Play is unavailable; try again later." };
+      if (err instanceof GoogleApiError) {
+        console.error(err);
+        return { status: 500, code: INTERNAL_SERVER_ERROR, message: `Google Play Developer API error ${err.status}; check the service account's access.` };
+      }
+      // Pending purchases aren't paid yet; keep them on the device.
+      if (err instanceof PendingPurchase) return { status: 503, code: INTERNAL_SERVER_ERROR, message: err.message };
+      if (err instanceof GoogleMappingError) return { status: 500, code: INTERNAL_SERVER_ERROR, message: err.message };
+      throw err;
+    }
+  }
+
+  if (!app.allowUnverifiedPurchases) {
+    // 5xx keeps the purchase on the device until the operator configures google_play_api.
+    return { status: 503, code: INTERNAL_SERVER_ERROR, message: `App ${app.id} has no google_play_api in the config, so Play purchases can't be verified.` };
+  }
   const now = Date.now();
   // Development only (allow_unverified_purchases): nothing here is checked with Google.
   const row: NewTransaction = {

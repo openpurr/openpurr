@@ -66,6 +66,7 @@ export interface SubscriptionStateRow {
   unsubscribe_detected_at: number | null;
   billing_issue_detected_at: number | null;
   grace_period_expires_at: number | null;
+  auto_resume_at: number | null;
 }
 
 /**
@@ -91,7 +92,7 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
     db
       .prepare(
         `SELECT s.store, s.original_transaction_id, s.status, s.auto_renew, s.auto_renew_product_id,
-                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at
+                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at, s.auto_resume_at
          FROM customer_alias a
          JOIN purchase_owner o ON o.customer_id = a.customer_id
          JOIN subscription_state s ON s.store = o.store AND s.original_transaction_id = o.original_transaction_id
@@ -121,7 +122,7 @@ export async function loadCustomerById(db: D1Database, customerId: string) {
     db
       .prepare(
         `SELECT s.store, s.original_transaction_id, s.status, s.auto_renew, s.auto_renew_product_id,
-                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at
+                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at, s.auto_resume_at
          FROM purchase_owner o
          JOIN subscription_state s ON s.store = o.store AND s.original_transaction_id = o.original_transaction_id
          WHERE o.customer_id = ?`,
@@ -311,8 +312,8 @@ export function upsertSubscriptionState(db: D1Database, s: SubscriptionStateUpda
     .prepare(
       `INSERT INTO subscription_state (store, original_transaction_id, status, auto_renew, auto_renew_product_id,
          expiration_intent, unsubscribe_detected_at, billing_issue_detected_at, grace_period_expires_at, signed_at,
-         updated_at)
-       VALUES (?1, ?2, ?3, ?4, ?5, ?6, CASE WHEN ?4 = 0 THEN ?9 END, CASE WHEN ?7 THEN ?9 END, ?8, ?9, ?10)
+         updated_at, auto_resume_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, CASE WHEN ?4 = 0 THEN ?9 END, CASE WHEN ?7 THEN ?9 END, ?8, ?9, ?10, ?11)
        ON CONFLICT (store, original_transaction_id) DO UPDATE SET
          status = excluded.status,
          auto_renew = coalesce(excluded.auto_renew, auto_renew),
@@ -325,6 +326,7 @@ export function upsertSubscriptionState(db: D1Database, s: SubscriptionStateUpda
            WHEN ?7 THEN coalesce(billing_issue_detected_at, excluded.signed_at)
            END,
          grace_period_expires_at = excluded.grace_period_expires_at,
+         auto_resume_at = excluded.auto_resume_at,
          signed_at = excluded.signed_at,
          updated_at = excluded.updated_at
        WHERE excluded.signed_at >= subscription_state.signed_at`,
@@ -340,6 +342,7 @@ export function upsertSubscriptionState(db: D1Database, s: SubscriptionStateUpda
       s.grace_period_expires_at,
       s.signed_at,
       now,
+      s.auto_resume_at ?? null,
     );
 }
 
