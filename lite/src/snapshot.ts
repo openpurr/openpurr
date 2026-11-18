@@ -75,15 +75,15 @@ export async function readCustomerInfo(
     .first<{ id: string; app_user_id: string; first_seen: number; body: string | null; etag: string | null; config_version: string | null }>();
 
   if (row?.body && row.config_version === config.version) {
-    return { body: renderCustomerInfo(JSON.parse(row.body) as Snapshot, config, opts), etag: row.etag, source: "snapshot" as const };
+    return { body: renderCustomerInfo(JSON.parse(row.body) as Snapshot, config, opts), etag: row.etag, customerId: row.id, source: "snapshot" as const };
   }
   if (!row) {
     // Unknown user: an empty CustomerInfo, nothing to load.
     const customer: Customer | null = null;
     const snapshot = computeSnapshot({ appUserId, customer, transactions: [], config, now: opts.now });
-    return { body: renderCustomerInfo(snapshot, config, opts), etag: null, source: "empty" as const };
+    return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: null, source: "empty" as const };
   }
   const { customer, transactions, states } = await loadCustomer(db, appUserId);
   const snapshot = computeSnapshot({ appUserId, customer, transactions, states, config });
-  return { body: renderCustomerInfo(snapshot, config, opts), etag: null, source: "computed" as const };
+  return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: row.id, source: "computed" as const };
 }

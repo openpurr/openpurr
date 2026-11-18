@@ -12,7 +12,7 @@
 
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
-import { type AttributeUpdate, enforceCustomLimit, parseAttributes, writeAttributes } from "../attributes";
+import { type AttributeUpdate, enforceCustomLimit, parseAttributes, readAttributes, writeAttributes } from "../attributes";
 import type { AppConfig } from "../config";
 import { renderCustomerInfo } from "../customer-info";
 import { introEligibility } from "../intro-eligibility";
@@ -36,6 +36,7 @@ import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
 import { AppleApiError } from "../stores/apple-api";
 import { receiptPurchaseEvents } from "../stores/apple-events";
+import { SECRET_KEY_PREFIX, touchSecretKey, verifySecretKey } from "../secret-keys";
 import { invalidateSnapshot, readCustomerInfo, refreshSnapshot } from "../snapshot";
 import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
@@ -56,7 +57,7 @@ const UNVERIFIED_SUBSCRIPTION_MS = 30 * 864e5;
 
 export const sdk = new Hono<AppEnv>();
 
-const error = (c: Ctx, status: 400 | 401 | 404 | 500 | 503, code: number, message: string) =>
+const error = (c: Ctx, status: 400 | 401 | 403 | 404 | 500 | 503, code: number, message: string) =>
   c.json({ code, message }, status);
 
 // Unauthenticated, iOS DEBUG builds of the SDK only. Failures are ignored by the SDK.
@@ -74,18 +75,42 @@ function rateLimited(c: Ctx) {
   return c.json({ code: UNKNOWN_ERROR, message: "Too many requests." }, 429);
 }
 
-// Per client IP, before the key check, so it also slows down anyone guessing keys.
+const bearer = (c: Ctx) => {
+  const auth = c.req.header("authorization") ?? "";
+  return auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+};
+const limitersFor = (c: Ctx) => (c.get("deps").rateLimiters ?? cloudflareRateLimiters)(c.env);
+
+// Per client IP, before the key check, so it also slows down anyone guessing keys. Secret-key
+// requests are exempt here (a backend often calls from one IP); their failures count below.
 sdk.use("*", async (c, next) => {
-  const limiters = (c.get("deps").rateLimiters ?? cloudflareRateLimiters)(c.env);
+  if (bearer(c).startsWith(SECRET_KEY_PREFIX)) return next();
   const ip = c.req.header("cf-connecting-ip");
-  if (limiters.ip && ip && !(await limiters.ip.allow(ip))) return rateLimited(c);
+  const limiter = limitersFor(c).ip;
+  if (limiter && ip && !(await limiter.allow(ip))) return rateLimited(c);
   await next();
 });
 
-// The public SDK key identifies the app (and so the store) for every request.
+// The key identifies the caller. A public SDK key identifies the app (and so the store). A secret
+// key identifies a server, which may only read customers.
 sdk.use("*", async (c, next) => {
-  const auth = c.req.header("authorization") ?? "";
-  const key = auth.startsWith("Bearer ") ? auth.slice(7).trim() : "";
+  const key = bearer(c);
+  if (key.startsWith(SECRET_KEY_PREFIX)) {
+    const secret = await verifySecretKey(c.env.DB, key);
+    if (!secret) {
+      const ip = c.req.header("cf-connecting-ip");
+      const limiter = limitersFor(c).ip;
+      if (limiter && ip && !(await limiter.allow(ip))) return rateLimited(c);
+      return error(c, 401, INVALID_API_KEY, "Invalid API key.");
+    }
+    if (c.req.method !== "GET" || !/^\/v1\/subscribers\/[^/]+$/.test(c.req.path)) {
+      return error(c, 403, INVALID_API_KEY, "Secret keys can only read customers: GET /v1/subscribers/{app_user_id}.");
+    }
+    c.set("secretKey", secret);
+    const touch = touchSecretKey(c.env.DB, secret);
+    if (touch) c.executionCtx.waitUntil(touch.run());
+    return next();
+  }
   const app = key ? c.get("deps").config.keys.get(key) : undefined;
   if (!app) return error(c, 401, INVALID_API_KEY, "Invalid API key.");
   c.set("app", app);
@@ -95,7 +120,7 @@ sdk.use("*", async (c, next) => {
 // Per app user ID: one user hammering the server (a runaway retry loop, say) can't use up the
 // whole app's budget. The SDK key is shared by every user of an app, so it can't be the key.
 sdk.use("*", async (c, next) => {
-  const limiter = (c.get("deps").rateLimiters ?? cloudflareRateLimiters)(c.env).user;
+  const limiter = limitersFor(c).user;
   if (!limiter) return next();
   let userId = /\/subscribers\/([^/]+)/.exec(c.req.path)?.[1];
   if (userId === "identify") userId = undefined;
@@ -104,19 +129,43 @@ sdk.use("*", async (c, next) => {
     const body = await c.req.json<{ app_user_id?: unknown }>().catch(() => null);
     if (typeof body?.app_user_id === "string") userId = body.app_user_id;
   }
-  if (userId && !(await limiter.allow(`${c.get("app").id}:${safeDecode(userId)}`))) return rateLimited(c);
+  const caller = c.get("secretKey")?.id ?? c.get("app").id;
+  if (userId && !(await limiter.allow(`${caller}:${safeDecode(userId)}`))) return rateLimited(c);
   await next();
 });
 
 // One D1 query when the customer's snapshot is current (src/snapshot.ts). Never a 304: the SDK
 // may have nothing cached to fall back on (spec/sdk-wire-contract.md).
 sdk.get("/subscribers/:id", async (c) => {
+  const secret = c.get("secretKey");
+  if (secret) return serverCustomerInfo(c, c.req.param("id"));
   const { body, etag } = await readCustomerInfo(c.env.DB, c.get("deps").config, c.req.param("id"), {
     requestStore: c.get("app").store,
   });
   if (etag) c.header("ETag", etag);
   return c.json(body);
 });
+
+/**
+ * Server-to-server read (secret key): the same CustomerInfo plus subscriber_attributes, which
+ * RevenueCat also returns only to secret keys. Supports If-None-Match. Attribute changes don't
+ * rebuild snapshots, so this ETag covers both the CustomerInfo and the attributes.
+ */
+async function serverCustomerInfo(c: Ctx, appUserId: string) {
+  const secret = c.get("secretKey")!;
+  if (!secret.scopes.has("customers:read")) return error(c, 403, INVALID_API_KEY, "This key lacks the customers:read scope.");
+  const db = c.env.DB;
+  const { body, customerId } = await readCustomerInfo(db, c.get("deps").config, appUserId);
+  const attributes = customerId ? await readAttributes(db, customerId) : {};
+  const subscriber = { ...body.subscriber, subscriber_attributes: attributes };
+  const { last_seen: _lastSeen, ...stable } = subscriber;
+  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(JSON.stringify(stable))));
+  const etag = `"${Array.from(digest.subarray(0, 12), (b) => b.toString(16).padStart(2, "0")).join("")}"`;
+  c.header("ETag", etag);
+  const ifNoneMatch = c.req.header("if-none-match");
+  if (ifNoneMatch && ifNoneMatch.split(",").some((t) => t.trim() === etag)) return c.body(null, 304);
+  return c.json({ ...body, subscriber });
+}
 
 sdk.post("/receipts", async (c) => {
   const body = await c.req.json<ReceiptBody>().catch(() => null);
