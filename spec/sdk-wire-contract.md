@@ -104,6 +104,8 @@ Also the response to `POST /v1/receipts` and `POST /v1/subscribers/identify`.
 - `platform_product_ids[]`, each `{product_id, base_plan_id, offer_id}`.
 - `app_user_id`, `is_restore`, `observer_mode`, `price`, `currency`, `normal_duration`, `store_user_id`, `pricing_phases[]`, `proration_mode`, `initiation_source`, `payload_version: 1`.
 
+**Both platforms** also send `attributes`: the device's unsynced subscriber attributes, in the same format as `POST /v1/subscribers/{id}/attributes` (iOS `PostReceiptDataOperation.swift`, Android `Backend.kt`).
+
 **Response:** CustomerInfo. Android also reads `purchased_products` (rule 5).
 
 **5xx behavior:**
@@ -147,6 +149,7 @@ Used for offline entitlements when the server returns 5xx. An empty map is valid
 ### `POST /v1/subscribers/{id}/attributes`
 
 - Body: `{"attributes":{"$email":{"value":"…","updated_at_ms":…}}}`.
+- Clearing an attribute sends `"value": ""` (the iOS SDK maps nil to an empty string).
 - The response body is ignored.
 - 2xx, or any 4xx except 404, marks the attributes as synced. 5xx or 404 means they're retried later.
 

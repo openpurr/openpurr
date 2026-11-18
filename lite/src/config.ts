@@ -14,6 +14,12 @@ export interface ProductConfig {
   type: ProductType;
   /** Play subscriptions: the base plans that exist. Optional; used for the entitlement mapping. */
   basePlans: string[];
+  /**
+   * App Store subscriptions: the subscription group ID. Optional; Apple includes it in every
+   * transaction, so it's learned automatically once anyone buys the product. Setting it here
+   * makes intro-offer eligibility work before then.
+   */
+  subscriptionGroup?: string;
 }
 
 export interface AppConfig {
@@ -188,7 +194,13 @@ export function parseConfig(raw: unknown): Config {
         fail(pat, "must be a mapping, e.g. { type: subscription }");
         continue;
       }
-      allowOnly(p, ["type", "base_plans"], pat, fail);
+      allowOnly(p, ["type", "base_plans", "subscription_group"], pat, fail);
+      if (p.subscription_group !== undefined) {
+        if (store !== "app_store" || p.type !== "subscription") fail(`${pat}.subscription_group`, "only App Store subscriptions have a subscription group");
+        else if (typeof p.subscription_group !== "string" && typeof p.subscription_group !== "number") {
+          fail(`${pat}.subscription_group`, "must be the subscription group ID from App Store Connect");
+        }
+      }
       if (!PRODUCT_TYPES.includes(p.type as ProductType)) fail(`${pat}.type`, `must be one of ${PRODUCT_TYPES.join(", ")}`);
       const basePlans = p.base_plans ?? [];
       if (!Array.isArray(basePlans) || !basePlans.every((b) => typeof b === "string" && ID.test(b))) {
@@ -200,6 +212,7 @@ export function parseConfig(raw: unknown): Config {
         id: productId,
         type: p.type as ProductType,
         basePlans: Array.isArray(basePlans) ? (basePlans as string[]) : [],
+        ...(p.subscription_group !== undefined ? { subscriptionGroup: String(p.subscription_group) } : {}),
       });
     }
     apps.set(appId, app);

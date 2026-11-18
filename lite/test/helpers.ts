@@ -22,7 +22,7 @@ export const rawTestConfig = {
       sdk_keys: [IOS_KEY],
       products: {
         pro_monthly: { type: "subscription" },
-        pro_annual: { type: "subscription" },
+        pro_annual: { type: "subscription", subscription_group: "21000000" },
         lifetime: { type: "non_consumable" },
         coins_100: { type: "consumable" },
       },

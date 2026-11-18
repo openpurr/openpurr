@@ -7,8 +7,8 @@
 //   - drop raw notification payloads after 30 days (the summary row stays);
 //   - delete spike request captures after 14 days;
 //   - delete customers who never purchased, were first seen over 90 days ago and haven't
-//     logged in since. Nothing is lost: they own no purchases, and the SDK recreates them on
-//     their next purchase or logIn;
+//     logged in or synced attributes since. Nothing is lost that matters: they own no
+//     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired.
 // The 5-minute cadence is for work that can't wait an hour, such as webhook retries (M3).
 
@@ -57,6 +57,7 @@ const pruneInactiveCustomers: Task = async (env, now) => {
      WHERE c.first_seen < ?1
        AND NOT EXISTS (SELECT 1 FROM purchase_owner o WHERE o.customer_id = c.id)
        AND NOT EXISTS (SELECT 1 FROM customer_alias a WHERE a.customer_id = c.id AND a.created_at >= ?1)
+       AND NOT EXISTS (SELECT 1 FROM subscriber_attribute s WHERE s.customer_id = c.id AND s.received_at >= ?1)
      LIMIT ${BATCH.customers}`,
   )
     .bind(cutoff)
@@ -64,6 +65,7 @@ const pruneInactiveCustomers: Task = async (env, now) => {
   if (!results.length) return { task: "prune-inactive-customers", rows: 0 };
   const ids = JSON.stringify(results.map((r) => r.id));
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM subscriber_attribute WHERE customer_id IN (SELECT value FROM json_each(?))").bind(ids),
     env.DB.prepare("DELETE FROM customer_alias WHERE customer_id IN (SELECT value FROM json_each(?))").bind(ids),
     env.DB.prepare("DELETE FROM customer WHERE id IN (SELECT value FROM json_each(?))").bind(ids),
   ]);

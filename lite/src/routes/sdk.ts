@@ -11,8 +11,10 @@
 //   - User IDs arrive percent-encoded on Android and raw ($, :) on iOS; Hono decodes both.
 
 import { type Context, Hono } from "hono";
+import { type AttributeUpdate, enforceCustomLimit, parseAttributes, writeAttributes } from "../attributes";
 import type { AppConfig } from "../config";
 import { buildCustomerInfo } from "../customer-info";
+import { introEligibility } from "../intro-eligibility";
 import type { AppEnv } from "../env";
 import {
   addAlias,
@@ -32,7 +34,7 @@ import { d1ChainStore } from "../lib/chain-store-d1";
 import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
 import { AppleApiError } from "../stores/apple-api";
-import { InvalidReceiptError, transactionIdFromAppReceipt } from "../stores/apple-receipt";
+import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
 import { AppleApiNotConfigured, appleClients, syncFromTransactionId, syncStatuses } from "../stores/apple-sync";
 
 type Ctx = Context<AppEnv>;
@@ -43,6 +45,7 @@ const INVALID_RECEIPT = 7103;
 const INTERNAL_SERVER_ERROR = 7110;
 const INVALID_API_KEY = 7225;
 const BAD_REQUEST = 7226;
+const INVALID_SUBSCRIBER_ATTRIBUTES = 7263;
 
 /** Unverified (development) subscriptions last this long, since nothing tells us the real expiry. */
 const UNVERIFIED_SUBSCRIPTION_MS = 30 * 864e5;
@@ -112,7 +115,10 @@ sdk.post("/receipts", async (c) => {
   const result = app.store === "app_store" ? await appleReceipt(c, body, app) : googleReceipt(body, app);
   if ("status" in result) return error(c, result.status, result.code, result.message);
 
-  await recordForCustomer(c, body.app_user_id, result.transactions, result.states);
+  // Unsynced attributes ride along with receipts. Invalid ones are skipped: they must never
+  // fail a purchase.
+  const { updates } = parseAttributes(body.attributes);
+  await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates);
 
   const info = await customerInfo(c, body.app_user_id);
   const posted = result.transactions.find((t) => t.transaction_id === result.postedTransactionId);
@@ -128,9 +134,16 @@ sdk.post("/receipts", async (c) => {
  * default restore behavior ("transfer to new App User ID") per purchase chain: a chain owned
  * by an anonymous user merges that user in; a chain owned by a named user transfers.
  */
-async function recordForCustomer(c: Ctx, appUserId: string, transactions: NewTransaction[], states: SubscriptionStateUpdate[]) {
+async function recordForCustomer(
+  c: Ctx,
+  appUserId: string,
+  transactions: NewTransaction[],
+  states: SubscriptionStateUpdate[],
+  attributes: Map<string, AttributeUpdate> = new Map(),
+) {
   const db = c.env.DB;
   const customer = await ensureCustomer(db, appUserId);
+  if (attributes.size) await enforceCustomLimit(db, customer.id, attributes);
   const chains = new Map(transactions.map((t) => [t.original_transaction_id, t]));
   const store = transactions[0]?.store;
   const owners = store ? await purchaseOwners(db, store, [...chains.keys()]) : new Map();
@@ -146,6 +159,7 @@ async function recordForCustomer(c: Ctx, appUserId: string, transactions: NewTra
   for (const t of transactions) writes.push(upsertTransaction(db, t));
   for (const t of chains.values()) writes.push(assignOwner(db, t, customer.id));
   for (const s of states) writes.push(upsertSubscriptionState(db, s));
+  if (attributes.size) writes.push(writeAttributes(db, customer.id, attributes));
   if (writes.length) await db.batch(writes);
 }
 
@@ -223,14 +237,49 @@ sdk.get("/product_entitlement_mapping", (c) => {
   return c.json({ product_entitlement_mapping: mapping });
 });
 
-// Response bodies are ignored; 2xx marks attributes as synced. Stored in a later milestone.
-sdk.post("/subscribers/:id/attributes", (c) => c.json({}));
+// The SDK marks attributes synced on 2xx or any 4xx except 404, and retries on 5xx or 404.
+// Valid attributes are stored even when others in the same request are invalid; the invalid
+// ones are reported with 400 / 7263, which also stops the SDK retrying them.
+sdk.post("/subscribers/:id/attributes", async (c) => {
+  const body = await c.req.json<{ attributes?: unknown }>().catch(() => null);
+  if (!body) return error(c, 400, BAD_REQUEST, "Expected a JSON body with attributes.");
+  const { updates, errors } = parseAttributes(body.attributes);
+  if (updates.size) {
+    const db = c.env.DB;
+    const customer = await ensureCustomer(db, c.req.param("id"));
+    errors.push(...(await enforceCustomLimit(db, customer.id, updates)));
+    if (updates.size) await writeAttributes(db, customer.id, updates).run();
+  }
+  if (errors.length) {
+    return c.json({ code: INVALID_SUBSCRIBER_ATTRIBUTES, message: "Some subscriber attributes are invalid.", attribute_errors: errors }, 400);
+  }
+  return c.json({});
+});
 
-// iOS, StoreKit 1 path only. "Unknown" until intro eligibility is computed from history.
+// iOS, StoreKit 1 path only: true, false or null (unknown) per product. Read-only.
 sdk.post("/subscribers/:id/intro_eligibility", async (c) => {
-  const body = await c.req.json<{ product_identifiers?: string[] }>().catch(() => null);
-  const product_identifiers = Array.isArray(body?.product_identifiers) ? body.product_identifiers : [];
-  return c.json(Object.fromEntries(product_identifiers.map((id) => [id, null])));
+  const body = await c.req.json<{ product_identifiers?: unknown; fetch_token?: unknown }>().catch(() => null);
+  const requested = Array.isArray(body?.product_identifiers)
+    ? body.product_identifiers.filter((id): id is string => typeof id === "string").slice(0, 100)
+    : [];
+  let receiptProductIds: string[] = [];
+  if (typeof body?.fetch_token === "string" && body.fetch_token) {
+    try {
+      receiptProductIds = parseAppReceipt(body.fetch_token).productIds;
+    } catch {
+      // A malformed receipt just means we know less; the answer may be null.
+    }
+  }
+  const { transactions } = await loadCustomer(c.env.DB, c.req.param("id"));
+  return c.json(
+    await introEligibility({
+      db: c.env.DB,
+      app: c.get("app"),
+      requested,
+      history: transactions.filter((t) => t.store === "app_store"),
+      receiptProductIds,
+    }),
+  );
 });
 
 // Remote config: 204 = not modified. Without config, diagnostics stay off (the default).
@@ -248,6 +297,7 @@ interface ReceiptBody {
   app_user_id?: string;
   fetch_token?: string;
   is_restore?: boolean;
+  attributes?: unknown;
   // iOS
   product_id?: string;
   transaction_id?: string;
@@ -387,6 +437,7 @@ function googleReceipt(body: ReceiptBody, app: AppConfig): Receipt | Failure {
     is_upgraded: 0,
     verified: 0,
     source: "sdk",
+    subscription_group: null,
   };
   return { transactions: [row], states: [], postedTransactionId: row.transaction_id };
 }

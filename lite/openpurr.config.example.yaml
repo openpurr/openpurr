@@ -29,6 +29,9 @@ apps:
       pro_annual: { type: subscription }
       lifetime: { type: non_consumable }
       coins_100: { type: consumable }
+      # Optional for subscriptions: the subscription group ID from App Store Connect, used for
+      # intro-offer eligibility. It's learned automatically from the first purchase otherwise.
+      # pro_monthly: { type: subscription, subscription_group: "21000000" }
 
   android:
     store: play_store
