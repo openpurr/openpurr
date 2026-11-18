@@ -3,7 +3,18 @@
 
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
-import { buildApp } from "../src/app";
+import type { Deps } from "../src/env";
+import { createApp } from "../src/app";
+import { mountOffice } from "../src/office/app";
+import { mountSdk } from "../src/sdk-app";
+
+/** Tests run both Workers' routes in one app: the SDK API and the back office. */
+function buildApp(deps: Deps) {
+  return createApp(deps, (app) => {
+    mountSdk(app);
+    mountOffice(app);
+  });
+}
 import {
   TEST_APPLE_API_KEY_PEM,
   TEST_GOOGLE_SA_KEY_PEM,

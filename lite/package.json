@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy --env=",
+    "deploy:office": "wrangler deploy --env office",
     "deploy:bench": "node scripts/gen-bench-fixtures.mjs --if-missing && wrangler deploy --env bench",
     "typecheck": "node scripts/gen-bench-fixtures.mjs --if-missing && node scripts/build-config.mjs --allow-example && tsc --noEmit",
     "test": "node scripts/gen-bench-fixtures.mjs --if-missing && node scripts/build-config.mjs --allow-example && vitest run",

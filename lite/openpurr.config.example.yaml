@@ -16,6 +16,9 @@ apps:
     # followed by a long random string. Never start a key with test_.
     sdk_keys:
       - appl_replace_with_a_long_random_string
+    # App Store Server Notifications (Version 2): in App Store Connect, set the URL to
+    # https://<your back-office worker>/notifications/apple (the openpurr-office Worker).
+    #
     # App Store Server API access, used for StoreKit 1 receipts, restores and setup checks.
     # Create an In-App Purchase key in App Store Connect > Users and Access > Integrations, then
     # store the .p8 file's contents as a Worker secret: `wrangler secret put APPLE_IAP_KEY`.
@@ -47,8 +50,8 @@ apps:
     #   2. Store the JSON key as a Worker secret: wrangler secret put GOOGLE_SERVICE_ACCOUNT
     #   3. For notifications: create a Pub/Sub topic, set it in Play Console > Monetization setup >
     #      Real-time developer notifications, and add a PUSH subscription to
-    #      https://<your worker>/notifications/google with authentication enabled, using a service
-    #      account you name below.
+    #      https://<your back-office worker>/notifications/google (the openpurr-office Worker) with
+    #      authentication enabled, using a service account you name below.
     # google_play_api:
     #   service_account_secret: GOOGLE_SERVICE_ACCOUNT        # the default
     #   pubsub_push_account: rtdn-push@my-project.iam.gserviceaccount.com
