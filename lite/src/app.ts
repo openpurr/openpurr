@@ -1,4 +1,6 @@
-import { Hono } from "hono";
+// hono/tiny (PatternRouter): skips compiling the route table on a fresh isolate's first
+// request, about 1 ms of CPU, and is about 15 KB smaller. Matching speed is the same for our routes.
+import { Hono } from "hono/tiny";
 import type { AppEnv, Deps } from "./env";
 import { capture } from "./lib/capture";
 import { notifications } from "./routes/notifications";

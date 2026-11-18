@@ -10,7 +10,8 @@
 //   - Remote config gets 204, which both SDKs read as "not modified".
 //   - User IDs arrive percent-encoded on Android and raw ($, :) on iOS; Hono decodes both.
 
-import { type Context, Hono } from "hono";
+import type { Context } from "hono";
+import { Hono } from "hono/tiny";
 import { type AttributeUpdate, enforceCustomLimit, parseAttributes, writeAttributes } from "../attributes";
 import type { AppConfig } from "../config";
 import { renderCustomerInfo } from "../customer-info";
