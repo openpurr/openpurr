@@ -4,7 +4,7 @@
 import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
 import { env } from "cloudflare:workers";
 import { buildApp } from "../src/app";
-import { TEST_LEAF_KEY_PEM, TEST_ROOT_CERT_B64, TEST_X5C } from "../src/bench/fixtures.generated";
+import { TEST_APPLE_API_KEY_PEM, TEST_LEAF_KEY_PEM, TEST_ROOT_CERT_B64, TEST_X5C } from "../src/bench/fixtures.generated";
 import { parseConfig } from "../src/config";
 import type { AppleNotification, AppleRenewalInfo, AppleTransaction } from "../src/stores/apple";
 import { base64ToBytes, bytesToBase64Url, pemToDer } from "../src/lib/der";
@@ -59,19 +59,58 @@ export const rawTestConfig = {
 };
 
 export const testConfig = parseConfig(rawTestConfig);
-export const testApp = buildApp({ config: testConfig, appleRoots: [base64ToBytes(TEST_ROOT_CERT_B64)] });
+const appleRoots = [base64ToBytes(TEST_ROOT_CERT_B64)];
+export const testApp = buildApp({ config: testConfig, appleRoots });
+
+// --- App Store Server API ------------------------------------------------------------------
+
+export const API_ISSUER_ID = "57246542-96fe-1a63-e053-0824d011072a";
+export const API_KEY_ID = "TESTKEY123";
+
+/** A fake App Store Server API. Routes are "<environment> <METHOD> <path>", without the query. */
+export function fakeAppleApi(routes: Record<string, (url: URL) => { status?: number; body: unknown }>) {
+  const requests: { url: URL; method: string; authorization: string | null }[] = [];
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const url = new URL(String(input));
+    const method = init?.method ?? "GET";
+    requests.push({ url, method, authorization: new Headers(init?.headers).get("authorization") });
+    const environment = url.hostname === "api.storekit.apple.com" ? "production" : url.hostname === "api.storekit-sandbox.apple.com" ? "sandbox" : "unknown";
+    const route = routes[`${environment} ${method} ${url.pathname}`];
+    if (!route) return Response.json({ errorCode: 4040010, errorMessage: "Transaction id not found." }, { status: 404 });
+    const { status = 200, body } = route(url);
+    return Response.json(body, { status });
+  }) as typeof fetch;
+  return { fetch: fetchImpl, requests };
+}
+
+/** An app whose iOS app has App Store Server API access, talking to `api`. */
+export function appWithAppleApi(api: { fetch: typeof fetch }) {
+  const raw = structuredClone(rawTestConfig) as any;
+  raw.apps.ios.app_store_server_api = { issuer_id: API_ISSUER_ID, key_id: API_KEY_ID };
+  return buildApp({ config: parseConfig(raw), appleRoots, fetch: api.fetch });
+}
+
+/** The Worker env with the In-App Purchase key secret set. */
+export const envWithAppleKey = () => ({ ...env, APPLE_IAP_KEY: TEST_APPLE_API_KEY_PEM });
 
 export const ANON = "$RCAnonymousID:0123456789abcdef0123456789abcdef";
 
 /** Calls the test app the way the SDKs do (headers per spec/sdk-wire-contract.md). */
 export async function call(
   path: string,
-  opts: { key?: string; body?: unknown; platform?: "ios" | "android"; headers?: Record<string, string> } = {},
+  opts: {
+    key?: string;
+    body?: unknown;
+    platform?: "ios" | "android";
+    headers?: Record<string, string>;
+    app?: { fetch: typeof testApp.fetch };
+    env?: object;
+  } = {},
 ) {
   const platform = opts.platform ?? "ios";
   const key = opts.key ?? (platform === "ios" ? IOS_KEY : ANDROID_KEY);
   const ctx = createExecutionContext();
-  const res = await testApp.fetch(
+  const res = await (opts.app ?? testApp).fetch(
     new Request(`https://openpurr.test${path}`, {
       method: opts.body === undefined ? "GET" : "POST",
       headers: {
@@ -85,7 +124,7 @@ export async function call(
       },
       body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
     }),
-    env,
+    opts.env ?? env,
     ctx,
   );
   await waitOnExecutionContext(ctx);

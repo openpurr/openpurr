@@ -16,6 +16,14 @@ apps:
     # followed by a long random string. Never start a key with test_.
     sdk_keys:
       - appl_replace_with_a_long_random_string
+    # App Store Server API access, used for StoreKit 1 receipts, restores and setup checks.
+    # Create an In-App Purchase key in App Store Connect > Users and Access > Integrations, then
+    # store the .p8 file's contents as a Worker secret: `wrangler secret put APPLE_IAP_KEY`.
+    # The key itself never goes in this file.
+    # app_store_server_api:
+    #   issuer_id: 57246542-96fe-1a63-e053-0824d011072a
+    #   key_id: 2X9R4HXF34
+    #   private_key_secret: APPLE_IAP_KEY     # the default
     products:
       pro_monthly: { type: subscription }
       pro_annual: { type: subscription }

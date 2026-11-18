@@ -25,6 +25,13 @@ export interface AppConfig {
   packageName?: string;
   sdkKeys: string[];
   products: Map<string, ProductConfig>;
+  /** App Store Server API access. Without it, StoreKit 1 receipts can't be resolved. */
+  appStoreServerApi?: {
+    issuerId: string;
+    keyId: string;
+    /** Name of the Worker secret (environment variable) holding the In-App Purchase key (.p8). */
+    privateKeySecret: string;
+  };
   /**
    * Development only: accept purchases the server can't verify yet (Google Play before M2).
    * Anyone holding the public SDK key could then grant themselves entitlements.
@@ -97,7 +104,12 @@ export function parseConfig(raw: unknown): Config {
       fail(at, "must be a mapping");
       continue;
     }
-    allowOnly(a, ["store", "bundle_id", "package_name", "sdk_keys", "products", "allow_unverified_purchases"], at, fail);
+    allowOnly(
+      a,
+      ["store", "bundle_id", "package_name", "sdk_keys", "products", "allow_unverified_purchases", "app_store_server_api"],
+      at,
+      fail,
+    );
     const store = a.store as Store;
     if (store !== "app_store" && store !== "play_store") {
       fail(`${at}.store`, "must be app_store or play_store");
@@ -123,6 +135,28 @@ export function parseConfig(raw: unknown): Config {
       products: new Map(),
       allowUnverifiedPurchases: a.allow_unverified_purchases === true,
     };
+    if (a.app_store_server_api !== undefined) {
+      const api = a.app_store_server_api;
+      const aat = `${at}.app_store_server_api`;
+      if (store !== "app_store") fail(aat, "only app_store apps use the App Store Server API");
+      else if (!isObject(api)) fail(aat, "must be a mapping with issuer_id and key_id");
+      else {
+        allowOnly(api, ["issuer_id", "key_id", "private_key_secret"], aat, fail);
+        const secret = api.private_key_secret ?? "APPLE_IAP_KEY";
+        if (!nonEmptyString(api.issuer_id) || !/^[0-9a-f-]{36}$/i.test(api.issuer_id)) {
+          fail(`${aat}.issuer_id`, "must be the issuer ID (a UUID) from App Store Connect > Users and Access > Integrations");
+        }
+        if (!nonEmptyString(api.key_id) || !/^[A-Z0-9]{10}$/.test(api.key_id)) {
+          fail(`${aat}.key_id`, "must be the 10-character key ID of your In-App Purchase key");
+        }
+        if (typeof secret !== "string" || !/^[A-Z][A-Z0-9_]{0,63}$/.test(secret)) {
+          fail(`${aat}.private_key_secret`, "must be a secret name like APPLE_IAP_KEY (capitals, digits, underscores)");
+        }
+        if (nonEmptyString(api.issuer_id) && nonEmptyString(api.key_id) && typeof secret === "string") {
+          app.appStoreServerApi = { issuerId: api.issuer_id, keyId: api.key_id, privateKeySecret: secret };
+        }
+      }
+    }
     if (a.allow_unverified_purchases !== undefined && typeof a.allow_unverified_purchases !== "boolean") {
       fail(`${at}.allow_unverified_purchases`, "must be true or false");
     }

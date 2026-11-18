@@ -16,18 +16,23 @@ import { buildCustomerInfo } from "../customer-info";
 import type { AppEnv } from "../env";
 import {
   addAlias,
+  assignOwner,
   ensureCustomer,
   findCustomer,
   isAnonymous,
   loadCustomer,
   mergeCustomers,
   type NewTransaction,
-  purchaseOwner,
-  recordTransaction,
+  purchaseOwners,
+  upsertSubscriptionState,
+  upsertTransaction,
 } from "../ledger";
 import { AppleJwsError, verifyAppleJws } from "../lib/apple-jws";
 import { d1ChainStore } from "../lib/chain-store-d1";
-import { AppleMappingError, type AppleTransaction, appleTransactionRow } from "../stores/apple";
+import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
+import { AppleApiError } from "../stores/apple-api";
+import { InvalidReceiptError, transactionIdFromAppReceipt } from "../stores/apple-receipt";
+import { AppleApiNotConfigured, appleClients, syncFromTransactionId, syncStatuses } from "../stores/apple-sync";
 
 type Ctx = Context<AppEnv>;
 
@@ -69,24 +74,43 @@ sdk.post("/receipts", async (c) => {
   const app = c.get("app");
   const result = app.store === "app_store" ? await appleReceipt(c, body, app) : googleReceipt(body, app);
   if ("status" in result) return error(c, result.status, result.code, result.message);
-  const tx = result;
 
-  const db = c.env.DB;
-  const customer = await ensureCustomer(db, body.app_user_id);
-  const owner = await purchaseOwner(db, tx.store, tx.original_transaction_id);
-  const writes = recordTransaction(db, tx, customer.id);
-  // The purchase already belongs to someone else. RevenueCat's default ("transfer to new App
-  // User ID"): an anonymous owner is merged into this customer; a named owner loses it.
-  if (owner && owner.id !== customer.id && owner.anonymousOnly) writes.unshift(...mergeCustomers(db, owner.id, customer.id));
-  await db.batch(writes);
+  await recordForCustomer(c, body.app_user_id, result.transactions, result.states);
 
   const info = await customerInfo(c, body.app_user_id);
-  if (app.store === "play_store") {
+  const posted = result.transactions.find((t) => t.transaction_id === result.postedTransactionId);
+  if (app.store === "play_store" && posted) {
     // Android consumes a purchase only when told to (spec/sdk-wire-contract.md, rule 5).
-    return c.json({ ...info, purchased_products: { [tx.product_id]: { should_consume: tx.product_type === "consumable" } } });
+    return c.json({ ...info, purchased_products: { [posted.product_id]: { should_consume: posted.product_type === "consumable" } } });
   }
   return c.json(info);
 });
+
+/**
+ * Writes transactions and status for the customer who posted them, applying RevenueCat's
+ * default restore behavior ("transfer to new App User ID") per purchase chain: a chain owned
+ * by an anonymous user merges that user in; a chain owned by a named user transfers.
+ */
+async function recordForCustomer(c: Ctx, appUserId: string, transactions: NewTransaction[], states: SubscriptionStateUpdate[]) {
+  const db = c.env.DB;
+  const customer = await ensureCustomer(db, appUserId);
+  const chains = new Map(transactions.map((t) => [t.original_transaction_id, t]));
+  const store = transactions[0]?.store;
+  const owners = store ? await purchaseOwners(db, store, [...chains.keys()]) : new Map();
+
+  const writes: D1PreparedStatement[] = [];
+  const merged = new Set<string>();
+  for (const owner of owners.values()) {
+    if (owner.id !== customer.id && owner.anonymousOnly && !merged.has(owner.id)) {
+      merged.add(owner.id);
+      writes.push(...mergeCustomers(db, owner.id, customer.id));
+    }
+  }
+  for (const t of transactions) writes.push(upsertTransaction(db, t));
+  for (const t of chains.values()) writes.push(assignOwner(db, t, customer.id));
+  for (const s of states) writes.push(upsertSubscriptionState(db, s));
+  if (writes.length) await db.batch(writes);
+}
 
 // logIn. 201 tells the SDK the user was created; 200 that it already existed.
 sdk.post("/subscribers/identify", async (c) => {
@@ -186,6 +210,7 @@ sdk.all("*", (c) => error(c, 404, UNKNOWN_ERROR, `Not implemented: ${c.req.metho
 interface ReceiptBody {
   app_user_id?: string;
   fetch_token?: string;
+  is_restore?: boolean;
   // iOS
   product_id?: string;
   transaction_id?: string;
@@ -195,14 +220,17 @@ interface ReceiptBody {
 }
 
 type Failure = { status: 400 | 500 | 503; code: number; message: string };
+interface Receipt {
+  transactions: NewTransaction[];
+  states: SubscriptionStateUpdate[];
+  /** The transaction the device posted, when there is exactly one. */
+  postedTransactionId?: string;
+}
 
-async function appleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise<NewTransaction | Failure> {
+async function appleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise<Receipt | Failure> {
   const token = body.fetch_token!;
-  // StoreKit 2 sends the signed transaction (a JWS). StoreKit 1 sends the app receipt, which
-  // needs the App Store Server API to resolve; until that lands, keep it queued on the device.
-  if (token.split(".").length !== 3) {
-    return { status: 503, code: INTERNAL_SERVER_ERROR, message: "StoreKit 1 receipts aren't supported yet." };
-  }
+  // StoreKit 2 sends one signed transaction (a JWS). StoreKit 1 sends the whole app receipt.
+  if (token.split(".").length !== 3) return storeKit1Receipt(c, token, app);
 
   let tx: AppleTransaction;
   try {
@@ -221,16 +249,75 @@ async function appleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise<
     // 5xx, not 4xx: a missing product is a config mistake, and the purchase must not be lost.
     return { status: 500, code: INTERNAL_SERVER_ERROR, message: `Product ${tx.productId} is not in the config.` };
   }
+  let row: NewTransaction;
   try {
-    return appleTransactionRow(tx, app, product);
+    row = appleTransactionRow(tx, app, product);
   } catch (err) {
     // Bundle or type mismatch: most likely the config, so keep the purchase queued.
     if (err instanceof AppleMappingError) return { status: 500, code: INTERNAL_SERVER_ERROR, message: err.message };
     throw err;
   }
+  const receipt: Receipt = { transactions: [row], states: [], postedTransactionId: row.transaction_id };
+
+  // On restore, the device's view may be stale (a refund or lapse it hasn't seen), so ask Apple
+  // for the current status of every subscription. Best effort: the verified transaction
+  // already stands on its own.
+  if (body.is_restore && app.appStoreServerApi) {
+    try {
+      const sync = await syncStatuses(appleClients(app, c.env, c.get("deps"))[row.environment], app, row.transaction_id);
+      const seen = new Set([row.transaction_id]);
+      receipt.transactions.push(...sync.transactions.filter((t) => !seen.has(t.transaction_id)));
+      receipt.states.push(...sync.states);
+    } catch (err) {
+      console.error("Restore status refresh failed:", err);
+    }
+  }
+  return receipt;
 }
 
-function googleReceipt(body: ReceiptBody, app: AppConfig): NewTransaction | Failure {
+/**
+ * StoreKit 1: the app receipt isn't trusted. We pull one transaction ID out of it and ask the
+ * App Store Server API for the customer's purchases; Apple's answer is what we record.
+ */
+async function storeKit1Receipt(c: Ctx, receiptBase64: string, app: AppConfig): Promise<Receipt | Failure> {
+  let clients;
+  try {
+    clients = appleClients(app, c.env, c.get("deps"));
+  } catch (err) {
+    // 5xx keeps the purchase on the device until the operator adds the API key.
+    if (err instanceof AppleApiNotConfigured) return { status: 503, code: INTERNAL_SERVER_ERROR, message: `StoreKit 1 receipt: ${err.message}` };
+    throw err;
+  }
+
+  let transactionId: string | null;
+  try {
+    transactionId = transactionIdFromAppReceipt(receiptBase64);
+  } catch (err) {
+    if (err instanceof InvalidReceiptError) return { status: 400, code: INVALID_RECEIPT, message: `Invalid receipt: ${err.message}` };
+    throw err;
+  }
+  // A receipt with no in-app purchases: nothing to record.
+  if (!transactionId) return { transactions: [], states: [] };
+
+  try {
+    const sync = await syncFromTransactionId(clients, app, transactionId);
+    if (sync.skipped.length) console.warn(`App ${app.id}: Apple returned products not in the config: ${sync.skipped.join(", ")}`);
+    return { transactions: sync.transactions, states: sync.states };
+  } catch (err) {
+    if (err instanceof AppleApiError) {
+      // Unknown in both environments: the receipt doesn't describe a real purchase.
+      if (err.notFound) return { status: 400, code: INVALID_RECEIPT, message: "Apple doesn't recognize this receipt's transactions." };
+      // Rate limits and Apple outages: keep the purchase queued and retry later.
+      if (err.retryable) return { status: 503, code: INTERNAL_SERVER_ERROR, message: "The App Store is unavailable; try again later." };
+      // 401 and similar: a credentials problem on our side, so keep the purchase queued.
+      console.error(err);
+      return { status: 500, code: INTERNAL_SERVER_ERROR, message: `App Store Server API error ${err.status}; check the API key settings.` };
+    }
+    throw err;
+  }
+}
+
+function googleReceipt(body: ReceiptBody, app: AppConfig): Receipt | Failure {
   if (!app.allowUnverifiedPurchases) {
     // Google Play validation lands in M2. Until then, 5xx keeps the purchase on the device.
     return { status: 503, code: INTERNAL_SERVER_ERROR, message: "Google Play purchase validation isn't available yet." };
@@ -241,7 +328,7 @@ function googleReceipt(body: ReceiptBody, app: AppConfig): NewTransaction | Fail
   if (!product) return { status: 500, code: INTERNAL_SERVER_ERROR, message: `Product ${productId} is not in the config.` };
   const now = Date.now();
   // Development only (allow_unverified_purchases): nothing here is checked with Google.
-  return {
+  const row: NewTransaction = {
     app_id: app.id,
     store: "play_store",
     environment: "sandbox",
@@ -264,6 +351,7 @@ function googleReceipt(body: ReceiptBody, app: AppConfig): NewTransaction | Fail
     verified: 0,
     source: "sdk",
   };
+  return { transactions: [row], states: [], postedTransactionId: row.transaction_id };
 }
 
 /** Read-only: never writes, per the free-plan rule. Unknown users get a fresh, empty body. */

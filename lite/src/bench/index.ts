@@ -12,7 +12,7 @@
 //   jws-store           fresh-isolate path: chain found in the D1 ChainStore, so import the leaf
 //                       key and verify the JWS (plus one D1 read, which is I/O, not CPU)
 //   apple-token-cold    import .p8 + sign ES256 JWT
-//   apple-token-warm    sign ES256 JWT with the cached key
+//   apple-token-warm    reuse the cached token (no signing until it nears expiry)
 //   google-token-cold   import RSA-2048 key + sign RS256 JWT
 //   google-token-warm   sign RS256 JWT with the cached key
 //   hmac                HMAC-SHA256 over a 2 KB webhook body
