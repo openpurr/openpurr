@@ -12,6 +12,7 @@
     "typecheck": "pnpm -r typecheck",
     "deploy": "pnpm --filter @openpurr/lite deploy",
     "deploy:bench": "pnpm --filter @openpurr/lite deploy:bench",
-    "check:bundle": "pnpm --filter @openpurr/lite check:bundle"
+    "check:bundle": "pnpm --filter @openpurr/lite check:bundle",
+    "deploy:office": "pnpm --filter @openpurr/lite deploy:office"
   }
 }

@@ -83,8 +83,8 @@ describe("scheduled job", () => {
     expect(await runScheduled(env, Date.parse("2026-12-01T10:35:00Z"))).toHaveLength(0);
   });
 
-  it("is wired up as the production Worker's scheduled handler", async () => {
-    const { default: worker } = await import("../src/index");
+  it("is wired up as the back-office Worker's scheduled handler", async () => {
+    const { default: worker } = await import("../src/office/index");
     expect(typeof worker.scheduled).toBe("function");
   });
 });

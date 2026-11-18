@@ -41,8 +41,10 @@ pnpm check:bundle  # production bundle stays under its size budget
 cp lite/.dev.vars.example lite/.dev.vars
 cp lite/openpurr.config.example.yaml lite/openpurr.config.yaml   # apps, products, entitlements, offerings
 pnpm --filter @openpurr/lite db:migrate:local
-pnpm dev           # wrangler dev
+pnpm dev           # wrangler dev: the SDK Worker (/v1)
 ```
+
+Lite runs as two Workers sharing one D1 database: the **SDK Worker** (`/v1` only, kept small because every fresh isolate pays to load it) and the **back-office Worker** (`--env office`: store notifications, scheduled jobs, the admin side). Run the back office locally with `pnpm --filter @openpurr/lite exec wrangler dev --env office`, and deploy both with `pnpm deploy && pnpm deploy:office`. Code the SDKs don't call belongs in the back office.
 
 Tests and typecheck fall back to the example config, so they work without your own `openpurr.config.yaml`. `wrangler dev` and deploys require it, and validate it first.
 

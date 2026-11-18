@@ -1,12 +1,10 @@
-// Production entry point. Benchmarks live in a separate Worker (src/bench/worker.ts).
-import { buildApp } from "./app";
+// SDK Worker entry point: only the RevenueCat-compatible API (/v1). Store notifications, scheduled
+// jobs and the admin side run in the back-office Worker (src/office/index.ts), so none of their
+// code adds to the SDK's cold-start cost. Benchmarks live in src/bench/worker.ts.
 import { productionDeps } from "./deps";
 import type { Env } from "./env";
-import { scheduledHandler } from "./scheduled";
+import { buildSdkApp } from "./sdk-app";
 
-const app = buildApp(productionDeps);
+const app = buildSdkApp(productionDeps);
 
-export default {
-  fetch: app.fetch,
-  scheduled: scheduledHandler(productionDeps),
-} satisfies ExportedHandler<Env>;
+export default { fetch: app.fetch } satisfies ExportedHandler<Env>;

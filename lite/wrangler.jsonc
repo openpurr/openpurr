@@ -1,5 +1,10 @@
-// openpurr Lite edition, M0 spike configuration.
-// Everything here must work on the Cloudflare free plan.
+// openpurr Lite edition. Everything here must work on the Cloudflare free plan.
+//
+// Two Workers share one D1 database:
+//   - openpurr (top level): the SDK API (/v1) only, kept small for fast cold starts;
+//   - openpurr-office (env "office"): store notifications, the scheduled jobs and the admin side.
+// Deploy both: pnpm deploy && pnpm deploy:office. Store credentials (APPLE_IAP_KEY,
+// GOOGLE_SERVICE_ACCOUNT, webhook secrets) are needed by both, so set each secret on both Workers.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "openpurr",
@@ -43,9 +48,8 @@
     { "name": "RATE_LIMIT_USER", "namespace_id": "1003", "simple": { "limit": 60, "period": 60 } }
   ],
 
-  // The scheduled job (src/scheduled.ts): storage cleanup hourly, retries every 5 minutes.
-  // Uses one of the free plan's 5 Cron Triggers.
-  "triggers": { "crons": ["*/5 * * * *"] },
+  // The SDK Worker runs no scheduled jobs; the back-office Worker does (env "office" below).
+  "triggers": { "crons": [] },
 
   "vars": {
     // "on" stores every SDK request in the D1 `capture` table (spike only).
@@ -57,6 +61,27 @@
   //   BENCH_TOKEN   bearer token for the /__capture endpoint (and /__bench on the bench Worker)
 
   "env": {
+    // Back-office Worker: store notifications, scheduled jobs, admin. `pnpm deploy:office`.
+    // Point App Store Server Notifications and Google's Pub/Sub push subscription at this Worker.
+    "office": {
+      "main": "src/office/index.ts",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "openpurr",
+          "database_id": "378b4252-db50-4e7a-97b4-ee66ea86fbe1",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "ratelimits": [
+        { "name": "RATE_LIMIT_IP", "namespace_id": "1005", "simple": { "limit": 300, "period": 60 } },
+        { "name": "RATE_LIMIT_USER", "namespace_id": "1006", "simple": { "limit": 60, "period": 60 } }
+      ],
+      "vars": { "CAPTURE": "off" },
+      // The scheduled job (src/scheduled.ts): storage cleanup and exchange rates hourly, webhook
+      // retries and snapshot backfill every 5 minutes. One of the free plan's 5 Cron Triggers.
+      "triggers": { "crons": ["*/5 * * * *"] }
+    },
     // Benchmark Worker: the same app plus /__bench and test-only keys, deployed separately as
     // `openpurr-bench` so none of it ships in production. `pnpm deploy:bench`.
     // Bindings don't inherit between environments, so they're repeated here.
