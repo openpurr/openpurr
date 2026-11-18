@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lite:
+    name: Lite (typecheck, tests, bundle budget)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Uses the pnpm version pinned in package.json's "packageManager".
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      # Runs inside workerd with a local D1. Test-only keys are generated on the fly.
+      - name: Test
+        run: pnpm test
+
+      # Fails if the production Worker bundle grows past its budget (CONTRIBUTING rule 6).
+      # Builds with `wrangler deploy --dry-run`, so no Cloudflare credentials are needed.
+      - name: Bundle budget
+        run: pnpm check:bundle

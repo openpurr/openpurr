@@ -19,7 +19,7 @@ Open an issue before starting large work, so we can agree on the approach first.
    - Never write on a read path.
    - Don't require Queues, Durable Objects or other paid-only features. Optional Paid-plan paths are fine.
 
-   CI will enforce these limits through budget tests.
+   CI runs typecheck, tests and a bundle-size budget on every pull request (`.github/workflows/ci.yml`). CPU and D1 budget tests will join them.
 4. **Keep Cloudflare behind adapters.** Use the `JobQueue`, `Scheduler`, `RateLimiter`, `Secrets` and `OAuthStore` interfaces rather than calling Workers APIs directly from core logic.
 5. **Don't use the Apple or Google Node SDKs.** They don't run in Workers. Call Google's REST APIs directly.
 6. **Keep the Worker bundle small.** Every fresh Worker isolate pays to load the bundle, out of the same 10 ms CPU budget as the request. An ASN.1 library alone cost about 5 ms.
@@ -35,11 +35,12 @@ Open an issue before starting large work, so we can agree on the approach first.
 ```sh
 nvm use
 pnpm install
-pnpm test        # Vitest inside the Workers runtime (workerd)
+pnpm test          # Vitest inside the Workers runtime (workerd)
 pnpm typecheck
+pnpm check:bundle  # production bundle stays under its size budget
 cp lite/.dev.vars.example lite/.dev.vars
 pnpm --filter @openpurr/lite db:migrate:local
-pnpm dev         # wrangler dev
+pnpm dev           # wrangler dev
 ```
 
 Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also refuses packages published in the last 24 hours; keep new pins at least a week old.

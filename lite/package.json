@@ -5,10 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy",
+    "deploy": "wrangler deploy --env=",
     "deploy:bench": "node scripts/gen-bench-fixtures.mjs --if-missing && wrangler deploy --env bench",
     "typecheck": "node scripts/gen-bench-fixtures.mjs --if-missing && tsc --noEmit",
     "test": "node scripts/gen-bench-fixtures.mjs --if-missing && vitest run",
+    "check:bundle": "node scripts/check-bundle.mjs",
     "db:migrate:local": "wrangler d1 migrations apply openpurr --local",
     "db:migrate:remote": "wrangler d1 migrations apply openpurr --remote",
     "bench:fixtures": "node scripts/gen-bench-fixtures.mjs"
