@@ -1,3 +1,8 @@
 # Local secrets for `wrangler dev`. Copy to .dev.vars (git-ignored).
 # Public SDK keys go in openpurr.config.yaml, not here.
 BENCH_TOKEN=change-me
+
+# Back-office Worker: derives the operator password pepper and the TOTP encryption key.
+# At least 32 random characters, e.g. `openssl rand -base64 32`. In production:
+#   wrangler secret put OPERATOR_SECRET --env office
+OPERATOR_SECRET=local-dev-only-change-me-0123456789abcdef

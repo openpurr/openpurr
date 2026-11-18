@@ -13,6 +13,12 @@ export interface Env {
   CAPTURE?: string;
   /** Bearer token for /__capture (and /__bench on the bench Worker). Those routes 404 when unset. */
   BENCH_TOKEN?: string;
+  /**
+   * Back-office Worker: at least 32 random characters. Derives the operator password pepper and
+   * the key that encrypts TOTP secrets (src/office/auth-crypto.ts). Changing it invalidates every
+   * operator password and TOTP enrollment (reset them with login links).
+   */
+  OPERATOR_SECRET?: string;
   // Store credentials (for example the App Store In-App Purchase key) are Worker secrets whose
   // names come from the config, so they're looked up by name rather than declared here.
 }
