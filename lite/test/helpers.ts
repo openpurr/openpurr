@@ -60,7 +60,8 @@ export const rawTestConfig = {
 
 export const testConfig = parseConfig(rawTestConfig);
 const appleRoots = [base64ToBytes(TEST_ROOT_CERT_B64)];
-export const testApp = buildApp({ config: testConfig, appleRoots });
+// No rate limits by default, so tests are deterministic; rate-limit.test.ts injects its own.
+export const testApp = buildApp({ config: testConfig, appleRoots, rateLimiters: () => ({}) });
 
 // --- App Store Server API ------------------------------------------------------------------
 
@@ -87,7 +88,28 @@ export function fakeAppleApi(routes: Record<string, (url: URL) => { status?: num
 export function appWithAppleApi(api: { fetch: typeof fetch }) {
   const raw = structuredClone(rawTestConfig) as any;
   raw.apps.ios.app_store_server_api = { issuer_id: API_ISSUER_ID, key_id: API_KEY_ID };
-  return buildApp({ config: parseConfig(raw), appleRoots, fetch: api.fetch });
+  return buildApp({ config: parseConfig(raw), appleRoots, fetch: api.fetch, rateLimiters: () => ({}) });
+}
+
+/** An app whose rate limiters allow `limit` requests per key, counting in `counts`. */
+export function appWithRateLimits(limit: { ip?: number; user?: number }) {
+  const counts = new Map<string, number>();
+  const limiter = (kind: string, max?: number) =>
+    max === undefined
+      ? undefined
+      : {
+          async allow(key: string) {
+            const k = `${kind}:${key}`;
+            counts.set(k, (counts.get(k) ?? 0) + 1);
+            return counts.get(k)! <= max;
+          },
+        };
+  const app = buildApp({
+    config: testConfig,
+    appleRoots,
+    rateLimiters: () => ({ ip: limiter("ip", limit.ip), user: limiter("user", limit.user) }),
+  });
+  return { app, counts };
 }
 
 /** The Worker env with the In-App Purchase key secret set. */
