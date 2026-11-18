@@ -18,7 +18,7 @@
 //   hmac                HMAC-SHA256 over a 2 KB webhook body
 //   pbkdf2              PBKDF2-SHA256, iterations from ?iter= (default 100000)
 
-import { Hono } from "hono";
+import { Hono } from "hono/tiny";
 import type { AppEnv } from "../env";
 import { verifyAppleJws } from "../lib/apple-jws";
 import { d1ChainStore } from "../lib/chain-store-d1";

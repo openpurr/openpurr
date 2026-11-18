@@ -18,7 +18,8 @@
 //   - 5xx when our config doesn't know the app or product, so Apple retries after the
 //     operator fixes the config.
 
-import { type Context, Hono } from "hono";
+import type { Context } from "hono";
+import { Hono } from "hono/tiny";
 import type { AppConfig } from "../config";
 import type { AppEnv } from "../env";
 import {

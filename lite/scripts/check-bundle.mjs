@@ -29,14 +29,24 @@ if (!file) throw new Error(`no bundle written to ${outdir}`);
 const bundle = join(outdir, file);
 const kib = statSync(bundle).size / 1024;
 
-// Load CPU: each sample in a fresh Node process, so nothing is cached between runs.
-const probe = `const t=process.cpuUsage();await import(${JSON.stringify(pathToFileURL(bundle).href)});const d=process.cpuUsage(t);console.log((d.user+d.system)/1000)`;
-const samples = Array.from({ length: 5 }, () =>
+// What a fresh isolate pays: load the bundle (which also builds the app) plus its first request.
+// Each sample runs in a fresh Node process. Node's own Request/Response are warmed up first,
+// because workerd has them built in. Not identical to Workers, but it tracks it.
+const probe = `
+  { const r = new Request("https://w/x", { headers: { a: "b" } }); new URL(r.url); await Response.json({}).text(); }
+  const cpu = () => { const u = process.cpuUsage(); return (u.user + u.system) / 1000; };
+  const t = cpu();
+  const { default: worker } = await import(${JSON.stringify(pathToFileURL(bundle).href)});
+  const db = { prepare: () => ({ bind: () => ({ first: async () => null }) }) };
+  const res = await worker.fetch(new Request("https://x/v1/subscribers/u1", { headers: { authorization: "Bearer appl_replace_with_a_long_random_string" } }), { DB: db }, { waitUntil() {} });
+  await res.text();
+  console.log(cpu() - t);`;
+const samples = Array.from({ length: 7 }, () =>
   Number(execFileSync(process.execPath, ["--input-type=module", "-e", probe], { encoding: "utf8" }).trim()),
 ).sort((a, b) => a - b);
 
 console.log(`production bundle: ${kib.toFixed(1)} KiB (budget ${MAX_KIB} KiB)`);
-console.log(`load CPU in Node, median of 5: ${samples[2].toFixed(2)} ms (informational)`);
+console.log(`fresh-isolate CPU in Node (load + first request), median of 7: ${samples[3].toFixed(2)} ms (informational)`);
 
 if (kib > MAX_KIB) {
   console.error(
