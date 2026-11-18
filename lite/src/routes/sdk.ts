@@ -29,6 +29,7 @@ import {
 } from "../ledger";
 import { AppleJwsError, verifyAppleJws } from "../lib/apple-jws";
 import { d1ChainStore } from "../lib/chain-store-d1";
+import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
 import { AppleApiError } from "../stores/apple-api";
 import { InvalidReceiptError, transactionIdFromAppReceipt } from "../stores/apple-receipt";
@@ -54,6 +55,26 @@ const error = (c: Ctx, status: 400 | 401 | 404 | 500 | 503, code: number, messag
 // Unauthenticated, iOS DEBUG builds of the SDK only. Failures are ignored by the SDK.
 sdk.get("/subscribers/:id/health_report_availability", (c) => c.json({ report_logs: false }));
 
+/**
+ * Over a rate limit. /receipts answers 503, never 429: a 4xx there makes Android acknowledge the
+ * purchase as handled, so it would never be retried. 503 keeps it queued on the device.
+ */
+function rateLimited(c: Ctx) {
+  c.header("Retry-After", "60");
+  if (c.req.path.endsWith("/receipts")) {
+    return error(c, 503, INTERNAL_SERVER_ERROR, "Too many requests; the purchase will be retried.");
+  }
+  return c.json({ code: UNKNOWN_ERROR, message: "Too many requests." }, 429);
+}
+
+// Per client IP, before the key check, so it also slows down anyone guessing keys.
+sdk.use("*", async (c, next) => {
+  const limiters = (c.get("deps").rateLimiters ?? cloudflareRateLimiters)(c.env);
+  const ip = c.req.header("cf-connecting-ip");
+  if (limiters.ip && ip && !(await limiters.ip.allow(ip))) return rateLimited(c);
+  await next();
+});
+
 // The public SDK key identifies the app (and so the store) for every request.
 sdk.use("*", async (c, next) => {
   const auth = c.req.header("authorization") ?? "";
@@ -61,6 +82,22 @@ sdk.use("*", async (c, next) => {
   const app = key ? c.get("deps").config.keys.get(key) : undefined;
   if (!app) return error(c, 401, INVALID_API_KEY, "Invalid API key.");
   c.set("app", app);
+  await next();
+});
+
+// Per app user ID: one user hammering the server (a runaway retry loop, say) can't use up the
+// whole app's budget. The SDK key is shared by every user of an app, so it can't be the key.
+sdk.use("*", async (c, next) => {
+  const limiter = (c.get("deps").rateLimiters ?? cloudflareRateLimiters)(c.env).user;
+  if (!limiter) return next();
+  let userId = /\/subscribers\/([^/]+)/.exec(c.req.path)?.[1];
+  if (userId === "identify") userId = undefined;
+  if (!userId && c.req.method === "POST") {
+    // Hono caches the parsed body, so the route handler can still read it.
+    const body = await c.req.json<{ app_user_id?: unknown }>().catch(() => null);
+    if (typeof body?.app_user_id === "string") userId = body.app_user_id;
+  }
+  if (userId && !(await limiter.allow(`${c.get("app").id}:${safeDecode(userId)}`))) return rateLimited(c);
   await next();
 });
 
@@ -365,4 +402,13 @@ async function customerInfo(c: Ctx, appUserId: string) {
     config: c.get("deps").config,
     requestStore: c.get("app").store,
   });
+}
+
+/** iOS sends user IDs raw, Android percent-encoded; normalize so both count as one user. */
+function safeDecode(s: string) {
+  try {
+    return decodeURIComponent(s);
+  } catch {
+    return s;
+  }
 }

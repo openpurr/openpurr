@@ -78,8 +78,8 @@ bench.use("*", async (c, next) => {
 bench.get("/", (c) => c.json({ ops: Object.keys(ops) }));
 
 bench.get("/ratelimit", async (c) => {
-  if (!c.env.RATE_LIMITER) return c.json({ available: false, reason: "binding not present" });
-  const { success } = await c.env.RATE_LIMITER.limit({ key: "bench" });
+  if (!c.env.RATE_LIMIT_IP) return c.json({ available: false, reason: "binding not present" });
+  const { success } = await c.env.RATE_LIMIT_IP.limit({ key: "bench" });
   return c.json({ available: true, success });
 });
 

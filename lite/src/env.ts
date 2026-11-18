@@ -1,8 +1,12 @@
 import type { AppConfig, Config } from "./config";
+import type { RateLimiters } from "./lib/rate-limit";
 
 export interface Env {
   DB: D1Database;
-  RATE_LIMITER?: RateLimit;
+  /** Per client IP across the SDK endpoints (limit set in wrangler.jsonc). */
+  RATE_LIMIT_IP?: RateLimit;
+  /** Per app user ID on the subscriber endpoints (limit set in wrangler.jsonc). */
+  RATE_LIMIT_USER?: RateLimit;
   /** "on" to store every SDK request in the `capture` table (spike tooling). */
   CAPTURE?: string;
   /** Bearer token for /__capture (and /__bench on the bench Worker). Those routes 404 when unset. */
@@ -18,6 +22,8 @@ export interface Deps {
   appleRoots: Uint8Array[];
   /** fetch for store APIs. Tests substitute a fake; production uses the global fetch. */
   fetch?: typeof fetch;
+  /** Rate limiters. Tests substitute fakes; production uses the wrangler.jsonc bindings. */
+  rateLimiters?: (env: Env) => RateLimiters;
 }
 
 export type AppEnv = { Bindings: Env; Variables: { deps: Deps; app: AppConfig } };
