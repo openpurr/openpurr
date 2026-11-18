@@ -9,8 +9,5 @@ dist/
 *.log
 .DS_Store
 
-# Raw SDK captures can contain user IDs and receipts; only scrubbed copies go in spec/
 spec/captures/raw/
-
-# Internal design docs and roadmap stay out of the public repo
 Specs/
