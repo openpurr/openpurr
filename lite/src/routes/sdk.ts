@@ -13,7 +13,7 @@
 import { type Context, Hono } from "hono";
 import { type AttributeUpdate, enforceCustomLimit, parseAttributes, writeAttributes } from "../attributes";
 import type { AppConfig } from "../config";
-import { buildCustomerInfo } from "../customer-info";
+import { renderCustomerInfo } from "../customer-info";
 import { introEligibility } from "../intro-eligibility";
 import type { AppEnv } from "../env";
 import {
@@ -35,6 +35,7 @@ import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
 import { AppleApiError } from "../stores/apple-api";
 import { receiptPurchaseEvents } from "../stores/apple-events";
+import { invalidateSnapshot, readCustomerInfo, refreshSnapshot } from "../snapshot";
 import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
 import { AppleApiNotConfigured, appleClients, syncFromTransactionId, syncStatuses } from "../stores/apple-sync";
@@ -106,7 +107,15 @@ sdk.use("*", async (c, next) => {
   await next();
 });
 
-sdk.get("/subscribers/:id", async (c) => c.json(await customerInfo(c, c.req.param("id"))));
+// One D1 query when the customer's snapshot is current (src/snapshot.ts). Never a 304: the SDK
+// may have nothing cached to fall back on (spec/sdk-wire-contract.md).
+sdk.get("/subscribers/:id", async (c) => {
+  const { body, etag } = await readCustomerInfo(c.env.DB, c.get("deps").config, c.req.param("id"), {
+    requestStore: c.get("app").store,
+  });
+  if (etag) c.header("ETag", etag);
+  return c.json(body);
+});
 
 sdk.post("/receipts", async (c) => {
   const body = await c.req.json<ReceiptBody>().catch(() => null);
@@ -120,9 +129,10 @@ sdk.post("/receipts", async (c) => {
   // Unsynced attributes ride along with receipts. Invalid ones are skipped: they must never
   // fail a purchase.
   const { updates } = parseAttributes(body.attributes);
-  await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates);
+  const customerId = await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates);
 
-  const info = await customerInfo(c, body.app_user_id);
+  // Rebuild the snapshot now and answer with it, so the device gets exactly what reads will serve.
+  const info = await freshCustomerInfo(c, customerId, body.app_user_id);
   const posted = result.transactions.find((t) => t.transaction_id === result.postedTransactionId);
   if (app.store === "play_store" && posted) {
     // Android consumes a purchase only when told to (spec/sdk-wire-contract.md, rule 5).
@@ -162,6 +172,9 @@ async function recordForCustomer(
   for (const t of chains.values()) writes.push(assignOwner(db, t, customer.id));
   for (const s of states) writes.push(upsertSubscriptionState(db, s));
   if (attributes.size) writes.push(writeAttributes(db, customer.id, attributes));
+  // Snapshots of everyone whose CustomerInfo changes: this customer, and anyone losing a purchase.
+  const affected = new Set([customer.id, ...[...owners.values()].map((o) => o.id)]);
+  for (const id of affected) if (!merged.has(id)) writes.push(invalidateSnapshot(db, id));
 
   // Webhook events, in the same batch: purchase events for recent transactions, and TRANSFER
   // when a named user loses a purchase to this customer.
@@ -210,6 +223,10 @@ async function recordForCustomer(
 
   if (writes.length) await db.batch(writes);
   if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
+  // Customers who lost a purchase get fresh snapshots in the background.
+  const others = [...affected].filter((id) => id !== customer.id && !merged.has(id));
+  if (others.length) c.executionCtx.waitUntil(Promise.all(others.map((id) => refreshSnapshot(db, config, id))));
+  return customer.id;
 }
 
 // logIn. 201 tells the SDK the user was created; 200 that it already existed.
@@ -222,18 +239,21 @@ sdk.post("/subscribers/identify", async (c) => {
   const db = c.env.DB;
   const [from, to] = await Promise.all([findCustomer(db, current), findCustomer(db, next)]);
   let created = false;
+  let customerId: string;
   if (to) {
     // Logging in to an existing account: an anonymous user's purchases come along.
     if (from && from.id !== to.id && isAnonymous(current)) await db.batch(mergeCustomers(db, from.id, to.id));
+    customerId = to.id;
   } else if (from && isAnonymous(current)) {
     // A new ID for an anonymous user who already exists: alias it, keeping their purchases.
     await addAlias(db, next, from.id).run();
+    customerId = from.id;
     created = true;
   } else {
-    await ensureCustomer(db, next);
+    customerId = (await ensureCustomer(db, next)).id;
     created = true;
   }
-  return c.json(await customerInfo(c, next), created ? 201 : 200);
+  return c.json(await freshCustomerInfo(c, customerId, next), created ? 201 : 200);
 });
 
 // Android only: Block Store recovery of an anonymous ID. Body is ignored by the SDK.
@@ -491,17 +511,23 @@ function googleReceipt(body: ReceiptBody, app: AppConfig): Receipt | Failure {
   return { transactions: [row], states: [], postedTransactionId: row.transaction_id };
 }
 
-/** Read-only: never writes, per the free-plan rule. Unknown users get a fresh, empty body. */
-async function customerInfo(c: Ctx, appUserId: string) {
-  const { customer, transactions, states } = await loadCustomer(c.env.DB, appUserId);
-  return buildCustomerInfo({
-    appUserId,
-    customer,
-    transactions,
-    states,
-    config: c.get("deps").config,
-    requestStore: c.get("app").store,
-  });
+/**
+ * After a write: rebuilds the customer's snapshot and renders it. Falls back to a computed read
+ * if the rebuild fails (the snapshot is then simply missing until the next write or backfill).
+ */
+async function freshCustomerInfo(c: Ctx, customerId: string, appUserId: string) {
+  const { config } = c.get("deps");
+  const requestStore = c.get("app").store;
+  try {
+    const fresh = await refreshSnapshot(c.env.DB, config, customerId);
+    if (fresh) {
+      c.header("ETag", fresh.etag);
+      return renderCustomerInfo(fresh.snapshot, config, { requestStore });
+    }
+  } catch (err) {
+    console.error("Snapshot rebuild failed; serving a computed CustomerInfo.", err);
+  }
+  return (await readCustomerInfo(c.env.DB, config, appUserId, { requestStore })).body;
 }
 
 /** iOS sends user IDs raw, Android percent-encoded; normalize so both count as one user. */

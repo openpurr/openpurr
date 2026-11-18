@@ -10,10 +10,15 @@
 //     logged in or synced attributes since. Nothing is lost that matters: they own no
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired.
-// Every run (5 minutes): retry webhook deliveries that are due.
+// Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
+// for customers that lack one (created before snapshots existed, or built from an older config).
 
 import type { Deps, Env } from "./env";
+import { refreshSnapshot } from "./snapshot";
 import { retryDueDeliveries } from "./webhooks";
+
+/** Snapshots built per run. Each costs about 4 D1 queries; the free plan allows 50 per run. */
+export const SNAPSHOTS_PER_RUN = 8;
 
 export const RETENTION = {
   notificationPayloadDays: 30,
@@ -66,6 +71,7 @@ const pruneInactiveCustomers: Task = async (env, now) => {
   if (!results.length) return { task: "prune-inactive-customers", rows: 0 };
   const ids = JSON.stringify(results.map((r) => r.id));
   await env.DB.batch([
+    env.DB.prepare("DELETE FROM customer_snapshot WHERE customer_id IN (SELECT value FROM json_each(?))").bind(ids),
     env.DB.prepare("DELETE FROM subscriber_attribute WHERE customer_id IN (SELECT value FROM json_each(?))").bind(ids),
     env.DB.prepare("DELETE FROM customer_alias WHERE customer_id IN (SELECT value FROM json_each(?))").bind(ids),
     env.DB.prepare("DELETE FROM customer WHERE id IN (SELECT value FROM json_each(?))").bind(ids),
@@ -87,6 +93,19 @@ function webhookRetries(deps: Deps): Task {
   });
 }
 
+function snapshotBackfill(deps: Deps): Task {
+  return async (env) => {
+    const { results } = await env.DB.prepare(
+      `SELECT c.id FROM customer c LEFT JOIN customer_snapshot s ON s.customer_id = c.id
+       WHERE s.customer_id IS NULL OR s.config_version != ? LIMIT ${SNAPSHOTS_PER_RUN}`,
+    )
+      .bind(deps.config.version)
+      .all<{ id: string }>();
+    for (const { id } of results) await refreshSnapshot(env.DB, deps.config, id);
+    return { task: "backfill-snapshots", rows: results.length };
+  };
+}
+
 /** Runs the tasks due at `scheduledTime`. Hourly tasks run in the first 5-minute slot of each hour. */
 export async function runScheduled(
   env: Env,
@@ -94,7 +113,7 @@ export async function runScheduled(
   opts: { all?: boolean; deps?: Deps } = {},
 ): Promise<TaskResult[]> {
   const due: Task[] = [];
-  if (opts.deps) due.push(webhookRetries(opts.deps));
+  if (opts.deps) due.push(webhookRetries(opts.deps), snapshotBackfill(opts.deps));
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) due.push(...HOURLY_TASKS);
 
   const results: TaskResult[] = [];

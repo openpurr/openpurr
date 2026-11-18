@@ -107,6 +107,35 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
   };
 }
 
+/** Like loadCustomer, by internal customer ID (for rebuilding snapshots). One D1 round trip. */
+export async function loadCustomerById(db: D1Database, customerId: string) {
+  const [customer, transactions, states] = await db.batch([
+    db.prepare("SELECT id, app_user_id, first_seen FROM customer WHERE id = ?").bind(customerId),
+    db
+      .prepare(
+        `SELECT ${TX_COLUMNS} FROM purchase_owner o
+         JOIN store_transaction t ON t.store = o.store AND t.original_transaction_id = o.original_transaction_id
+         WHERE o.customer_id = ?`,
+      )
+      .bind(customerId),
+    db
+      .prepare(
+        `SELECT s.store, s.original_transaction_id, s.status, s.auto_renew, s.auto_renew_product_id,
+                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at
+         FROM purchase_owner o
+         JOIN subscription_state s ON s.store = o.store AND s.original_transaction_id = o.original_transaction_id
+         WHERE o.customer_id = ?`,
+      )
+      .bind(customerId),
+  ]);
+  const row = customer!.results[0] as CustomerRecord | undefined;
+  return {
+    customer: row ? toCustomer(row) : null,
+    transactions: transactions!.results as unknown as TransactionRow[],
+    states: states!.results as unknown as SubscriptionStateRow[],
+  };
+}
+
 export async function findCustomer(db: D1Database, appUserId: string): Promise<Customer | null> {
   const row = await db
     .prepare(
@@ -160,6 +189,7 @@ export function mergeCustomers(db: D1Database, from: string, into: string) {
       )
       .bind(into, from),
     db.prepare("DELETE FROM subscriber_attribute WHERE customer_id = ?").bind(from),
+    db.prepare("DELETE FROM customer_snapshot WHERE customer_id IN (?, ?)").bind(from, into),
     db.prepare("DELETE FROM customer WHERE id = ?").bind(from),
   ];
 }

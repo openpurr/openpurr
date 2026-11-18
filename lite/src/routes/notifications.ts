@@ -39,6 +39,7 @@ import {
   appleSubscriptionState,
   appleTransactionRow,
 } from "../stores/apple";
+import { invalidateOwnerSnapshot, refreshSnapshot } from "../snapshot";
 import { appleNotificationEvents } from "../stores/apple-events";
 import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 
@@ -139,6 +140,9 @@ notifications.post("/apple", async (c) => {
     }
   }
   if (renewal) writes.push(upsertSubscriptionState(db, appleSubscriptionState(renewal, data.status)));
+  // Whoever owns this purchase now has different CustomerInfo: drop their snapshot in this batch.
+  const chain = row?.original_transaction_id ?? renewal?.originalTransactionId;
+  if (chain) writes.push(invalidateOwnerSnapshot(db, "app_store", String(chain)));
   writes.push(
     recordNotification(db, {
       store: "app_store",
@@ -156,6 +160,12 @@ notifications.post("/apple", async (c) => {
   // record land together.
   await db.batch(writes);
   if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
+  // Rebuild the owner's snapshot in the background; until then, reads compute it.
+  if (chain) {
+    c.executionCtx.waitUntil(
+      purchaseOwner(db, "app_store", String(chain)).then((owner) => (owner ? refreshSnapshot(db, config, owner.id) : null)),
+    );
+  }
   return reply(c, 200, "OK");
 });
 
