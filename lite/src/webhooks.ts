@@ -93,8 +93,9 @@ export function eventBody(config: Config, input: EventInput, id: string) {
             transaction_id: t.transaction_id,
             original_transaction_id: t.original_transaction_id,
             is_family_share: t.ownership_type === "FAMILY_SHARED",
-            // Apple's storefront is ISO 3166-1 alpha-3; RevenueCat sends alpha-2.
-            country_code: t.store === "app_store" ? alpha2FromAlpha3(t.storefront) : null,
+            // Apple's storefront is ISO 3166-1 alpha-3; Google's regionCode is already alpha-2,
+            // which is what RevenueCat sends.
+            country_code: t.store === "app_store" ? alpha2FromAlpha3(t.storefront) : (t.storefront ?? null),
             currency: t.currency,
             price: input.priceUsd ?? (t.currency === "USD" ? amount : null),
             price_in_purchased_currency: amount,

@@ -50,7 +50,9 @@ type StateLookup = (t: TransactionRow) => SubscriptionStateRow | undefined;
 function graceEnd(t: TransactionRow, state: SubscriptionStateRow | undefined): number | null {
   if (t.product_type !== "subscription" || t.revoked_at !== null || t.expires_at === null || !state) return null;
   const end = state.grace_period_expires_at;
-  return state.status === APPLE_STATUS.GRACE_PERIOD && end !== null && end > t.expires_at ? end : null;
+  // Apple reports the grace end separately (after expires_date); Google extends expiryTime itself
+  // to the end of grace, so there the two are equal.
+  return state.status === APPLE_STATUS.GRACE_PERIOD && end !== null && end >= t.expires_at ? end : null;
 }
 
 /** When access from this transaction ends: its expiry, extended by grace, cut short by a refund. Null = never. */
@@ -141,7 +143,7 @@ export function computeSnapshot(args: {
       billing_issues_detected_at: iso(state?.billing_issue_detected_at ?? null),
       grace_period_expires_date: iso(graceEnd(t, state)),
       refunded_at: iso(t.revoked_at),
-      auto_resume_date: null,
+      auto_resume_date: iso(state?.auto_resume_at ?? null),
       ...(t.price_micros !== null && t.currency ? { price: { amount: t.price_micros / 1e6, currency: t.currency } } : {}),
       ...(t.base_plan_id ? { product_plan_identifier: t.base_plan_id } : {}),
     };

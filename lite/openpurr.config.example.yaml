@@ -38,9 +38,24 @@ apps:
     package_name: com.example.myapp
     sdk_keys:
       - goog_replace_with_a_long_random_string
-    # Google Play validation arrives in a later release. Until then, purchases from this app are
-    # refused (and stay queued on the device) unless this is true. Development only: with it on,
-    # anyone with the public SDK key could grant themselves entitlements.
+    # Google Play Developer API access, used to verify every purchase, acknowledge it, and follow
+    # Real-time Developer Notifications. Without it, purchases from this app are refused (and stay
+    # queued on the device).
+    #   1. In Google Cloud, create a service account and a JSON key. In Play Console, invite the
+    #      service account under Users and permissions with "View app information", "View financial
+    #      data" (for prices) and "Manage orders and subscriptions".
+    #   2. Store the JSON key as a Worker secret: wrangler secret put GOOGLE_SERVICE_ACCOUNT
+    #   3. For notifications: create a Pub/Sub topic, set it in Play Console > Monetization setup >
+    #      Real-time developer notifications, and add a PUSH subscription to
+    #      https://<your worker>/notifications/google with authentication enabled, using a service
+    #      account you name below.
+    # google_play_api:
+    #   service_account_secret: GOOGLE_SERVICE_ACCOUNT        # the default
+    #   pubsub_push_account: rtdn-push@my-project.iam.gserviceaccount.com
+    #   # pubsub_audience: https://...                        # if you set a custom audience
+    #
+    # Development only, and only without google_play_api: accept purchases unverified. Anyone with
+    # the public SDK key could then grant themselves entitlements.
     # allow_unverified_purchases: true
     products:
       pro: { type: subscription, base_plans: [monthly, annual] }

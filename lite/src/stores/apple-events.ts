@@ -103,6 +103,8 @@ function renewalExtra(n: AppleNotification, opts: { previousPeriodType?: string 
 export function receiptPurchaseEvents(t: TransactionRow, now: number, recentMs = 72 * 3600_000): PlannedEvent[] {
   if (t.revoked_at !== null || t.purchased_at < now - recentMs) return [];
   if (t.product_type !== "subscription") return [{ type: "NON_RENEWING_PURCHASE", dedupeKey: purchaseKey(t) }];
-  const first = t.transaction_id === t.original_transaction_id;
+  // A subscription's first period: on Apple the transaction is its own original; on Google the
+  // order ID has no renewal suffix ("GPA.1234-5678-9012-34567", renewals end "..0", "..1"...).
+  const first = t.store === "play_store" ? !/\.\.\d+$/.test(t.transaction_id) : t.transaction_id === t.original_transaction_id;
   return [{ type: first ? "INITIAL_PURCHASE" : "RENEWAL", dedupeKey: purchaseKey(t) }];
 }

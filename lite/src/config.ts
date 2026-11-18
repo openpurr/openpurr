@@ -31,6 +31,15 @@ export interface AppConfig {
   packageName?: string;
   sdkKeys: string[];
   products: Map<string, ProductConfig>;
+  /** Google Play Developer API access (Google Play apps). Without it, Play purchases can't be verified. */
+  googlePlayApi?: {
+    /** Name of the Worker secret holding the service account's JSON key. */
+    serviceAccountSecret: string;
+    /** The service account Pub/Sub uses to sign push requests to /notifications/google. */
+    pubsubPushAccount?: string;
+    /** The audience Pub/Sub puts in those tokens; defaults to the notification URL. */
+    pubsubAudience?: string;
+  };
   /** App Store Server API access. Without it, StoreKit 1 receipts can't be resolved. */
   appStoreServerApi?: {
     issuerId: string;
@@ -75,6 +84,7 @@ export const WEBHOOK_EVENT_TYPES = [
   "BILLING_ISSUE",
   "PRODUCT_CHANGE",
   "SUBSCRIPTION_EXTENDED",
+  "SUBSCRIPTION_PAUSED",
   "REFUND_REVERSED",
   "TRANSFER",
   "PRICE_INCREASE_CONSENT_REQUIRED",
@@ -147,7 +157,7 @@ export function parseConfig(raw: unknown): Config {
     }
     allowOnly(
       a,
-      ["store", "bundle_id", "package_name", "sdk_keys", "products", "allow_unverified_purchases", "app_store_server_api"],
+      ["store", "bundle_id", "package_name", "sdk_keys", "products", "allow_unverified_purchases", "app_store_server_api", "google_play_api"],
       at,
       fail,
     );
@@ -195,6 +205,30 @@ export function parseConfig(raw: unknown): Config {
         }
         if (nonEmptyString(api.issuer_id) && nonEmptyString(api.key_id) && typeof secret === "string") {
           app.appStoreServerApi = { issuerId: api.issuer_id, keyId: api.key_id, privateKeySecret: secret };
+        }
+      }
+    }
+    if (a.google_play_api !== undefined) {
+      const g = a.google_play_api;
+      const gat = `${at}.google_play_api`;
+      if (store !== "play_store") fail(gat, "only play_store apps use the Google Play Developer API");
+      else if (!isObject(g)) fail(gat, "must be a mapping with service_account_secret");
+      else {
+        allowOnly(g, ["service_account_secret", "pubsub_push_account", "pubsub_audience"], gat, fail);
+        const secret = g.service_account_secret ?? "GOOGLE_SERVICE_ACCOUNT";
+        if (typeof secret !== "string" || !/^[A-Z][A-Z0-9_]{0,63}$/.test(secret)) {
+          fail(`${gat}.service_account_secret`, "must be a Worker secret name like GOOGLE_SERVICE_ACCOUNT (the key itself never goes here)");
+        }
+        if (g.pubsub_push_account !== undefined && (typeof g.pubsub_push_account !== "string" || !/^[^@\s]+@[^@\s]+\.iam\.gserviceaccount\.com$/.test(g.pubsub_push_account))) {
+          fail(`${gat}.pubsub_push_account`, "must be a service account email, like rtdn-push@my-project.iam.gserviceaccount.com");
+        }
+        if (g.pubsub_audience !== undefined && typeof g.pubsub_audience !== "string") fail(`${gat}.pubsub_audience`, "must be a string");
+        if (typeof secret === "string") {
+          app.googlePlayApi = {
+            serviceAccountSecret: secret,
+            ...(typeof g.pubsub_push_account === "string" ? { pubsubPushAccount: g.pubsub_push_account } : {}),
+            ...(typeof g.pubsub_audience === "string" ? { pubsubAudience: g.pubsub_audience } : {}),
+          };
         }
       }
     }

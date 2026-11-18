@@ -10,13 +10,15 @@
 //     logged in or synced attributes since. Nothing is lost that matters: they own no
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired;
-//   - fetch exchange rates once a day's are published (src/fx.ts).
+//   - fetch exchange rates once a day's are published (src/fx.ts);
+//   - Google Play: retry failed acknowledgements, and poll voided purchases for missed refunds.
 // Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
 // for customers that lack one (created before snapshots existed, or built from an older config).
 
 import type { Deps, Env } from "./env";
 import { ecbProvider, refreshRates } from "./fx";
 import { refreshSnapshot } from "./snapshot";
+import { pollVoidedPurchases, retryPlayAcknowledgements } from "./stores/google-jobs";
 import { retryDueDeliveries } from "./webhooks";
 
 /** Snapshots built per run. Each costs about 4 D1 queries; the free plan allows 50 per run. */
@@ -108,6 +110,14 @@ function snapshotBackfill(deps: Deps): Task {
   };
 }
 
+function playAcks(deps: Deps): Task {
+  return async (env, now) => ({ task: "retry-play-acknowledgements", rows: await retryPlayAcknowledgements(env, deps, now) });
+}
+
+function playVoided(deps: Deps): Task {
+  return async (env, now) => ({ task: "poll-play-voided-purchases", rows: await pollVoidedPurchases(env, deps, now) });
+}
+
 function exchangeRates(deps: Deps): Task {
   return async (env, now) => ({ task: "refresh-exchange-rates", rows: await refreshRates(env, deps.fetch ?? fetch, now, deps.fx ?? ecbProvider) });
 }
@@ -122,7 +132,7 @@ export async function runScheduled(
   if (opts.deps) due.push(webhookRetries(opts.deps), snapshotBackfill(opts.deps));
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) {
     due.push(...HOURLY_TASKS);
-    if (opts.deps) due.push(exchangeRates(opts.deps));
+    if (opts.deps) due.push(exchangeRates(opts.deps), playAcks(opts.deps), playVoided(opts.deps));
   }
 
   const results: TaskResult[] = [];
