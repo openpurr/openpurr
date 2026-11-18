@@ -45,15 +45,28 @@ export interface AppleApiCredentials {
   privateKeyPem: string;
 }
 
+const appleTokenCache = new Map<string, { token: string; exp: number }>();
+
+/**
+ * App Store Server API bearer token. Valid for 50 minutes (Apple allows up to 60) and reused
+ * per isolate until 5 minutes before expiry, so most API calls cost no signing CPU.
+ */
 export async function mintAppleApiToken(c: AppleApiCredentials, opts: { noCache?: boolean } = {}) {
-  const key = await importKey(c.privateKeyPem, "ES256", !!opts.noCache);
   const now = Math.floor(Date.now() / 1000);
-  return signJwt(
+  const cacheKey = `${c.issuerId}:${c.keyId}:${c.bundleId}`;
+  const cached = opts.noCache ? undefined : appleTokenCache.get(cacheKey);
+  if (cached && cached.exp - now > 5 * 60) return cached.token;
+
+  const key = await importKey(c.privateKeyPem, "ES256", !!opts.noCache);
+  const exp = now + 50 * 60;
+  const token = await signJwt(
     "ES256",
     key,
     { kid: c.keyId, typ: "JWT" },
-    { iss: c.issuerId, iat: now, exp: now + 50 * 60, aud: "appstoreconnect-v1", bid: c.bundleId },
+    { iss: c.issuerId, iat: now, exp, aud: "appstoreconnect-v1", bid: c.bundleId },
   );
+  if (!opts.noCache) appleTokenCache.set(cacheKey, { token, exp });
+  return token;
 }
 
 export interface GoogleServiceAccount {

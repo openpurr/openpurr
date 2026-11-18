@@ -13,7 +13,8 @@
     "db:migrate:local": "wrangler d1 migrations apply openpurr --local",
     "db:migrate:remote": "wrangler d1 migrations apply openpurr --remote",
     "bench:fixtures": "node scripts/gen-bench-fixtures.mjs",
-    "config": "node scripts/build-config.mjs"
+    "config": "node scripts/build-config.mjs",
+    "apple:test-notification": "node scripts/apple-test-notification.mjs"
   },
   "dependencies": {
     "hono": "4.13.17"

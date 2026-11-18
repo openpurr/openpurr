@@ -173,6 +173,23 @@ export function recordTransaction(db: D1Database, tx: NewTransaction, customerId
   return [upsertTransaction(db, tx, now), assignOwner(db, tx, customerId, now)];
 }
 
+/** Owners of several purchase chains at once (one query). Chains nobody owns are absent. */
+export async function purchaseOwners(db: D1Database, store: Store, originalTransactionIds: string[]) {
+  const owners = new Map<string, Customer & { anonymousOnly: boolean }>();
+  if (!originalTransactionIds.length) return owners;
+  const { results } = await db
+    .prepare(
+      `SELECT o.original_transaction_id, c.id, c.app_user_id, c.first_seen,
+              (SELECT count(*) FROM customer_alias a WHERE a.customer_id = c.id AND a.app_user_id NOT LIKE '$RCAnonymousID:%') AS named
+       FROM purchase_owner o JOIN customer c ON c.id = o.customer_id
+       WHERE o.store = ? AND o.original_transaction_id IN (SELECT value FROM json_each(?))`,
+    )
+    .bind(store, JSON.stringify(originalTransactionIds))
+    .all<CustomerRecord & { original_transaction_id: string; named: number }>();
+  for (const r of results) owners.set(r.original_transaction_id, { ...toCustomer(r), anonymousOnly: r.named === 0 });
+  return owners;
+}
+
 /**
  * Upserts a transaction without touching ownership. Store notifications use this: a
  * notification can arrive before the app has posted the purchase, and then nobody owns it
@@ -222,7 +239,13 @@ export function upsertTransaction(db: D1Database, tx: NewTransaction, now = Date
     );
 }
 
-function assignOwner(db: D1Database, tx: NewTransaction, customerId: string, now: number) {
+/** Assigns a purchase chain to a customer (a transfer, if someone else owned it). */
+export function assignOwner(
+  db: D1Database,
+  tx: Pick<NewTransaction, "store" | "original_transaction_id" | "app_id">,
+  customerId: string,
+  now = Date.now(),
+) {
   return db
     .prepare(
       `INSERT INTO purchase_owner (store, original_transaction_id, customer_id, app_id, updated_at)
