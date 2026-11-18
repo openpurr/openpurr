@@ -9,11 +9,13 @@
 //   - delete customers who never purchased, were first seen over 90 days ago and haven't
 //     logged in or synced attributes since. Nothing is lost that matters: they own no
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
-//   - forget verified Apple certificate chains that have expired.
+//   - forget verified Apple certificate chains that have expired;
+//   - fetch exchange rates once a day's are published (src/fx.ts).
 // Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
 // for customers that lack one (created before snapshots existed, or built from an older config).
 
 import type { Deps, Env } from "./env";
+import { ecbProvider, refreshRates } from "./fx";
 import { refreshSnapshot } from "./snapshot";
 import { retryDueDeliveries } from "./webhooks";
 
@@ -106,6 +108,10 @@ function snapshotBackfill(deps: Deps): Task {
   };
 }
 
+function exchangeRates(deps: Deps): Task {
+  return async (env, now) => ({ task: "refresh-exchange-rates", rows: await refreshRates(env, deps.fetch ?? fetch, now, deps.fx ?? ecbProvider) });
+}
+
 /** Runs the tasks due at `scheduledTime`. Hourly tasks run in the first 5-minute slot of each hour. */
 export async function runScheduled(
   env: Env,
@@ -114,7 +120,10 @@ export async function runScheduled(
 ): Promise<TaskResult[]> {
   const due: Task[] = [];
   if (opts.deps) due.push(webhookRetries(opts.deps), snapshotBackfill(opts.deps));
-  if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) due.push(...HOURLY_TASKS);
+  if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) {
+    due.push(...HOURLY_TASKS);
+    if (opts.deps) due.push(exchangeRates(opts.deps));
+  }
 
   const results: TaskResult[] = [];
   for (const task of due) {

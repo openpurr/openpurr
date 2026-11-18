@@ -1,9 +1,9 @@
 // Outbound webhooks: RevenueCat-shaped events, delivered to the endpoints in the config.
 //
 // Body: {"api_version": "1.0", "event": {...}}, with RevenueCat's field names, so existing
-// RevenueCat webhook handlers work unchanged. Fields we can't know yet are null, which
-// RevenueCat's docs allow for unknown values: price in USD when the purchase wasn't in USD
-// (needs exchange rates).
+// RevenueCat webhook handlers work unchanged. `price` is in USD, converted at the purchase date's
+// exchange rate (src/fx.ts); it's null for currencies without a rate, which RevenueCat's docs
+// allow for unknown prices.
 //
 // Delivery:
 //   - The event and one delivery row per matching endpoint are written in the SAME D1 batch as
@@ -20,6 +20,7 @@
 import { type Config, entitlementsFor, type WebhookConfig, type WebhookEventType } from "./config";
 import type { Env } from "./env";
 import type { TransactionRow } from "./ledger";
+import { toUsd } from "./fx";
 import { alpha2FromAlpha3 } from "./lib/countries";
 
 export interface EventCustomer {
@@ -44,6 +45,8 @@ export interface EventInput {
   extra?: Record<string, unknown>;
   /** Refund events report a negative price. */
   negativePrice?: boolean;
+  /** The price in USD; looked up by enqueueEvent. */
+  priceUsd?: number | null;
   now?: number;
 }
 
@@ -93,7 +96,7 @@ export function eventBody(config: Config, input: EventInput, id: string) {
             // Apple's storefront is ISO 3166-1 alpha-3; RevenueCat sends alpha-2.
             country_code: t.store === "app_store" ? alpha2FromAlpha3(t.storefront) : null,
             currency: t.currency,
-            price: t.currency === "USD" ? amount : null,
+            price: input.priceUsd ?? (t.currency === "USD" ? amount : null),
             price_in_purchased_currency: amount,
             tax_percentage: null,
             commission_percentage: null,
@@ -112,11 +115,20 @@ export function eventBody(config: Config, input: EventInput, id: string) {
  * ledger change. Empty if no endpoint wants this event. If the dedupe key was already used,
  * the event insert is ignored and so are its deliveries.
  */
-export function enqueueEvent(db: D1Database, config: Config, input: EventInput): { id: string; statements: D1PreparedStatement[] } {
+export async function enqueueEvent(
+  db: D1Database,
+  config: Config,
+  input: EventInput,
+): Promise<{ id: string; statements: D1PreparedStatement[] }> {
   const endpoints = webhooksFor(config, input.type, input.environment);
   if (!endpoints.length) return { id: "", statements: [] };
   const id = crypto.randomUUID();
   const now = input.now ?? Date.now();
+  const t = input.transaction;
+  if (t && input.priceUsd === undefined && t.price_micros !== null) {
+    const amount = ((input.negativePrice ? -1 : 1) * t.price_micros) / 1e6;
+    input = { ...input, priceUsd: await toUsd(db, amount, t.currency, t.purchased_at) };
+  }
   const body = JSON.stringify(eventBody(config, input, id));
   return {
     id,
