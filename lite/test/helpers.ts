@@ -6,7 +6,7 @@ import { env } from "cloudflare:workers";
 import { buildApp } from "../src/app";
 import { TEST_LEAF_KEY_PEM, TEST_ROOT_CERT_B64, TEST_X5C } from "../src/bench/fixtures.generated";
 import { parseConfig } from "../src/config";
-import type { AppleTransaction } from "../src/stores/apple";
+import type { AppleNotification, AppleRenewalInfo, AppleTransaction } from "../src/stores/apple";
 import { base64ToBytes, bytesToBase64Url, pemToDer } from "../src/lib/der";
 
 export const IOS_KEY = "appl_test_ios_0123456789";
@@ -96,11 +96,19 @@ let leafKey: Promise<CryptoKey> | undefined;
 const DAY = 864e5;
 let nextId = 2000000000000000;
 
-/** A signed transaction, like the one StoreKit 2 posts as fetch_token. */
-export async function signTransaction(overrides: Partial<AppleTransaction> = {}) {
+/** Signs any payload as an App Store JWS with the test chain. */
+export async function signJws(payload: object) {
   leafKey ??= crypto.subtle.importKey("pkcs8", pemToDer(TEST_LEAF_KEY_PEM), { name: "ECDSA", namedCurve: "P-256" }, false, [
     "sign",
   ]);
+  const enc = (o: object) => bytesToBase64Url(new TextEncoder().encode(JSON.stringify(o)));
+  const input = `${enc({ alg: "ES256", x5c: TEST_X5C })}.${enc(payload)}`;
+  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, await leafKey, new TextEncoder().encode(input));
+  return `${input}.${bytesToBase64Url(new Uint8Array(sig))}`;
+}
+
+/** A signed transaction, like the one StoreKit 2 posts as fetch_token. */
+export async function signTransaction(overrides: Partial<AppleTransaction> = {}) {
   const id = String(nextId++);
   const purchaseDate = overrides.purchaseDate ?? Date.now() - DAY;
   const payload: AppleTransaction = {
@@ -119,10 +127,68 @@ export async function signTransaction(overrides: Partial<AppleTransaction> = {})
     storefront: "USA",
     ...overrides,
   };
-  const enc = (o: object) => bytesToBase64Url(new TextEncoder().encode(JSON.stringify(o)));
-  const input = `${enc({ alg: "ES256", x5c: TEST_X5C })}.${enc(payload)}`;
-  const sig = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, await leafKey, new TextEncoder().encode(input));
-  return { jws: `${input}.${bytesToBase64Url(new Uint8Array(sig))}`, payload };
+  return { jws: await signJws(payload), payload };
+}
+
+/**
+ * An App Store Server Notification V2, signed in three layers like Apple's: the outer
+ * payload, and the transaction and renewal info inside it.
+ */
+export async function signNotification(n: {
+  type: string;
+  subtype?: string;
+  transaction?: AppleTransaction;
+  renewal?: Partial<AppleRenewalInfo>;
+  status?: number;
+  bundleId?: string;
+  uuid?: string;
+  signedDate?: number;
+}) {
+  const signedDate = n.signedDate ?? Date.now();
+  const tx = n.transaction;
+  const renewal: AppleRenewalInfo | undefined =
+    n.renewal || tx
+      ? {
+          originalTransactionId: tx?.originalTransactionId ?? "",
+          productId: tx?.productId ?? "",
+          autoRenewProductId: tx?.productId,
+          autoRenewStatus: 1,
+          signedDate,
+          ...n.renewal,
+        }
+      : undefined;
+  const payload: AppleNotification = {
+    notificationType: n.type,
+    ...(n.subtype ? { subtype: n.subtype } : {}),
+    notificationUUID: n.uuid ?? crypto.randomUUID(),
+    version: "2.0",
+    signedDate,
+    data: {
+      appAppleId: 1234567890,
+      bundleId: n.bundleId ?? BUNDLE_ID,
+      environment: "Sandbox",
+      ...(tx ? { signedTransactionInfo: await signJws(tx) } : {}),
+      ...(renewal ? { signedRenewalInfo: await signJws(renewal) } : {}),
+      ...(n.status !== undefined ? { status: n.status } : {}),
+    },
+  };
+  return { signedPayload: await signJws(payload), payload };
+}
+
+/** Delivers a notification the way Apple does (no SDK key). */
+export async function postNotification(signedPayload: string) {
+  const ctx = createExecutionContext();
+  const res = await testApp.fetch(
+    new Request("https://openpurr.test/notifications/apple", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ signedPayload }),
+    }),
+    env,
+    ctx,
+  );
+  await waitOnExecutionContext(ctx);
+  return res;
 }
 
 /** Posts a StoreKit 2 transaction the way the iOS SDK does. */

@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, Deps } from "./env";
 import { capture } from "./lib/capture";
+import { notifications } from "./routes/notifications";
 import { sdk } from "./routes/sdk";
 
 /**
@@ -18,6 +19,7 @@ export function buildApp(deps: Deps, extend?: (app: Hono<AppEnv>) => void) {
 
   app.use("/v1/*", capture);
   app.route("/v1", sdk);
+  app.route("/notifications", notifications);
 
   // Spike: export captured SDK requests for scripts/pull-captures.mjs. Protected by BENCH_TOKEN.
   app.get("/__capture", async (c) => {
