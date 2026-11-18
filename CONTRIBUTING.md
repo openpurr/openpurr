@@ -62,7 +62,7 @@ Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also 
 
 ## Reporting security issues
 
-Please don't open public issues for vulnerabilities. A private reporting channel will be listed here before the first release. Until then, contact the maintainers privately.
+Please don't open public issues for vulnerabilities. Report them privately through GitHub's vulnerability reporting, as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
