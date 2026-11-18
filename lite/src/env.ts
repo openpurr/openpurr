@@ -1,4 +1,5 @@
 import type { AppConfig, Config } from "./config";
+import type { FxProvider } from "./fx";
 import type { RateLimiters } from "./lib/rate-limit";
 
 export interface Env {
@@ -24,6 +25,8 @@ export interface Deps {
   fetch?: typeof fetch;
   /** Rate limiters. Tests substitute fakes; production uses the wrangler.jsonc bindings. */
   rateLimiters?: (env: Env) => RateLimiters;
+  /** Exchange-rate provider. Defaults to the European Central Bank. */
+  fx?: FxProvider;
 }
 
 export type AppEnv = { Bindings: Env; Variables: { deps: Deps; app: AppConfig } };

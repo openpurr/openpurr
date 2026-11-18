@@ -199,13 +199,13 @@ async function recordForCustomer(
         else eventCustomer.attributes[key] = { value: u.value, updated_at_ms: u.updatedAt };
       }
       for (const { e, t } of wanted) {
-        const { id, statements } = enqueueEvent(db, config, { ...e, appId: app.id, environment: t.environment, store: t.store, customer: eventCustomer, transaction: t, now });
+        const { id, statements } = await enqueueEvent(db, config, { ...e, appId: app.id, environment: t.environment, store: t.store, customer: eventCustomer, transaction: t, now });
         eventIds.push(id);
         writes.push(...statements);
       }
       for (const loser of wantsTransfer ? losers : []) {
         const from = await loadEventCustomer(db, [loser.id], loser.id);
-        const { id, statements } = enqueueEvent(db, config, {
+        const { id, statements } = await enqueueEvent(db, config, {
           type: "TRANSFER",
           dedupeKey: `transfer:${store}:${loser.id}:${customer.id}:${now}`,
           appId: app.id,

@@ -294,7 +294,9 @@ export function appWithWebhooks(receiver: { fetch: typeof fetch }, webhook: Reco
     { id: "backend", url: WEBHOOK_URL, authorization_secret: "WEBHOOK_AUTH", signing_secret: "WEBHOOK_SECRET", ...webhook },
   ];
   const config = parseConfig(raw);
-  const deps = { config, appleRoots, fetch: receiver.fetch, rateLimiters: () => ({}) };
+  // No network for exchange rates in tests; fx.test.ts covers them with its own provider.
+  const noRates = { name: "none", latest: async () => [], history: async () => [] };
+  const deps = { config, appleRoots, fetch: receiver.fetch, rateLimiters: () => ({}), fx: noRates };
   return { app: buildApp(deps), deps };
 }
 

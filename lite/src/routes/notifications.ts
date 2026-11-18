@@ -126,7 +126,7 @@ notifications.post("/apple", async (c) => {
     if (owner && wanted.length) {
       const customer = await loadEventCustomer(db, [owner.id], owner.id);
       for (const e of wanted) {
-        const { id, statements } = enqueueEvent(db, config, {
+        const { id, statements } = await enqueueEvent(db, config, {
           ...e,
           appId: app.id,
           environment: row.environment,
