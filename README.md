@@ -1,4 +1,9 @@
-# openpurr
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
+    <img src=".github/assets/openpurr-logo.png" alt="openpurr" width="400">
+  </picture>
+</h1>
 
 An open-source, self-hosted backend for the RevenueCat SDKs.
 
