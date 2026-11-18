@@ -14,3 +14,6 @@ Specs/
 
 # Local Claude Code settings
 .claude/settings.local.json
+
+# Test-only keys, generated on demand by lite/scripts/gen-bench-fixtures.mjs
+lite/src/bench/fixtures.generated.ts

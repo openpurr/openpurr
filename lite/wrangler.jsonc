@@ -35,9 +35,34 @@
   "vars": {
     // "on" stores every SDK request in the D1 `capture` table (spike only).
     "CAPTURE": "on"
-  }
+  },
 
   // Secrets (set with `wrangler secret put`, or in .dev.vars locally):
   //   SDK_KEYS      comma-separated public SDK keys this server accepts, e.g. "appl_xxx,goog_yyy"
-  //   BENCH_TOKEN   bearer token for the /__bench and /__capture endpoints
+  //   BENCH_TOKEN   bearer token for the /__capture endpoint (and /__bench on the bench Worker)
+
+  "env": {
+    // Benchmark Worker: the same app plus /__bench and test-only keys, deployed separately as
+    // `openpurr-bench` so none of it ships in production. `pnpm deploy:bench`.
+    // Bindings don't inherit between environments, so they're repeated here.
+    "bench": {
+      "main": "src/bench/worker.ts",
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "openpurr",
+          "database_id": "378b4252-db50-4e7a-97b4-ee66ea86fbe1",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "ratelimits": [
+        {
+          "name": "RATE_LIMITER",
+          "namespace_id": "1002",
+          "simple": { "limit": 100, "period": 60 }
+        }
+      ],
+      "vars": { "CAPTURE": "off" }
+    }
+  }
 }
