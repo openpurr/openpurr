@@ -18,13 +18,19 @@
 //   - A refund or revocation ends access at the revocation time: expires_date becomes that
 //     time and refunded_at is set. Refunded one-time purchases are left out entirely, so they
 //     can't grant an entitlement.
+//   - During a store grace period, access continues to the end of grace. Because the SDKs only
+//     read expires_date, both the subscription's and the entitlement's expires_date move to
+//     the grace end, and grace_period_expires_date is set alongside.
+//   - An upgraded transaction (Apple isUpgraded) no longer grants entitlements; the upgrade's
+//     own transaction does.
 
 import { type Config, entitlementsFor } from "./config";
-import type { Customer, TransactionRow } from "./ledger";
+import type { Customer, SubscriptionStateRow, TransactionRow } from "./ledger";
+import { APPLE_STATUS } from "./stores/apple";
 
 interface Entitlement {
   expires_date: string | null;
-  grace_period_expires_date: null;
+  grace_period_expires_date: string | null;
   product_identifier: string;
   purchase_date: string;
   product_plan_identifier?: string;
@@ -38,16 +44,26 @@ export function iso(ms: number | null) {
   return ms === null ? null : new Date(ms).toISOString().replace(/\.\d{3}Z$/, "Z");
 }
 
-/** When access from this transaction ends: its expiry, cut short by a refund. Null = never. */
-function effectiveEnd(t: TransactionRow): number | null {
+type StateLookup = (t: TransactionRow) => SubscriptionStateRow | undefined;
+
+/** The grace period end that currently extends this transaction, if any. */
+function graceEnd(t: TransactionRow, state: SubscriptionStateRow | undefined): number | null {
+  if (t.product_type !== "subscription" || t.revoked_at !== null || t.expires_at === null || !state) return null;
+  const end = state.grace_period_expires_at;
+  return state.status === APPLE_STATUS.GRACE_PERIOD && end !== null && end > t.expires_at ? end : null;
+}
+
+/** When access from this transaction ends: its expiry, extended by grace, cut short by a refund. Null = never. */
+function effectiveEnd(t: TransactionRow, state: SubscriptionStateRow | undefined): number | null {
   if (t.revoked_at !== null) return t.expires_at === null ? t.revoked_at : Math.min(t.expires_at, t.revoked_at);
-  return t.product_type === "subscription" ? t.expires_at : null;
+  if (t.product_type !== "subscription") return null;
+  return graceEnd(t, state) ?? t.expires_at;
 }
 
 /** True if a ends later than b (null = never ends). Ties go to the later purchase. */
-function outlasts(a: TransactionRow, b: TransactionRow): boolean {
-  const ea = effectiveEnd(a);
-  const eb = effectiveEnd(b);
+function outlasts(a: TransactionRow, b: TransactionRow, stateOf: StateLookup): boolean {
+  const ea = effectiveEnd(a, stateOf(a));
+  const eb = effectiveEnd(b, stateOf(b));
   if (ea !== eb) return eb !== null && (ea === null || ea > eb);
   return a.purchased_at > b.purchased_at;
 }
@@ -56,6 +72,8 @@ export function buildCustomerInfo(args: {
   appUserId: string;
   customer: Customer | null;
   transactions: TransactionRow[];
+  /** Store-reported subscription status (auto-renew, billing issues, grace periods). */
+  states?: SubscriptionStateRow[];
   config: Config;
   /** The store of the requesting app, for management_url. */
   requestStore?: "app_store" | "play_store";
@@ -63,6 +81,8 @@ export function buildCustomerInfo(args: {
 }) {
   const now = args.now ?? Date.now();
   const { config } = args;
+  const stateMap = new Map((args.states ?? []).map((s) => [`${s.store}:${s.original_transaction_id}`, s]));
+  const stateOf: StateLookup = (t) => stateMap.get(`${t.store}:${t.original_transaction_id}`);
 
   // Pick the transaction each subscriptions entry and each entitlement describes.
   const subscriptionTx = new Map<string, TransactionRow>();
@@ -72,7 +92,7 @@ export function buildCustomerInfo(args: {
   for (const t of args.transactions) {
     if (t.product_type === "subscription") {
       const current = subscriptionTx.get(t.product_id);
-      if (!current || outlasts(t, current)) subscriptionTx.set(t.product_id, t);
+      if (!current || outlasts(t, current, stateOf)) subscriptionTx.set(t.product_id, t);
     } else {
       if (t.revoked_at !== null) continue; // refunded one-time purchases grant nothing
       const list = nonSubscriptionTxs.get(t.product_id) ?? [];
@@ -80,26 +100,28 @@ export function buildCustomerInfo(args: {
       nonSubscriptionTxs.set(t.product_id, list);
     }
     if (t.product_type !== "subscription" && t.revoked_at !== null) continue;
+    if (t.is_upgraded) continue; // replaced by the upgrade's own transaction
     for (const id of entitlementsFor(config, t.app_id, t.product_id, t.base_plan_id)) {
       const current = entitlementTx.get(id);
-      if (!current || outlasts(t, current)) entitlementTx.set(id, t);
+      if (!current || outlasts(t, current, stateOf)) entitlementTx.set(id, t);
     }
   }
 
   const subscriptions: Record<string, unknown> = {};
   for (const [productId, t] of subscriptionTx) {
+    const state = stateOf(t);
     subscriptions[productId] = {
       purchase_date: iso(t.purchased_at),
       original_purchase_date: iso(t.original_purchased_at),
-      expires_date: iso(effectiveEnd(t)),
+      expires_date: iso(effectiveEnd(t, state)),
       store: t.store,
       is_sandbox: t.environment === "sandbox",
       period_type: t.period_type,
       ownership_type: t.ownership_type,
       store_transaction_id: t.transaction_id,
-      unsubscribe_detected_at: null,
-      billing_issues_detected_at: null,
-      grace_period_expires_date: null,
+      unsubscribe_detected_at: iso(state?.unsubscribe_detected_at ?? null),
+      billing_issues_detected_at: iso(state?.billing_issue_detected_at ?? null),
+      grace_period_expires_date: iso(graceEnd(t, state)),
       refunded_at: iso(t.revoked_at),
       auto_resume_date: null,
       ...(t.price_micros !== null && t.currency ? { price: { amount: t.price_micros / 1e6, currency: t.currency } } : {}),
@@ -125,8 +147,8 @@ export function buildCustomerInfo(args: {
   const entitlements: Record<string, Entitlement> = {};
   for (const [id, t] of entitlementTx) {
     entitlements[id] = {
-      expires_date: iso(effectiveEnd(t)),
-      grace_period_expires_date: null,
+      expires_date: iso(effectiveEnd(t, stateOf(t))),
+      grace_period_expires_date: iso(graceEnd(t, stateOf(t))),
       product_identifier: t.product_id,
       purchase_date: iso(t.purchased_at),
       ...(t.base_plan_id ? { product_plan_identifier: t.base_plan_id } : {}),
@@ -142,7 +164,7 @@ export function buildCustomerInfo(args: {
       original_purchase_date: null,
       first_seen: iso(args.customer?.firstSeen ?? now),
       last_seen: iso(now),
-      management_url: managementUrl(config, [...subscriptionTx.values()], now, args.requestStore),
+      management_url: managementUrl(config, [...subscriptionTx.values()], now, stateOf, args.requestStore),
       subscriptions,
       non_subscriptions: nonSubscriptions,
       other_purchases: {},
@@ -156,12 +178,17 @@ export function buildCustomerInfo(args: {
  * The store page where the user manages the active subscription. Prefers the requesting
  * platform's store when it has one; otherwise the subscription that ends last. Null if none.
  */
-function managementUrl(config: Config, subs: TransactionRow[], now: number, requestStore?: string): string | null {
-  const active = subs.filter((t) => t.revoked_at === null && (t.expires_at ?? 0) > now);
+function managementUrl(
+  config: Config,
+  subs: TransactionRow[],
+  now: number,
+  stateOf: StateLookup,
+  requestStore?: string,
+): string | null {
+  const end = (t: TransactionRow) => effectiveEnd(t, stateOf(t)) ?? 0;
+  const active = subs.filter((t) => t.revoked_at === null && end(t) > now);
   if (!active.length) return null;
-  const pick =
-    active.find((t) => t.store === requestStore) ??
-    active.reduce((a, b) => ((b.expires_at ?? 0) > (a.expires_at ?? 0) ? b : a));
+  const pick = active.find((t) => t.store === requestStore) ?? active.reduce((a, b) => (end(b) > end(a) ? b : a));
   if (pick.store === "app_store") return APPLE_MANAGEMENT_URL;
   const pkg = config.apps.get(pick.app_id)?.packageName;
   const q = new URLSearchParams({ sku: pick.product_id, ...(pkg ? { package: pkg } : {}) });

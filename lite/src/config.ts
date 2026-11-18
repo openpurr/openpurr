@@ -105,6 +105,14 @@ export function parseConfig(raw: unknown): Config {
     }
     if (store === "app_store" && !nonEmptyString(a.bundle_id)) fail(`${at}.bundle_id`, "required for app_store apps");
     if (store === "play_store" && !nonEmptyString(a.package_name)) fail(`${at}.package_name`, "required for play_store apps");
+    // Store notifications identify their app by bundle ID or package name, so each must be unique.
+    const storeId = store === "app_store" ? a.bundle_id : a.package_name;
+    const twin = [...apps.values()].find(
+      (other) => other.store === store && (store === "app_store" ? other.bundleId : other.packageName) === storeId,
+    );
+    if (nonEmptyString(storeId) && twin) {
+      fail(`${at}.${store === "app_store" ? "bundle_id" : "package_name"}`, `${storeId} is already used by app ${twin.id}`);
+    }
 
     const app: AppConfig = {
       id: appId,

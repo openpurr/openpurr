@@ -80,3 +80,74 @@ function periodType(tx: AppleTransaction): NewTransaction["period_type"] {
   if (!tx.offerType) return "normal";
   return tx.offerDiscountType === "FREE_TRIAL" ? "trial" : "intro";
 }
+
+// --- App Store Server Notifications V2 --------------------------------------------------------
+
+/** responseBodyV2DecodedPayload: the fields we use. */
+export interface AppleNotification {
+  notificationType: string;
+  subtype?: string;
+  notificationUUID: string;
+  version?: string;
+  signedDate: number;
+  data?: {
+    appAppleId?: number;
+    bundleId?: string;
+    environment?: "Sandbox" | "Production";
+    signedTransactionInfo?: string;
+    signedRenewalInfo?: string;
+    /** 1 active, 2 expired, 3 billing retry, 4 billing grace period, 5 revoked. */
+    status?: number;
+  };
+}
+
+/** JWSRenewalInfoDecodedPayload: the fields we use. */
+export interface AppleRenewalInfo {
+  originalTransactionId: string;
+  productId: string;
+  autoRenewProductId?: string;
+  /** 1 on, 0 off. */
+  autoRenewStatus?: number;
+  expirationIntent?: number;
+  gracePeriodExpiresDate?: number;
+  isInBillingRetryPeriod?: boolean;
+  signedDate: number;
+  environment?: string;
+}
+
+export const APPLE_STATUS = { ACTIVE: 1, EXPIRED: 2, BILLING_RETRY: 3, GRACE_PERIOD: 4, REVOKED: 5 } as const;
+
+export interface SubscriptionStateUpdate {
+  store: "app_store";
+  original_transaction_id: string;
+  status: number | null;
+  auto_renew: number | null;
+  auto_renew_product_id: string | null;
+  expiration_intent: number | null;
+  /** Whether a billing problem is current; the ledger keeps the first time it was seen. */
+  billing_issue: boolean;
+  grace_period_expires_at: number | null;
+  signed_at: number;
+}
+
+/**
+ * Subscription status from renewal info. `status` comes from the notification when present;
+ * otherwise it's inferred from the renewal info's billing-retry and grace-period fields.
+ */
+export function appleSubscriptionState(renewal: AppleRenewalInfo, status: number | undefined): SubscriptionStateUpdate {
+  const inGrace = renewal.gracePeriodExpiresDate !== undefined && renewal.gracePeriodExpiresDate > renewal.signedDate;
+  const resolved =
+    status ?? (inGrace ? APPLE_STATUS.GRACE_PERIOD : renewal.isInBillingRetryPeriod ? APPLE_STATUS.BILLING_RETRY : null);
+  const billingIssue = resolved === APPLE_STATUS.BILLING_RETRY || resolved === APPLE_STATUS.GRACE_PERIOD;
+  return {
+    store: "app_store",
+    original_transaction_id: String(renewal.originalTransactionId),
+    status: resolved,
+    auto_renew: renewal.autoRenewStatus === undefined ? null : renewal.autoRenewStatus === 1 ? 1 : 0,
+    auto_renew_product_id: renewal.autoRenewProductId ?? null,
+    expiration_intent: renewal.expirationIntent ?? null,
+    billing_issue: billingIssue,
+    grace_period_expires_at: resolved === APPLE_STATUS.GRACE_PERIOD ? (renewal.gracePeriodExpiresDate ?? null) : null,
+    signed_at: renewal.signedDate,
+  };
+}

@@ -49,6 +49,19 @@ describe("parseConfig", () => {
     );
   });
 
+  it("requires a unique bundle ID or package name per store, since notifications are routed by it", () => {
+    const dupe = (c: any) => {
+      c.apps.ios2 = { ...structuredClone(c.apps.ios), sdk_keys: ["appl_second_ios_app_0000"] };
+    };
+    expect(problems(dupe)).toContain("apps.ios2.bundle_id: com.example.openpurr is already used by app ios");
+    const dupePlay = (c: any) => {
+      c.apps.android2 = { ...structuredClone(c.apps.android), sdk_keys: ["goog_second_play_app_0000"] };
+    };
+    expect(problems(dupePlay)).toContain("apps.android2.package_name: com.example.openpurr is already used by app android");
+    // The same ID on different stores is normal (iOS bundle ID = Android package name).
+    expect(problems(() => {})).toEqual([]);
+  });
+
   it("requires exactly one current offering", () => {
     expect(problems((c) => (c.offerings[0].current = false)).join()).toMatch(/mark one offering as current/);
     expect(

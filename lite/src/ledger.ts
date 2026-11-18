@@ -4,6 +4,7 @@
 // round trips as possible.
 
 import type { ProductType, Store } from "./config";
+import type { SubscriptionStateUpdate } from "./stores/apple";
 
 export interface Customer {
   id: string;
@@ -54,9 +55,23 @@ export function isAnonymous(appUserId: string) {
   return appUserId.startsWith("$RCAnonymousID:");
 }
 
-/** The customer an app user ID belongs to, plus every transaction they own. One D1 round trip. */
+export interface SubscriptionStateRow {
+  store: Store;
+  original_transaction_id: string;
+  status: number | null;
+  auto_renew: number | null;
+  auto_renew_product_id: string | null;
+  unsubscribe_detected_at: number | null;
+  billing_issue_detected_at: number | null;
+  grace_period_expires_at: number | null;
+}
+
+/**
+ * The customer an app user ID belongs to, every transaction they own, and the store-reported
+ * status of their subscriptions. One D1 round trip.
+ */
 export async function loadCustomer(db: D1Database, appUserId: string) {
-  const [customer, transactions] = await db.batch([
+  const [customer, transactions, states] = await db.batch([
     db
       .prepare(
         `SELECT c.id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
@@ -71,11 +86,22 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
          WHERE a.app_user_id = ?`,
       )
       .bind(appUserId),
+    db
+      .prepare(
+        `SELECT s.store, s.original_transaction_id, s.status, s.auto_renew, s.auto_renew_product_id,
+                s.unsubscribe_detected_at, s.billing_issue_detected_at, s.grace_period_expires_at
+         FROM customer_alias a
+         JOIN purchase_owner o ON o.customer_id = a.customer_id
+         JOIN subscription_state s ON s.store = o.store AND s.original_transaction_id = o.original_transaction_id
+         WHERE a.app_user_id = ?`,
+      )
+      .bind(appUserId),
   ]);
   const row = customer!.results[0] as CustomerRecord | undefined;
   return {
     customer: row ? toCustomer(row) : null,
     transactions: transactions!.results as unknown as TransactionRow[],
+    states: states!.results as unknown as SubscriptionStateRow[],
   };
 }
 
@@ -144,55 +170,145 @@ export async function purchaseOwner(db: D1Database, store: Store, originalTransa
  * (expiry, refund, upgrade); identity columns never change.
  */
 export function recordTransaction(db: D1Database, tx: NewTransaction, customerId: string, now = Date.now()) {
-  return [
-    db
-      .prepare(
-        `INSERT INTO store_transaction (app_id, store, environment, transaction_id, original_transaction_id, product_id,
-           base_plan_id, product_type, purchased_at, original_purchased_at, expires_at, period_type, ownership_type,
-           price_micros, currency, storefront, revoked_at, revocation_reason, is_upgraded, verified, source,
-           received_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ON CONFLICT (store, transaction_id) DO UPDATE SET
-           expires_at = excluded.expires_at,
-           revoked_at = excluded.revoked_at,
-           revocation_reason = excluded.revocation_reason,
-           is_upgraded = excluded.is_upgraded,
-           ownership_type = excluded.ownership_type,
-           verified = max(verified, excluded.verified),
-           updated_at = excluded.updated_at`,
-      )
-      .bind(
-        tx.app_id,
-        tx.store,
-        tx.environment,
-        tx.transaction_id,
-        tx.original_transaction_id,
-        tx.product_id,
-        tx.base_plan_id,
-        tx.product_type,
-        tx.purchased_at,
-        tx.original_purchased_at,
-        tx.expires_at,
-        tx.period_type,
-        tx.ownership_type,
-        tx.price_micros,
-        tx.currency,
-        tx.storefront,
-        tx.revoked_at,
-        tx.revocation_reason,
-        tx.is_upgraded,
-        tx.verified,
-        tx.source,
-        now,
-        now,
-      ),
-    db
-      .prepare(
-        `INSERT INTO purchase_owner (store, original_transaction_id, customer_id, app_id, updated_at)
-         VALUES (?, ?, ?, ?, ?)
-         ON CONFLICT (store, original_transaction_id) DO UPDATE SET customer_id = excluded.customer_id,
-           updated_at = excluded.updated_at`,
-      )
-      .bind(tx.store, tx.original_transaction_id, customerId, tx.app_id, now),
-  ];
+  return [upsertTransaction(db, tx, now), assignOwner(db, tx, customerId, now)];
+}
+
+/**
+ * Upserts a transaction without touching ownership. Store notifications use this: a
+ * notification can arrive before the app has posted the purchase, and then nobody owns it
+ * yet. The SDK's later POST /receipts assigns the owner.
+ */
+export function upsertTransaction(db: D1Database, tx: NewTransaction, now = Date.now()) {
+  return db
+    .prepare(
+      `INSERT INTO store_transaction (app_id, store, environment, transaction_id, original_transaction_id, product_id,
+         base_plan_id, product_type, purchased_at, original_purchased_at, expires_at, period_type, ownership_type,
+         price_micros, currency, storefront, revoked_at, revocation_reason, is_upgraded, verified, source,
+         received_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+       ON CONFLICT (store, transaction_id) DO UPDATE SET
+         expires_at = excluded.expires_at,
+         revoked_at = excluded.revoked_at,
+         revocation_reason = excluded.revocation_reason,
+         is_upgraded = excluded.is_upgraded,
+         ownership_type = excluded.ownership_type,
+         verified = max(verified, excluded.verified),
+         updated_at = excluded.updated_at`,
+    )
+    .bind(
+      tx.app_id,
+      tx.store,
+      tx.environment,
+      tx.transaction_id,
+      tx.original_transaction_id,
+      tx.product_id,
+      tx.base_plan_id,
+      tx.product_type,
+      tx.purchased_at,
+      tx.original_purchased_at,
+      tx.expires_at,
+      tx.period_type,
+      tx.ownership_type,
+      tx.price_micros,
+      tx.currency,
+      tx.storefront,
+      tx.revoked_at,
+      tx.revocation_reason,
+      tx.is_upgraded,
+      tx.verified,
+      tx.source,
+      now,
+      now,
+    );
+}
+
+function assignOwner(db: D1Database, tx: NewTransaction, customerId: string, now: number) {
+  return db
+    .prepare(
+      `INSERT INTO purchase_owner (store, original_transaction_id, customer_id, app_id, updated_at)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT (store, original_transaction_id) DO UPDATE SET customer_id = excluded.customer_id,
+         updated_at = excluded.updated_at`,
+    )
+    .bind(tx.store, tx.original_transaction_id, customerId, tx.app_id, now);
+}
+
+/**
+ * Applies store-reported subscription status, but only if it was signed at or after what's
+ * stored (notifications can arrive out of order). The first time a billing problem or
+ * auto-renew-off is seen is kept until it clears.
+ */
+export function upsertSubscriptionState(db: D1Database, s: SubscriptionStateUpdate, now = Date.now()) {
+  return db
+    .prepare(
+      `INSERT INTO subscription_state (store, original_transaction_id, status, auto_renew, auto_renew_product_id,
+         expiration_intent, unsubscribe_detected_at, billing_issue_detected_at, grace_period_expires_at, signed_at,
+         updated_at)
+       VALUES (?1, ?2, ?3, ?4, ?5, ?6, CASE WHEN ?4 = 0 THEN ?9 END, CASE WHEN ?7 THEN ?9 END, ?8, ?9, ?10)
+       ON CONFLICT (store, original_transaction_id) DO UPDATE SET
+         status = excluded.status,
+         auto_renew = coalesce(excluded.auto_renew, auto_renew),
+         auto_renew_product_id = excluded.auto_renew_product_id,
+         expiration_intent = excluded.expiration_intent,
+         unsubscribe_detected_at = CASE
+           WHEN coalesce(excluded.auto_renew, auto_renew) = 0 THEN coalesce(unsubscribe_detected_at, excluded.signed_at)
+           END,
+         billing_issue_detected_at = CASE
+           WHEN ?7 THEN coalesce(billing_issue_detected_at, excluded.signed_at)
+           END,
+         grace_period_expires_at = excluded.grace_period_expires_at,
+         signed_at = excluded.signed_at,
+         updated_at = excluded.updated_at
+       WHERE excluded.signed_at >= subscription_state.signed_at`,
+    )
+    .bind(
+      s.store,
+      s.original_transaction_id,
+      s.status,
+      s.auto_renew,
+      s.auto_renew_product_id,
+      s.expiration_intent,
+      s.billing_issue ? 1 : 0,
+      s.grace_period_expires_at,
+      s.signed_at,
+      now,
+    );
+}
+
+export interface NotificationRecord {
+  store: Store;
+  notification_id: string;
+  notification_type: string;
+  subtype: string | null;
+  environment: "production" | "sandbox";
+  app_id: string | null;
+  original_transaction_id: string | null;
+  signed_at: number;
+  payload: string;
+}
+
+export async function notificationSeen(db: D1Database, store: Store, id: string) {
+  return (await db.prepare("SELECT 1 FROM store_notification WHERE store = ? AND notification_id = ?").bind(store, id).first()) !== null;
+}
+
+/** Logs a processed notification. ON CONFLICT DO NOTHING makes a concurrent retry harmless. */
+export function recordNotification(db: D1Database, n: NotificationRecord, now = Date.now()) {
+  return db
+    .prepare(
+      `INSERT INTO store_notification (store, notification_id, notification_type, subtype, environment, app_id,
+         original_transaction_id, signed_at, received_at, payload)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING`,
+    )
+    .bind(
+      n.store,
+      n.notification_id,
+      n.notification_type,
+      n.subtype,
+      n.environment,
+      n.app_id,
+      n.original_transaction_id,
+      n.signed_at,
+      now,
+      n.payload,
+    );
 }

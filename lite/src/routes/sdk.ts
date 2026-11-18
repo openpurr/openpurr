@@ -268,11 +268,12 @@ function googleReceipt(body: ReceiptBody, app: AppConfig): NewTransaction | Fail
 
 /** Read-only: never writes, per the free-plan rule. Unknown users get a fresh, empty body. */
 async function customerInfo(c: Ctx, appUserId: string) {
-  const { customer, transactions } = await loadCustomer(c.env.DB, appUserId);
+  const { customer, transactions, states } = await loadCustomer(c.env.DB, appUserId);
   return buildCustomerInfo({
     appUserId,
     customer,
     transactions,
+    states,
     config: c.get("deps").config,
     requestStore: c.get("app").store,
   });
