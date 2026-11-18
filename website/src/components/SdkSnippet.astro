@@ -1,0 +1,146 @@
+---
+const tabs = [
+  {
+    id: "swift",
+    label: "iOS",
+    lines: [
+      `<span class="c">// Before configure()</span>`,
+      `Purchases.proxyURL = URL(string: <span class="s">"https://purchases.example.com"</span>)`,
+      `Purchases.configure(withAPIKey: <span class="s">"appl_…"</span>)`,
+    ],
+  },
+  {
+    id: "kotlin",
+    label: "Android",
+    lines: [
+      `<span class="c">// Before configure()</span>`,
+      `Purchases.proxyURL = URL(<span class="s">"https://purchases.example.com"</span>)`,
+      `Purchases.configure(PurchasesConfiguration.Builder(<span class="k">this</span>, <span class="s">"goog_…"</span>).build())`,
+    ],
+  },
+  {
+    id: "flutter",
+    label: "Flutter",
+    lines: [
+      `<span class="c">// Before configure()</span>`,
+      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://purchases.example.com"</span>);`,
+      `<span class="k">await</span> Purchases.configure(PurchasesConfiguration(<span class="s">"appl_…"</span>));`,
+    ],
+  },
+  {
+    id: "rn",
+    label: "React Native",
+    lines: [
+      `<span class="c">// Before configure()</span>`,
+      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://purchases.example.com"</span>);`,
+      `Purchases.configure({ apiKey: <span class="s">"appl_…"</span> });`,
+    ],
+  },
+];
+---
+
+<div class="snippet" data-snippet>
+  <div class="tabs" role="tablist" aria-label="SDK platform">
+    {
+      tabs.map((t, i) => (
+        <button
+          role="tab"
+          id={`tab-${t.id}`}
+          aria-controls={`panel-${t.id}`}
+          aria-selected={i === 0 ? "true" : "false"}
+          tabindex={i === 0 ? 0 : -1}
+        >
+          {t.label}
+        </button>
+      ))
+    }
+  </div>
+  {
+    tabs.map((t, i) => (
+      <pre role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0}><code set:html={t.lines.join("\n")} /></pre>
+    ))
+  }
+  <p class="note">One line. Same SDK, same purchase code.</p>
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>("[data-snippet]")) {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[role="tab"]')];
+    const select = (tab: HTMLButtonElement) => {
+      for (const t of tabs) {
+        const on = t === tab;
+        t.setAttribute("aria-selected", String(on));
+        t.tabIndex = on ? 0 : -1;
+        const panel = root.querySelector<HTMLElement>(`#${t.getAttribute("aria-controls")}`);
+        if (panel) panel.hidden = !on;
+      }
+    };
+    tabs.forEach((tab, i) => {
+      tab.addEventListener("click", () => select(tab));
+      tab.addEventListener("keydown", (e) => {
+        const step = e.key === "ArrowRight" ? 1 : e.key === "ArrowLeft" ? -1 : 0;
+        if (!step) return;
+        const next = tabs[(i + step + tabs.length) % tabs.length];
+        select(next);
+        next.focus();
+      });
+    });
+  }
+</script>
+
+<style>
+  .snippet {
+    background: var(--code-bg);
+    border-radius: var(--radius);
+    padding: 8px;
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.06) inset,
+      0 30px 60px -20px rgba(64, 40, 160, 0.35);
+    min-width: 0;
+  }
+  .tabs {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    overflow-x: auto;
+  }
+  button {
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--code-muted);
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
+    padding: 6px 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  button[aria-selected="true"] {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  pre {
+    margin: 0;
+    padding: 18px 16px 8px;
+    color: var(--code-text);
+    font-size: 0.86rem;
+    line-height: 1.75;
+    overflow-x: auto;
+  }
+  pre :global(.c) {
+    color: var(--code-muted);
+  }
+  pre :global(.s) {
+    color: #8ee0b5;
+  }
+  pre :global(.k) {
+    color: var(--code-accent);
+  }
+  .note {
+    margin: 0;
+    padding: 8px 16px 12px;
+    font-size: 0.82rem;
+    color: var(--code-muted);
+  }
+</style>

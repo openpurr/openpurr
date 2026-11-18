@@ -14,7 +14,7 @@ Prove that the unmodified RevenueCat SDKs work against a server we control, with
 - 🚧 **Workers CPU:** measuring per-request CPU time on Workers.
 - 🚧 **Device runs:** running the iOS and Android purchase tester apps against it.
 
-## Lite edition v1 ⏳
+## Lite edition v1 🚧
 
 The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1, designed to run on the free plan.
 
