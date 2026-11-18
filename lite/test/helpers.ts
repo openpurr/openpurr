@@ -237,15 +237,15 @@ export async function signNotification(n: {
 }
 
 /** Delivers a notification the way Apple does (no SDK key). */
-export async function postNotification(signedPayload: string) {
+export async function postNotification(signedPayload: string, opts: { app?: { fetch: typeof testApp.fetch }; env?: object } = {}) {
   const ctx = createExecutionContext();
-  const res = await testApp.fetch(
+  const res = await (opts.app ?? testApp).fetch(
     new Request("https://openpurr.test/notifications/apple", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ signedPayload }),
     }),
-    env,
+    opts.env ?? env,
     ctx,
   );
   await waitOnExecutionContext(ctx);
@@ -269,3 +269,33 @@ export async function postAppleTransaction(appUserId: string, overrides: Partial
 }
 
 export { DAY };
+
+// --- Webhooks ----------------------------------------------------------------------------------
+
+export const WEBHOOK_URL = "https://hooks.example.com/revenuecat";
+export const WEBHOOK_AUTH = "Bearer hook-secret-123";
+export const WEBHOOK_SIGNING_KEY = "whsec_test_signing_key";
+
+/** A webhook receiver that records deliveries and answers with `status()` (default 200). */
+export function webhookReceiver(status: () => number = () => 200) {
+  const received: { url: string; headers: Headers; body: any; raw: string }[] = [];
+  const fetchImpl = (async (input: RequestInfo | URL, init?: RequestInit) => {
+    const raw = String(init?.body ?? "");
+    received.push({ url: String(input), headers: new Headers(init?.headers), body: JSON.parse(raw), raw });
+    return new Response("ok", { status: status() });
+  }) as typeof fetch;
+  return { fetch: fetchImpl, received, events: () => received.map((r) => r.body.event) };
+}
+
+/** An app with one webhook endpoint (raw config overrides allowed), delivering to `receiver`. */
+export function appWithWebhooks(receiver: { fetch: typeof fetch }, webhook: Record<string, unknown> = {}) {
+  const raw = structuredClone(rawTestConfig) as any;
+  raw.webhooks = [
+    { id: "backend", url: WEBHOOK_URL, authorization_secret: "WEBHOOK_AUTH", signing_secret: "WEBHOOK_SECRET", ...webhook },
+  ];
+  const config = parseConfig(raw);
+  const deps = { config, appleRoots, fetch: receiver.fetch, rateLimiters: () => ({}) };
+  return { app: buildApp(deps), deps };
+}
+
+export const envWithWebhookSecrets = (signing = WEBHOOK_SIGNING_KEY) => ({ ...env, WEBHOOK_AUTH, WEBHOOK_SECRET: signing });

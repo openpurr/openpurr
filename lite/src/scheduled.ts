@@ -10,9 +10,10 @@
 //     logged in or synced attributes since. Nothing is lost that matters: they own no
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired.
-// The 5-minute cadence is for work that can't wait an hour, such as webhook retries (M3).
+// Every run (5 minutes): retry webhook deliveries that are due.
 
-import type { Env } from "./env";
+import type { Deps, Env } from "./env";
+import { retryDueDeliveries } from "./webhooks";
 
 export const RETENTION = {
   notificationPayloadDays: 30,
@@ -79,9 +80,21 @@ const pruneExpiredChains: Task = async (env, now) => {
 
 export const HOURLY_TASKS: Task[] = [pruneNotificationPayloads, pruneCaptures, pruneInactiveCustomers, pruneExpiredChains];
 
+function webhookRetries(deps: Deps): Task {
+  return async (env, now) => ({
+    task: "retry-webhooks",
+    rows: deps.config.webhooks.length ? await retryDueDeliveries(env, deps.config, deps.fetch ?? fetch, now) : 0,
+  });
+}
+
 /** Runs the tasks due at `scheduledTime`. Hourly tasks run in the first 5-minute slot of each hour. */
-export async function runScheduled(env: Env, scheduledTime: number, opts: { all?: boolean } = {}): Promise<TaskResult[]> {
+export async function runScheduled(
+  env: Env,
+  scheduledTime: number,
+  opts: { all?: boolean; deps?: Deps } = {},
+): Promise<TaskResult[]> {
   const due: Task[] = [];
+  if (opts.deps) due.push(webhookRetries(opts.deps));
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) due.push(...HOURLY_TASKS);
 
   const results: TaskResult[] = [];
@@ -98,6 +111,8 @@ export async function runScheduled(env: Env, scheduledTime: number, opts: { all?
 }
 
 /** The Worker's scheduled handler. */
-export function scheduledHandler(controller: ScheduledController, env: Env, ctx: ExecutionContext) {
-  ctx.waitUntil(runScheduled(env, controller.scheduledTime));
+export function scheduledHandler(deps: Deps) {
+  return (controller: ScheduledController, env: Env, ctx: ExecutionContext) => {
+    ctx.waitUntil(runScheduled(env, controller.scheduledTime, { deps }));
+  };
 }

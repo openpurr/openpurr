@@ -8,5 +8,5 @@ const app = buildApp(productionDeps);
 
 export default {
   fetch: app.fetch,
-  scheduled: scheduledHandler,
+  scheduled: scheduledHandler(productionDeps),
 } satisfies ExportedHandler<Env>;

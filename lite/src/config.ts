@@ -65,8 +65,41 @@ export interface OfferingConfig {
   packages: PackageConfig[];
 }
 
+export const WEBHOOK_EVENT_TYPES = [
+  "INITIAL_PURCHASE",
+  "RENEWAL",
+  "CANCELLATION",
+  "UNCANCELLATION",
+  "NON_RENEWING_PURCHASE",
+  "EXPIRATION",
+  "BILLING_ISSUE",
+  "PRODUCT_CHANGE",
+  "SUBSCRIPTION_EXTENDED",
+  "REFUND_REVERSED",
+  "TRANSFER",
+  "PRICE_INCREASE_CONSENT_REQUIRED",
+  "PRICE_INCREASE_CONSENT_APPROVED",
+] as const;
+export type WebhookEventType = (typeof WEBHOOK_EVENT_TYPES)[number];
+
+export interface WebhookConfig {
+  id: string;
+  url: string;
+  /** Worker secret holding the exact Authorization header value to send. */
+  authorizationSecret?: string;
+  /**
+   * Worker secret holding the HMAC signing key. During a rotation it may hold two keys
+   * separated by a comma; each produces a v1= signature.
+   */
+  signingSecret?: string;
+  environments: ("production" | "sandbox")[];
+  /** Event types to send; all when unset. */
+  events: Set<WebhookEventType> | null;
+}
+
 export interface Config {
   apps: Map<string, AppConfig>;
+  webhooks: WebhookConfig[];
   entitlements: EntitlementConfig[];
   offerings: OfferingConfig[];
   currentOffering: string | null;
@@ -97,7 +130,7 @@ export function parseConfig(raw: unknown): Config {
 
   if (!isObject(raw)) throw new ConfigError(["the config must be a mapping"]);
   if (raw.version !== 1) fail("version", "must be 1");
-  allowOnly(raw, ["version", "apps", "entitlements", "offerings"], "", fail);
+  allowOnly(raw, ["version", "apps", "entitlements", "offerings", "webhooks"], "", fail);
 
   // --- apps -------------------------------------------------------------------------------
   const apps = new Map<string, AppConfig>();
@@ -306,8 +339,63 @@ export function parseConfig(raw: unknown): Config {
   }
   if (offerings.length && !currentOffering) fail("offerings", "mark one offering as current: true");
 
+  // --- webhooks -----------------------------------------------------------------------------
+  const webhooks: WebhookConfig[] = [];
+  const rawWebhooks = raw.webhooks ?? [];
+  if (!Array.isArray(rawWebhooks)) fail("webhooks", "must be a list");
+  for (const [i, w] of (Array.isArray(rawWebhooks) ? rawWebhooks : []).entries()) {
+    const at = `webhooks[${i}]`;
+    if (!isObject(w)) {
+      fail(at, "must be a mapping with id and url");
+      continue;
+    }
+    allowOnly(w, ["id", "url", "authorization_secret", "signing_secret", "environments", "events"], at, fail);
+    if (typeof w.id !== "string" || !ID.test(w.id)) fail(`${at}.id`, "required, e.g. backend");
+    else if (webhooks.some((x) => x.id === w.id)) fail(`${at}.id`, `duplicate webhook ${w.id}`);
+    let url: URL | undefined;
+    try {
+      url = new URL(String(w.url));
+    } catch {
+      fail(`${at}.url`, "must be a full URL");
+    }
+    if (url && url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) {
+      fail(`${at}.url`, "must use https (http is allowed only for localhost)");
+    }
+    const secretName = (key: string) => {
+      const v = w[key];
+      if (v === undefined) return undefined;
+      if (typeof v !== "string" || !/^[A-Z][A-Z0-9_]{0,63}$/.test(v)) {
+        fail(`${at}.${key}`, "must be a Worker secret name like WEBHOOK_SIGNING_SECRET (the secret itself never goes here)");
+        return undefined;
+      }
+      return v;
+    };
+    const envs = w.environments ?? ["production", "sandbox"];
+    if (!Array.isArray(envs) || !envs.length || !envs.every((e) => e === "production" || e === "sandbox")) {
+      fail(`${at}.environments`, "must list production and/or sandbox");
+    }
+    let events: Set<WebhookEventType> | null = null;
+    if (w.events !== undefined) {
+      if (!Array.isArray(w.events) || !w.events.length) fail(`${at}.events`, "must be a list of event types");
+      else {
+        for (const e of w.events) {
+          if (!WEBHOOK_EVENT_TYPES.includes(e as WebhookEventType)) fail(`${at}.events`, `unknown event type ${String(e)}`);
+        }
+        events = new Set(w.events as WebhookEventType[]);
+      }
+    }
+    webhooks.push({
+      id: String(w.id),
+      url: String(w.url),
+      authorizationSecret: secretName("authorization_secret"),
+      signingSecret: secretName("signing_secret"),
+      environments: Array.isArray(envs) ? (envs as WebhookConfig["environments"]) : [],
+      events,
+    });
+  }
+
   if (problems.length) throw new ConfigError(problems);
-  return { apps, entitlements, offerings, currentOffering, keys };
+  return { apps, entitlements, offerings, currentOffering, keys, webhooks };
 }
 
 function nonEmptyString(v: unknown): v is string {

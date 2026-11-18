@@ -34,6 +34,8 @@ import { d1ChainStore } from "../lib/chain-store-d1";
 import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { AppleMappingError, type AppleTransaction, appleTransactionRow, type SubscriptionStateUpdate } from "../stores/apple";
 import { AppleApiError } from "../stores/apple-api";
+import { receiptPurchaseEvents } from "../stores/apple-events";
+import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
 import { AppleApiNotConfigured, appleClients, syncFromTransactionId, syncStatuses } from "../stores/apple-sync";
 
@@ -160,7 +162,54 @@ async function recordForCustomer(
   for (const t of chains.values()) writes.push(assignOwner(db, t, customer.id));
   for (const s of states) writes.push(upsertSubscriptionState(db, s));
   if (attributes.size) writes.push(writeAttributes(db, customer.id, attributes));
+
+  // Webhook events, in the same batch: purchase events for recent transactions, and TRANSFER
+  // when a named user loses a purchase to this customer.
+  const eventIds: string[] = [];
+  const { config } = c.get("deps");
+  const app = c.get("app");
+  if (config.webhooks.length && transactions.length) {
+    const now = Date.now();
+    const planned = transactions.flatMap((t) => receiptPurchaseEvents(t, now).map((e) => ({ e, t })));
+    const losers = [...new Map([...owners.values()].filter((o) => o.id !== customer.id && !o.anonymousOnly).map((o) => [o.id, o])).values()];
+    const env = transactions[0]!.environment;
+    const wantsTransfer = losers.length > 0 && webhooksFor(config, "TRANSFER", env).length > 0;
+    const wanted = planned.filter(({ e, t }) => webhooksFor(config, e.type, t.environment).length);
+    if (wanted.length || wantsTransfer) {
+      // Customer details as they'll be once this batch lands (anonymous owners merged in).
+      const eventCustomer = await loadEventCustomer(db, [customer.id, ...merged], customer.id, appUserId);
+      // Attributes sent with this receipt are written in the same batch, so apply them here too.
+      for (const [key, u] of attributes) {
+        const current = eventCustomer.attributes[key];
+        if (current && current.updated_at_ms >= u.updatedAt) continue;
+        if (u.value === null) delete eventCustomer.attributes[key];
+        else eventCustomer.attributes[key] = { value: u.value, updated_at_ms: u.updatedAt };
+      }
+      for (const { e, t } of wanted) {
+        const { id, statements } = enqueueEvent(db, config, { ...e, appId: app.id, environment: t.environment, store: t.store, customer: eventCustomer, transaction: t, now });
+        eventIds.push(id);
+        writes.push(...statements);
+      }
+      for (const loser of wantsTransfer ? losers : []) {
+        const from = await loadEventCustomer(db, [loser.id], loser.id);
+        const { id, statements } = enqueueEvent(db, config, {
+          type: "TRANSFER",
+          dedupeKey: `transfer:${store}:${loser.id}:${customer.id}:${now}`,
+          appId: app.id,
+          environment: env,
+          store: store!,
+          customer: eventCustomer,
+          extra: { transferred_from: from.aliases, transferred_to: eventCustomer.aliases },
+          now,
+        });
+        eventIds.push(id);
+        writes.push(...statements);
+      }
+    }
+  }
+
   if (writes.length) await db.batch(writes);
+  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
 }
 
 // logIn. 201 tells the SDK the user was created; 200 that it already existed.
