@@ -1,0 +1,15 @@
+{
+  "name": "openpurr",
+  "private": true,
+  "license": "Apache-2.0",
+  "packageManager": "pnpm@12.21.0",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @openpurr/lite dev",
+    "test": "pnpm -r test",
+    "typecheck": "pnpm -r typecheck",
+    "deploy": "pnpm --filter @openpurr/lite deploy"
+  }
+}

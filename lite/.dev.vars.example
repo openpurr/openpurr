@@ -1,0 +1,5 @@
+# Copy to .dev.vars for `wrangler dev`. Never commit .dev.vars.
+SDK_KEYS=appl_local_dev,goog_local_dev
+BENCH_TOKEN=change-me
+# Optional: JSON product catalog matching your test apps (see src/spike-config.ts).
+# SPIKE_CONFIG={"products":{...},"currentOffering":"default","offerings":[...]}
