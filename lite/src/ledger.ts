@@ -34,6 +34,8 @@ export interface TransactionRow {
   revocation_reason: string | null;
   is_upgraded: number;
   verified: number;
+  /** App Store subscription group (for intro-offer eligibility). */
+  subscription_group: string | null;
 }
 
 export type NewTransaction = TransactionRow & { source: "sdk" | "notification" | "store_api" };
@@ -41,7 +43,7 @@ export type NewTransaction = TransactionRow & { source: "sdk" | "notification" |
 const TX_COLUMNS = `t.app_id, t.store, t.environment, t.transaction_id, t.original_transaction_id, t.product_id,
   t.base_plan_id, t.product_type, t.purchased_at, t.original_purchased_at, t.expires_at, t.period_type,
   t.ownership_type, t.price_micros, t.currency, t.storefront, t.revoked_at, t.revocation_reason, t.is_upgraded,
-  t.verified`;
+  t.verified, t.subscription_group`;
 
 interface CustomerRecord {
   id: string;
@@ -147,6 +149,17 @@ export function mergeCustomers(db: D1Database, from: string, into: string) {
   return [
     db.prepare("UPDATE customer_alias SET customer_id = ? WHERE customer_id = ?").bind(into, from),
     db.prepare("UPDATE purchase_owner SET customer_id = ? WHERE customer_id = ?").bind(into, from),
+    // Attributes merge too; for a key both have, the more recently set value wins.
+    db
+      .prepare(
+        `INSERT INTO subscriber_attribute (customer_id, key, value, updated_at, received_at)
+         SELECT ?1, key, value, updated_at, received_at FROM subscriber_attribute WHERE customer_id = ?2 AND true
+         ON CONFLICT (customer_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at,
+           received_at = excluded.received_at
+         WHERE excluded.updated_at > subscriber_attribute.updated_at`,
+      )
+      .bind(into, from),
+    db.prepare("DELETE FROM subscriber_attribute WHERE customer_id = ?").bind(from),
     db.prepare("DELETE FROM customer WHERE id = ?").bind(from),
   ];
 }
@@ -201,8 +214,8 @@ export function upsertTransaction(db: D1Database, tx: NewTransaction, now = Date
       `INSERT INTO store_transaction (app_id, store, environment, transaction_id, original_transaction_id, product_id,
          base_plan_id, product_type, purchased_at, original_purchased_at, expires_at, period_type, ownership_type,
          price_micros, currency, storefront, revoked_at, revocation_reason, is_upgraded, verified, source,
-         received_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         received_at, updated_at, subscription_group)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
        ON CONFLICT (store, transaction_id) DO UPDATE SET
          expires_at = excluded.expires_at,
          revoked_at = excluded.revoked_at,
@@ -210,6 +223,7 @@ export function upsertTransaction(db: D1Database, tx: NewTransaction, now = Date
          is_upgraded = excluded.is_upgraded,
          ownership_type = excluded.ownership_type,
          verified = max(verified, excluded.verified),
+         subscription_group = coalesce(excluded.subscription_group, subscription_group),
          updated_at = excluded.updated_at`,
     )
     .bind(
@@ -236,6 +250,7 @@ export function upsertTransaction(db: D1Database, tx: NewTransaction, now = Date
       tx.source,
       now,
       now,
+      tx.subscription_group,
     );
 }
 

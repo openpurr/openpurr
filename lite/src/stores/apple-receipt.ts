@@ -22,6 +22,7 @@ const CONTEXT_0 = 0xa0;
 const PKCS7_SIGNED_DATA_OID = [0x2a, 0x86, 0x48, 0x86, 0xf7, 0x0d, 0x01, 0x07, 0x02];
 
 const IN_APP = 17;
+const PRODUCT_ID = 1702;
 const TRANSACTION_ID = 1703;
 const ORIGINAL_TRANSACTION_ID = 1705;
 const MAX_DEPTH = 32;
@@ -119,11 +120,8 @@ function attributes(bytes: Uint8Array, set: Element, depth: number) {
   });
 }
 
-/**
- * A transaction ID from the receipt's in-app purchases, or null if the receipt has none (for
- * example, an app that has never sold anything). Throws InvalidReceiptError if malformed.
- */
-export function transactionIdFromAppReceipt(receiptBase64: string): string | null {
+/** The in-app purchases listed in an app receipt. Throws InvalidReceiptError if malformed. */
+export function parseAppReceipt(receiptBase64: string): { transactionId: string | null; productIds: string[] } {
   let bytes: Uint8Array;
   try {
     const bin = atob(receiptBase64.replace(/\s+/g, ""));
@@ -131,21 +129,37 @@ export function transactionIdFromAppReceipt(receiptBase64: string): string | nul
   } catch {
     throw new InvalidReceiptError("receipt is not base64");
   }
+  const utf8 = new TextDecoder("utf-8", { fatal: true, ignoreBOM: false });
+  const text = (el: Element, depth: number) => {
+    const str = expect(read(bytes, el.contentStart, el.contentEnd, depth), UTF8_STRING, "string");
+    return utf8.decode(bytes.subarray(str.contentStart, str.contentEnd));
+  };
   try {
+    let transactionId: string | null = null;
+    const productIds = new Set<string>();
     for (const attr of attributes(bytes, payload(bytes), 6)) {
       if (attr.type !== IN_APP) continue;
       const inApp = expect(read(bytes, attr.value.contentStart, attr.value.contentEnd, 8), SET, "in-app receipt");
       for (const field of attributes(bytes, inApp, 9)) {
-        if (field.type !== TRANSACTION_ID && field.type !== ORIGINAL_TRANSACTION_ID) continue;
-        const str = expect(read(bytes, field.value.contentStart, field.value.contentEnd, 11), UTF8_STRING, "transaction ID");
-        const id = new TextDecoder("utf-8", { fatal: true, ignoreBOM: false }).decode(bytes.subarray(str.contentStart, str.contentEnd));
-        if (!/^\d{1,30}$/.test(id)) throw new InvalidReceiptError("transaction ID is not numeric");
-        return id;
+        if (field.type === PRODUCT_ID) productIds.add(text(field.value, 11));
+        if (!transactionId && (field.type === TRANSACTION_ID || field.type === ORIGINAL_TRANSACTION_ID)) {
+          const id = text(field.value, 11);
+          if (!/^\d{1,30}$/.test(id)) throw new InvalidReceiptError("transaction ID is not numeric");
+          transactionId = id;
+        }
       }
     }
-    return null;
+    return { transactionId, productIds: [...productIds] };
   } catch (err) {
     if (err instanceof InvalidReceiptError) throw err;
     throw new InvalidReceiptError("malformed receipt");
   }
+}
+
+/**
+ * A transaction ID from the receipt's in-app purchases, or null if the receipt has none (for
+ * example, an app that has never sold anything). Throws InvalidReceiptError if malformed.
+ */
+export function transactionIdFromAppReceipt(receiptBase64: string): string | null {
+  return parseAppReceipt(receiptBase64).transactionId;
 }

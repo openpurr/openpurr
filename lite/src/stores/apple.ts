@@ -26,6 +26,7 @@ export interface AppleTransaction {
   price?: number;
   currency?: string;
   storefront?: string;
+  subscriptionGroupIdentifier?: string;
 }
 
 const APPLE_TYPE: Record<ProductConfig["type"], AppleTransaction["type"]> = {
@@ -69,6 +70,7 @@ export function appleTransactionRow(tx: AppleTransaction, app: AppConfig, produc
     is_upgraded: tx.isUpgraded ? 1 : 0,
     verified: 1,
     source: "sdk",
+    subscription_group: tx.subscriptionGroupIdentifier ?? null,
   };
 }
 
