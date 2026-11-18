@@ -98,6 +98,8 @@ export interface WebhookConfig {
 }
 
 export interface Config {
+  /** Changes whenever the config does; CustomerInfo snapshots built from another version are recomputed. */
+  version: string;
   apps: Map<string, AppConfig>;
   webhooks: WebhookConfig[];
   entitlements: EntitlementConfig[];
@@ -395,7 +397,17 @@ export function parseConfig(raw: unknown): Config {
   }
 
   if (problems.length) throw new ConfigError(problems);
-  return { apps, entitlements, offerings, currentOffering, keys, webhooks };
+  return { version: fnv1a(JSON.stringify(raw)), apps, entitlements, offerings, currentOffering, keys, webhooks };
+}
+
+/** FNV-1a, 32-bit, hex. Synchronous, so the config can be versioned at module load. */
+function fnv1a(s: string) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, "0");
 }
 
 function nonEmptyString(v: unknown): v is string {

@@ -66,6 +66,7 @@ describe("delivery", () => {
       transaction_id: payload.transactionId,
       original_transaction_id: payload.originalTransactionId,
       is_family_share: false,
+      country_code: "US", // from Apple's "USA" storefront
       currency: "USD",
       price: 9.99,
       price_in_purchased_currency: 9.99,

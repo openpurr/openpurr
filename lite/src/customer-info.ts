@@ -68,18 +68,36 @@ function outlasts(a: TransactionRow, b: TransactionRow, stateOf: StateLookup): b
   return a.purchased_at > b.purchased_at;
 }
 
-export function buildCustomerInfo(args: {
+/**
+ * The time-independent part of CustomerInfo: what's stored in customer_snapshot. Fields that
+ * depend on the request time or the requesting app (request_date, last_seen, management_url)
+ * are added by renderCustomerInfo.
+ */
+export interface Snapshot {
+  subscriber: {
+    original_app_user_id: string;
+    original_application_version: null;
+    original_purchase_date: null;
+    first_seen: string;
+    subscriptions: Record<string, unknown>;
+    non_subscriptions: Record<string, unknown[]>;
+    other_purchases: Record<string, never>;
+    entitlements: Record<string, Entitlement>;
+    subscriber_attributes: Record<string, never>;
+  };
+  /** Subscriptions that could make management_url non-null: store, app, product and when access ends. */
+  management: { store: "app_store" | "play_store"; app_id: string; product_id: string; end: number }[];
+}
+
+export function computeSnapshot(args: {
   appUserId: string;
   customer: Customer | null;
   transactions: TransactionRow[];
   /** Store-reported subscription status (auto-renew, billing issues, grace periods). */
   states?: SubscriptionStateRow[];
   config: Config;
-  /** The store of the requesting app, for management_url. */
-  requestStore?: "app_store" | "play_store";
   now?: number;
-}) {
-  const now = args.now ?? Date.now();
+}): Snapshot {
   const { config } = args;
   const stateMap = new Map((args.states ?? []).map((s) => [`${s.store}:${s.original_transaction_id}`, s]));
   const stateOf: StateLookup = (t) => stateMap.get(`${t.store}:${t.original_transaction_id}`);
@@ -156,39 +174,63 @@ export function buildCustomerInfo(args: {
   }
 
   return {
-    request_date: iso(now),
-    request_date_ms: now,
     subscriber: {
       original_app_user_id: args.customer?.appUserId ?? args.appUserId,
       original_application_version: null,
       original_purchase_date: null,
-      first_seen: iso(args.customer?.firstSeen ?? now),
-      last_seen: iso(now),
-      management_url: managementUrl(config, [...subscriptionTx.values()], now, stateOf, args.requestStore),
+      first_seen: iso(args.customer?.firstSeen ?? args.now ?? Date.now()),
       subscriptions,
       non_subscriptions: nonSubscriptions,
       other_purchases: {},
       entitlements,
       subscriber_attributes: {},
     },
+    management: [...subscriptionTx.values()]
+      .filter((t) => t.revoked_at === null)
+      .map((t) => ({ store: t.store, app_id: t.app_id, product_id: t.product_id, end: effectiveEnd(t, stateOf(t)) ?? 0 })),
   };
+}
+
+/** The CustomerInfo body for one request: the snapshot plus request time and management_url. */
+export function renderCustomerInfo(
+  snapshot: Snapshot,
+  config: Config,
+  opts: { now?: number; requestStore?: "app_store" | "play_store" } = {},
+) {
+  const now = opts.now ?? Date.now();
+  const { subscriber } = snapshot;
+  return {
+    request_date: iso(now),
+    request_date_ms: now,
+    subscriber: {
+      original_app_user_id: subscriber.original_app_user_id,
+      original_application_version: subscriber.original_application_version,
+      original_purchase_date: subscriber.original_purchase_date,
+      first_seen: subscriber.first_seen,
+      last_seen: iso(now),
+      management_url: managementUrl(config, snapshot.management, now, opts.requestStore),
+      subscriptions: subscriber.subscriptions,
+      non_subscriptions: subscriber.non_subscriptions,
+      other_purchases: subscriber.other_purchases,
+      entitlements: subscriber.entitlements,
+      subscriber_attributes: subscriber.subscriber_attributes,
+    },
+  };
+}
+
+/** Computes and renders in one step (no snapshot involved). */
+export function buildCustomerInfo(args: Parameters<typeof computeSnapshot>[0] & { requestStore?: "app_store" | "play_store" }) {
+  return renderCustomerInfo(computeSnapshot(args), args.config, { now: args.now, requestStore: args.requestStore });
 }
 
 /**
  * The store page where the user manages the active subscription. Prefers the requesting
  * platform's store when it has one; otherwise the subscription that ends last. Null if none.
  */
-function managementUrl(
-  config: Config,
-  subs: TransactionRow[],
-  now: number,
-  stateOf: StateLookup,
-  requestStore?: string,
-): string | null {
-  const end = (t: TransactionRow) => effectiveEnd(t, stateOf(t)) ?? 0;
-  const active = subs.filter((t) => t.revoked_at === null && end(t) > now);
+function managementUrl(config: Config, subs: Snapshot["management"], now: number, requestStore?: string): string | null {
+  const active = subs.filter((m) => m.end > now);
   if (!active.length) return null;
-  const pick = active.find((t) => t.store === requestStore) ?? active.reduce((a, b) => (end(b) > end(a) ? b : a));
+  const pick = active.find((m) => m.store === requestStore) ?? active.reduce((a, b) => (b.end > a.end ? b : a));
   if (pick.store === "app_store") return APPLE_MANAGEMENT_URL;
   const pkg = config.apps.get(pick.app_id)?.packageName;
   const q = new URLSearchParams({ sku: pick.product_id, ...(pkg ? { package: pkg } : {}) });

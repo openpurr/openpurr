@@ -2,8 +2,8 @@
 //
 // Body: {"api_version": "1.0", "event": {...}}, with RevenueCat's field names, so existing
 // RevenueCat webhook handlers work unchanged. Fields we can't know yet are null, which
-// RevenueCat's docs allow for unknown values: country_code (Apple gives a 3-letter storefront)
-// and price in USD when the purchase wasn't in USD (needs exchange rates).
+// RevenueCat's docs allow for unknown values: price in USD when the purchase wasn't in USD
+// (needs exchange rates).
 //
 // Delivery:
 //   - The event and one delivery row per matching endpoint are written in the SAME D1 batch as
@@ -20,6 +20,7 @@
 import { type Config, entitlementsFor, type WebhookConfig, type WebhookEventType } from "./config";
 import type { Env } from "./env";
 import type { TransactionRow } from "./ledger";
+import { alpha2FromAlpha3 } from "./lib/countries";
 
 export interface EventCustomer {
   id: string;
@@ -89,7 +90,8 @@ export function eventBody(config: Config, input: EventInput, id: string) {
             transaction_id: t.transaction_id,
             original_transaction_id: t.original_transaction_id,
             is_family_share: t.ownership_type === "FAMILY_SHARED",
-            country_code: null,
+            // Apple's storefront is ISO 3166-1 alpha-3; RevenueCat sends alpha-2.
+            country_code: t.store === "app_store" ? alpha2FromAlpha3(t.storefront) : null,
             currency: t.currency,
             price: t.currency === "USD" ? amount : null,
             price_in_purchased_currency: amount,
