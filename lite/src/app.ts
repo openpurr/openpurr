@@ -1,14 +1,20 @@
 import { Hono } from "hono";
-import type { AppEnv } from "./env";
+import type { AppEnv, Deps } from "./env";
 import { capture } from "./lib/capture";
 import { sdk } from "./routes/sdk";
 
 /**
- * Builds the HTTP app. `extend` mounts extra routes before the fallbacks; the benchmark
- * Worker uses it to add /__bench without shipping benchmarks in the production bundle.
+ * Builds the HTTP app around a validated config. `extend` mounts extra routes before the
+ * fallbacks; the benchmark Worker uses it to add /__bench without shipping benchmarks in the
+ * production bundle.
  */
-export function buildApp(extend?: (app: Hono<AppEnv>) => void) {
+export function buildApp(deps: Deps, extend?: (app: Hono<AppEnv>) => void) {
   const app = new Hono<AppEnv>();
+
+  app.use("*", async (c, next) => {
+    c.set("deps", deps);
+    await next();
+  });
 
   app.use("/v1/*", capture);
   app.route("/v1", sdk);

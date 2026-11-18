@@ -1,0 +1,54 @@
+# openpurr config: apps, products, entitlements and offerings.
+#
+# Copy to openpurr.config.yaml and edit. It's compiled into the Worker at deploy time
+# (scripts/build-config.mjs), and mistakes fail the deploy with a message saying what's wrong.
+# Store credentials never go here; they're Worker secrets.
+
+version: 1
+
+apps:
+  # App IDs are your choice; they appear in entitlements and offerings below.
+  ios:
+    store: app_store
+    bundle_id: com.example.myapp          # every signed transaction must carry this bundle ID
+    # Public SDK keys for Purchases.configure(). They ship inside your app, so they're
+    # identifiers, not secrets. Use appl_ for App Store apps and goog_ for Google Play apps,
+    # followed by a long random string. Never start a key with test_.
+    sdk_keys:
+      - appl_replace_with_a_long_random_string
+    products:
+      pro_monthly: { type: subscription }
+      pro_annual: { type: subscription }
+      lifetime: { type: non_consumable }
+      coins_100: { type: consumable }
+
+  android:
+    store: play_store
+    package_name: com.example.myapp
+    sdk_keys:
+      - goog_replace_with_a_long_random_string
+    # Google Play validation arrives in a later release. Until then, purchases from this app are
+    # refused (and stay queued on the device) unless this is true. Development only: with it on,
+    # anyone with the public SDK key could grant themselves entitlements.
+    # allow_unverified_purchases: true
+    products:
+      pro: { type: subscription, base_plans: [monthly, annual] }
+      lifetime: { type: non_consumable }
+      coins_100: { type: consumable }
+
+entitlements:
+  pro:
+    description: Pro features
+    products:
+      ios: [pro_monthly, pro_annual, lifetime]
+      android: [pro, lifetime]              # "pro" = every base plan; "pro:monthly" = just one
+
+offerings:
+  - id: default
+    current: true
+    description: Standard plans
+    metadata: {}
+    packages:
+      - { id: $rc_monthly, ios: pro_monthly, android: "pro:monthly" }
+      - { id: $rc_annual, ios: pro_annual, android: "pro:annual" }
+      - { id: $rc_lifetime, ios: lifetime, android: lifetime }

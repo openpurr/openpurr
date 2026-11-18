@@ -1,5 +1,3 @@
-# Copy to .dev.vars for `wrangler dev`. Never commit .dev.vars.
-SDK_KEYS=appl_local_dev,goog_local_dev
+# Local secrets for `wrangler dev`. Copy to .dev.vars (git-ignored).
+# Public SDK keys go in openpurr.config.yaml, not here.
 BENCH_TOKEN=change-me
-# Optional: JSON product catalog matching your test apps (see src/spike-config.ts).
-# SPIKE_CONFIG={"products":{...},"currentOffering":"default","offerings":[...]}

@@ -7,6 +7,14 @@
   "compatibility_date": "2026-11-01",
   "workers_dev": true,
   "preview_urls": false,
+  // Smaller bundle, faster isolate startup (see scripts/check-bundle.mjs). Stack traces in
+  // Workers Logs stay readable through the uploaded source map.
+  "minify": true,
+  "upload_source_maps": true,
+
+  // Compiles openpurr.config.yaml into src/config.generated.json before every deploy and dev run.
+  // A config mistake fails here with a message saying what's wrong.
+  "build": { "command": "node scripts/build-config.mjs" },
 
   // Workers Logs records CPU time per invocation; M0 reads benchmark results from it.
   "observability": {
@@ -37,8 +45,8 @@
     "CAPTURE": "on"
   },
 
+  // Public SDK keys live in openpurr.config.yaml (they ship inside apps, so they aren't secrets).
   // Secrets (set with `wrangler secret put`, or in .dev.vars locally):
-  //   SDK_KEYS      comma-separated public SDK keys this server accepts, e.g. "appl_xxx,goog_yyy"
   //   BENCH_TOKEN   bearer token for the /__capture endpoint (and /__bench on the bench Worker)
 
   "env": {

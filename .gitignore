@@ -17,3 +17,7 @@ Specs/
 
 # Test-only keys, generated on demand by lite/scripts/gen-bench-fixtures.mjs
 lite/src/bench/fixtures.generated.ts
+
+# Operator config and its compiled form (lite/openpurr.config.example.yaml is the template)
+lite/openpurr.config.yaml
+lite/src/config.generated.json

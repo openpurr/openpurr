@@ -159,6 +159,10 @@ export const TEST_JWS_LEAF_WITHOUT_MARKER = ${JSON.stringify(jwsNoMarker)};
 /** Same payload, but the leaf is signed by a key other than the intermediate's. Must be rejected. */
 export const TEST_JWS_LEAF_WRONG_ISSUER = ${JSON.stringify(jwsWrongIssuer)};
 
+/** The test leaf's private key and chain, so tests can sign their own transactions. */
+export const TEST_LEAF_KEY_PEM = ${JSON.stringify(await exportPKCS8(leafKeys.privateKey))};
+export const TEST_X5C = ${JSON.stringify([b64(leaf), b64(intermediate), b64(root)])};
+
 /** P-256 PKCS#8 PEM, shaped like an App Store Connect API .p8 key. */
 export const TEST_APPLE_API_KEY_PEM = ${JSON.stringify(await exportPKCS8(appleApiKey.privateKey))};
 

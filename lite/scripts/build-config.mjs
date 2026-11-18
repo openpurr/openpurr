@@ -1,0 +1,46 @@
+// Compiles openpurr.config.yaml into src/config.generated.json, validating it first.
+// Runs automatically before `wrangler deploy` and `wrangler dev` (wrangler.jsonc build.command).
+//
+// Which file: $OPENPURR_CONFIG if set, else openpurr.config.yaml. With --allow-example, falls
+// back to openpurr.config.example.yaml (typecheck, tests and CI only; never for a deploy).
+
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
+import { parse } from "yaml";
+import { ConfigError, parseConfig } from "../src/config.ts";
+
+const root = new URL("..", import.meta.url);
+const path = (p) => fileURLToPath(new URL(p, root));
+
+let source = process.env.OPENPURR_CONFIG || path("openpurr.config.yaml");
+if (!existsSync(source)) {
+  if (process.argv.includes("--allow-example")) {
+    source = path("openpurr.config.example.yaml");
+  } else {
+    console.error(
+      `No config at ${source}.\nCopy openpurr.config.example.yaml to openpurr.config.yaml and edit it, or set OPENPURR_CONFIG.`,
+    );
+    process.exit(1);
+  }
+}
+
+let raw;
+try {
+  raw = parse(readFileSync(source, "utf8"), { prettyErrors: true });
+} catch (err) {
+  console.error(`${source}: YAML syntax error\n${err.message}`);
+  process.exit(1);
+}
+
+try {
+  parseConfig(raw);
+} catch (err) {
+  if (err instanceof ConfigError) {
+    console.error(`${source}\n${err.message}`);
+    process.exit(1);
+  }
+  throw err;
+}
+
+writeFileSync(path("src/config.generated.json"), `${JSON.stringify(raw, null, 2)}\n`);
+console.log(`config: ${source} -> src/config.generated.json`);

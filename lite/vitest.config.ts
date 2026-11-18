@@ -11,7 +11,6 @@ export default defineConfig(async () => {
           bindings: {
             TEST_MIGRATIONS: migrations,
             BENCH_TOKEN: "test-bench-token",
-            SDK_KEYS: "appl_testkey,goog_testkey",
           },
         },
       }),
