@@ -1,6 +1,7 @@
 import type { AppConfig, Config } from "./config";
 import type { FxProvider } from "./fx";
 import type { RateLimiters } from "./lib/rate-limit";
+import type { Principal } from "./office/principal";
 import type { SecretKey } from "./secret-keys";
 
 export interface Env {
@@ -39,5 +40,5 @@ export interface Deps {
 export type AppEnv = {
   Bindings: Env;
   /** `app` is set for public SDK keys; `secretKey` for secret (server-to-server) keys. */
-  Variables: { deps: Deps; app: AppConfig; secretKey?: SecretKey };
+  Variables: { deps: Deps; app: AppConfig; secretKey?: SecretKey; principal?: Principal };
 };

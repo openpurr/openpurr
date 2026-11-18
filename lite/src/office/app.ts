@@ -6,10 +6,12 @@ import { createApp } from "../app";
 import type { AppEnv, Deps } from "../env";
 import { googleNotifications } from "../routes/google-notifications";
 import { notifications } from "../routes/notifications";
+import { admin } from "./admin";
 import { auth } from "./auth";
 
 export function mountOffice(app: Hono<AppEnv>) {
   app.route("/admin/v1/auth", auth);
+  app.route("/admin/v1", admin);
   app.route("/notifications/google", googleNotifications);
   app.route("/notifications", notifications);
 
