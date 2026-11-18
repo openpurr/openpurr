@@ -2,6 +2,7 @@
 // `openpurr-bench` (wrangler env "bench") so test keys and benchmark code never ship in
 // the production bundle.
 import { buildApp } from "../app";
+import { productionDeps } from "../deps";
 import { bench } from "./index";
 
-export default buildApp((app) => app.route("/__bench", bench));
+export default buildApp(productionDeps, (app) => app.route("/__bench", bench));

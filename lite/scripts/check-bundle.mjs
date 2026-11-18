@@ -17,7 +17,12 @@ import { pathToFileURL } from "node:url";
 const MAX_KIB = Number(process.argv[process.argv.indexOf("--max") + 1]) || 100;
 
 const outdir = mkdtempSync(join(tmpdir(), "openpurr-bundle-"));
-execFileSync("npx", ["wrangler", "deploy", "--env=", "--dry-run", "--outdir", outdir], { stdio: ["ignore", "ignore", "inherit"] });
+// The build step compiles the config; CI has no operator config, so use the example.
+const example = new URL("../openpurr.config.example.yaml", import.meta.url).pathname;
+execFileSync("npx", ["wrangler", "deploy", "--env=", "--dry-run", "--outdir", outdir], {
+  stdio: ["ignore", "ignore", "inherit"],
+  env: { ...process.env, OPENPURR_CONFIG: process.env.OPENPURR_CONFIG || example },
+});
 
 const file = readdirSync(outdir).find((f) => f.endsWith(".js"));
 if (!file) throw new Error(`no bundle written to ${outdir}`);

@@ -39,9 +39,12 @@ pnpm test          # Vitest inside the Workers runtime (workerd)
 pnpm typecheck
 pnpm check:bundle  # production bundle stays under its size budget
 cp lite/.dev.vars.example lite/.dev.vars
+cp lite/openpurr.config.example.yaml lite/openpurr.config.yaml   # apps, products, entitlements, offerings
 pnpm --filter @openpurr/lite db:migrate:local
 pnpm dev           # wrangler dev
 ```
+
+Tests and typecheck fall back to the example config, so they work without your own `openpurr.config.yaml`. `wrangler dev` and deploys require it, and validate it first.
 
 Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also refuses packages published in the last 24 hours; keep new pins at least a week old.
 
