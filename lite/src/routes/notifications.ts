@@ -21,7 +21,14 @@
 import { type Context, Hono } from "hono";
 import type { AppConfig } from "../config";
 import type { AppEnv } from "../env";
-import { notificationSeen, recordNotification, upsertSubscriptionState, upsertTransaction } from "../ledger";
+import {
+  type NewTransaction,
+  notificationSeen,
+  purchaseOwner,
+  recordNotification,
+  upsertSubscriptionState,
+  upsertTransaction,
+} from "../ledger";
 import { AppleJwsError, verifyAppleJws } from "../lib/apple-jws";
 import { d1ChainStore } from "../lib/chain-store-d1";
 import {
@@ -32,6 +39,8 @@ import {
   appleSubscriptionState,
   appleTransactionRow,
 } from "../stores/apple";
+import { appleNotificationEvents } from "../stores/apple-events";
+import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
 
 export const notifications = new Hono<AppEnv>();
 
@@ -79,6 +88,7 @@ notifications.post("/apple", async (c) => {
   }
 
   const writes: D1PreparedStatement[] = [];
+  let row: NewTransaction | undefined;
   if (tx && app) {
     const product = app.products.get(tx.productId);
     if (!product) {
@@ -86,10 +96,46 @@ notifications.post("/apple", async (c) => {
       return reply(c, 500, `Product ${tx.productId} is not in the config.`);
     }
     try {
-      writes.push(upsertTransaction(db, { ...appleTransactionRow(tx, app, product), source: "notification" }));
+      row = { ...appleTransactionRow(tx, app, product), source: "notification" };
+      writes.push(upsertTransaction(db, row));
     } catch (err) {
       if (err instanceof AppleMappingError) return reply(c, 500, err.message);
       throw err;
+    }
+  }
+
+  // Webhook events, in the same batch as the ledger change. A purchase nobody owns yet has no
+  // app user to report; the SDK's POST /v1/receipts produces its purchase event when it arrives.
+  const eventIds: string[] = [];
+  const { config } = c.get("deps");
+  if (row && app && config.webhooks.length) {
+    const owner = await purchaseOwner(db, "app_store", row.original_transaction_id);
+    const previous =
+      notification.notificationType === "DID_RENEW" || notification.subtype === "RESUBSCRIBE"
+        ? await db
+            .prepare(
+              `SELECT period_type FROM store_transaction WHERE store = 'app_store' AND original_transaction_id = ?
+               AND transaction_id != ? ORDER BY purchased_at DESC LIMIT 1`,
+            )
+            .bind(row.original_transaction_id, row.transaction_id)
+            .first<{ period_type: string }>()
+        : null;
+    const planned = appleNotificationEvents(notification, row, renewal, { previousPeriodType: previous?.period_type });
+    const wanted = planned.filter((e) => webhooksFor(config, e.type, row!.environment).length);
+    if (owner && wanted.length) {
+      const customer = await loadEventCustomer(db, [owner.id], owner.id);
+      for (const e of wanted) {
+        const { id, statements } = enqueueEvent(db, config, {
+          ...e,
+          appId: app.id,
+          environment: row.environment,
+          store: "app_store",
+          customer,
+          transaction: row,
+        });
+        eventIds.push(id);
+        writes.push(...statements);
+      }
     }
   }
   if (renewal) writes.push(upsertSubscriptionState(db, appleSubscriptionState(renewal, data.status)));
@@ -106,8 +152,10 @@ notifications.post("/apple", async (c) => {
       payload: signedPayload,
     }),
   );
-  // One D1 batch is one transaction: the ledger update and the "processed" record land together.
+  // One D1 batch is one transaction: the ledger update, its webhook events and the "processed"
+  // record land together.
   await db.batch(writes);
+  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
   return reply(c, 200, "OK");
 });
 

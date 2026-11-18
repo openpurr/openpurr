@@ -63,3 +63,20 @@ offerings:
       - { id: $rc_monthly, ios: pro_monthly, android: "pro:monthly" }
       - { id: $rc_annual, ios: pro_annual, android: "pro:annual" }
       - { id: $rc_lifetime, ios: lifetime, android: lifetime }
+
+# Webhooks: RevenueCat-shaped events (INITIAL_PURCHASE, RENEWAL, CANCELLATION, EXPIRATION,
+# BILLING_ISSUE, PRODUCT_CHANGE, TRANSFER...) POSTed to your backend, so existing RevenueCat
+# webhook handlers work unchanged. Delivered at least once (deduplicate on event.id), retried for
+# about 72 hours.
+# webhooks:
+#   - id: backend
+#     url: https://api.example.com/webhooks/revenuecat
+#     # Worker secret holding the exact Authorization header value to send (optional):
+#     #   wrangler secret put WEBHOOK_AUTH
+#     authorization_secret: WEBHOOK_AUTH
+#     # Worker secret holding an HMAC key (optional). Requests then carry
+#     # X-RevenueCat-Webhook-Signature: t=<unix>,v1=<hex>, an HMAC-SHA256 of "<t>.<body>".
+#     # During a key rotation, set it to "old-key,new-key" and both signatures are sent.
+#     signing_secret: WEBHOOK_SIGNING_SECRET
+#     environments: [production, sandbox]   # the default
+#     # events: [INITIAL_PURCHASE, RENEWAL]   # all event types when omitted
