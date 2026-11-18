@@ -6,23 +6,22 @@
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
+    "deploy:bench": "node scripts/gen-bench-fixtures.mjs --if-missing && wrangler deploy --env bench",
+    "typecheck": "node scripts/gen-bench-fixtures.mjs --if-missing && tsc --noEmit",
+    "test": "node scripts/gen-bench-fixtures.mjs --if-missing && vitest run",
     "db:migrate:local": "wrangler d1 migrations apply openpurr --local",
     "db:migrate:remote": "wrangler d1 migrations apply openpurr --remote",
     "bench:fixtures": "node scripts/gen-bench-fixtures.mjs"
   },
   "dependencies": {
-    "@peculiar/asn1-schema": "3.0.0",
-    "@peculiar/asn1-x509": "3.0.0",
-    "hono": "4.13.17",
-    "jose": "6.2.17"
+    "hono": "4.13.17"
   },
   "devDependencies": {
     "@cloudflare/vitest-plugin": "1.7.0",
     "@cloudflare/workers-types": "5.20261110.1",
     "@peculiar/x509": "3.1.0",
     "esbuild": "0.28.2",
+    "jose": "6.2.17",
     "reflect-metadata": "0.2.2",
     "typescript": "7.0.2",
     "vitest": "4.1.12",

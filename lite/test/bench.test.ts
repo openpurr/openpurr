@@ -1,8 +1,28 @@
-import { exports } from "cloudflare:workers";
+import { createExecutionContext, waitOnExecutionContext } from "cloudflare:test";
+import { env, exports } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
+import benchWorker from "../src/bench/worker";
 
-const get = (path: string, token = "test-bench-token") =>
-  exports.default.fetch(new Request(`https://openpurr.test${path}`, { headers: { authorization: `Bearer ${token}` } }));
+// The bench routes live only in the bench Worker (src/bench/worker.ts).
+async function get(path: string, token = "test-bench-token") {
+  const ctx = createExecutionContext();
+  const res = await benchWorker.fetch(
+    new Request(`https://openpurr.test${path}`, { headers: { authorization: `Bearer ${token}` } }),
+    env,
+    ctx,
+  );
+  await waitOnExecutionContext(ctx);
+  return res;
+}
+
+describe("production Worker", () => {
+  it("does not include the bench routes", async () => {
+    const res = await exports.default.fetch(
+      new Request("https://openpurr.test/__bench", { headers: { authorization: "Bearer test-bench-token" } }),
+    );
+    expect(res.status).toBe(404);
+  });
+});
 
 describe("bench endpoints", () => {
   it("are hidden without the bench token", async () => {

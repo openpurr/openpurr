@@ -3,12 +3,14 @@
 // Workers freezes Date.now() and performance.now() during CPU work (a Spectre mitigation),
 // so these endpoints can't time themselves. Read CPU time per request from Workers Logs
 // (wrangler tail, or the dashboard's Observability tab), then divide by n.
-// scripts/bench.mjs drives the endpoints and pulls the CPU numbers.
+// scripts/bench-remote.mjs drives the endpoints.
 //
 // Ops:
 //   noop                baseline: routing + JSON response
 //   jws-cold            Apple-style JWS: parse x5c, verify chain, verify signature (no cache)
-//   jws-warm            same JWS with the chain cached; one ECDSA P-256 verify
+//   jws-warm            same JWS with the chain cached in the isolate; one ECDSA P-256 verify
+//   jws-store           fresh-isolate path: chain found in the D1 ChainStore, so import the leaf
+//                       key and verify the JWS (plus one D1 read, which is I/O, not CPU)
 //   apple-token-cold    import .p8 + sign ES256 JWT
 //   apple-token-warm    sign ES256 JWT with the cached key
 //   google-token-cold   import RSA-2048 key + sign RS256 JWT
@@ -19,6 +21,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../env";
 import { verifyAppleJws } from "../lib/apple-jws";
+import { d1ChainStore } from "../lib/chain-store-d1";
 import { base64ToBytes } from "../lib/der";
 import { mintAppleApiToken, mintGoogleAssertion } from "../lib/store-tokens";
 import {
@@ -38,12 +41,14 @@ const appleCreds = {
 const googleSa = { clientEmail: "bench@example.iam.gserviceaccount.com", privateKeyPem: TEST_GOOGLE_SA_KEY_PEM };
 const webhookBody = new TextEncoder().encode("x".repeat(2048));
 
-type Op = (iter: number) => Promise<unknown>;
+type Op = (iter: number, env: AppEnv["Bindings"]) => Promise<unknown>;
 
 const ops: Record<string, Op> = {
   noop: async () => null,
   "jws-cold": () => verifyAppleJws(TEST_SIGNED_TRANSACTION, { trustedRoots, noCache: true }),
   "jws-warm": () => verifyAppleJws(TEST_SIGNED_TRANSACTION, { trustedRoots }),
+  "jws-store": (_iter, env) =>
+    verifyAppleJws(TEST_SIGNED_TRANSACTION, { trustedRoots, store: d1ChainStore(env.DB), noIsolateCache: true }),
   "apple-token-cold": () => mintAppleApiToken(appleCreds, { noCache: true }),
   "apple-token-warm": () => mintAppleApiToken(appleCreds),
   "google-token-cold": () => mintGoogleAssertion(googleSa, { noCache: true }),
@@ -85,7 +90,7 @@ bench.get("/:op", async (c) => {
   const n = Math.min(Math.max(Number(c.req.query("n") ?? 1) || 1, 1), 1000);
   const iter = Number(c.req.query("iter") ?? 100_000) || 100_000;
   try {
-    for (let i = 0; i < n; i++) await op(iter);
+    for (let i = 0; i < n; i++) await op(iter, c.env);
     // Correlation line for Workers Logs; CPU time is attached to the invocation.
     console.log(JSON.stringify({ bench: name, n, iter: name === "pbkdf2" ? iter : undefined }));
     return c.json({ op: name, n, ok: true });

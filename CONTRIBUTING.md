@@ -21,9 +21,12 @@ Open an issue before starting large work, so we can agree on the approach first.
 
    CI will enforce these limits through budget tests.
 4. **Keep Cloudflare behind adapters.** Use the `JobQueue`, `Scheduler`, `RateLimiter`, `Secrets` and `OAuthStore` interfaces rather than calling Workers APIs directly from core logic.
-5. **Don't use the Apple or Google Node SDKs.** They don't run in Workers. Verify JWS signatures with `jose` and `@peculiar/x509`, and call Google's REST APIs directly.
-6. **Never leak secrets.** No store credentials, API keys or tokens in logs, admin API responses, MCP tool output or export bundles.
-7. **Stay in scope.** Paywalls, ad events and the rest of the README's "Out of scope for now" list are out of scope. Open an issue before working on them.
+5. **Don't use the Apple or Google Node SDKs.** They don't run in Workers. Call Google's REST APIs directly.
+6. **Keep the Worker bundle small.** Every fresh Worker isolate pays to load the bundle, out of the same 10 ms CPU budget as the request. An ASN.1 library alone cost about 5 ms.
+   - Verify certificates and JWS signatures with WebCrypto and the DER reader in `lite/src/lib/der.ts`. Sign JWTs with WebCrypto.
+   - Don't add runtime dependencies without measuring their load cost. Libraries are fine in `devDependencies`, tests and scripts.
+7. **Never leak secrets.** No store credentials, API keys or tokens in logs, admin API responses, MCP tool output or export bundles.
+8. **Stay in scope.** Paywalls, ad events and the rest of the README's "Out of scope for now" list are out of scope. Open an issue before working on them.
 
 ## Development setup
 

@@ -10,6 +10,7 @@
     "dev": "pnpm --filter @openpurr/lite dev",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
-    "deploy": "pnpm --filter @openpurr/lite deploy"
+    "deploy": "pnpm --filter @openpurr/lite deploy",
+    "deploy:bench": "pnpm --filter @openpurr/lite deploy:bench"
   }
 }

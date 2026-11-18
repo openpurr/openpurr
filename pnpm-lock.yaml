@@ -177,18 +177,9 @@ importers:
 
   lite:
     dependencies:
-      '@peculiar/asn1-schema':
-        specifier: 3.0.0
-        version: 3.0.0(asn1js@4.0.0)
-      '@peculiar/asn1-x509':
-        specifier: 3.0.0
-        version: 3.0.0(@peculiar/asn1-schema@3.0.0(asn1js@4.0.0))(asn1js@4.0.0)
       hono:
         specifier: 4.13.17
         version: 4.13.17
-      jose:
-        specifier: 6.2.17
-        version: 6.2.17
     devDependencies:
       '@cloudflare/vitest-plugin':
         specifier: 1.7.0
@@ -202,6 +193,9 @@ importers:
       esbuild:
         specifier: 0.28.2
         version: 0.28.2
+      jose:
+        specifier: 6.2.17
+        version: 6.2.17
       reflect-metadata:
         specifier: 0.2.2
         version: 0.2.2

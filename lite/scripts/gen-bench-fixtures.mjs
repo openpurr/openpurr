@@ -1,5 +1,6 @@
-// Generates TEST-ONLY keys and a certificate chain for the M0 CPU benchmarks.
-// Nothing here is trusted by any real system. Re-run to rotate:
+// Generates TEST-ONLY keys and certificate chains for the tests and CPU benchmarks.
+// Nothing here is trusted by any real system. The output is git-ignored and generated on
+// demand (`--if-missing` from the test, typecheck and deploy:bench scripts). Force a fresh set:
 //   pnpm --filter @openpurr/lite bench:fixtures
 //
 // The chain mirrors the shape of an App Store signed transaction:
@@ -7,11 +8,14 @@
 // Apple's real chain uses the same curves, so verification cost should be representative.
 
 import { webcrypto as crypto } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import "reflect-metadata";
 import * as x509 from "@peculiar/x509";
 import { CompactSign, exportPKCS8 } from "jose";
+
+const target = fileURLToPath(new URL("../src/bench/fixtures.generated.ts", import.meta.url));
+if (process.argv.includes("--if-missing") && existsSync(target)) process.exit(0);
 
 x509.cryptoProvider.set(crypto);
 
@@ -67,6 +71,38 @@ const leaf = await x509.X509CertificateGenerator.create({
   ],
 });
 
+// Negative cases: a leaf without Apple's marker OID, and a leaf signed by a key that isn't
+// the intermediate's.
+const noMarkerKeys = await crypto.subtle.generateKey(P256, true, ["sign", "verify"]);
+const leafNoMarker = await x509.X509CertificateGenerator.create({
+  serialNumber: "04",
+  subject: "CN=openpurr TEST Leaf Without Marker, O=openpurr test fixtures",
+  issuer: intermediate.subject,
+  notBefore,
+  notAfter,
+  publicKey: noMarkerKeys.publicKey,
+  signingKey: intKeys.privateKey,
+  signingAlgorithm: SHA384,
+  extensions: [new x509.BasicConstraintsExtension(false, undefined, true)],
+});
+
+const strayKeys = await crypto.subtle.generateKey(P384, true, ["sign", "verify"]);
+const wrongIssuerKeys = await crypto.subtle.generateKey(P256, true, ["sign", "verify"]);
+const leafWrongIssuer = await x509.X509CertificateGenerator.create({
+  serialNumber: "05",
+  subject: "CN=openpurr TEST Leaf Wrong Issuer, O=openpurr test fixtures",
+  issuer: intermediate.subject,
+  notBefore,
+  notAfter,
+  publicKey: wrongIssuerKeys.publicKey,
+  signingKey: strayKeys.privateKey,
+  signingAlgorithm: SHA384,
+  extensions: [
+    new x509.BasicConstraintsExtension(false, undefined, true),
+    new x509.Extension("1.2.840.113635.100.6.11.1", false, new Uint8Array([0x05, 0x00])),
+  ],
+});
+
 const b64 = (cert) => Buffer.from(cert.rawData).toString("base64");
 
 // A payload the size and shape of a decoded JWSTransaction.
@@ -93,9 +129,13 @@ const payload = {
   appTransactionId: "704000000000000000",
 };
 
-const jws = await new CompactSign(new TextEncoder().encode(JSON.stringify(payload)))
-  .setProtectedHeader({ alg: "ES256", x5c: [b64(leaf), b64(intermediate), b64(root)] })
-  .sign(leafKeys.privateKey);
+const signJws = (leafCert, key) =>
+  new CompactSign(new TextEncoder().encode(JSON.stringify(payload)))
+    .setProtectedHeader({ alg: "ES256", x5c: [b64(leafCert), b64(intermediate), b64(root)] })
+    .sign(key);
+const jws = await signJws(leaf, leafKeys.privateKey);
+const jwsNoMarker = await signJws(leafNoMarker, noMarkerKeys.privateKey);
+const jwsWrongIssuer = await signJws(leafWrongIssuer, wrongIssuerKeys.privateKey);
 
 const appleApiKey = await crypto.subtle.generateKey(P256, true, ["sign", "verify"]);
 const googleSaKey = await crypto.subtle.generateKey(
@@ -113,6 +153,12 @@ export const TEST_ROOT_CERT_B64 = ${JSON.stringify(b64(root))};
 /** An ES256 JWS with an x5c chain [leaf, intermediate, root], shaped like a signed transaction. */
 export const TEST_SIGNED_TRANSACTION = ${JSON.stringify(jws)};
 
+/** Same payload, but the leaf lacks Apple's marker OID. Must be rejected. */
+export const TEST_JWS_LEAF_WITHOUT_MARKER = ${JSON.stringify(jwsNoMarker)};
+
+/** Same payload, but the leaf is signed by a key other than the intermediate's. Must be rejected. */
+export const TEST_JWS_LEAF_WRONG_ISSUER = ${JSON.stringify(jwsWrongIssuer)};
+
 /** P-256 PKCS#8 PEM, shaped like an App Store Connect API .p8 key. */
 export const TEST_APPLE_API_KEY_PEM = ${JSON.stringify(await exportPKCS8(appleApiKey.privateKey))};
 
@@ -120,6 +166,5 @@ export const TEST_APPLE_API_KEY_PEM = ${JSON.stringify(await exportPKCS8(appleAp
 export const TEST_GOOGLE_SA_KEY_PEM = ${JSON.stringify(await exportPKCS8(googleSaKey.privateKey))};
 `;
 
-const target = fileURLToPath(new URL("../src/bench/fixtures.generated.ts", import.meta.url));
 writeFileSync(target, out);
 console.log(`wrote ${target} (JWS ${jws.length} bytes)`);
