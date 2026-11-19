@@ -52,6 +52,8 @@ The back office also serves the **dashboard** at `/admin`: plain HTML, CSS and J
 pnpm --filter @openpurr/lite admin create --email you@example.com --local --url http://localhost:8787
 ```
 
+For screenshots, or to see the charts with something in them, fill the **local** database with 18 months of realistic, fictional customers and purchases: `pnpm --filter @openpurr/lite demo:data` (add `--wipe` to clear local data first, `--remove` to take the demo data out). It never writes anywhere but the local database. The Charts page builds its totals on first view.
+
 Keep the dashboard's Content-Security-Policy (`lite/office-ui/_headers`) strict: no inline scripts or styles, nothing from other origins. Build elements with `h()` from `js/dom.js`, which always adds text as text, never as HTML.
 
 Tests and typecheck fall back to the example config, so they work without your own `openpurr.config.yaml`. `wrangler dev` and deploys require it, and validate it first.

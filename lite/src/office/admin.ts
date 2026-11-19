@@ -8,6 +8,7 @@ import { readAttributes } from "../attributes";
 import type { AppEnv } from "../env";
 import { findCustomer, loadCustomer } from "../ledger";
 import { hashKey, SCOPES as SECRET_KEY_SCOPES } from "../secret-keys";
+import { CHARTS, chartCsv, dayOf, type Interval, lastRollupAt, readChart, rollupInfo, rollupMetrics } from "../metrics";
 import { readCustomerInfo } from "../snapshot";
 import { deliverNow } from "../webhooks";
 import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./auth";
@@ -423,6 +424,60 @@ admin.get("/customers/:app_user_id", requirePermission("read"), async (c) => {
     subscription_states: states.filter((s) => visible.some((t) => t.store === s.store && t.original_transaction_id === s.original_transaction_id)),
     webhook_events: events.results.filter((e) => canSeeApp(principal, e.app_id)),
   });
+});
+
+// --- charts --------------------------------------------------------------------------------------
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const MAX_CHART_DAYS = 3660;
+const REFRESH_EVERY_MS = 60_000;
+
+admin.get("/metrics", requirePermission("read"), async (c) =>
+  c.json({
+    charts: Object.entries(CHARTS).map(([id, d]) => ({ id, label: d.label, description: d.description, unit: d.unit, kind: d.kind, series: d.series })),
+    ...(await rollupInfo(c.env.DB)),
+  }),
+);
+
+admin.get("/metrics/:chart", requirePermission("read"), async (c) => {
+  const principal = p(c);
+  const today = dayOf(Date.now());
+  const to = c.req.query("to") ?? today;
+  const from = c.req.query("from") ?? dayOf(Date.parse(`${to}T00:00:00Z`) - 89 * 864e5);
+  if (!DATE.test(from) || !DATE.test(to) || Number.isNaN(Date.parse(from)) || Number.isNaN(Date.parse(to)) || from > to) {
+    return bad(c, "from and to must be dates (YYYY-MM-DD), with from on or before to.");
+  }
+  if ((Date.parse(to) - Date.parse(from)) / 864e5 > MAX_CHART_DAYS) return bad(c, `A chart can cover at most ${MAX_CHART_DAYS} days.`);
+  const interval = (c.req.query("interval") ?? "day") as Interval;
+  if (!["day", "week", "month"].includes(interval)) return bad(c, "interval must be day, week or month.");
+  const environment = c.req.query("environment") ?? "production";
+  if (environment !== "production" && environment !== "sandbox") return bad(c, "environment must be production or sandbox.");
+  const store = c.req.query("store") || undefined;
+  if (store && store !== "app_store" && store !== "play_store") return bad(c, "store must be app_store or play_store.");
+  const app = c.req.query("app") || undefined;
+  if (app && (!c.get("deps").config.apps.has(app) || !canSeeApp(principal, app))) return notFound(c, "App");
+
+  const result = await readChart(c.env.DB, c.req.param("chart"), { from, to: to > today ? today : to, interval, environment, store, app, apps: principal.apps });
+  if (!result) return notFound(c, "Chart");
+  if (c.req.query("format") === "csv") {
+    return c.body(chartCsv(result), 200, {
+      "content-type": "text/csv; charset=utf-8",
+      "content-disposition": `attachment; filename="openpurr-${result.chart}-${result.from}-to-${result.to}.csv"`,
+    });
+  }
+  return c.json(result);
+});
+
+// The hourly rollup, now. A full rebuild recomputes all history: owners only, since it writes a
+// row per day and metric (the free plan allows 100,000 rows written per day).
+admin.post("/metrics/refresh", requirePermission("read"), async (c) => {
+  const { full } = await body<{ full: boolean }>(c);
+  if (full && !can(p(c), "settings:manage")) return forbidden(c, "Only owners can rebuild all chart history.");
+  const last = await lastRollupAt(c.env.DB);
+  if (!full && last && Date.now() - last < REFRESH_EVERY_MS) return c.json({ refreshed: false, updated_at: last });
+  const result = await rollupMetrics(c.env.DB, Date.now(), { full: !!full });
+  if (full) await auditBy(c, "metrics.rebuilt", null, { from: result.from, rows: result.rows }).run();
+  return c.json({ refreshed: true, ...result, updated_at: await lastRollupAt(c.env.DB) });
 });
 
 // --- webhooks ------------------------------------------------------------------------------------
