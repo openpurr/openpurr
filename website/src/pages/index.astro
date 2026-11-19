@@ -47,12 +47,12 @@ const features = [
 ];
 
 type Status = "done" | "wip" | "planned" | "later";
-const roadmap: { phase: string; status: Status; tagline?: string; items: string[] }[] = [
+const roadmap: { phase: string; status: Status; items: string[] }[] = [
   {
     phase: "Lite",
     status: "wip",
-    tagline: "Designed to run on Cloudflare's free plan.",
     items: [
+      "Designed for Cloudflare's free plan",
       "App Store and Google Play",
       "Webhooks, dashboard and admin",
       "Guided Cloudflare setup",
@@ -284,7 +284,6 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
             <div class="card phase">
               <span class={`status ${r.status}`}>{statusLabel[r.status]}</span>
               <h3>{r.phase}</h3>
-              {r.tagline && <p class="tagline">{r.tagline}</p>}
               <ul>
                 {r.items.map((it) => (
                   <li>{it}</li>
@@ -564,12 +563,6 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
   .status.planned,
   .status.later {
     color: var(--muted);
-  }
-  .tagline {
-    color: var(--ink) !important;
-    font-weight: 600;
-    font-size: 0.95rem;
-    margin: -4px 0 14px;
   }
   .phase li {
     color: var(--muted);
