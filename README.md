@@ -11,6 +11,8 @@ Point your app's `Purchases.proxyURL` at your own server and keep using the SDK 
 
 openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc.
 
+![The openpurr Lite dashboard, showing 90 days of active subscriptions, new customers, trials, refunds and non-subscription purchases](.github/assets/openpurr-dashboard.png)
+
 ## Who it's for
 
 App developers who:
