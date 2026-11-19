@@ -50,7 +50,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
   else if (!applied || applied < EXPECTED_MIGRATION) {
     add({ id: "database", title: "Database", status: "fail", message: `Migrations are behind: the newest applied is ${applied ?? "none"}, this version needs ${EXPECTED_MIGRATION}.`, fix: "Run: pnpm db:migrate:remote" });
   } else {
-    add({ id: "database", title: "Database", status: "warn", message: `The database (${applied}) is newer than this Worker expects (${EXPECTED_MIGRATION}).`, fix: "Deploy the latest code: pnpm deploy && pnpm deploy:office" });
+    add({ id: "database", title: "Database", status: "warn", message: `The database (${applied}) is newer than this Worker expects (${EXPECTED_MIGRATION}).`, fix: "Deploy the latest code: pnpm run deploy && pnpm deploy:office" });
   }
 
   // Custom domain: proxyURL and store notification URLs should never point at workers.dev.

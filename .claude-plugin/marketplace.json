@@ -1,0 +1,12 @@
+{
+  "name": "openpurr",
+  "owner": { "name": "openpurr" },
+  "metadata": { "description": "Claude Code skills for running openpurr, the self-hosted RevenueCat-compatible backend." },
+  "plugins": [
+    {
+      "name": "openpurr",
+      "source": "./plugin",
+      "description": "Deploy openpurr, connect the App Store and Google Play, point your app at it, handle webhooks, and debug purchases."
+    }
+  ]
+}

@@ -44,7 +44,7 @@ pnpm --filter @openpurr/lite db:migrate:local
 pnpm dev           # wrangler dev: the SDK Worker (/v1)
 ```
 
-Lite runs as two Workers sharing one D1 database: the **SDK Worker** (`/v1` only, kept small because every fresh isolate pays to load it) and the **back-office Worker** (`--env office`: store notifications, scheduled jobs, the admin side). Run the back office locally with `pnpm --filter @openpurr/lite exec wrangler dev --env office`, and deploy both with `pnpm deploy && pnpm deploy:office`. Code the SDKs don't call belongs in the back office.
+Lite runs as two Workers sharing one D1 database: the **SDK Worker** (`/v1` only, kept small because every fresh isolate pays to load it) and the **back-office Worker** (`--env office`: store notifications, scheduled jobs, the admin side). Run the back office locally with `pnpm --filter @openpurr/lite exec wrangler dev --env office`, and deploy both with `pnpm run deploy && pnpm deploy:office`. Code the SDKs don't call belongs in the back office.
 
 The back office also serves the **dashboard** at `/admin`: plain HTML, CSS and JavaScript modules in `lite/office-ui/`, with no build step and no framework. The files are Workers static assets (free, and outside the bundle budget). They call the same `/admin/v1` API as the CLI and MCP server, so permissions and audit logging live in one place. To try it locally, run the back office, then create an owner and open the link it prints:
 
@@ -57,6 +57,8 @@ The back office also runs the **MCP server** at `/mcp` (`lite/src/office/mcp.ts`
 For screenshots, or to see the charts with something in them, fill the **local** database with 18 months of realistic, fictional customers and purchases: `pnpm --filter @openpurr/lite demo:data` (add `--wipe` to clear local data first, `--remove` to take the demo data out). It never writes anywhere but the local database. The Charts page builds its totals on first view.
 
 **CLI (`cli/`):** the `openpurr` command (`npx openpurr`), plain Node ES modules with no dependencies and no build. It's a thin client: customers, entitlements, grants, charts, webhooks and the audit log go through the MCP tools (so the CLI and an AI assistant give the same answers), and secret keys and the team through the admin API (secrets never pass through MCP). Try it against a local back office with `node cli/bin/openpurr.js login --url http://localhost:8787 --token pat_…`, then `doctor`. Tests: `pnpm --filter openpurr test` (Node's test runner, against a fake back office).
+
+**Claude Code plugin (`plugin/`):** skills for deploying, store setup, app integration, webhooks and purchase debugging, listed in the repo's marketplace (`.claude-plugin/marketplace.json`). Install it with `claude plugin marketplace add openpurr/openpurr`, then `claude plugin install openpurr@openpurr`; for a local checkout, `claude plugin marketplace add ./`. Skills use the MCP tools when they're connected and the CLI otherwise, so every command, path and message they quote must exist: check it against the code when you change either. Validate with `claude plugin validate plugin`.
 
 Keep the dashboard's Content-Security-Policy (`lite/office-ui/_headers`) strict: no inline scripts or styles, nothing from other origins. Build elements with `h()` from `js/dom.js`, which always adds text as text, never as HTML.
 

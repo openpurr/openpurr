@@ -3,7 +3,7 @@
 // Two Workers share one D1 database:
 //   - openpurr (top level): the SDK API (/v1) only, kept small for fast cold starts;
 //   - openpurr-office (env "office"): store notifications, the scheduled jobs and the admin side.
-// Deploy both: pnpm deploy && pnpm deploy:office. Store credentials (APPLE_IAP_KEY,
+// Deploy both: pnpm run deploy && pnpm deploy:office. Store credentials (APPLE_IAP_KEY,
 // GOOGLE_SERVICE_ACCOUNT, webhook secrets) are needed by both, so set each secret on both Workers.
 {
   "$schema": "node_modules/wrangler/config-schema.json",
