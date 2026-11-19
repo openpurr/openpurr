@@ -1,0 +1,139 @@
+---
+import Base from "../layouts/Base.astro";
+import { gaId } from "../analytics";
+import { ISSUES_URL, PRIVACY_EMAIL, REPO_URL } from "../consts";
+
+const updated = "November 19, 2026";
+---
+
+<Base title="Privacy · openpurr" description="What openpurr.org collects (very little), and what the openpurr software sends to us (nothing).">
+  <article class="legal">
+    <div class="wrap narrow">
+      <h1>Privacy</h1>
+      <p class="muted">Last updated {updated}</p>
+
+      <p>
+        This page covers <strong>openpurr.org</strong>, the project's website. It's run by the openpurr open-source project.
+      </p>
+
+      <h2>The openpurr software</h2>
+      <p>
+        openpurr is software you run on your own infrastructure. It sends nothing to us: no telemetry, no usage data, no
+        purchase data. Your customers' data stays in your deployment, and you decide what happens to it. If you run
+        openpurr for your app, your own privacy policy covers that data.
+      </p>
+
+      <h2>This website</h2>
+      <p>The site has no accounts, forms or newsletter, and asks for no personal information.</p>
+      <ul>
+        <li>
+          <strong>Hosting.</strong> The site is served by Cloudflare. Like any web host, Cloudflare processes each visitor's
+          IP address and request details to deliver pages and protect against abuse. We don't use those logs to identify
+          anyone.
+        </li>
+        {
+          gaId ? (
+            <li>
+              <strong>Google Analytics, only if you accept.</strong> With your consent, we use Google Analytics to count
+              visits and see which pages are useful. It sets cookies (<code>_ga</code> and <code>_ga_*</code>) and sends
+              Google the pages you view, how you arrived, and your browser, device and approximate location. Google
+              Analytics doesn't store IP addresses. Google keeps this data for at most 14 months, and may process it in the
+              United States. See{" "}
+              <a href="https://policies.google.com/technologies/partner-sites">how Google uses data from sites that use its
+              services</a>. If you decline, nothing loads from Google and no cookies are set.
+            </li>
+          ) : (
+            <li>
+              <strong>No analytics or tracking cookies.</strong>
+            </li>
+          )
+        }
+        {
+          gaId && (
+            <li>
+              <strong>Your choice.</strong> The site remembers whether you accepted or declined in your browser's local
+              storage. It never leaves your browser.
+            </li>
+          )
+        }
+        <li>
+          <strong>Links.</strong> Links to GitHub, Buy Me a Coffee and other sites are covered by those sites' own privacy
+          policies.
+        </li>
+      </ul>
+
+      {
+        gaId && (
+          <>
+            <h2>Changing your choice</h2>
+            <p>
+              Use <button type="button" class="inline-link" data-cookie-settings>Cookie settings</button> (also in the
+              footer of every page) to accept or decline at any time. Declining removes the Google Analytics cookies.
+              Clearing this site's data in your browser does the same and shows the question again.
+            </p>
+          </>
+        )
+      }
+
+      <h2>Your rights</h2>
+      <p>
+        Depending on where you live (for example under the GDPR or UK GDPR), you can ask what data about you we hold, and
+        ask for it to be corrected or deleted. Because the site doesn't know who you are, the data we could find is the
+        analytics data tied to your browser's cookie, if you accepted. You can also complain to your data protection
+        authority.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        {
+          PRIVACY_EMAIL ? (
+            <>
+              Questions or requests: <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>.
+            </>
+          ) : (
+            <>
+              Questions: open an issue on <a href={ISSUES_URL}>GitHub</a>. Please don't post personal information there.
+            </>
+          )
+        }{" "}
+        Changes to this page are visible in the <a href={`${REPO_URL}/commits/main/website/src/pages/privacy.astro`}>site's history</a>.
+      </p>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .legal {
+    padding: 72px 0 96px;
+  }
+  .narrow {
+    max-width: 720px;
+  }
+  .legal h1 {
+    margin: 0 0 4px;
+  }
+  .legal h2 {
+    margin: 40px 0 12px;
+    font-size: 1.25rem;
+  }
+  .legal p,
+  .legal li {
+    line-height: 1.65;
+  }
+  .legal li + li {
+    margin-top: 10px;
+  }
+  .muted {
+    color: var(--muted);
+    margin: 0 0 28px;
+  }
+  .inline-link {
+    font: inherit;
+    color: var(--purple);
+    background: none;
+    border: 0;
+    padding: 0;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+</style>

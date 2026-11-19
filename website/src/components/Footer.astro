@@ -1,5 +1,6 @@
 ---
-import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL } from "../consts";
+import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL, PRIVACY_URL } from "../consts";
+import { gaId } from "../analytics";
 ---
 
 <footer>
@@ -14,6 +15,7 @@ import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL } fro
         <li><a href={ROADMAP_URL}>Roadmap</a></li>
         <li><a href={CONTRIBUTING_URL}>Contributing</a></li>
         <li><a href={SPONSOR_URL}>Sponsor</a></li>
+        <li><a href={PRIVACY_URL}>Privacy</a></li>
       </ul>
     </div>
     <p class="fine">
@@ -22,6 +24,7 @@ import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL } fro
     </p>
     <p class="fine">
       <a href={LICENSE_URL}>Apache License 2.0</a>. Copyright {new Date().getFullYear()} openpurr contributors.
+      {gaId && <button type="button" class="settings" data-cookie-settings hidden>Cookie settings</button>}
     </p>
   </div>
 </footer>
@@ -64,5 +67,15 @@ import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL } fro
   }
   .fine a {
     color: inherit;
+  }
+  .settings {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    padding: 0;
+    margin-left: 6px;
+    text-decoration: underline;
+    cursor: pointer;
   }
 </style>
