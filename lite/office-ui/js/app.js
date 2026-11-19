@@ -3,6 +3,7 @@
 // page path with index.html, and this file routes it.
 import { get, onAuthChange, post } from "./api.js";
 import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment, renderSetPassword } from "./auth.js";
+import { renderConsent } from "./consent.js";
 import { h, replace } from "./dom.js";
 import { IconAlert, IconBolt, IconChart, IconCustomers, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
@@ -101,6 +102,12 @@ async function boot() {
   state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), apps };
   if (path === "/admin/login") history.replaceState(null, "", returnTo ?? "/admin");
   returnTo = null;
+  // An app asking to connect (OAuth): its own screen, outside the dashboard shell.
+  if (location.pathname === "/admin/oauth/consent") {
+    shell = null;
+    document.title = "Connect an app · openpurr";
+    return renderConsent(root, state.operator);
+  }
   renderRoute();
 }
 

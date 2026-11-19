@@ -5,9 +5,11 @@
 // JSON response (no SSE: no tool here streams or calls back). GET and DELETE answer 405, which
 // the spec allows. Notifications and client responses get 202.
 //
-// Auth: "Authorization: Bearer pat_..." personal access tokens, the same as the admin API, so
-// every tool is limited by the operator's role and the token's scopes (src/office/principal.ts)
-// and by the apps they may see. tools/list only lists what the token can use. Changes are
+// Auth: "Authorization: Bearer pat_..." personal access tokens (the same as the admin API), or
+// OAuth access tokens issued for this endpoint (src/office/oauth.ts: Claude.ai connectors and other
+// clients that sign in). Either way every tool is limited by the operator's role and the token's
+// scopes (src/office/principal.ts) and by the apps they may see. Unauthenticated requests get 401
+// with WWW-Authenticate pointing at the protected-resource metadata, which starts OAuth. tools/list only lists what the token can use. Changes are
 // audited with source "mcp". Browser requests from other sites are refused (Origin check), and
 // calls are rate limited per token.
 //
@@ -27,7 +29,8 @@ import { deliverNow } from "../webhooks";
 import { audit } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GRANT_DURATIONS, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
-import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, tokenPrincipal } from "./principal";
+import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, oauthTokenOwner, resourceMetadataUrl } from "./oauth";
+import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, principalOf, type TokenScope, tokenPrincipal } from "./principal";
 
 export const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
 const SERVER_INFO = { name: "openpurr", title: "openpurr", version: "1.0.0" };
@@ -618,10 +621,11 @@ mcp.post("/", async (c) => {
   if (version && !PROTOCOL_VERSIONS.includes(version)) return c.json(rpcError(null, -32000, `Unsupported MCP-Protocol-Version ${version}. Supported: ${PROTOCOL_VERSIONS.join(", ")}.`), 400);
 
   const header = c.req.header("authorization") ?? "";
-  const principal = header.startsWith(`Bearer ${ACCESS_TOKEN_PREFIX}`) ? await tokenPrincipal(c, header.slice(7).trim()) : null;
+  const principal = await mcpPrincipal(c, header);
   if (!principal) {
-    return c.json(rpcError(null, -32001, "Send a personal access token: Authorization: Bearer pat_… (create one under Access tokens in the openpurr dashboard)."), 401, {
-      "WWW-Authenticate": 'Bearer realm="openpurr"',
+    const sent = header.startsWith("Bearer ");
+    return c.json(rpcError(null, -32001, "Sign in (OAuth), or send a personal access token: Authorization: Bearer pat_… (create one under Access tokens in the openpurr dashboard)."), 401, {
+      "WWW-Authenticate": `Bearer resource_metadata="${resourceMetadataUrl(c)}", scope="read"${sent ? ', error="invalid_token"' : ""}`,
     });
   }
 
@@ -668,6 +672,20 @@ mcp.post("/", async (c) => {
       return c.json(rpcError(id, -32601, `Method not found: ${method}`));
   }
 });
+
+/** A personal access token, or an OAuth access token issued for this endpoint. */
+async function mcpPrincipal(c: Ctx, header: string): Promise<Principal | null> {
+  if (!header.startsWith("Bearer ")) return null;
+  const token = header.slice(7).trim();
+  if (token.startsWith(ACCESS_TOKEN_PREFIX)) return tokenPrincipal(c, token);
+  if (!token.startsWith(OAUTH_ACCESS_PREFIX)) return null;
+  const owner = await oauthTokenOwner(c.env.DB, token, mcpResource(c));
+  if (!owner) return null;
+  if (!owner.lastUsed || Date.now() - owner.lastUsed > 3600_000) {
+    c.executionCtx.waitUntil(c.env.DB.prepare("UPDATE oauth_grant SET last_used_at = ? WHERE id = ?").bind(Date.now(), owner.grantId).run());
+  }
+  return principalOf(owner.operator, "token", owner.grantId, owner.scopes as TokenScope[]);
+}
 
 async function callTool(c: Ctx, principal: Principal, tool: Tool, args: Args) {
   const fail = (text: string) => ({ content: [{ type: "text", text }], isError: true });
