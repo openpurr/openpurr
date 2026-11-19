@@ -186,13 +186,16 @@ function subscribe(c, app, kind, at, opts = {}) {
   const plan = app[kind];
   if (!plan) return;
   const [mPrice, aPrice] = c.market.prices;
-  // New subscribers after the price increase pay more; existing ones keep their price.
-  const price = raise(kind === "annual" ? aPrice : mPrice, c.priceFactor);
-  const periodDays = kind === "annual" ? 365 : 30.4375;
+  // New subscribers after the price increase pay more; existing ones keep their price for now.
+  let price = raise(kind === "annual" ? aPrice : mPrice, c.priceFactor);
+  let periodDays = kind === "annual" ? 365 : 30.4375;
+  let current = { kind, product: plan.product, basePlan: plan.basePlan };
+  let raised = c.priceFactor !== 1;
+  let cameBack = false;
   const chainId = app.store === "app_store" ? ids.appleTx() : ids.token();
   const order = ids.googleOrder();
   const withTrial = opts.trial ?? chance(0.82);
-  const renewP = kind === "annual" ? 0.62 : 0.91;
+  let renewP = kind === "annual" ? 0.62 : 0.91;
   row("purchase_owner", ["store", "original_transaction_id", "customer_id", "app_id", "updated_at"], [app.store, chainId, c.id, app.id, Math.min(at + 3600_000, NOW)]);
 
   let start = at;
@@ -219,14 +222,43 @@ function subscribe(c, app, kind, at, opts = {}) {
     // Events after today haven't happened yet: they're left out, never moved to today.
     let refunded = chance(0.018) ? start + (1 + rand() * 13) * DAY : null;
     if (refunded !== null && refunded >= NOW) refunded = null;
-    addTx(c, app, { ...base, chainId, purchased: start, expires: end, period: "normal", price, renewal: renewal++, revoked: refunded && refunded < end ? refunded : null });
+    addTx(c, app, { ...base, product: current.product, basePlan: current.basePlan, purchased: start, expires: end, period: "normal", price, renewal: renewal++, revoked: refunded && refunded < end ? refunded : null });
     if (refunded && refunded < end) return finish(2, 0);
-    if (end > NOW) return finish(1);
+    if (end > NOW) {
+      // Some current subscribers have turned auto-renew off: active until the period ends.
+      if (chance(0.13)) unsubscribedAt = Math.max(start, NOW - rand() * 20 * DAY);
+      return finish(1);
+    }
     if (!chance(renewP)) {
       // A failed renewal sometimes goes through a 16-day grace period first.
       if (chance(0.25)) grace = end + 16 * DAY;
+      // Some come back a month or three later, in the same subscription: a reactivation.
+      if (!cameBack && chance(0.16)) {
+        cameBack = true;
+        const back = (grace ?? end) + (25 + rand() * 65) * DAY;
+        if (back < NOW) {
+          start = back;
+          grace = null;
+          unsubscribedAt = null;
+          continue;
+        }
+      }
       if (unsubscribedAt === null) unsubscribedAt = end - rand() * 10 * DAY;
-      return finish(grace && grace > NOW ? 4 : 2, 0);
+      // Apple keeps retrying a failed payment for up to 60 days.
+      const retrying = !grace && end > NOW - 60 * DAY && chance(0.35);
+      return finish(grace && grace > NOW ? 4 : retrying ? 3 : 2, retrying ? 1 : 0);
+    }
+    // Existing subscribers move to the new price at their first renewal 60 days after the increase.
+    if (!raised && end >= STORY.priceUp + 60 * DAY) {
+      price = raise(price, 1.2);
+      raised = true;
+    }
+    // A few monthly App Store subscribers switch to the yearly plan at renewal (cheaper per month).
+    if (current.kind === "monthly" && app.store === "app_store" && app.annual && chance(0.04)) {
+      current = { kind: "annual", product: app.annual.product, basePlan: app.annual.basePlan };
+      price = raise(aPrice, raised ? 1.2 : 1);
+      periodDays = 365;
+      renewP = 0.62;
     }
     start = end;
   }
@@ -258,6 +290,9 @@ function oneTime(c, app, kind, at) {
 //   - a New Year promotion every year (Nov 24 to Jan 7): annual plans sell 2.5 times as well, and
 //     those renewals come back as a revenue spike a year later, with no matching signup spike;
 //   - fewer signups in July and August;
+//   - existing subscribers move to the new price 60 days after the increase (MRR expansion);
+//   - a few monthly subscribers switch to yearly at renewal (MRR contraction);
+//   - some churned subscribers come back a month or three later (reactivations);
 //   - short trial campaigns (an influencer post, a "free week" offer) every few weeks: a burst of
 //     trial starts for a few days, converting to paid less often than usual.
 const at = (fraction) => START + fraction * (NOW - START);

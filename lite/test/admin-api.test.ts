@@ -319,6 +319,18 @@ describe("charts API", () => {
     expect((await api("GET", "/metrics/revenue?app=not-an-app", { session })).status).toBe(404);
   });
 
+  it("lists products per app (Google base plans separately) and filters charts by them", async () => {
+    const { session } = await operator("viewer");
+    const apps = (await api("GET", "/apps", { session })).body.apps as { id: string; products: string[] }[];
+    expect(apps.find((a) => a.id === "android")!.products).toEqual(expect.arrayContaining(["pro:monthly", "pro:annual", "lifetime"]));
+    expect(apps.find((a) => a.id === "ios")!.products).toEqual(expect.arrayContaining(["pro_monthly", "pro_annual"]));
+    expect((await api("GET", "/metrics/mrr?product=pro:monthly", { session })).status).toBe(200);
+    expect((await api("GET", "/metrics/mrr?app=ios&product=pro:monthly", { session })).status).toBe(404); // not an iOS product
+    expect((await api("GET", "/metrics/mrr?product=nope", { session })).status).toBe(404);
+    const status = await api("GET", "/metrics/subscription_status", { session });
+    expect(status.body).toMatchObject({ kind: "breakdown", categories: expect.arrayContaining([expect.objectContaining({ key: "active", value: expect.any(Number) })]) });
+  });
+
   it("refreshes at most once a minute; only owners rebuild all history", async () => {
     const { session } = await operator("viewer");
     const first = await api("POST", "/metrics/refresh", { session }, { body: {} });
