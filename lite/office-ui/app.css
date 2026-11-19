@@ -367,6 +367,7 @@ h1, h2, h3, p { margin: 0; }
   .table th, .table td { padding-left: 12px; padding-right: 12px; }
   .hide-below-md { display: none; }
 }
+@media (max-width: 560px) { .hide-below-sm { display: none; } }
 
 /* ===== Key/value list ===== */
 .kv { display: grid; grid-template-columns: minmax(120px, max-content) 1fr; gap: 10px 20px; font-size: 13px; margin: 0; }

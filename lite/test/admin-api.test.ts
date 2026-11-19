@@ -200,6 +200,96 @@ describe("customers", () => {
   });
 });
 
+describe("customer list", () => {
+  const FUTURE = Date.now() + 1e12; // newer than every customer other tests create
+  let seq = 0;
+  /** A customer with aliases, an optional email and purchases, inserted directly. */
+  async function seed(opts: {
+    firstSeen: number;
+    aliases: string[];
+    email?: string;
+    purchases?: { app: string; store: "app_store" | "play_store"; tx: string; otx?: string; product: string; type?: string; expires?: number | null; revoked?: boolean }[];
+  }) {
+    const id = `list-${++seq}-${crypto.randomUUID()}`;
+    const now = Date.now();
+    const writes = [
+      env.DB.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, opts.aliases[0], opts.firstSeen),
+      ...opts.aliases.map((a) => env.DB.prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?)").bind(a, id, now)),
+    ];
+    if (opts.email) {
+      writes.push(env.DB.prepare("INSERT INTO subscriber_attribute (customer_id, key, value, updated_at, received_at) VALUES (?, '$email', ?, ?, ?)").bind(id, opts.email, now, now));
+    }
+    for (const [i, t] of (opts.purchases ?? []).entries()) {
+      const otx = t.otx ?? t.tx;
+      writes.push(
+        env.DB.prepare(
+          `INSERT INTO store_transaction (app_id, store, environment, transaction_id, original_transaction_id, product_id, product_type, purchased_at, original_purchased_at, expires_at, revoked_at, verified, source, received_at, updated_at)
+           VALUES (?, ?, 'production', ?, ?, ?, ?, ?, ?, ?, ?, 1, 'sdk', ?, ?)`,
+        ).bind(t.app, t.store, t.tx, otx, t.product, t.type ?? "subscription", now - 1000 + i, now - 1000, t.expires ?? null, t.revoked ? now : null, now, now),
+        env.DB.prepare("INSERT INTO purchase_owner (store, original_transaction_id, customer_id, app_id, updated_at) VALUES (?, ?, ?, ?, ?) ON CONFLICT DO NOTHING").bind(t.store, otx, id, t.app, now),
+      );
+    }
+    await env.DB.batch(writes);
+    return id;
+  }
+
+  it("lists the newest customers first, a page at a time", async () => {
+    const tag = crypto.randomUUID().slice(0, 8);
+    const a = await seed({ firstSeen: FUTURE + 1, aliases: [`page-${tag}-a`] });
+    const b = await seed({ firstSeen: FUTURE + 2, aliases: [`page-${tag}-b`] });
+    const c = await seed({ firstSeen: FUTURE + 3, aliases: [`page-${tag}-c`] });
+    const { session } = await operator("viewer");
+    const first = await api("GET", "/customers?limit=2", { session });
+    expect(first.status).toBe(200);
+    expect(first.body.customers.map((x: { id: string }) => x.id)).toEqual([c, b]);
+    expect(first.body.next_before).toBe(`${FUTURE + 2}:${b}`);
+    const second = await api("GET", `/customers?limit=2&before=${encodeURIComponent(first.body.next_before)}`, { session });
+    expect(second.body.customers[0].id).toBe(a);
+    expect((await api("GET", "/customers?before=nonsense", { session })).status).toBe(400);
+  });
+
+  it("finds customers by app user ID prefix, email, or store transaction ID, with a purchase summary", async () => {
+    const tag = crypto.randomUUID().slice(0, 8);
+    const id = await seed({
+      firstSeen: Date.now(),
+      aliases: [`$RCAnonymousID:${tag}`, `member-${tag}`],
+      email: `Pat.${tag}@Example.com`,
+      purchases: [
+        { app: "ios", store: "app_store", tx: `tx-${tag}-1`, product: "pro_monthly", expires: Date.now() - 864e5 },
+        { app: "ios", store: "app_store", tx: `tx-${tag}-2`, otx: `tx-${tag}-1`, product: "pro_annual", expires: Date.now() + 864e5 },
+      ],
+    });
+    const lonely = await seed({ firstSeen: Date.now(), aliases: [`member-${tag}-nopurchases`] });
+    const { session } = await operator("viewer");
+    const ids = async (q: string, extra = "") => (await api("GET", `/customers?q=${encodeURIComponent(q)}${extra}`, { session })).body.customers.map((x: { id: string }) => x.id);
+
+    expect(await ids(`member-${tag}`)).toEqual(expect.arrayContaining([id, lonely]));
+    expect(await ids(`member-${tag}`, "&purchases=1")).toEqual([id]);
+    expect(await ids(`pat.${tag}@example.com`)).toEqual([id]); // email, any case
+    expect(await ids(`tx-${tag}-2`)).toEqual([id]); // a renewal's transaction ID
+    expect(await ids(`tx-${tag}-1`)).toEqual([id]); // the original transaction ID
+    expect(await ids(`no-such-${tag}`)).toEqual([]);
+
+    const [row] = (await api("GET", `/customers?q=${encodeURIComponent(`$RCAnonymousID:${tag}`)}`, { session })).body.customers;
+    expect(row).toMatchObject({ id, app_user_id: `$RCAnonymousID:${tag}`, email: `Pat.${tag}@Example.com`, purchases: 2, active: true, last_product: "pro_annual", stores: ["app_store"] });
+  });
+
+  it("shows app-limited operators only customers with purchases in their apps", async () => {
+    const tag = crypto.randomUUID().slice(0, 8);
+    const iosBuyer = await seed({ firstSeen: Date.now(), aliases: [`scope-${tag}-ios`], purchases: [{ app: "ios", store: "app_store", tx: `scope-${tag}-1`, product: "lifetime", type: "non_consumable" }] });
+    const androidBuyer = await seed({ firstSeen: Date.now(), aliases: [`scope-${tag}-android`], purchases: [{ app: "android", store: "play_store", tx: `scope-${tag}-2`, product: "pro", expires: Date.now() - 1000 }] });
+    await seed({ firstSeen: Date.now(), aliases: [`scope-${tag}-none`] });
+    const iosOnly = await operator("viewer", { apps: ["ios"] });
+    const list = (await api("GET", `/customers?q=scope-${tag}`, { session: iosOnly.session })).body.customers;
+    expect(list.map((x: { id: string }) => x.id)).toEqual([iosBuyer]);
+    expect(list[0]).toMatchObject({ active: true, purchases: 1 }); // a non-consumable stays active
+
+    const all = (await api("GET", `/customers?q=scope-${tag}`, { session: (await operator("viewer")).session })).body.customers;
+    expect(all).toHaveLength(3);
+    expect(all.find((x: { id: string }) => x.id === androidBuyer)).toMatchObject({ active: false, purchases: 1 });
+  });
+});
+
 describe("webhooks", () => {
   it("lists deliveries and replays an event", async () => {
     let status = 500;

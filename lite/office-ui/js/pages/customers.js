@@ -1,32 +1,127 @@
 // Customers: look one up by app user ID (or any alias), then see what they own and why.
 import { get, post } from "../api.js";
-import { h } from "../dom.js";
+import { h, replace } from "../dom.js";
 import { IconCustomers, IconRefresh, IconSearch } from "../icons.js";
-import { badge, breadcrumb, busy, button, cardWith, copy, empty, fmtDate, fmtDateTime, kv, pageHeader, table, toast, when } from "../ui.js";
+import { badge, breadcrumb, busy, button, cardWith, copy, empty, errorCard, fmtDate, fmtDateTime, kv, pageHeader, seg, table, toast, when } from "../ui.js";
 
-function lookupForm(ctx, value = "") {
-  const q = h("input", { class: "input", type: "search", placeholder: "App user ID or alias, e.g. user_123 or $RCAnonymousID:…", value, "aria-label": "App user ID", required: true, spellcheck: "false", autocomplete: "off" });
-  const form = h("form", { class: "row" }, h("div", { class: "search" }, IconSearch(14), q), button("Look up", { type: "submit" }));
+// ---- List ---------------------------------------------------------------------------------------
+
+/** Where "Customers" in the detail page's breadcrumb goes back to: the last list and search. */
+let listUrl = "/admin/customers";
+
+const STORE_SHORT = { app_store: "App Store", play_store: "Google Play" };
+
+export async function customersPage(ctx) {
+  const params = new URLSearchParams(location.search);
+  let q = params.get("q") ?? "";
+  let purchasesOnly = params.get("purchases") === "1";
+  let nextBefore = null;
+
+  const rows = h("tbody");
+  const more = button("Load more", { variant: "outline" });
+  const results = h("div");
+  const query = h("input", { class: "input", type: "search", placeholder: "Search by app user ID, email or transaction ID", value: q, "aria-label": "Search customers", spellcheck: "false", autocomplete: "off" });
+
+  const syncUrl = () => {
+    const next = new URLSearchParams();
+    if (q) next.set("q", q);
+    if (purchasesOnly) next.set("purchases", "1");
+    listUrl = `/admin/customers${next.size ? `?${next}` : ""}`;
+    history.replaceState(null, "", listUrl);
+  };
+
+  const row = (cust) => {
+    const href = `/admin/customers/${encodeURIComponent(cust.app_user_id)}`;
+    const tr = h(
+      "tr",
+      { class: "clickable", onClick: (e) => !e.target.closest("a") && ctx.navigate(href) },
+      h("td", null, h("div", { class: "cell-stack" }, h("a", { href, "data-nav": "", class: "cell-strong cell-truncate", title: cust.app_user_id }, cust.app_user_id), cust.email ? h("span", { class: "cell-sub cell-truncate" }, cust.email) : null)),
+      h("td", null, cust.active ? badge("Active", "success", true) : cust.purchases ? badge("Inactive") : h("span", { class: "faint small", style: { whiteSpace: "nowrap" } }, "No purchases")),
+      h("td", { class: "hide-below-md" }, cust.purchases ? h("div", { class: "cell-stack" }, h("span", { class: "mono small" }, cust.last_product ?? "—"), h("span", { class: "cell-sub" }, `${cust.purchases} purchase${cust.purchases === 1 ? "" : "s"} · ${cust.stores.map((x) => STORE_SHORT[x] ?? x).join(", ")}`)) : "—"),
+      h("td", { class: "hide-below-md" }, cust.last_purchase_at ? when(cust.last_purchase_at) : "—"),
+      h("td", { class: "hide-below-sm" }, when(cust.first_seen)),
+    );
+    return tr;
+  };
+
+  const fetchPage = async (before) => {
+    const p = new URLSearchParams();
+    if (q) p.set("q", q);
+    if (purchasesOnly) p.set("purchases", "1");
+    if (before) p.set("before", before);
+    const page = await get(`/customers?${p}`);
+    rows.append(...page.customers.map(row));
+    nextBefore = page.next_before;
+    more.hidden = !nextBefore;
+    return page.customers.length;
+  };
+
+  const load = async () => {
+    rows.replaceChildren();
+    replace(results, h("div", { class: "loading" }, "Loading…"));
+    const n = await fetchPage(null);
+    if (!n) {
+      replace(
+        results,
+        h(
+          "div",
+          { class: "card" },
+          q
+            ? empty({ icon: IconSearch, title: "No customers match", text: `Nothing matches “${q}”${purchasesOnly ? " among customers with purchases" : ""}. App user IDs match from the start; emails and transaction IDs must match exactly.` })
+            : empty({ icon: IconCustomers, title: purchasesOnly ? "No customers with purchases yet" : "No customers yet", text: "Customers appear when your app first talks to openpurr through the SDK." }),
+        ),
+      );
+      return;
+    }
+    replace(
+      results,
+      h("div", { class: "stack" }, table([{ label: "Customer" }, { label: "Status" }, { label: "Latest product", class: "hide-below-md" }, { label: "Last purchase", class: "hide-below-md" }, { label: "First seen", class: "hide-below-sm" }], []), h("div", null, more)),
+    );
+    results.querySelector("tbody").replaceWith(rows);
+  };
+  const reload = () => {
+    syncUrl();
+    return load().catch((err) => replace(results, errorCard(err, reload)));
+  };
+
+  more.addEventListener("click", () => busy(more, () => fetchPage(nextBefore)));
+  const form = h(
+    "form",
+    { class: "row wrap" },
+    h("div", { class: "search", style: { minWidth: "240px" } }, IconSearch(14), query),
+    button("Search", { type: "submit", variant: "outline" }),
+    seg(
+      [
+        { value: "all", label: "All" },
+        { value: "purchases", label: "With purchases" },
+      ],
+      purchasesOnly ? "purchases" : "all",
+      (v) => {
+        purchasesOnly = v === "purchases";
+        void reload();
+      },
+    ),
+  );
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const id = q.value.trim();
-    if (id) ctx.navigate(`/admin/customers/${encodeURIComponent(id)}`);
+    q = query.value.trim();
+    void reload();
   });
-  return { form, q };
-}
+  // Clearing the box (the search field's ✕ or deleting the text) shows the newest customers again.
+  query.addEventListener("input", () => {
+    if (!query.value && q) {
+      q = "";
+      void reload();
+    }
+  });
 
-export function customersPage(ctx) {
-  const { form, q } = lookupForm(ctx);
-  setTimeout(() => q.focus());
+  syncUrl();
+  await load();
   return h(
     "div",
     null,
-    pageHeader("Customers", "Everyone who has used your apps, identified by the app user ID your app passes to the SDK."),
-    h("div", { class: "stack" }, form, h("div", { class: "card" }, empty({
-      icon: IconCustomers,
-      title: "Look up a customer",
-      text: "Enter an app user ID (what your app passes to logIn) or an anonymous ID. Any alias of a customer finds them.",
-    }))),
+    pageHeader("Customers", "Everyone who has used your apps, newest first. Open one to see what they own and why."),
+    h("div", { class: "stack" }, form, results),
   );
 }
 
@@ -57,11 +152,10 @@ export async function customerPage(ctx, appUserId) {
     if (err.status === 404) return null;
     throw err;
   });
-  const { form } = lookupForm(ctx, appUserId);
-  const crumbs = breadcrumb([{ label: "Customers", href: "/admin/customers" }, { label: appUserId }]);
+  const crumbs = breadcrumb([{ label: "Customers", href: listUrl }, { label: appUserId }]);
 
   if (!data) {
-    return h("div", null, crumbs, pageHeader("Customer not found"), h("div", { class: "stack" }, form, h("div", { class: "card" }, empty({ icon: IconCustomers, title: `No customer “${appUserId}”`, text: "No customer has this app user ID or alias. IDs are case-sensitive." }))));
+    return h("div", null, crumbs, pageHeader("Customer not found"), h("div", { class: "stack" }, h("div", { class: "card" }, empty({ icon: IconCustomers, title: `No customer “${appUserId}”`, text: "No customer has this app user ID or alias. IDs are case-sensitive." }))));
   }
 
   const { customer, aliases, customer_info: info, attributes, transactions, subscription_states: states, webhook_events: events } = data;
@@ -206,7 +300,7 @@ export async function customerPage(ctx, appUserId) {
     null,
     crumbs,
     pageHeader(customer.original_app_user_id, `Customer since ${fmtDateTime(customer.first_seen)}`, [refresh]),
-    h("div", { class: "stack" }, form, stats, sections),
+    h("div", { class: "stack" }, stats, sections),
   );
 }
 
