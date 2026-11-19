@@ -15,6 +15,7 @@ import { deliverNow } from "../webhooks";
 import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
+import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oauth";
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
 
@@ -452,6 +453,37 @@ admin.post("/metrics/refresh", requirePermission("read"), async (c) => {
   const result = await rollupMetrics(c.env.DB, Date.now(), { full: !!full });
   if (full) await auditBy(c, "metrics.rebuilt", null, { from: result.from, rows: result.rows }).run();
   return c.json({ refreshed: true, ...result, updated_at: await lastRollupAt(c.env.DB) });
+});
+
+// --- OAuth: the consent screen and connected apps (dashboard sessions only) ---------------------
+
+const sessionOnly = (c: Ctx) => (p(c).via === "session" ? null : forbidden(c, "This is for the dashboard (signed in), not access tokens."));
+
+admin.get("/oauth/requests/:id", async (c) => {
+  const denied = sessionOnly(c);
+  if (denied) return denied;
+  const r = await pendingRequest(c.env.DB, c.req.param("id"), p(c));
+  return r ? c.json(r) : notFound(c, "Sign-in request (it may have expired: start again from the app)");
+});
+
+admin.post("/oauth/requests/:id/:decision{approve|deny}", async (c) => {
+  const denied = sessionOnly(c);
+  if (denied) return denied;
+  const b = await body<{ scopes: string[] }>(c);
+  try {
+    const r = await decideRequest(c, c.req.param("id"), p(c), { approve: c.req.param("decision") === "approve", scopes: Array.isArray(b.scopes) ? b.scopes : undefined });
+    return r ? c.json(r) : notFound(c, "Sign-in request (it may have expired: start again from the app)");
+  } catch (err) {
+    return bad(c, (err as Error).message);
+  }
+});
+
+admin.get("/oauth/grants", async (c) => c.json({ grants: await listGrants(c.env.DB, p(c).operator.id) }));
+
+admin.post("/oauth/grants/:id/revoke", async (c) => {
+  const denied = sessionOnly(c);
+  if (denied) return denied;
+  return (await revokeGrantFor(c, p(c).operator, c.req.param("id"))) ? c.json({ revoked: c.req.param("id") }) : notFound(c, "Connected app");
 });
 
 // --- webhooks ------------------------------------------------------------------------------------

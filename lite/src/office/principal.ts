@@ -57,7 +57,7 @@ export function canSeeApp(p: Principal, appId: string) {
   return p.apps === null || p.apps.includes(appId);
 }
 
-function principalOf(operator: Operator, via: Principal["via"], tokenId: string | null, scopes: TokenScope[] | null): Principal {
+export function principalOf(operator: Operator, via: Principal["via"], tokenId: string | null, scopes: TokenScope[] | null): Principal {
   let permissions = new Set(ROLE_PERMISSIONS[operator.role] ?? []);
   if (scopes) {
     const allowed = new Set(scopes.flatMap((s) => SCOPE_PERMISSIONS[s] ?? []));
@@ -92,6 +92,8 @@ export const adminAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (c.req.path.startsWith("/admin/v1/auth/")) return next();
   const header = c.req.header("authorization") ?? "";
 
+  // OAuth access tokens are issued for the MCP server only (their audience is /mcp).
+  if (header.startsWith("Bearer oat_")) return deny(c, 401, "invalid_token", "OAuth access tokens only work at /mcp. Use a personal access token for the admin API.");
   if (header.startsWith(`Bearer ${ACCESS_TOKEN_PREFIX}`)) {
     const principal = await tokenPrincipal(c, header.slice(7).trim());
     if (!principal) return deny(c, 401, "invalid_token", "Invalid, expired or revoked access token.");

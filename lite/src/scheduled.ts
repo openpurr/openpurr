@@ -19,6 +19,7 @@
 import type { Deps, Env } from "./env";
 import { ecbProvider, refreshRates } from "./fx";
 import { rollupMetrics } from "./metrics";
+import { pruneOAuth } from "./office/oauth";
 import { refreshSnapshot } from "./snapshot";
 import { pollVoidedPurchases, retryPlayAcknowledgements } from "./stores/google-jobs";
 import { retryDueDeliveries } from "./webhooks";
@@ -91,7 +92,9 @@ const pruneExpiredChains: Task = async (env, now) => {
   return { task: "prune-expired-apple-chains", rows: meta.changes };
 };
 
-export const HOURLY_TASKS: Task[] = [pruneNotificationPayloads, pruneCaptures, pruneInactiveCustomers, pruneExpiredChains];
+const pruneOAuthState: Task = async (env, now) => ({ task: "prune-oauth", rows: await pruneOAuth(env.DB, now) });
+
+export const HOURLY_TASKS: Task[] = [pruneNotificationPayloads, pruneCaptures, pruneInactiveCustomers, pruneExpiredChains, pruneOAuthState];
 
 const chartTotals: Task = async (env, now) => ({ task: "rollup-metrics", rows: (await rollupMetrics(env.DB, now)).rows });
 

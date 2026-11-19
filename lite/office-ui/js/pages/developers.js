@@ -196,7 +196,7 @@ const TOKEN_SCOPES = [
 ];
 
 export async function tokensPage(ctx) {
-  const { tokens } = await get("/tokens");
+  const [{ tokens }, { grants: connected }] = await Promise.all([get("/tokens"), get("/oauth/grants")]);
   const create = () => {
     const errors = formError();
     const name = input({ required: true, placeholder: "e.g. Laptop CLI", maxlength: 100 });
@@ -264,7 +264,7 @@ export async function tokensPage(ctx) {
       h(
         "p",
         { class: "small muted" },
-        "Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access and write:webhooks to replay webhooks.",
+        "Claude.ai and other apps that sign in: add a custom connector with the MCP server URL, and approve it here when asked. Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access and write:webhooks to replay webhooks.",
       ),
     ),
   );
@@ -294,6 +294,37 @@ export async function tokensPage(ctx) {
         : h("div", { class: "card" }, empty({ icon: IconTerminal, title: "No access tokens", text: "Create one to use the admin API from a terminal or an AI assistant.", action: button("New token", { icon: IconPlus(15), onClick: create }) })),
       old.length ? cardWith("Revoked and expired", null, table(columns, rows(old))) : null,
       mcpCard,
+      connectedApps(ctx, connected),
     ),
+  );
+}
+
+/** Apps connected through OAuth (Claude.ai connectors and others): what they may do, and revoke. */
+function connectedApps(ctx, grants) {
+  const disconnect = async (g) => {
+    if (!(await confirmDialog({ title: `Disconnect ${g.client_name}?`, text: "It loses access right away. You can connect it again later.", confirmLabel: "Disconnect", danger: true }))) return;
+    try {
+      await post(`/oauth/grants/${g.id}/revoke`);
+      toast("Disconnected", "success");
+      ctx.rerender();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  };
+  return cardWith(
+    "Connected apps",
+    "Apps you've allowed to use the MCP server by signing in, such as Claude.ai.",
+    grants.length
+      ? table(
+          [{ label: "App" }, { label: "Can", class: "hide-below-md" }, { label: "Connected", class: "hide-below-md" }, { label: "Last used" }, { label: "", class: "actions" }],
+          grants.map((g) => [
+            h("div", { class: "cell-stack" }, h("span", { class: "cell-strong" }, g.client_name), g.client_id ? h("span", { class: "cell-sub" }, new URL(g.client_id).host) : g.client_uri ? h("span", { class: "cell-sub" }, new URL(g.client_uri).host) : null),
+            h("div", { class: "row wrap", style: { gap: "4px" } }, g.scopes.map((s) => badge(s))),
+            when(g.created_at),
+            when(g.last_used_at),
+            button("Disconnect", { variant: "outline", size: "sm", onClick: () => disconnect(g) }),
+          ]),
+        )
+      : h("div", { class: "card-body muted small" }, "No apps connected."),
   );
 }
