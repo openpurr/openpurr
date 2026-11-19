@@ -8,10 +8,12 @@ name: Deploy Lite
 #   CLOUDFLARE_API_TOKEN    token with Workers Scripts: Edit and D1: Edit (plus Zone: Workers
 #                           Routes: Edit and DNS: Edit if you use custom domains)
 #   CLOUDFLARE_ACCOUNT_ID
-#   OPENPURR_CONFIG_YAML    the full contents of your openpurr.config.yaml
 # Optional secrets (see lite/scripts/deploy-config.mjs):
 #   OPENPURR_WORKER_NAME, OPENPURR_D1_DATABASE_NAME, OPENPURR_D1_DATABASE_ID,
 #   OPENPURR_SDK_DOMAIN, OPENPURR_OFFICE_DOMAIN
+#   OPENPURR_CONFIG_YAML    an openpurr.config.yaml to import on a new deployment's first start.
+#                           The config lives in D1 and is edited in the dashboard; once it exists,
+#                           this is ignored, so it can be deleted.
 #
 # Worker secrets (OPERATOR_SECRET, APPLE_IAP_KEY, GOOGLE_SERVICE_ACCOUNT, webhook secrets) stay
 # in Cloudflare, set once with `wrangler secret put`. Deploys don't touch them.
@@ -50,13 +52,10 @@ jobs:
     steps:
       - name: Check secrets
         id: secrets
-        env:
-          OPENPURR_CONFIG_YAML: ${{ secrets.OPENPURR_CONFIG_YAML }}
         run: |
           missing=""
           [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
           [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
-          [ -n "$OPENPURR_CONFIG_YAML" ] || missing="$missing OPENPURR_CONFIG_YAML"
           if [ -z "$missing" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
@@ -98,11 +97,14 @@ jobs:
         env:
           OPENPURR_CONFIG_YAML: ${{ secrets.OPENPURR_CONFIG_YAML }}
         run: |
-          umask 077
-          printf '%s\n' "$OPENPURR_CONFIG_YAML" > "$RUNNER_TEMP/openpurr.config.yaml"
-          # GITHUB_ENV only reaches later steps (wrangler's build runs build-config again); export for this one.
-          export OPENPURR_CONFIG="$RUNNER_TEMP/openpurr.config.yaml"
-          echo "OPENPURR_CONFIG=$OPENPURR_CONFIG" >> "$GITHUB_ENV"
+          # An optional config file, imported only by a deployment that has no config in D1 yet.
+          if [ -n "$OPENPURR_CONFIG_YAML" ]; then
+            umask 077
+            printf '%s\n' "$OPENPURR_CONFIG_YAML" > "$RUNNER_TEMP/openpurr.config.yaml"
+            # GITHUB_ENV only reaches later steps (wrangler's build runs build-config again); export for this one.
+            export OPENPURR_CONFIG="$RUNNER_TEMP/openpurr.config.yaml"
+            echo "OPENPURR_CONFIG=$OPENPURR_CONFIG" >> "$GITHUB_ENV"
+          fi
           node scripts/build-config.mjs
           node scripts/deploy-config.mjs
 

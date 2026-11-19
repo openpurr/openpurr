@@ -10,7 +10,7 @@ openpurr speaks the RevenueCat SDK's API, so apps keep the official, unmodified 
 ## 1. Find the values
 
 - **SDK Worker URL:** the `openpurr` Worker's custom domain, or `https://openpurr.<account>.workers.dev`.
-- **SDK key:** the app's `sdk_keys` entry in `lite/openpurr.config.yaml` (`appl_…` for App Store apps, `goog_…` for Google Play apps). Or run the `get_config` MCP tool, or `npx openpurr config`.
+- **SDK key:** in the dashboard, Configuration → Apps and products (`appl_…` for App Store apps, `goog_…` for Google Play apps). Or run the `get_config` MCP tool, or `npx openpurr config`. With several projects, use the key of the right project's app.
 
 If the user is migrating from RevenueCat, the code that calls `configure` already exists. Change only the key and add the proxy URL.
 

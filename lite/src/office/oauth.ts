@@ -30,12 +30,13 @@ import { audit, type Operator } from "./auth";
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { can, type Permission, type Principal } from "./principal";
 
-export const OAUTH_SCOPES = ["read", "write:grants", "write:webhooks"] as const;
+export const OAUTH_SCOPES = ["read", "write:grants", "write:webhooks", "write:config"] as const;
 export type OAuthScope = (typeof OAUTH_SCOPES)[number];
 const SCOPE_INFO: Record<OAuthScope, { label: string; needs: Permission }> = {
   read: { label: "Look up customers, purchases, charts, webhook deliveries and the audit log", needs: "read" },
   "write:grants": { label: "Grant and revoke promotional entitlements", needs: "grants:manage" },
   "write:webhooks": { label: "Replay webhook events", needs: "webhooks:replay" },
+  "write:config": { label: "Change the configuration: apps, products, entitlements, offerings and webhooks", needs: "config:manage" },
 };
 
 export const ACCESS_PREFIX = "oat_";

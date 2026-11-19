@@ -4,22 +4,21 @@
 //
 //   pnpm run setup
 //
-// Steps: check Node and the Cloudflare login, write openpurr.config.yaml (asking for your bundle ID
-// and package name, with fresh SDK keys), create the D1 database, apply migrations, deploy both
+// Steps: check Node and the Cloudflare login, create the D1 database, apply migrations, deploy both
 // Workers, set the operator secret, and create the first owner. Secrets are generated here and
-// piped straight to wrangler; none of them are printed.
+// piped straight to wrangler; none of them are printed. Apps, products and entitlements come
+// after, in the dashboard: it opens on adding your first app. (An openpurr.config.yaml, if you
+// have one, is imported instead on the first start.)
 
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { existsSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
+import { existsSync, realpathSync } from "node:fs";
 import { createInterface } from "node:readline/promises";
 import { fileURLToPath } from "node:url";
-import { parseDocument } from "yaml";
 
 const DATABASE = "openpurr";
 const here = (p) => fileURLToPath(new URL(`../${p}`, import.meta.url));
-const configPath = here("openpurr.config.yaml");
-/** Created when setup runs, so importing buildConfig (tests) doesn't hold stdin open. */
+/** Created when setup runs, so importing this file doesn't hold stdin open. */
 let rl;
 
 // wrangler runs non-interactively (CI=1): no prompts of its own, and no edits to wrangler.jsonc.
@@ -61,7 +60,6 @@ async function confirm(question) {
   return answer === "" || answer === "y" || answer === "yes";
 }
 
-const sdkKey = (prefix) => `${prefix}${randomBytes(24).toString("base64url")}`;
 const firstUrl = (text) => text.match(/https:\/\/[^\s"']+/)?.[0]?.replace(/\/+$/, "") ?? null;
 
 // ── 1. Prerequisites ────────────────────────────────────────────────────────────────────────────
@@ -97,57 +95,7 @@ async function checkLogin() {
   if (!(await confirm("Continue?"))) throw new SetupError("Stopped. Nothing was changed.");
 }
 
-// ── 2. Config ───────────────────────────────────────────────────────────────────────────────────
-
-const BUNDLE_ID = /^[A-Za-z0-9-]+(\.[A-Za-z0-9-]+)+$/;
-const PACKAGE_NAME = /^[A-Za-z][A-Za-z0-9_]*(\.[A-Za-z][A-Za-z0-9_]*)+$/;
-
-/** The example config with your app IDs and fresh SDK keys; an app you skip is removed everywhere. */
-export function buildConfig(example, { bundleId, packageName }) {
-  const doc = parseDocument(example);
-  const drop = [];
-  if (bundleId) {
-    doc.setIn(["apps", "ios", "bundle_id"], bundleId);
-    doc.setIn(["apps", "ios", "sdk_keys"], doc.createNode([sdkKey("appl_")]));
-  } else drop.push("ios");
-  if (packageName) {
-    doc.setIn(["apps", "android", "package_name"], packageName);
-    doc.setIn(["apps", "android", "sdk_keys"], doc.createNode([sdkKey("goog_")]));
-  } else drop.push("android");
-  for (const app of drop) {
-    doc.deleteIn(["apps", app]);
-    for (const ent of doc.get("entitlements")?.items ?? []) ent.value.deleteIn(["products", app]);
-    for (const offering of doc.get("offerings")?.items ?? []) {
-      for (const pkg of offering.get("packages")?.items ?? []) pkg.delete(app);
-    }
-  }
-  return doc.toString();
-}
-
-async function writeConfig() {
-  step("Config (openpurr.config.yaml)");
-  if (existsSync(configPath)) {
-    console.log("  Using your existing openpurr.config.yaml.");
-  } else {
-    console.log("  Your app's identifiers. Leave one blank to skip that store; you can add it later.");
-    let bundleId = "";
-    let packageName = "";
-    while (!bundleId && !packageName) {
-      bundleId = await ask("iOS bundle ID (e.g. com.example.myapp)", { validate: (v) => (!v || BUNDLE_ID.test(v) ? null : "That doesn't look like a bundle ID.") });
-      packageName = await ask("Android package name (e.g. com.example.myapp)", {
-        validate: (v) => (!v || PACKAGE_NAME.test(v) ? null : "That doesn't look like a package name."),
-      });
-      if (!bundleId && !packageName) console.log("  At least one app is needed.");
-    }
-    writeFileSync(configPath, buildConfig(readFileSync(here("openpurr.config.example.yaml"), "utf8"), { bundleId, packageName }));
-    console.log("  Wrote openpurr.config.yaml with new SDK keys and the example products, entitlements and offerings.");
-    console.log("  Edit the products to match App Store Connect and Play Console, then deploy again (the skills can help).");
-  }
-  const r = spawnSync(process.execPath, [here("scripts/build-config.mjs")], { stdio: "inherit", env: childEnv });
-  if (r.status !== 0) throw new SetupError("Fix openpurr.config.yaml as described above, then run this again.");
-}
-
-// ── 3. Database ─────────────────────────────────────────────────────────────────────────────────
+// ── 2. Database ─────────────────────────────────────────────────────────────────────────────────
 
 function database() {
   step("Database");
@@ -161,7 +109,7 @@ function database() {
   wrangler(["d1", "migrations", "apply", DATABASE, "--remote"]);
 }
 
-// ── 4. Workers ──────────────────────────────────────────────────────────────────────────────────
+// ── 3. Workers ──────────────────────────────────────────────────────────────────────────────────
 
 function deploy(env, label) {
   step(`Deploying the ${label}`);
@@ -187,7 +135,7 @@ function operatorSecret() {
   console.log("  Generated and set OPERATOR_SECRET on the back office.");
 }
 
-// ── 5. First owner ──────────────────────────────────────────────────────────────────────────────
+// ── 4. First owner ──────────────────────────────────────────────────────────────────────────────
 
 async function firstOwner(officeUrl) {
   step("First owner");
@@ -214,7 +162,9 @@ if (isMain) {
     console.log("openpurr Lite setup");
     checkNode();
     await checkLogin();
-    await writeConfig();
+    // Validates and bundles openpurr.config.yaml if there is one (it's imported on the first start).
+    const built = spawnSync(process.execPath, [here("scripts/build-config.mjs")], { stdio: "inherit", env: childEnv });
+    if (built.status !== 0) throw new SetupError("Fix openpurr.config.yaml as described above (or remove it and set up the apps in the dashboard), then run this again.");
     database();
     const sdkUrl = deploy("", "SDK Worker");
     const officeUrl = deploy("office", "back office");
@@ -230,13 +180,15 @@ Done. openpurr is running.
 
 Next:
   1. Open the setup link above, set a password, and turn on two-step sign-in.
-  2. Check the setup: create an access token in the dashboard (Developers → Access tokens), then
+  2. ${existsSync(here("openpurr.config.yaml")) ? "Your openpurr.config.yaml is imported on the first start; check it under Configuration." : "The dashboard opens on adding your first app: its bundle ID and package name. You get the SDK keys there."}
+     Then add the products, an entitlement and an offering (Configuration).
+  3. Check the setup: create an access token in the dashboard (Developers → Access tokens), then
        npx openpurr login --url ${office}
        npx openpurr doctor
      Every problem it finds comes with the fix.
-  3. Store notifications: App Store → ${office}/notifications/apple, Google Play → ${office}/notifications/google
-  4. Back up the database now and then: pnpm db:backup
-  5. Optional: deploy from GitHub Actions on every push (see .github/workflows/lite-deploy.yml).`);
+  4. Store notifications: App Store → ${office}/notifications/apple, Google Play → ${office}/notifications/google
+  5. Back up the database now and then: pnpm db:backup
+  6. Optional: deploy from GitHub Actions on every push (see .github/workflows/lite-deploy.yml).`);
   } catch (err) {
     if (!(err instanceof SetupError)) throw err;
     console.error(`\n✗ ${err.message}`);

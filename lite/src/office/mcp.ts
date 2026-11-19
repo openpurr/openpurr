@@ -19,7 +19,8 @@
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
 import { readAttributes } from "../attributes";
-import { entitlementsFor, type ProjectConfig } from "../config";
+import { ConfigError, entitlementsFor, parseConfig, type ProjectConfig } from "../config";
+import { changeProblems, ConfigConflict, currentVersion, saveConfig } from "../config-store";
 import { computeSnapshot, promotionalProductId } from "../customer-info";
 import type { AppEnv } from "../env";
 import { type GrantRow, loadCustomer, type SubscriptionStateRow, type TransactionRow } from "../ledger";
@@ -186,6 +187,7 @@ function describeProject(config: ProjectConfig, principal: Principal) {
       store: a.store,
       bundle_id: a.bundleId ?? null,
       package_name: a.packageName ?? null,
+      sdk_keys: a.sdkKeys,
       products: [...a.products.values()].map((pr) => ({ id: pr.id, type: pr.type, base_plans: pr.basePlans.length ? pr.basePlans : undefined })),
     }));
   const entitlements = config.entitlements.map((e) => ({
@@ -200,7 +202,7 @@ function describeProject(config: ProjectConfig, principal: Principal) {
     packages: o.packages.map((pk) => ({ id: pk.id, products: Object.fromEntries([...pk.products].filter(([app]) => canSeeApp(principal, app)).map(([app, r]) => [app, r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId])) })),
   }));
   const text = [
-    `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
+    `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}; SDK key ${a.sdk_keys.join(", ")}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
     `Entitlements:\n${entitlements.map((e) => `- ${e.id}${e.description ? ` (${e.description})` : ""}: ${Object.entries(e.products).map(([app, prs]) => `${app}: ${prs.join(", ")}`).join("; ")}`).join("\n")}`,
     `Offerings:\n${offerings.map((o) => `- ${o.id}${o.current ? " (current)" : ""}: ${o.packages.map((pk) => `${pk.id} = ${Object.entries(pk.products).map(([app, pr]) => `${app}:${pr}`).join(", ")}`).join("; ")}`).join("\n")}`,
   ].join("\n\n");
@@ -453,14 +455,62 @@ const TOOLS: Tool[] = [
   {
     name: "get_config",
     title: "Get the configuration",
-    description: "The deployment's projects and, for each, its apps (store, bundle ID or package name, products), entitlements (which products unlock each, per app) and offerings. No secrets.",
+    description:
+      "The deployment's projects and, for each, its apps (store, bundle ID or package name, SDK keys, products), entitlements (which products unlock each, per app) and offerings. For operators with access to every app, the structured result also has the whole config document and its version_id, for save_config. No secrets.",
     inputSchema: { type: "object", additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     permission: "read",
     async run(c, principal) {
       const projects = visibleProjects(c.get("config"), principal).map((config) => describeProject(config, principal));
-      if (!projects.length) return { text: "No projects yet: the config is empty.", structured: { projects: [] } };
-      return { text: projects.map((pr) => pr.text).join("\n\n"), structured: { projects: projects.map((pr) => pr.structured) } };
+      // The whole document spans every app, so only operators who can see every app get it.
+      const stored = principal.apps === null ? await currentVersion(c.env.DB) : null;
+      const full = principal.apps === null ? { version_id: stored?.id ?? 0, document: stored?.document ?? c.get("config").document } : {};
+      if (!projects.length) return { text: "No projects yet: the config is empty.", structured: { projects: [], ...full } };
+      return { text: projects.map((pr) => pr.text).join("\n\n"), structured: { projects: projects.map((pr) => pr.structured), ...full } };
+    },
+  },
+  {
+    name: "save_config",
+    title: "Save the configuration",
+    description:
+      'Saves an edited config document (from get_config) as a new version: {"version": 2, "projects": {"<id>": {"name", "apps", "entitlements", "offerings", "webhooks"}}}. Pass the version_id you edited as base_id; if someone saved since, it\'s refused and you get the config again and redo the edit. Invalid documents are refused with every problem listed. Takes effect in the back office at once and in the SDK within a minute. Change only what the user asked for, and confirm with them first.',
+    inputSchema: {
+      type: "object",
+      properties: {
+        document: { type: "object", description: "The whole config document, edited." },
+        base_id: { type: "integer", minimum: 0, description: "version_id from get_config." },
+        note: { type: "string", description: "What changed, for the history (e.g. Added product pro_annual to rose_ios)." },
+      },
+      required: ["document", "base_id"],
+      additionalProperties: false,
+    },
+    annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
+    permission: "config:manage",
+    allApps: true,
+    async run(c, principal, args) {
+      const baseId = num(args, "base_id", 0, Number.MAX_SAFE_INTEGER);
+      if (baseId === undefined) throw new ToolError("base_id is required: the version_id from get_config.");
+      const note = str(args, "note", { required: false, max: 500 }) ?? null;
+      try {
+        const next = parseConfig(args.document);
+        const problems = await changeProblems(c.env.DB, c.get("config"), next);
+        if (problems.length) return { text: `Not saved:\n${problems.map((p) => `- ${p}`).join("\n")}`, isError: true };
+        const { id } = await saveConfig(c.env.DB, next.document, { baseId, by: principal.operator.email, note });
+        await audit(c.env.DB, {
+          operator: principal.operator,
+          action: "config.saved",
+          target: String(id),
+          details: { base_id: baseId, note },
+          source: "mcp",
+          tokenId: principal.tokenId,
+          ip: c.req.header("cf-connecting-ip") ?? null,
+        }).run();
+        return { text: `Saved as version ${id}. The back office uses it now; the SDK within a minute.`, structured: { version_id: id } };
+      } catch (err) {
+        if (err instanceof ConfigError) return { text: `Not saved: the config has problems.\n${err.problems.map((p) => `- ${p}`).join("\n")}`, isError: true };
+        if (err instanceof ConfigConflict) return { text: `Not saved: ${err.message} Call get_config again and redo the change.`, isError: true };
+        throw err;
+      }
     },
   },
   {

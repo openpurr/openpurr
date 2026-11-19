@@ -84,10 +84,10 @@ Lite v1 is still in progress, so expect changes. To try it on your own Cloudflar
 git clone https://github.com/openpurr/openpurr && cd openpurr
 npx pnpm install
 cd lite && npx wrangler login
-npx pnpm run setup      # config, database, both Workers, operator secret and your owner account
+npx pnpm run setup      # database, both Workers, operator secret and your owner account
 ```
 
-The setup asks for your bundle ID and package name, and it's safe to run again if it stops halfway. Afterwards:
+The setup is safe to run again if it stops halfway. It ends with a link to the dashboard, which opens on adding your first app: its bundle ID and package name, then products, entitlements and offerings. One deployment can run several apps as separate projects, each with its own customers. Afterwards:
 
 - **Check your setup:** run `npx openpurr login`, then `npx openpurr doctor`. It reports what's missing and how to fix each item.
 - **Back up your data:** `npx pnpm db:backup` exports the database to a file. D1 also keeps 7 days of history on the free plan (30 on Workers Paid).

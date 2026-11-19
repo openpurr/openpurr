@@ -5,10 +5,11 @@
 //   pnpm demo:data --wipe          first deletes ALL customers and purchases in the local database
 //   pnpm demo:data --remove        deletes the demo data only
 //   options: --months 18  --seed 7  --scale 1 (customers per day multiplier)
+//            --project ID (default: the first project with subscription products)
 //
 // Everything is fictional: anonymous IDs, user_… IDs and @example.com emails. Demo customers'
 // internal IDs start with "demo-", which is how --remove finds them and their purchases. Apps and products
-// come from your openpurr.config.yaml (compiled to src/config.generated.json): monthly and annual
+// come from the local deployment's config (in D1; add them in the dashboard): monthly and annual
 // subscriptions (with a 7-day trial), a lifetime unlock and a consumable, where defined.
 // Then open the dashboard's Charts page; it rebuilds the chart totals on first view.
 
@@ -25,6 +26,7 @@ const { values: args } = parseArgs({
     scale: { type: "string", default: "1" },
     wipe: { type: "boolean", default: false },
     remove: { type: "boolean", default: false },
+    project: { type: "string" },
   },
 });
 
@@ -95,8 +97,19 @@ const digits = (n) => Array.from({ length: n }, () => Math.floor(rand() * 10)).j
 
 // ---- Catalog from the config --------------------------------------------------------------------
 
-const config = JSON.parse(readFileSync(new URL("../src/config.generated.json", import.meta.url), "utf8"));
-const apps = Object.entries(config.apps).map(([id, a]) => {
+// The config in the local D1. Before the dashboard has saved one, the bundled file (which the
+// Worker imports on its first start) stands in.
+const [stored] = d1("SELECT document FROM config_version ORDER BY id DESC LIMIT 1");
+const bundled = JSON.parse(readFileSync(new URL("../src/config.generated.json", import.meta.url), "utf8"));
+const document = stored ? JSON.parse(stored.document) : bundled?.version === 1 ? { projects: { default: bundled } } : (bundled ?? { projects: {} });
+const projects = Object.entries(document.projects ?? {});
+const hasSubscriptions = ([, p]) => Object.values(p.apps ?? {}).some((a) => Object.values(a.products ?? {}).some((x) => x.type === "subscription"));
+const [projectId, project] = args.project ? (projects.find(([id]) => id === args.project) ?? []) : (projects.find(hasSubscriptions) ?? []);
+if (!project) {
+  console.error(args.project ? `No project ${args.project} in the local config.` : "No project with subscription products in the local config. Start wrangler dev, add an app and its products in the dashboard, then run this again.");
+  process.exit(1);
+}
+const apps = Object.entries(project.apps ?? {}).map(([id, a]) => {
   const products = Object.entries(a.products ?? {});
   const subs = products.filter(([, p]) => p.type === "subscription");
   let monthly = null;
@@ -121,7 +134,7 @@ const apps = Object.entries(config.apps).map(([id, a]) => {
 const appStore = apps.find((a) => a.store === "app_store");
 const playStore = apps.find((a) => a.store === "play_store");
 if (!apps.some((a) => a.monthly || a.annual)) {
-  console.error("No subscription products in the config; add some to openpurr.config.yaml first.");
+  console.error(`No subscription products in project ${projectId}; add some in the dashboard first.`);
   process.exit(1);
 }
 
@@ -337,12 +350,12 @@ for (let day = START; day < NOW; day += DAY) {
     const market = pick(MARKETS.map((m) => [m, m.weight]));
     const app = !playStore ? appStore : !appStore ? playStore : chance(0.62) ? appStore : playStore;
     const c = { id, market, priceFactor };
-    row("customer", ["id", "app_user_id", "first_seen"], [id, anon, firstSeen]);
-    row("customer_alias", ["app_user_id", "customer_id", "created_at"], [anon, id, firstSeen]);
+    row("customer", ["id", "project_id", "app_user_id", "first_seen"], [id, projectId, anon, firstSeen]);
+    row("customer_alias", ["project_id", "app_user_id", "customer_id", "created_at"], [projectId, anon, id, firstSeen]);
     customers++;
     if (chance(0.38)) {
       const userId = ids.userId();
-      row("customer_alias", ["app_user_id", "customer_id", "created_at"], [userId, id, Math.min(firstSeen + rand() * 2 * DAY, NOW)]);
+      row("customer_alias", ["project_id", "app_user_id", "customer_id", "created_at"], [projectId, userId, id, Math.min(firstSeen + rand() * 2 * DAY, NOW)]);
       if (chance(0.7)) {
         const email = `${FIRST[Math.floor(rand() * FIRST.length)]}.${hex(4)}@example.com`;
         row("subscriber_attribute", ["customer_id", "key", "value", "updated_at", "received_at"], [id, "$email", email, firstSeen, firstSeen]);

@@ -16,7 +16,6 @@
     "db:backup": "node scripts/backup.mjs",
     "setup": "node scripts/setup.mjs",
     "bench:fixtures": "node scripts/gen-bench-fixtures.mjs",
-    "config": "node scripts/build-config.mjs",
     "apple:test-notification": "node scripts/apple-test-notification.mjs",
     "secret-keys": "node scripts/secret-keys.mjs",
     "admin": "node scripts/admin.mjs",

@@ -106,7 +106,7 @@ describe("discovery", () => {
     expect(r.header).toBe(`Bearer resource_metadata="${ORIGIN}/.well-known/oauth-protected-resource/mcp", scope="read"`);
     for (const path of ["/.well-known/oauth-protected-resource/mcp", "/.well-known/oauth-protected-resource"]) {
       const prm = await jsonOf(await request(path));
-      expect(prm).toMatchObject({ resource: MCP, authorization_servers: [ORIGIN], scopes_supported: ["read", "write:grants", "write:webhooks"] });
+      expect(prm).toMatchObject({ resource: MCP, authorization_servers: [ORIGIN], scopes_supported: ["read", "write:grants", "write:webhooks", "write:config"] });
     }
     const as = await jsonOf(await request("/.well-known/oauth-authorization-server"));
     expect(as).toMatchObject({

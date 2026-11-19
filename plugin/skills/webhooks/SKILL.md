@@ -9,17 +9,20 @@ openpurr POSTs RevenueCat-shaped events to the user's backend, so existing Reven
 
 ## 1. Configure an endpoint
 
-In `lite/openpurr.config.yaml`:
+Each project has its own endpoints: in the dashboard, Webhooks → Endpoints → Add endpoint. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx openpurr config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. In the config document, they're the project's `webhooks`:
 
-```yaml
-webhooks:
-  - id: backend
-    url: https://api.example.com/webhooks/revenuecat
-    signing_secret: WEBHOOK_SIGNING_SECRET    # recommended
-    # authorization_secret: WEBHOOK_AUTH      # optional: a fixed Authorization header value
-    # environments: [production, sandbox]     # the default
-    # events: [INITIAL_PURCHASE, RENEWAL]     # every event type when omitted
+```json
+"webhooks": [
+  {
+    "id": "backend",
+    "url": "https://api.example.com/webhooks/revenuecat",
+    "signing_secret": "WEBHOOK_SIGNING_SECRET",
+    "environments": ["production", "sandbox"]
+  }
+]
 ```
+
+`signing_secret` is recommended; `authorization_secret` adds a fixed Authorization header; `events` limits the event types (every type when omitted).
 
 The values are the **names** of Worker secrets, not the secrets themselves. Ask the user to set them on **both** Workers (from `lite/`):
 
@@ -28,7 +31,7 @@ npx wrangler secret put WEBHOOK_SIGNING_SECRET
 npx wrangler secret put WEBHOOK_SIGNING_SECRET --env office
 ```
 
-Have them run these in their own terminal, not through Claude, so the value stays out of the conversation. Generate it with a password manager or `openssl rand -hex 32`. The same value goes on both Workers and into the backend's own secret store. Then deploy: `pnpm run deploy && pnpm deploy:office`.
+Have them run these in their own terminal, not through Claude, so the value stays out of the conversation. Generate it with a password manager or `openssl rand -hex 32`. The same value goes on both Workers and into the backend's own secret store. No deploy is needed.
 
 ## 2. The event
 

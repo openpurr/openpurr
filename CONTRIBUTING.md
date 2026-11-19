@@ -39,7 +39,7 @@ pnpm test          # Vitest inside the Workers runtime (workerd)
 pnpm typecheck
 pnpm check:bundle  # production bundle stays under its size budget
 cp lite/.dev.vars.example lite/.dev.vars
-cp lite/openpurr.config.example.yaml lite/openpurr.config.yaml   # apps, products, entitlements, offerings
+cp lite/openpurr.config.example.yaml lite/openpurr.config.yaml   # optional: example apps for the first start
 pnpm --filter @openpurr/lite db:migrate:local
 pnpm dev           # wrangler dev: the SDK Worker (/v1)
 ```
@@ -62,7 +62,7 @@ For screenshots, or to see the charts with something in them, fill the **local**
 
 Keep the dashboard's Content-Security-Policy (`lite/office-ui/_headers`) strict: no inline scripts or styles, nothing from other origins. Build elements with `h()` from `js/dom.js`, which always adds text as text, never as HTML.
 
-Tests and typecheck fall back to the example config, so they work without your own `openpurr.config.yaml`. `wrangler dev` and deploys require it, and validate it first.
+The **config** (projects, apps, products, entitlements, offerings, webhooks) lives in D1 (`config_version`, `lite/src/config-store.ts`) and is edited in the dashboard's Configuration pages, through `/admin/v1/config`, or with `openpurr config pull` and `push`. Every save is validated (`lite/src/config.ts`) and kept as a version. An `openpurr.config.yaml` is optional: when a deployment (or your local database) starts with no config, the file is imported once as the project `default`; without one, the dashboard opens on adding the first app. Tests and typecheck use the example config.
 
 Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also refuses packages published in the last 24 hours; keep new pins at least a week old.
 
