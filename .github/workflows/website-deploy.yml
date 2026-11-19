@@ -1,0 +1,55 @@
+name: Deploy website
+
+# Deploys website/ to Cloudflare (Workers static assets, openpurr.org).
+# Runs on merges to main that touch the site, or by hand from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths:
+      - website/**
+      - .github/workflows/website-deploy.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# One deploy at a time; a newer merge waits for the running deploy instead of cancelling it.
+concurrency:
+  group: website-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: website
+      url: https://openpurr.org
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # Uses the pnpm version pinned in package.json's "packageManager".
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # Only the website's dependencies; Lite's aren't needed here.
+      - name: Install
+        run: pnpm install --frozen-lockfile --filter @openpurr/website...
+
+      # astro check + astro build into website/dist.
+      - name: Build
+        run: pnpm --filter @openpurr/website build
+
+      - name: Deploy
+        working-directory: website
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
