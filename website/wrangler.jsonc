@@ -10,6 +10,10 @@
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
-  // The openpurr.org zone must be in the same Cloudflare account; deploy creates the DNS record.
-  "routes": [{ "pattern": "openpurr.org", "custom_domain": true }]
+  // The openpurr.org zone must be in the same Cloudflare account; deploy creates the DNS records.
+  // Both hostnames serve the site; pages declare openpurr.org as canonical.
+  "routes": [
+    { "pattern": "openpurr.org", "custom_domain": true },
+    { "pattern": "www.openpurr.org", "custom_domain": true }
+  ]
 }
