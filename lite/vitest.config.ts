@@ -11,6 +11,8 @@ export default defineConfig(async () => {
           bindings: {
             TEST_MIGRATIONS: migrations,
             BENCH_TOKEN: "test-bench-token",
+            // Off in wrangler.jsonc; on here so test/capture.test.ts covers the spike tooling.
+            CAPTURE: "on",
           },
         },
       }),
