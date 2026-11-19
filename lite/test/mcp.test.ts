@@ -151,7 +151,11 @@ describe("tools", () => {
     expect(text(found)).toMatch(/pro: active until/);
     expect(found.structuredContent.purchases[0]).toMatchObject({ product_id: "pro_annual" });
     expect((await tool(token, "search_customers", { query: user.slice(0, 20) })).structuredContent.customers.map((x: { app_user_id: string }) => x.app_user_id)).toContain(user);
-    expect(text(await tool(token, "get_config"))).toMatch(/pro \(Pro\): ios: pro_monthly, pro_annual, lifetime; android: pro, lifetime/);
+    const config = await tool(token, "get_config");
+    expect(text(config)).toMatch(/pro \(Pro\): ios: pro_monthly, pro_annual, lifetime; android: pro, lifetime/);
+    expect(text(config)).toMatch(/^SDK URL \(Purchases.proxyURL\): not set/);
+    expect(text(config)).toContain(`store notifications to ${ORIGIN}/notifications/apple`);
+    expect(config.structuredContent.projects[0].apps.find((a: { id: string }) => a.id === "android").notification_url).toBe(`${ORIGIN}/notifications/google`);
     const mrr = await tool(token, "get_metrics", { chart: "mrr", environment: "sandbox", from: "2026-01-01", to: "2026-03-31", interval: "month" });
     expect(text(mrr)).toMatch(/\| month \| mrr \|/);
     expect((await tool(token, "get_metrics", { chart: "nope" })).isError).toBe(true);

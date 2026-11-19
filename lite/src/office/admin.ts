@@ -22,6 +22,7 @@ import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oau
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
 import { chooseProject, visibleProjects } from "./project";
+import { guessSdkUrl, parseSdkUrl, storedSdkUrl } from "./setup";
 
 export const admin = new Hono<AppEnv>();
 admin.use("*", adminAuth);
@@ -673,9 +674,13 @@ admin.post("/config/versions/:id/restore", requirePermission("config:manage"), a
 
 // --- settings ------------------------------------------------------------------------------------
 
-admin.get("/settings", requirePermission("read"), async (c) =>
-  c.json({ require_totp: await requireTotpForEveryone(c.env.DB), cloudflare_plan: await cloudflarePlan(c.env.DB) }),
-);
+async function settingsOf(c: Ctx) {
+  const [requireTotp, plan, sdkUrl] = await Promise.all([requireTotpForEveryone(c.env.DB), cloudflarePlan(c.env.DB), storedSdkUrl(c.env.DB)]);
+  // sdk_url is what was set (null if nothing); sdk_url_guess is the workers.dev guess shown until then.
+  return { require_totp: requireTotp, cloudflare_plan: plan, sdk_url: sdkUrl, sdk_url_guess: guessSdkUrl(new URL(c.req.url).origin) };
+}
+
+admin.get("/settings", requirePermission("read"), async (c) => c.json(await settingsOf(c)));
 
 const setSetting = (c: Ctx, key: string, value: string) =>
   c.env.DB.prepare(
@@ -684,16 +689,33 @@ const setSetting = (c: Ctx, key: string, value: string) =>
 
 // Send only the settings to change.
 admin.put("/settings", requirePermission("settings:manage"), async (c) => {
-  const b = await body<{ require_totp: boolean; cloudflare_plan: Plan }>(c);
-  if (b.require_totp === undefined && b.cloudflare_plan === undefined) return bad(c, "Send require_totp and/or cloudflare_plan.");
+  const b = await body<{ require_totp: boolean; cloudflare_plan: Plan; sdk_url: string | null }>(c);
+  if (b.require_totp === undefined && b.cloudflare_plan === undefined && b.sdk_url === undefined) return bad(c, "Send require_totp, cloudflare_plan and/or sdk_url.");
   if (b.require_totp !== undefined && typeof b.require_totp !== "boolean") return bad(c, "require_totp must be true or false.");
   if (b.cloudflare_plan !== undefined && b.cloudflare_plan !== "free" && b.cloudflare_plan !== "paid") return bad(c, "cloudflare_plan must be free or paid.");
   if (b.require_totp && !p(c).operator.totp_enabled) return forbidden(c, "Turn on two-step sign-in for yourself first.");
+  // sdk_url: an address, or null or "" to go back to the guess.
+  let sdkUrl: string | null | undefined;
+  if (b.sdk_url !== undefined) {
+    if (b.sdk_url !== null && typeof b.sdk_url !== "string") return bad(c, "sdk_url must be an address or null.");
+    if (!b.sdk_url?.trim()) sdkUrl = null;
+    else {
+      const parsed = parseSdkUrl(b.sdk_url);
+      if ("error" in parsed) return bad(c, parsed.error);
+      sdkUrl = parsed.url;
+    }
+  }
   const writes: D1PreparedStatement[] = [];
   if (b.require_totp !== undefined) writes.push(setSetting(c, "require_totp", String(b.require_totp)), auditBy(c, "setting.require_totp", null, { value: b.require_totp }));
   if (b.cloudflare_plan !== undefined) writes.push(setSetting(c, "cloudflare_plan", b.cloudflare_plan), auditBy(c, "setting.cloudflare_plan", null, { value: b.cloudflare_plan }));
+  if (sdkUrl !== undefined) {
+    writes.push(
+      sdkUrl ? setSetting(c, "sdk_url", sdkUrl) : c.env.DB.prepare("DELETE FROM setting WHERE key = 'sdk_url'"),
+      auditBy(c, "setting.sdk_url", null, { value: sdkUrl }),
+    );
+  }
   await c.env.DB.batch(writes);
-  return c.json({ require_totp: await requireTotpForEveryone(c.env.DB), cloudflare_plan: await cloudflarePlan(c.env.DB) });
+  return c.json(await settingsOf(c));
 });
 
 // --- free-plan usage -----------------------------------------------------------------------------

@@ -422,4 +422,21 @@ describe("audit log and settings", () => {
     const adminOp = await operator("admin");
     expect((await api("PUT", "/settings", { session: adminOp.session }, { body: { require_totp: false } })).status).toBe(403);
   });
+
+  it("keeps the SDK URL (the apps' proxyURL) as a deployment-wide setting that owners set", async () => {
+    const owner = await operator("owner");
+    const viewer = await operator("viewer");
+    const put = (session: string, sdk_url: unknown) => api("PUT", "/settings", { session }, { body: { sdk_url } });
+    // Unset: no guess either, since openpurr.test isn't a workers.dev address.
+    expect((await api("GET", "/settings", { session: viewer.session })).body).toMatchObject({ sdk_url: null, sdk_url_guess: null });
+    expect((await put(owner.session, "https://purchases.example.com/")).body).toMatchObject({ sdk_url: "https://purchases.example.com" });
+    expect((await api("GET", "/settings", { session: viewer.session })).body.sdk_url).toBe("https://purchases.example.com");
+    expect((await put(owner.session, "https://purchases.example.com/v1")).body.message).toMatch(/no path/);
+    expect((await put(owner.session, "http://purchases.example.com")).body.message).toMatch(/https/);
+    expect((await put(owner.session, "purchases")).status).toBe(400);
+    expect((await put(viewer.session, "https://x.example.com")).status).toBe(403);
+    const audit = (await api("GET", "/audit?limit=10", { session: owner.session })).body.entries;
+    expect(audit.find((e: { action: string }) => e.action === "setting.sdk_url")).toMatchObject({ details: { value: "https://purchases.example.com" } });
+    expect((await put(owner.session, "")).body.sdk_url).toBeNull();
+  });
 });

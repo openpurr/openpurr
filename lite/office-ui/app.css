@@ -449,6 +449,8 @@ h1, h2, h3, p { margin: 0; }
 }
 .copy-field { display: flex; gap: 8px; align-items: stretch; }
 .copy-field .code { flex: 1; padding: 8px 12px; }
+.snippet { display: flex; gap: 8px; align-items: flex-start; }
+.snippet-code { flex: 1; min-width: 0; white-space: pre; word-break: normal; overflow-x: auto; }
 .recovery-codes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px 24px; }
 
 /* Toggle switch */

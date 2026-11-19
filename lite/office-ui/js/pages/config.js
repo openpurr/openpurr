@@ -19,6 +19,7 @@ import {
   validId,
   WEBHOOK_EVENTS,
 } from "../config.js";
+import { connectSection, sdkUrlCard } from "../connect.js";
 import { h, replace } from "../dom.js";
 import { IconBolt, IconKey, IconPlus } from "../icons.js";
 import {
@@ -177,7 +178,7 @@ function firstRun(ctx) {
 // ---- Apps and products --------------------------------------------------------------------------
 
 export async function appsPage(ctx) {
-  const { config, project } = await current(ctx);
+  const [{ config, project }, settings] = await Promise.all([current(ctx), get("/settings")]);
   if (!project || !Object.keys(project.apps).length) return firstRun(ctx);
   const pid = ctx.project.id;
   const edit = canEdit(ctx);
@@ -211,11 +212,11 @@ export async function appsPage(ctx) {
     "div",
     null,
     pageHeader("Apps and products", `${ctx.project.name}'s apps, their SDK keys and the products they sell. Store keys and service accounts are Worker secrets; this names them.`, edit ? [button("Add app", { icon: IconPlus(15), onClick: addApp })] : []),
-    h("div", { class: "stack" }, readOnlyNote(ctx), Object.entries(project.apps).map(([appId, app]) => appCard(ctx, project, appId, app)), configFooter(config)),
+    h("div", { class: "stack" }, readOnlyNote(ctx), sdkUrlCard(ctx, settings), Object.entries(project.apps).map(([appId, app]) => appCard(ctx, project, appId, app, settings)), configFooter(config)),
   );
 }
 
-function appCard(ctx, project, appId, app) {
+function appCard(ctx, project, appId, app, settings) {
   const pid = ctx.project.id;
   const edit = canEdit(ctx);
   const ident = app.store === "app_store" ? app.bundle_id : app.package_name;
@@ -268,6 +269,7 @@ function appCard(ctx, project, appId, app) {
       "div",
       { class: "card-body stack" },
       h("div", { class: "stack-sm" }, h("h3", { class: "subhead" }, "SDK keys"), keyRows, edit ? h("div", null, button("Add a key", { variant: "outline", size: "sm", onClick: (e) => addKey(e.currentTarget) })) : null),
+      connectSection(app, settings),
       h("div", { class: "stack-sm" }, h("h3", { class: "subhead" }, "Products"), productsTable(ctx, project, appId, app)),
       h("div", { class: "stack-sm" }, h("h3", { class: "subhead" }, app.store === "app_store" ? "App Store Server API" : "Google Play Developer API"), storeAccess(ctx, appId, app)),
     ),
