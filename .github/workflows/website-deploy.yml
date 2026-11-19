@@ -46,6 +46,10 @@ jobs:
       # astro check + astro build into website/dist.
       - name: Build
         run: pnpm --filter @openpurr/website build
+        env:
+          # Google Analytics 4 measurement ID (G-XXXXXXX), a repository variable (Settings →
+          # Secrets and variables → Actions → Variables). Analytics is off when it's unset.
+          PUBLIC_GA_ID: ${{ vars.GA_MEASUREMENT_ID }}
 
       - name: Deploy
         working-directory: website

@@ -1,0 +1,24 @@
+---
+// Google Analytics 4, only when the build has a measurement ID: PUBLIC_GA_ID, set from the
+// repository variable GA_MEASUREMENT_ID in .github/workflows/website-deploy.yml. Without it
+// (local builds, forks), nothing is loaded.
+const id = import.meta.env.PUBLIC_GA_ID?.trim();
+const valid = !!id && /^G-[A-Z0-9]{4,20}$/.test(id);
+if (id && !valid) console.warn(`PUBLIC_GA_ID "${id}" isn't a GA4 measurement ID (G-XXXXXXX); analytics is off.`);
+---
+
+{
+  valid && (
+    <>
+      <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${id}`} />
+      <script is:inline define:vars={{ id }}>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() {
+          dataLayer.push(arguments);
+        }
+        gtag("js", new Date());
+        gtag("config", id);
+      </script>
+    </>
+  )
+}
