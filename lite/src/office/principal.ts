@@ -1,7 +1,7 @@
 // Who is calling the admin API, and what they may do.
 //
 // Two ways in:
-//   - the dashboard session cookie (full sessions only; changes must be same-origin, see auth.ts);
+//   - the dashboard session cookie (full and recovery sessions, not setup; changes must be same-origin, see auth.ts);
 //   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and MCP.
 //
 // Permission = the operator's ROLE, further limited by the token's SCOPES when a token is used:
@@ -91,7 +91,7 @@ export const adminAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   }
 
   const session = await sessionFor(c);
-  if (!session || session.kind !== "full") return deny(c, 401, "signed_out", "Sign in, or send a personal access token.");
+  if (!session || session.kind === "setup") return deny(c, 401, "signed_out", "Sign in, or send a personal access token.");
   if (c.req.method !== "GET" && !sameOrigin(c)) return deny(c, 403, "bad_origin", "Requests must come from the openpurr dashboard.");
   // When the owner requires two-step sign-in, operators without it can only see who they are.
   if (!session.operator.totp_enabled && c.req.path !== "/admin/v1/me" && (await requireTotpForEveryone(c.env.DB))) {

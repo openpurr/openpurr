@@ -157,7 +157,7 @@ describe("sign-in", () => {
       .bind(await sha256Hex(token), op.id, Date.now() + 60_000, Date.now())
       .run();
     const recovered = await req("/link", { body: { token } });
-    expect(recovered.body.session).toBe("full");
+    expect(recovered.body.session).toBe("recovery");
     expect((await req("/login", { body: { email: op.email, password: op.password } })).res.status).toBe(200);
   });
 
@@ -208,6 +208,35 @@ describe("two-step sign-in (TOTP)", () => {
     const code = op.recoveryCodes[0]!.toUpperCase().replace("-", " ");
     expect((await req("/login", { body: { email: op.email, password: op.password, recovery_code: code } })).res.status).toBe(200);
     expect((await req("/login", { body: { email: op.email, password: op.password, recovery_code: code } })).body.code).toBe("invalid_code");
+  });
+
+  it("a recovery link replaces a lost password and authenticator, even when two-step is required", async () => {
+    const op = await enrolled();
+    await env.DB.prepare("INSERT INTO setting (key, value, updated_at) VALUES ('require_totp', 'true', ?) ON CONFLICT (key) DO UPDATE SET value = 'true'").bind(Date.now()).run();
+    try {
+      const token = `recovery-${crypto.randomUUID()}`;
+      await env.DB.prepare("INSERT INTO login_link (token_hash, operator_id, purpose, expires_at, created_at) VALUES (?, ?, 'recovery', ?, ?)")
+        .bind(await sha256Hex(token), op.id, Date.now() + 60_000, Date.now())
+        .run();
+      const link = await req("/link", { body: { token } });
+      expect(link.body.session).toBe("recovery");
+      expect(link.setCookie).toMatch(/Max-Age=1800/);
+      const cookie = link.session!;
+
+      // No old password or authenticator code needed.
+      expect((await req("/totp/disable", { body: {}, cookie })).res.status).toBe(200);
+      // Two-step is required, so a new authenticator comes before anything else.
+      expect((await req("/me", { cookie })).body).toMatchObject({ session: "recovery", totp_enrollment_required: true });
+      const changed = await req("/password", { body: { new_password: "a brand new passphrase" }, cookie });
+      expect(changed.res.status).toBe(200);
+      expect(changed.body.totp_enrollment_required).toBe(true);
+      expect((await req("/me", { cookie })).body.session).toBe("full");
+      // Now a full session: changing the password again needs the current one.
+      expect((await req("/password", { body: { new_password: "another new passphrase" }, cookie })).res.status).toBe(401);
+      expect((await req("/login", { body: { email: op.email, password: "a brand new passphrase" } })).res.status).toBe(200);
+    } finally {
+      await env.DB.prepare("UPDATE setting SET value = 'false' WHERE key = 'require_totp'").run();
+    }
   });
 
   it("can't be turned off when the owner requires it for everyone", async () => {
