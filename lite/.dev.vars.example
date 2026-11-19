@@ -6,3 +6,9 @@ BENCH_TOKEN=change-me
 # At least 32 random characters, e.g. `openssl rand -base64 32`. In production:
 #   wrangler secret put OPERATOR_SECRET --env office
 OPERATOR_SECRET=local-dev-only-change-me-0123456789abcdef
+
+# Optional: free-plan usage alerts (back office). A Cloudflare API token with Account Analytics: Read;
+# CLOUDFLARE_ACCOUNT_ID only if the token reaches several accounts. In production:
+#   wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office
+# CLOUDFLARE_ANALYTICS_TOKEN=
+# CLOUDFLARE_ACCOUNT_ID=

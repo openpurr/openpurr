@@ -187,8 +187,11 @@ Next:
        npx openpurr doctor
      Every problem it finds comes with the fix.
   4. Store notifications: App Store → ${office}/notifications/apple, Google Play → ${office}/notifications/google
-  5. Back up the database now and then: pnpm db:backup
-  6. Optional: deploy from GitHub Actions on every push (see .github/workflows/lite-deploy.yml).`);
+  5. Usage alerts (free plan): create a Cloudflare API token with Account Analytics: Read, then
+       npx wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office
+     The dashboard then warns you before the daily limits stop requests.
+  6. Back up the database now and then: pnpm db:backup
+  7. Optional: deploy from GitHub Actions on every push (see .github/workflows/lite-deploy.yml).`);
   } catch (err) {
     if (!(err instanceof SetupError)) throw err;
     console.error(`\n✗ ${err.message}`);

@@ -20,6 +20,13 @@ export interface Env {
    * operator password and TOTP enrollment (reset them with login links).
    */
   OPERATOR_SECRET?: string;
+  /**
+   * Back-office Worker, optional: a Cloudflare API token with Account Analytics: Read, for the
+   * free-plan usage alerts (src/office/usage.ts). CLOUDFLARE_ACCOUNT_ID is needed only when the
+   * token can reach more than one account.
+   */
+  CLOUDFLARE_ANALYTICS_TOKEN?: string;
+  CLOUDFLARE_ACCOUNT_ID?: string;
   // Store credentials (for example the App Store In-App Purchase key) are Worker secrets whose
   // names come from the config, so they're looked up by name rather than declared here.
 }

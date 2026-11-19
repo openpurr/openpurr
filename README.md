@@ -90,6 +90,7 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 The setup is safe to run again if it stops halfway. It ends with a link to the dashboard, which opens on adding your first app: its bundle ID and package name, then products, entitlements and offerings. One deployment can run several apps as separate projects, each with its own customers. Afterwards:
 
 - **Check your setup:** run `npx openpurr login`, then `npx openpurr doctor`. It reports what's missing and how to fix each item.
+- **Get usage alerts:** add a Cloudflare API token with Account Analytics: Read as the `CLOUDFLARE_ANALYTICS_TOKEN` secret, and the dashboard warns you before the free plan's daily limits stop requests.
 - **Back up your data:** `npx pnpm db:backup` exports the database to a file. D1 also keeps 7 days of history on the free plan (30 on Workers Paid).
 - **Deploy on every push:** fork the repo and add your Cloudflare details as repository secrets. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) lists them.
 
