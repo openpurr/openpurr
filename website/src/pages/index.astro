@@ -100,6 +100,17 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
       </div>
       <SdkSnippet />
     </div>
+    <div class="wrap">
+      <figure class="shot">
+        <img
+          src="/dashboard.png"
+          width="2880"
+          height="2000"
+          alt="The openpurr Lite dashboard, showing 90 days of active subscriptions, new customers, trials, refunds and non-subscription purchases"
+          decoding="async"
+        />
+      </figure>
+    </div>
   </section>
 
   <!-- Who it's for -->
@@ -342,6 +353,22 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
   }
   .accent {
     color: var(--purple);
+  }
+  .shot {
+    margin: 72px 0 0;
+  }
+  .shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px -24px rgb(20 16 40 / 0.35);
+  }
+  @media (max-width: 920px) {
+    .shot {
+      margin-top: 48px;
+    }
   }
   .ctas {
     display: flex;
