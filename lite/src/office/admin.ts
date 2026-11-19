@@ -50,6 +50,16 @@ admin.get("/me", (c) => {
   return c.json({ operator: publicOperator(principal.operator), via: principal.via, permissions: [...principal.permissions] });
 });
 
+// --- apps (from openpurr.config.yaml) ------------------------------------------------------------
+
+admin.get("/apps", requirePermission("read"), (c) => {
+  const principal = p(c);
+  const apps = [...c.get("deps").config.apps.values()]
+    .filter((a) => canSeeApp(principal, a.id))
+    .map((a) => ({ id: a.id, store: a.store, bundle_id: a.bundleId ?? null, package_name: a.packageName ?? null, products: a.products.size }));
+  return c.json({ apps });
+});
+
 // --- operators -----------------------------------------------------------------------------------
 
 admin.get("/operators", requirePermission("read"), async (c) => {

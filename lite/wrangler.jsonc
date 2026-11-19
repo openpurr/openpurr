@@ -78,6 +78,15 @@
         { "name": "RATE_LIMIT_USER", "namespace_id": "1006", "simple": { "limit": 60, "period": 60 } }
       ],
       "vars": { "CAPTURE": "off" },
+      // The dashboard: plain HTML, CSS and JavaScript in office-ui/ (no build step), served as
+      // static assets at /admin. Static asset requests are free and don't run the Worker. The admin
+      // API and store notifications always reach the Worker; any other page path gets index.html
+      // and the dashboard routes it in the browser.
+      "assets": {
+        "directory": "office-ui",
+        "not_found_handling": "single-page-application",
+        "run_worker_first": ["/admin/v1/*", "/notifications/*", "/__capture"]
+      },
       // The scheduled job (src/scheduled.ts): storage cleanup and exchange rates hourly, webhook
       // retries and snapshot backfill every 5 minutes. One of the free plan's 5 Cron Triggers.
       "triggers": { "crons": ["*/5 * * * *"] }

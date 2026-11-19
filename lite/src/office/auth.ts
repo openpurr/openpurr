@@ -10,6 +10,13 @@
 //   - TOTP when the operator has enabled it (or a one-time recovery code instead);
 //   - setup links (24 h) let a new operator set a password; recovery links (15 min) sign in once.
 //     Both are created by scripts/admin.mjs with the deployment's own credentials.
+//
+// Session kinds:
+//   full      a normal sign-in (7 days);
+//   setup     from a setup link: may only set the first password (30 minutes);
+//   recovery  from a recovery link: full access for 30 minutes, and may set a new password or
+//             remove the authenticator without the old ones (the reason the link was made).
+//             Setting a password turns it into a full session.
 
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
@@ -34,7 +41,7 @@ import {
 
 export const SESSION_COOKIE = "__Host-openpurr_session";
 const SESSION_MS = 7 * 864e5;
-const SETUP_SESSION_MS = 30 * 60_000;
+const SHORT_SESSION_MS = 30 * 60_000; // setup and recovery sessions
 const LOCKOUT_AFTER = 10;
 const LOCKOUT_MS = 15 * 60_000;
 export const PASSWORD_MIN = 12;
@@ -57,7 +64,7 @@ export interface Operator {
 
 export interface SessionInfo {
   operator: Operator;
-  kind: "full" | "setup";
+  kind: "full" | "setup" | "recovery";
   tokenHash: string;
 }
 
@@ -124,7 +131,7 @@ export async function sessionFor(c: Ctx): Promise<SessionInfo | null> {
      WHERE s.token_hash = ? AND s.expires_at > ? AND o.disabled_at IS NULL`,
   )
     .bind(tokenHash, Date.now())
-    .first<Operator & { kind: "full" | "setup"; expires_at: number; last_seen_at: number }>();
+    .first<Operator & { kind: SessionInfo["kind"]; expires_at: number; last_seen_at: number }>();
   if (!row) return null;
   if (Date.now() - row.last_seen_at > 3600_000) {
     c.executionCtx.waitUntil(c.env.DB.prepare("UPDATE session SET last_seen_at = ? WHERE token_hash = ?").bind(Date.now(), tokenHash).run());
@@ -139,9 +146,9 @@ export function sameOrigin(c: Ctx) {
   return !!origin && origin === new URL(c.req.url).origin;
 }
 
-async function startSession(c: Ctx, operatorId: string, kind: "full" | "setup") {
+async function startSession(c: Ctx, operatorId: string, kind: SessionInfo["kind"]) {
   const token = randomToken();
-  const ttl = kind === "setup" ? SETUP_SESSION_MS : SESSION_MS;
+  const ttl = kind === "full" ? SESSION_MS : SHORT_SESSION_MS;
   const now = Date.now();
   await c.env.DB.prepare("INSERT INTO session (token_hash, operator_id, kind, created_at, expires_at, last_seen_at) VALUES (?, ?, ?, ?, ?, ?)")
     .bind(await sha256Hex(token), operatorId, kind, now, now + ttl, now)
@@ -281,9 +288,10 @@ auth.post("/link", async (c) => {
     db.prepare("UPDATE operator SET failed_logins = 0, locked_until = NULL WHERE id = ?").bind(operator.id),
     audit(db, { operator, action: `auth.${purpose}_link_used`, ip: ip(c) }),
   ]);
-  // A recovery link signs in fully: it's how a lost password or authenticator gets reset.
-  await startSession(c, operator.id, purpose === "setup" ? "setup" : "full");
-  return c.json({ operator: publicOperator(operator as Operator), session: purpose === "setup" ? "setup" : "full" });
+  // A recovery link signs in (briefly) with leave to replace a lost password or authenticator.
+  const kind = purpose === "setup" ? "setup" : "recovery";
+  await startSession(c, operator.id, kind);
+  return c.json({ operator: publicOperator(operator as Operator), session: kind });
 });
 
 auth.post("/password", async (c) => {
@@ -297,7 +305,8 @@ auth.post("/password", async (c) => {
   const db = c.env.DB;
   const secret = c.env.OPERATOR_SECRET;
   const { operator } = session;
-  // A full session changing an existing password must prove it knows the current one.
+  // A full session changing an existing password must prove it knows the current one. (Setup and
+  // recovery sessions came from a one-time link, which is the proof.)
   if (session.kind === "full" && operator.password_hash) {
     const current = typeof body?.current_password === "string" ? body.current_password : "";
     if (!(await verifyPassword(secret, current, operator.password_hash)).ok) return fail(c, 401, "invalid_credentials", "The current password is wrong.");
@@ -312,10 +321,10 @@ auth.post("/password", async (c) => {
   return c.json({ totp_enrollment_required: !operator.totp_enabled && (await requireTotpForEveryone(db)) });
 });
 
-/** A full session, or a 401 response. */
+/** A signed-in session (full or recovery), or null. */
 async function fullSession(c: Ctx) {
   const session = await sessionFor(c);
-  return session?.kind === "full" ? session : null;
+  return session && session.kind !== "setup" ? session : null;
 }
 
 auth.post("/totp/setup", async (c) => {
@@ -354,15 +363,18 @@ auth.post("/totp/disable", async (c) => {
   if (!session) return fail(c, 401, "signed_out", "Not signed in.");
   const { operator } = session;
   const db = c.env.DB;
-  if (await requireTotpForEveryone(db)) return fail(c, 403, "required", "The owner requires two-step sign-in for everyone.");
+  // A recovery session may remove a lost authenticator even when it's required; the operator then
+  // has to enroll a new one before doing anything else (see adminAuth).
+  const recovering = session.kind === "recovery";
+  if (!recovering && (await requireTotpForEveryone(db))) return fail(c, 403, "required", "The owner requires two-step sign-in for everyone.");
   const body = await c.req.json<{ password?: unknown }>().catch(() => null);
-  if (!operator.password_hash || !(await verifyPassword(c.env.OPERATOR_SECRET, String(body?.password ?? ""), operator.password_hash)).ok) {
+  if (!recovering && (!operator.password_hash || !(await verifyPassword(c.env.OPERATOR_SECRET, String(body?.password ?? ""), operator.password_hash)).ok)) {
     return fail(c, 401, "invalid_credentials", "Confirm with your password.");
   }
   await db.batch([
     db.prepare("UPDATE operator SET totp_enabled = 0, totp_secret = NULL, totp_last_step = NULL WHERE id = ?").bind(operator.id),
     db.prepare("DELETE FROM recovery_code WHERE operator_id = ?").bind(operator.id),
-    audit(db, { operator, action: "auth.totp_disabled", ip: ip(c) }),
+    audit(db, { operator, action: "auth.totp_disabled", details: recovering ? { via: "recovery_link" } : undefined, ip: ip(c) }),
   ]);
   return c.json({});
 });

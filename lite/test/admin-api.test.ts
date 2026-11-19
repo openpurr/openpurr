@@ -70,6 +70,16 @@ async function api(
 }
 
 describe("authentication", () => {
+  it("lists the configured apps, limited to the operator's apps", async () => {
+    const all = await api("GET", "/apps", { session: (await operator("viewer")).session });
+    expect(all.status).toBe(200);
+    expect(all.body.apps.length).toBeGreaterThan(0);
+    const first = all.body.apps[0];
+    expect(first).toMatchObject({ id: expect.any(String), store: expect.any(String) });
+    const limited = await api("GET", "/apps", { session: (await operator("viewer", { apps: [first.id] })).session });
+    expect(limited.body.apps.map((a: { id: string }) => a.id)).toEqual([first.id]);
+  });
+
   it("needs a session or a valid access token", async () => {
     expect((await api("GET", "/me", {})).status).toBe(401);
     expect((await api("GET", "/me", { token: "pat_not-a-real-token" })).status).toBe(401);

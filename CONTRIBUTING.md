@@ -46,6 +46,14 @@ pnpm dev           # wrangler dev: the SDK Worker (/v1)
 
 Lite runs as two Workers sharing one D1 database: the **SDK Worker** (`/v1` only, kept small because every fresh isolate pays to load it) and the **back-office Worker** (`--env office`: store notifications, scheduled jobs, the admin side). Run the back office locally with `pnpm --filter @openpurr/lite exec wrangler dev --env office`, and deploy both with `pnpm deploy && pnpm deploy:office`. Code the SDKs don't call belongs in the back office.
 
+The back office also serves the **dashboard** at `/admin`: plain HTML, CSS and JavaScript modules in `lite/office-ui/`, with no build step and no framework. The files are Workers static assets (free, and outside the bundle budget). They call the same `/admin/v1` API as the CLI and MCP server, so permissions and audit logging live in one place. To try it locally, run the back office, then create an owner and open the link it prints:
+
+```sh
+pnpm --filter @openpurr/lite admin create --email you@example.com --local --url http://localhost:8787
+```
+
+Keep the dashboard's Content-Security-Policy (`lite/office-ui/_headers`) strict: no inline scripts or styles, nothing from other origins. Build elements with `h()` from `js/dom.js`, which always adds text as text, never as HTML.
+
 Tests and typecheck fall back to the example config, so they work without your own `openpurr.config.yaml`. `wrangler dev` and deploys require it, and validate it first.
 
 Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also refuses packages published in the last 24 hours; keep new pins at least a week old.
