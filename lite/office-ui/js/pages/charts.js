@@ -1,6 +1,6 @@
 // Charts: an overview of the key numbers, and a page per chart with its table and CSV.
 // Totals come from /admin/v1/metrics, which the back office updates hourly from the ledger.
-import { get, post } from "../api.js";
+import { get, post, withProject } from "../api.js";
 import { formatPeriod, formatValue, renderChart } from "../chart.js";
 import { h, replace } from "../dom.js";
 import { IconRefresh } from "../icons.js";
@@ -439,7 +439,7 @@ export async function chartPage(ctx, id) {
     const { from, to } = dates(f, info.first_date);
     const q = apiQuery(f, from, to);
     const r = await get(`/metrics/${id}?${q}`);
-    const csv = h("a", { class: "btn btn-outline btn-sm", href: `/admin/v1/metrics/${id}?${q}&format=csv`, download: "" }, "Download CSV");
+    const csv = h("a", { class: "btn btn-outline btn-sm", href: `/admin/v1${withProject(`/metrics/${id}?${q}&format=csv`)}`, download: "" }, "Download CSV");
     const top = figure(r, f, { compact: false, long: `total, ${formatPeriod(r.from, "day", { long: true })} to ${formatPeriod(r.to, "day", { long: true })}` });
     const head = h("div", { class: "chart-card-head" }, h("div", { class: "chart-card-figure big" }, top.text), h("div", { class: "card-sub" }, top.sub));
     const notes = r.notes.length ? h("div", { class: "chart-notes small muted" }, r.notes.map((n) => h("p", null, n))) : null;
