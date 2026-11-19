@@ -6,9 +6,10 @@ import type { Context } from "hono";
 import type { AppEnv } from "../env";
 import { requireTotpForEveryone } from "./auth";
 import { canSeeApp, type Principal } from "./principal";
+import { visibleProjects } from "./project";
 
 /** The newest migration this code expects. A test keeps it in step with migrations/. */
-export const EXPECTED_MIGRATION = "0017_oauth.sql";
+export const EXPECTED_MIGRATION = "0018_projects.sql";
 
 export type CheckStatus = "ok" | "warn" | "fail" | "info";
 export interface Check {
@@ -28,7 +29,7 @@ const secretSet = (c: Ctx, name: string) => typeof (c.env as unknown as Record<s
 
 export async function runChecks(c: Ctx, principal: Principal, now = Date.now()): Promise<Check[]> {
   const db = c.env.DB;
-  const { config } = c.get("deps");
+  const config = c.get("config");
   const origin = new URL(c.req.url).origin;
   const checks: Check[] = [];
   const add = (check: Check) => checks.push(check);
@@ -87,11 +88,23 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
     });
   } else add({ id: "domain", title: "Custom domain", status: "ok", message: `Served on ${new URL(origin).hostname}.` });
 
-  // Apps.
+  // Projects and their apps. With one project, checks keep their plain IDs; with several, each is
+  // prefixed with its project.
+  const projects = visibleProjects(config, principal);
   const apps = [...config.apps.values()].filter((a) => canSeeApp(principal, a.id));
-  if (!apps.length) add({ id: "apps", title: "Apps", status: "fail", message: "No apps in the config.", fix: "Add your apps to openpurr.config.yaml and deploy." });
-  if (!config.entitlements.length) add({ id: "entitlements", title: "Entitlements", status: "warn", message: "No entitlements are configured, so purchases unlock nothing.", fix: "Add entitlements to openpurr.config.yaml and deploy." });
-  if (!config.currentOffering) add({ id: "offerings", title: "Offerings", status: "info", message: "No current offering: Purchases.getOfferings() returns none.", fix: "Mark one offering current: true in openpurr.config.yaml if your paywall uses offerings." });
+  if (!apps.length) add({ id: "apps", title: "Apps", status: "fail", message: "No apps in the config.", fix: "Add a project and its apps to the config (PUT /admin/v1/config)." });
+  for (const project of projects) {
+    const id = (check: string) => (projects.length > 1 ? `project:${project.id}:${check}` : check);
+    const title = (t: string) => (projects.length > 1 ? `${project.name}: ${t}` : t);
+    if (!project.apps.size && apps.length) add({ id: id("apps"), title: title("Apps"), status: "warn", message: "This project has no apps yet.", fix: "Add its apps to the config." });
+    for (const app of project.apps.values()) {
+      if (!app.products.size && canSeeApp(principal, app.id)) {
+        add({ id: `app:${app.id}:products`, title: `${app.id}: Products`, status: "warn", message: "No products yet, so nothing can be bought in this app.", fix: "Add the app's products (as in App Store Connect or Play Console) to the config." });
+      }
+    }
+    if (!project.entitlements.length) add({ id: id("entitlements"), title: title("Entitlements"), status: "warn", message: "No entitlements are configured, so purchases unlock nothing.", fix: "Add entitlements to the config." });
+    if (!project.currentOffering) add({ id: id("offerings"), title: title("Offerings"), status: "info", message: "No current offering: Purchases.getOfferings() returns none.", fix: "Mark one offering current in the config if your paywall uses offerings." });
+  }
 
   const lastNotice = (appId: string) => notifications.results.find((n) => n.app_id === appId)?.last ?? null;
   for (const app of apps) {
@@ -103,7 +116,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
           title: `${app.id}: App Store Server API`,
           status: "warn",
           message: "No In-App Purchase key configured: StoreKit 1 receipts (older SDKs, restores of old purchases) can't be resolved, and subscriptions can't be refreshed from Apple.",
-          fix: "In App Store Connect → Users and Access → Integrations → In-App Purchase, create a key. Add issuer_id and key_id under app_store_server_api in openpurr.config.yaml, then: wrangler secret put APPLE_IAP_KEY (on both Workers).",
+          fix: "In App Store Connect → Users and Access → Integrations → In-App Purchase, create a key. Add issuer_id and key_id under app_store_server_api in the app's config, then: wrangler secret put APPLE_IAP_KEY (on both Workers).",
         });
       } else if (!secretSet(c, api.privateKeySecret)) {
         add({ id: `app:${app.id}:server-api`, title: `${app.id}: App Store Server API`, status: "fail", message: `The config names the secret ${api.privateKeySecret}, but it isn't set on this Worker.`, fix: `wrangler secret put ${api.privateKeySecret} --env office (and on the SDK Worker: wrangler secret put ${api.privateKeySecret})` });
@@ -130,7 +143,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
           message: app.allowUnverifiedPurchases
             ? "No service account: purchases are accepted without verification (allow_unverified_purchases). Anyone with the public SDK key could grant themselves access. Development only."
             : "No service account: Google Play purchases are refused (they stay queued on the device).",
-          fix: "Create a service account with Play Console access (View financial data, Manage orders and subscriptions), add google_play_api to the app in openpurr.config.yaml, then: wrangler secret put GOOGLE_SERVICE_ACCOUNT (on both Workers).",
+          fix: "Create a service account with Play Console access (View financial data, Manage orders and subscriptions), add google_play_api to the app's config, then: wrangler secret put GOOGLE_SERVICE_ACCOUNT (on both Workers).",
         });
       } else if (!secretSet(c, api.serviceAccountSecret)) {
         add({ id: `app:${app.id}:play-api`, title: `${app.id}: Google Play Developer API`, status: "fail", message: `The config names the secret ${api.serviceAccountSecret}, but it isn't set on this Worker.`, fix: `wrangler secret put ${api.serviceAccountSecret} --env office (and on the SDK Worker)` });
@@ -150,13 +163,15 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
     }
   }
 
-  // Webhooks.
-  for (const w of config.webhooks) {
+  // Webhooks (IDs are unique within a project).
+  for (const [project, w] of projects.flatMap((project) => project.webhooks.map((w) => [project, w] as const))) {
     const missing = [w.authorizationSecret, w.signingSecret].filter((s): s is string => !!s && !secretSet(c, s));
+    const wid = projects.length > 1 ? `webhook:${project.id}:${w.id}` : `webhook:${w.id}`;
+    const wtitle = projects.length > 1 ? `${project.name}: webhook ${w.id}` : `Webhook ${w.id}`;
     add(
       missing.length
-        ? { id: `webhook:${w.id}`, title: `Webhook ${w.id}`, status: "fail", message: `Secret${missing.length > 1 ? "s" : ""} ${missing.join(", ")} not set: deliveries can't be signed or authorized.`, fix: missing.map((s) => `wrangler secret put ${s} (on both Workers)`).join("; ") }
-        : { id: `webhook:${w.id}`, title: `Webhook ${w.id}`, status: "ok", message: `Sends to ${new URL(w.url).host}.` },
+        ? { id: wid, title: wtitle, status: "fail", message: `Secret${missing.length > 1 ? "s" : ""} ${missing.join(", ")} not set: deliveries can't be signed or authorized.`, fix: missing.map((s) => `wrangler secret put ${s} (on both Workers)`).join("; ") }
+        : { id: wid, title: wtitle, status: "ok", message: `Sends to ${new URL(w.url).host}.` },
     );
   }
   if (failedDeliveries && failedDeliveries.n > 0) {

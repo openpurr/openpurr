@@ -1,6 +1,10 @@
 // Compiles openpurr.config.yaml into src/config.generated.json, validating it first.
 // Runs automatically before `wrangler deploy` and `wrangler dev` (wrangler.jsonc build.command).
 //
+// The config lives in D1 (src/config-store.ts). This file is imported into D1 once, when a
+// deployment first starts with an empty config; after that, edits go through the admin API, and
+// changes to this file are ignored.
+//
 // Which file: $OPENPURR_CONFIG if set, else openpurr.config.yaml. With --allow-example, falls
 // back to openpurr.config.example.yaml (typecheck, tests and CI only; never for a deploy).
 
@@ -47,4 +51,4 @@ try {
 const out = path("src/config.generated.json");
 const json = `${JSON.stringify(raw, null, 2)}\n`;
 if (!existsSync(out) || readFileSync(out, "utf8") !== json) writeFileSync(out, json);
-console.log(`config: ${source} -> src/config.generated.json`);
+console.log(`config: ${source} -> src/config.generated.json (imported into D1 only if the deployment has no config yet)`);

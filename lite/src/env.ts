@@ -1,4 +1,4 @@
-import type { AppConfig, Config } from "./config";
+import type { AppConfig, Config, ProjectConfig } from "./config";
 import type { FxProvider } from "./fx";
 import type { RateLimiters } from "./lib/rate-limit";
 import type { Principal } from "./office/principal";
@@ -26,7 +26,10 @@ export interface Env {
 
 /** Built once per isolate and shared by every request. */
 export interface Deps {
-  config: Config;
+  /** A fixed config (tests). Production loads it from D1 instead, with loadConfig. */
+  config?: Config;
+  /** The current config from D1, cached per isolate (src/config-store.ts). */
+  loadConfig?: (db: D1Database) => Promise<Config>;
   /** Trusted Apple roots, DER. Production: Apple Root CA G3 only. */
   appleRoots: Uint8Array[];
   /** fetch for store APIs. Tests substitute a fake; production uses the global fetch. */
@@ -39,6 +42,16 @@ export interface Deps {
 
 export type AppEnv = {
   Bindings: Env;
-  /** `app` is set for public SDK keys; `secretKey` for secret (server-to-server) keys. */
-  Variables: { deps: Deps; app: AppConfig; secretKey?: SecretKey; principal?: Principal };
+  /**
+   * `config` is the current config, set on every request. On the SDK API, `project` is the
+   * caller's project; `app` is set for public SDK keys, `secretKey` for secret (server-to-server) keys.
+   */
+  Variables: { deps: Deps; config: Config; project: ProjectConfig; app: AppConfig; secretKey?: SecretKey; principal?: Principal };
 };
+
+/** The current config: the fixed one (tests) or the one in D1. */
+export async function currentConfig(deps: Deps, db: D1Database): Promise<Config> {
+  if (deps.config) return deps.config;
+  if (!deps.loadConfig) throw new Error("Deps need config or loadConfig.");
+  return deps.loadConfig(db);
+}

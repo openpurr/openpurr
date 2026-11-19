@@ -20,7 +20,7 @@ describe("parseConfig", () => {
     const config = parseConfig(clone());
     expect([...config.apps.keys()]).toEqual(["ios", "android"]);
     expect(config.keys.get("appl_test_ios_0123456789")?.id).toBe("ios");
-    expect(config.currentOffering).toBe("default");
+    expect(config.projects.get("default")?.currentOffering).toBe("default");
   });
 
   it("refuses test_ keys, which switch the SDKs to RevenueCat's simulated store", () => {
@@ -77,7 +77,7 @@ describe("parseConfig", () => {
 });
 
 describe("entitlementsFor", () => {
-  const config = parseConfig(clone());
+  const config = parseConfig(clone()).projects.get("default")!;
   it("matches a bare Play product against every base plan, and a qualified one against one", () => {
     expect(entitlementsFor(config, "android", "pro", "monthly")).toEqual(["pro"]);
     expect(entitlementsFor(config, "android", "pro", "annual")).toEqual(["pro", "annual_perks"]);

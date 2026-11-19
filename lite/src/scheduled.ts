@@ -16,7 +16,8 @@
 // Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
 // for customers that lack one (created before snapshots existed, or built from an older config).
 
-import type { Deps, Env } from "./env";
+import type { Config } from "./config";
+import { currentConfig, type Deps, type Env } from "./env";
 import { ecbProvider, refreshRates } from "./fx";
 import { rollupMetrics } from "./metrics";
 import { pruneOAuth } from "./office/oauth";
@@ -98,32 +99,37 @@ export const HOURLY_TASKS: Task[] = [pruneNotificationPayloads, pruneCaptures, p
 
 const chartTotals: Task = async (env, now) => ({ task: "rollup-metrics", rows: (await rollupMetrics(env.DB, now)).rows });
 
-function webhookRetries(deps: Deps): Task {
+function webhookRetries(deps: Deps, config: Config): Task {
+  const anyWebhooks = [...config.projects.values()].some((p) => p.webhooks.length);
   return async (env, now) => ({
     task: "retry-webhooks",
-    rows: deps.config.webhooks.length ? await retryDueDeliveries(env, deps.config, deps.fetch ?? fetch, now) : 0,
+    rows: anyWebhooks ? await retryDueDeliveries(env, config, deps.fetch ?? fetch, now) : 0,
   });
 }
 
-function snapshotBackfill(deps: Deps): Task {
+function snapshotBackfill(config: Config): Task {
   return async (env) => {
+    // Each customer's snapshot must match their own project's config version.
+    const versions = JSON.stringify(Object.fromEntries([...config.projects].map(([id, p]) => [id, p.version])));
     const { results } = await env.DB.prepare(
       `SELECT c.id FROM customer c LEFT JOIN customer_snapshot s ON s.customer_id = c.id
-       WHERE s.customer_id IS NULL OR s.config_version != ? LIMIT ${SNAPSHOTS_PER_RUN}`,
+       WHERE c.project_id IN (SELECT key FROM json_each(?1))
+         AND (s.customer_id IS NULL OR s.config_version IS NOT (SELECT value FROM json_each(?1) WHERE key = c.project_id))
+       LIMIT ${SNAPSHOTS_PER_RUN}`,
     )
-      .bind(deps.config.version)
+      .bind(versions)
       .all<{ id: string }>();
-    for (const { id } of results) await refreshSnapshot(env.DB, deps.config, id);
+    for (const { id } of results) await refreshSnapshot(env.DB, config, id);
     return { task: "backfill-snapshots", rows: results.length };
   };
 }
 
-function playAcks(deps: Deps): Task {
-  return async (env, now) => ({ task: "retry-play-acknowledgements", rows: await retryPlayAcknowledgements(env, deps, now) });
+function playAcks(deps: Deps, config: Config): Task {
+  return async (env, now) => ({ task: "retry-play-acknowledgements", rows: await retryPlayAcknowledgements(env, deps, config, now) });
 }
 
-function playVoided(deps: Deps): Task {
-  return async (env, now) => ({ task: "poll-play-voided-purchases", rows: await pollVoidedPurchases(env, deps, now) });
+function playVoided(deps: Deps, config: Config): Task {
+  return async (env, now) => ({ task: "poll-play-voided-purchases", rows: await pollVoidedPurchases(env, deps, config, now) });
 }
 
 function exchangeRates(deps: Deps): Task {
@@ -137,10 +143,11 @@ export async function runScheduled(
   opts: { all?: boolean; deps?: Deps } = {},
 ): Promise<TaskResult[]> {
   const due: Task[] = [];
-  if (opts.deps) due.push(webhookRetries(opts.deps), snapshotBackfill(opts.deps));
+  const config = opts.deps ? await currentConfig(opts.deps, env.DB) : null;
+  if (opts.deps && config) due.push(webhookRetries(opts.deps, config), snapshotBackfill(config));
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) {
     due.push(...HOURLY_TASKS);
-    if (opts.deps) due.push(exchangeRates(opts.deps), playAcks(opts.deps), playVoided(opts.deps));
+    if (opts.deps && config) due.push(exchangeRates(opts.deps), playAcks(opts.deps, config), playVoided(opts.deps, config));
     due.push(chartTotals);
   }
 

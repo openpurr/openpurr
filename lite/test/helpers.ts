@@ -76,6 +76,8 @@ export const rawTestConfig = {
 };
 
 export const testConfig = parseConfig(rawTestConfig);
+/** The test config's only project (a version 1 file becomes the project "default"). */
+export const testProject = testConfig.projects.get("default")!;
 const appleRoots = [base64ToBytes(TEST_ROOT_CERT_B64)];
 // No rate limits by default, so tests are deterministic; rate-limit.test.ts injects its own.
 export const testApp = buildApp({ config: testConfig, appleRoots, rateLimiters: () => ({}) });

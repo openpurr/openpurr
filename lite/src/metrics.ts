@@ -269,10 +269,10 @@ export async function rollupMetrics(db: D1Database, now: number, opts: { full?: 
   writes.push(
     db
       .prepare(
-        `INSERT INTO metric_daily (metric, environment, app_id, store, product_id, date, value)
-         SELECT 'new_customers', '', '', '', '', date(first_seen / 1000, 'unixepoch') AS d, count(*) FROM customer
-         WHERE first_seen >= ? AND first_seen < ? GROUP BY d
-         ON CONFLICT (metric, environment, app_id, store, product_id, date) DO UPDATE SET value = excluded.value`,
+        `INSERT INTO metric_daily (metric, environment, project_id, app_id, store, product_id, date, value)
+         SELECT 'new_customers', '', project_id, '', '', '', date(first_seen / 1000, 'unixepoch') AS d, count(*) FROM customer
+         WHERE first_seen >= ? AND first_seen < ? GROUP BY project_id, d
+         ON CONFLICT (metric, environment, project_id, app_id, store, product_id, date) DO UPDATE SET value = excluded.value`,
       )
       .bind(customersFrom, tomorrow),
     db
@@ -468,7 +468,7 @@ export const CHARTS: Record<string, ChartDef> = {
     series: [{ key: "customers", label: "New customers" }],
     compute: (m) => ({ customers: m.new_customers ?? 0 }),
     global: true,
-    description: "Customers first seen in each period, across all apps.",
+    description: "Customers first seen in each period, across all of a project's apps.",
   },
   refunds: {
     label: "Refunds",
@@ -521,6 +521,8 @@ export interface ChartQuery {
   product?: string;
   /** Apps the operator may see; null = all. */
   apps: string[] | null;
+  /** One project: its ID (for new_customers) and its apps (for everything else). */
+  project?: { id: string; apps: string[] };
 }
 
 export interface ChartResult {
@@ -557,6 +559,12 @@ function dimensions(q: ChartQuery, cols = { app: "app_id", store: "store", produ
   const where: string[] = [`${cols.environment} = ?`];
   const binds: string[] = [q.environment];
   if (q.apps) (where.push(`${cols.app} IN (${q.apps.map(() => "?").join(", ")})`), binds.push(...q.apps));
+  // A project without apps matches nothing ('' is never an app ID of a ledger row).
+  if (q.project) {
+    const apps = q.project.apps.length ? q.project.apps : [""];
+    where.push(`${cols.app} IN (${apps.map(() => "?").join(", ")})`);
+    binds.push(...apps);
+  }
   if (q.app) (where.push(`${cols.app} = ?`), binds.push(q.app));
   if (q.store) (where.push(`${cols.store} = ?`), binds.push(q.store));
   if (q.product) (where.push(`${cols.product} = ?`), binds.push(q.product));
@@ -579,7 +587,9 @@ export async function readChart(db: D1Database, chart: string, q: ChartQuery, no
 
   const flow = def.flow ?? [];
   const running = def.running ?? [];
-  const dims = def.global ? { where: ["environment = ''"], binds: [] as string[] } : dimensions(q);
+  const dims = def.global
+    ? { where: ["environment = ''", ...(q.project ? ["project_id = ?"] : [])], binds: q.project ? [q.project.id] : ([] as string[]) }
+    : dimensions(q);
   const query = (metrics: readonly string[], fromDate: string | null) =>
     db
       .prepare(

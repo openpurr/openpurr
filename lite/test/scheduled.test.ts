@@ -18,7 +18,7 @@ async function insertNotification(id: string, receivedAt: number) {
 async function insertCustomer(id: string, firstSeen: number, opts: { purchase?: boolean; aliasAt?: number } = {}) {
   const stmts = [
     env.DB.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, `user-${id}`, firstSeen),
-    env.DB.prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?)").bind(
+    env.DB.prepare("INSERT INTO customer_alias (project_id, app_user_id, customer_id, created_at) VALUES ('default', ?, ?, ?)").bind(
       `user-${id}`,
       id,
       opts.aliasAt ?? firstSeen,

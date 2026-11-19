@@ -5,9 +5,12 @@ import type { Env } from "../env";
 import { scheduledHandler } from "../scheduled";
 import { buildOfficeApp } from "./app";
 
-const app = buildOfficeApp(productionDeps);
+// The back office reads the config fresh on every request (one small read), so the dashboard
+// always shows what was just saved.
+const deps = productionDeps({ configMaxAgeMs: 0 });
+const app = buildOfficeApp(deps);
 
 export default {
   fetch: app.fetch,
-  scheduled: scheduledHandler(productionDeps),
+  scheduled: scheduledHandler(deps),
 } satisfies ExportedHandler<Env>;

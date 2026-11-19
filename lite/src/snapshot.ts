@@ -6,13 +6,14 @@
 // (refreshSnapshot). If the rebuild fails or hasn't happened yet, there's simply no snapshot and
 // reads compute from the ledger without writing (free-plan rule: no writes on reads). So the
 // worst case is a little extra CPU, never stale data. A snapshot built from an older config is
-// treated as missing.
+// treated as missing: each project has its own config version, so a change to one project only
+// rebuilds that project's snapshots.
 //
 // Why not also the Workers Cache API: its contents stay in one data center and cache.delete only
 // purges that one, so after a purchase another data center could keep serving the old
 // CustomerInfo, and the SDK would overwrite the device's fresh copy with it.
 
-import type { Config, Store } from "./config";
+import type { Config, ProjectConfig, Store } from "./config";
 import { computeSnapshot, renderCustomerInfo, type Snapshot } from "./customer-info";
 import { type Customer, loadCustomer, loadCustomerById } from "./ledger";
 
@@ -36,10 +37,14 @@ export function invalidateOwnerSnapshot(db: D1Database, store: Store, originalTr
     .bind(store, originalTransactionId);
 }
 
-/** Rebuilds and stores a customer's snapshot. Returns it, or null if the customer is gone. */
-export async function refreshSnapshot(db: D1Database, config: Config, customerId: string): Promise<{ snapshot: Snapshot; etag: string } | null> {
+/**
+ * Rebuilds and stores a customer's snapshot, with their project's config. Returns it, or null if
+ * the customer (or their project) is gone.
+ */
+export async function refreshSnapshot(db: D1Database, all: Config, customerId: string): Promise<{ snapshot: Snapshot; etag: string; project: ProjectConfig } | null> {
   const { customer, transactions, states, grants } = await loadCustomerById(db, customerId);
-  if (!customer) return null;
+  const config = customer ? all.projects.get(customer.projectId) : undefined;
+  if (!customer || !config) return null;
   const snapshot = computeSnapshot({ appUserId: customer.appUserId, customer, transactions, states, grants, config });
   const body = JSON.stringify(snapshot);
   const etag = await etagOf(body);
@@ -51,16 +56,16 @@ export async function refreshSnapshot(db: D1Database, config: Config, customerId
     )
     .bind(customerId, body, etag, config.version, Date.now())
     .run();
-  return { snapshot, etag };
+  return { snapshot, etag, project: config };
 }
 
 /**
- * CustomerInfo for an app user ID. One query when the snapshot is current; otherwise computed
- * from the ledger (one more round trip), never written.
+ * CustomerInfo for an app user ID of a project. One query when the snapshot is current; otherwise
+ * computed from the ledger (one more round trip), never written.
  */
 export async function readCustomerInfo(
   db: D1Database,
-  config: Config,
+  config: ProjectConfig,
   appUserId: string,
   opts: { requestStore?: "app_store" | "play_store"; now?: number } = {},
 ) {
@@ -69,9 +74,9 @@ export async function readCustomerInfo(
       `SELECT c.id, c.app_user_id, c.first_seen, s.body, s.etag, s.config_version
        FROM customer_alias a JOIN customer c ON c.id = a.customer_id
        LEFT JOIN customer_snapshot s ON s.customer_id = c.id
-       WHERE a.app_user_id = ?`,
+       WHERE a.project_id = ? AND a.app_user_id = ?`,
     )
-    .bind(appUserId)
+    .bind(config.id, appUserId)
     .first<{ id: string; app_user_id: string; first_seen: number; body: string | null; etag: string | null; config_version: string | null }>();
 
   if (row?.body && row.config_version === config.version) {
@@ -83,7 +88,7 @@ export async function readCustomerInfo(
     const snapshot = computeSnapshot({ appUserId, customer, transactions: [], config, now: opts.now });
     return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: null, source: "empty" as const };
   }
-  const { customer, transactions, states, grants } = await loadCustomer(db, appUserId);
+  const { customer, transactions, states, grants } = await loadCustomer(db, config.id, appUserId);
   const snapshot = computeSnapshot({ appUserId, customer, transactions, states, grants, config });
   return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: row.id, source: "computed" as const };
 }

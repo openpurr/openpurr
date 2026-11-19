@@ -9,7 +9,7 @@ const setAttributes = (user: string, attributes: Record<string, { value: string 
   call(`/v1/subscribers/${encodeURIComponent(user)}/attributes`, { body: { attributes } });
 
 async function attributesOf(user: string): Promise<Record<string, { value: string; updated_at_ms: number }>> {
-  const customer = await findCustomer(env.DB, user);
+  const customer = await findCustomer(env.DB, "default", user);
   return customer ? readAttributes(env.DB, customer.id) : {};
 }
 
@@ -110,14 +110,14 @@ describe("subscriber attributes", () => {
       "UPDATE subscriber_attribute SET received_at = ? WHERE customer_id = (SELECT customer_id FROM customer_alias WHERE app_user_id = 'attr-active')",
     ).bind(now - 10 * DAY).run();
     await runScheduled(env, now, { all: true });
-    expect(await findCustomer(env.DB, "attr-active")).not.toBeNull();
+    expect(await findCustomer(env.DB, "default", "attr-active")).not.toBeNull();
 
     // Once the attribute is old too, the customer (and their attributes) are cleaned up.
     await env.DB.prepare(
       "UPDATE subscriber_attribute SET received_at = ? WHERE customer_id = (SELECT customer_id FROM customer_alias WHERE app_user_id = 'attr-active')",
     ).bind(now - 120 * DAY).run();
     await runScheduled(env, now, { all: true });
-    expect(await findCustomer(env.DB, "attr-active")).toBeNull();
+    expect(await findCustomer(env.DB, "default", "attr-active")).toBeNull();
     const left = await env.DB.prepare("SELECT count(*) AS n FROM subscriber_attribute WHERE key = 'x'").first<{ n: number }>();
     expect(left!.n).toBe(0);
   });

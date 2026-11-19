@@ -51,8 +51,8 @@ interface DeveloperNotification {
 }
 
 googleNotifications.post("/", async (c) => {
-  const { config } = c.get("deps");
-  const playApps = [...config.apps.values()].filter((a) => a.store === "play_store" && a.googlePlayApi?.pubsubPushAccount);
+  const all = c.get("config");
+  const playApps = [...all.apps.values()].filter((a) => a.store === "play_store" && a.googlePlayApi?.pubsubPushAccount);
   if (!playApps.length) return reply(c, 401, "No Google Play app has google_play_api.pubsub_push_account configured.");
 
   // 1. Authenticate the push before reading anything else.
@@ -86,6 +86,7 @@ googleNotifications.post("/", async (c) => {
     console.error(`Google notification for package ${n.packageName}, which no configured app has`);
     return reply(c, 500, `No app in the config has package ${n.packageName} with Pub/Sub push configured.`);
   }
+  const config = all.projects.get(app.projectId)!;
   // The token must come from this app's push account, for this app's audience.
   if (claims.email !== app.googlePlayApi!.pubsubPushAccount || claims.aud !== audienceOf(app)) {
     return reply(c, 401, "The push token isn't from this app's Pub/Sub push account.");
@@ -238,8 +239,8 @@ googleNotifications.post("/", async (c) => {
   await db.batch(writes);
 
   const deps = c.get("deps");
-  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, deps.fetch ?? fetch, eventIds));
-  if (owner) c.executionCtx.waitUntil(refreshSnapshot(db, config, owner.id));
+  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, all, deps.fetch ?? fetch, eventIds));
+  if (owner) c.executionCtx.waitUntil(refreshSnapshot(db, all, owner.id));
   // Safety net: acknowledge purchases the app hasn't (Google refunds them after 3 days).
   if (ack) c.executionCtx.waitUntil(acknowledge(db, client, app.id, ack));
   return reply(c, 200, "OK");

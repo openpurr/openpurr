@@ -5,9 +5,9 @@ import { findCustomer } from "../src/ledger";
 import { runScheduled, SNAPSHOTS_PER_RUN } from "../src/scheduled";
 import { readCustomerInfo } from "../src/snapshot";
 import { APPLE_STATUS } from "../src/stores/apple";
-import { call, DAY, postAppleTransaction, postNotification, rawTestConfig, signNotification, signTransaction, testConfig } from "./helpers";
+import { call, DAY, postAppleTransaction, postNotification, rawTestConfig, signNotification, signTransaction, testConfig, testProject } from "./helpers";
 
-const read = (user: string, config = testConfig) => readCustomerInfo(env.DB, config, user, { requestStore: "app_store", now: 1_800_000_000_000 });
+const read = (user: string, config = testProject) => readCustomerInfo(env.DB, config, user, { requestStore: "app_store", now: 1_800_000_000_000 });
 const withoutTime = (body: any) => ({ ...body, request_date: undefined, request_date_ms: undefined, subscriber: { ...body.subscriber, last_seen: undefined } });
 
 describe("CustomerInfo snapshots", () => {
@@ -16,7 +16,7 @@ describe("CustomerInfo snapshots", () => {
     const fromSnapshot = await read("snap-1");
     expect(fromSnapshot.source).toBe("snapshot");
 
-    const customer = (await findCustomer(env.DB, "snap-1"))!;
+    const customer = (await findCustomer(env.DB, "default", "snap-1"))!;
     await env.DB.prepare("DELETE FROM customer_snapshot WHERE customer_id = ?").bind(customer.id).run();
     const computed = await read("snap-1");
     expect(computed.source).toBe("computed");
@@ -49,8 +49,8 @@ describe("CustomerInfo snapshots", () => {
     await postAppleTransaction("snap-config", { productId: "pro_annual", expiresDate: Date.now() + 300 * DAY });
     const changed = structuredClone(rawTestConfig) as any;
     delete changed.entitlements.annual_perks;
-    const newConfig = parseConfig(changed);
-    expect(newConfig.version).not.toBe(testConfig.version);
+    const newConfig = parseConfig(changed).projects.get("default")!;
+    expect(newConfig.version).not.toBe(testProject.version);
     const res = await read("snap-config", newConfig);
     expect(res.source).toBe("computed");
     expect(Object.keys(res.body.subscriber.entitlements)).toEqual(["pro"]);

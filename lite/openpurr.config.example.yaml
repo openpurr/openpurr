@@ -1,7 +1,10 @@
 # openpurr config: apps, products, entitlements and offerings.
 #
-# Copy to openpurr.config.yaml and edit. It's compiled into the Worker at deploy time
-# (scripts/build-config.mjs), and mistakes fail the deploy with a message saying what's wrong.
+# Copy to openpurr.config.yaml and edit. It's checked at deploy time (scripts/build-config.mjs),
+# and mistakes fail the deploy with a message saying what's wrong. The config itself lives in the
+# database: this file is imported once, the first time a deployment starts, as the project
+# "default". After that, change the config through the admin API (GET and PUT /admin/v1/config),
+# which also adds more projects (one per title); edits to this file are then ignored.
 # Store credentials never go here; they're Worker secrets.
 
 version: 1
