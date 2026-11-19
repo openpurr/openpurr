@@ -1,6 +1,6 @@
 // The CLI against a fake back office: commands, credentials, output and exit codes.
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync, statSync } from "node:fs";
+import { mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, it } from "node:test";
@@ -137,6 +137,45 @@ describe("openpurr CLI", () => {
     const invite = await run(["team", "invite", "bo@example.com", "--role", "developer"], opts);
     assert.match(invite.stdout, /Added bo@example.com as developer\..*\n\n {2}https:\/\/office.example.com\/admin\/link#token=abc/s);
     assert.equal((await run(["team", "invite", "bo@example.com"], opts)).code, 2); // needs --role
+  });
+
+  it("passes --project to customer, grant, chart and key commands", async () => {
+    const office = backOffice({
+      tools: {
+        lookup_customer: (a) => ({ text: `customer ${a.app_user_id} in ${a.project}` }),
+        get_metrics: (a) => ({ text: `chart in ${a.project}` }),
+      },
+      api: { "POST /secret-keys": (b) => ({ id: "k3", key: "sk_x", scopes: ["customers:read"], project_id: b.project }) },
+    });
+    const opts = { env: signedIn, fetch: office.fetch };
+    assert.match((await run(["customer", "u1", "--project", "rose"], opts)).stdout, /customer u1 in rose/);
+    assert.match((await run(["metrics", "mrr", "--project", "gold"], opts)).stdout, /chart in gold/);
+    assert.match((await run(["keys", "create", "Backend", "--project", "rose"], opts)).stdout, /for project rose/);
+  });
+
+  it("pulls the config, pushes an edit with the version it came from, and lists the problems when it's refused", async () => {
+    const doc = { version: 2, projects: { rose: { name: "Rose" } } };
+    const office = backOffice({
+      api: {
+        "GET /config": { id: 7, document: doc },
+        "PUT /config": (b) => (b.document.projects.bad ? { message: "unused" } : { id: b.base_id + 1 }),
+      },
+    });
+    const opts = { env: signedIn, fetch: office.fetch };
+    const pulled = await run(["config", "pull"], opts);
+    assert.deepEqual(JSON.parse(pulled.stdout), { base_id: 7, document: doc });
+    const file = join(mkdtempSync(join(tmpdir(), "openpurr-cfg-")), "config.json");
+    writeFileSync(file, pulled.stdout);
+    const pushed = await run(["config", "push", file, "--note", "rename"], opts);
+    assert.match(pushed.stdout, /Saved as version 8/);
+    assert.deepEqual(office.calls.at(-1).body, { document: doc, base_id: 7, note: "rename" });
+    assert.equal((await run(["config", "push"], opts)).code, 2);
+
+    const refusing = backOffice({ api: {} });
+    refusing.fetch = async () => Response.json({ code: "invalid_config", message: "The config has problems.", problems: ["projects.rose.apps: must be a mapping"] }, { status: 400 });
+    const refused = await run(["config", "push", file], { env: signedIn, fetch: refusing.fetch });
+    assert.equal(refused.code, 1);
+    assert.match(refused.stderr, /The config has problems\.\n {2}- projects\.rose\.apps: must be a mapping/);
   });
 
   it("says how to sign in when there's no token", async () => {

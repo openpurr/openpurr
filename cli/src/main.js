@@ -36,7 +36,10 @@ Charts and config
                                       subscription_movement, paid_subscriptions, churn, active_trials,
                                       new_trials, trial_movement, new_customers, refunds, refund_rate,
                                       non_subscription_purchases, subscription_status
-  config                              Apps, products, entitlements and offerings
+  config                              Projects, apps, products, entitlements and offerings
+  config pull > config.json           The whole config as JSON, to edit
+  config push config.json [--note N]  Save an edited config as a new version (checked first)
+  config history                      Saved versions; config restore ID brings one back
 
 Webhooks, audit, keys and team
   webhooks [--status failed|pending|delivered]
@@ -48,6 +51,8 @@ Webhooks, audit, keys and team
   team invite EMAIL --role owner|admin|developer|viewer [--name NAME]
 
 Options
+  --project ID       The project (title) for customer, grant, chart and key commands; needed only
+                     when the deployment has several (openpurr config lists them)
   --json             Machine-readable output
   --profile NAME     Use a saved profile other than "default"
   --url, --token     Override the deployment and token (also OPENPURR_URL, OPENPURR_TOKEN)
@@ -80,6 +85,7 @@ const OPTIONS = {
   role: { type: "string" },
   name: { type: "string" },
   "in-hours": { type: "string" },
+  project: { type: "string" },
 };
 
 /** Runs the CLI. Returns the exit code. io: { env, stdout, stderr, stdin, fetch? }. */
@@ -101,6 +107,8 @@ export async function main(argv, io) {
   const s = styles(io.stdout, io.env);
   const target = () => resolveTarget(io.env, flags);
   const api = () => client(target(), io.fetch ?? fetch);
+  /** --project, for the tools that take one. */
+  const inProject = flags.project ? { project: flags.project } : {};
   /** Prints a tool's answer: its text, or its structured data with --json. */
   const show = ({ text, data }) => out(flags.json ? json(data ?? { text }) : text);
   const need = (n, usage) => {
@@ -128,15 +136,15 @@ export async function main(argv, io) {
       case "doctor":
         return await doctor(api(), flags, out, s);
       case "customers":
-        show(await api().tool("search_customers", { ...(rest[0] ? { query: rest[0] } : {}), ...(flags.purchases ? { purchases_only: true } : {}), ...(flags.limit ? { limit: Number(flags.limit) } : {}) }));
+        show(await api().tool("search_customers", { ...inProject, ...(rest[0] ? { query: rest[0] } : {}), ...(flags.purchases ? { purchases_only: true } : {}), ...(flags.limit ? { limit: Number(flags.limit) } : {}) }));
         return 0;
       case "customer":
         need(1, "customer APP_USER_ID");
-        show(await api().tool("lookup_customer", { app_user_id: rest[0] }));
+        show(await api().tool("lookup_customer", { app_user_id: rest[0], ...inProject }));
         return 0;
       case "explain":
         need(2, "explain APP_USER_ID ENTITLEMENT");
-        show(await api().tool("explain_entitlement", { app_user_id: rest[0], entitlement_id: rest[1] }));
+        show(await api().tool("explain_entitlement", { app_user_id: rest[0], entitlement_id: rest[1], ...inProject }));
         return 0;
       case "grant": {
         need(2, "grant APP_USER_ID ENTITLEMENT --duration monthly (or --until YYYY-MM-DD)");
@@ -148,17 +156,18 @@ export async function main(argv, io) {
             ...(flags.duration ? { duration: flags.duration } : {}),
             ...(flags.until ? { expires_at: flags.until } : {}),
             ...(flags.note ? { note: flags.note } : {}),
+            ...inProject,
           }),
         );
         return 0;
       }
       case "revoke-grant":
         need(2, "revoke-grant APP_USER_ID GRANT_ID");
-        show(await api().tool("revoke_grant", { app_user_id: rest[0], grant_id: rest[1] }));
+        show(await api().tool("revoke_grant", { app_user_id: rest[0], grant_id: rest[1], ...inProject }));
         return 0;
       case "metrics": {
         need(1, "metrics CHART (see openpurr --help for the list)");
-        const args = { chart: rest[0], from: flags.from, to: flags.to, interval: flags.interval, environment: flags.environment, app: flags.app, store: flags.store, product: flags.product };
+        const args = { chart: rest[0], from: flags.from, to: flags.to, interval: flags.interval, environment: flags.environment, app: flags.app, store: flags.store, product: flags.product, project: flags.project };
         for (const k of Object.keys(args)) if (args[k] === undefined) delete args[k];
         if (flags.csv) {
           const q = new URLSearchParams({ ...args, format: "csv" });
@@ -170,8 +179,7 @@ export async function main(argv, io) {
         return 0;
       }
       case "config":
-        show(await api().tool("get_config"));
-        return 0;
+        return await config(api(), rest, flags, out, io);
       case "webhooks":
         if (rest[0] === "replay") {
           need(2, "webhooks replay EVENT_ID");
@@ -261,21 +269,73 @@ async function doctor(c, flags, out, s) {
 
 // ---- keys and team (admin API: secrets never go through MCP) ---------------------------------------
 
+// ---- config ---------------------------------------------------------------------------------------
+
+/**
+ * The config lives in the deployment's database. `pull` prints it with the version it came from;
+ * `push` saves the edited file as a new version, refused if someone saved in between.
+ */
+async function config(c, rest, flags, out, io) {
+  const [sub, arg] = rest;
+  if (!sub) {
+    const r = await c.tool("get_config");
+    out(flags.json ? json(r.data ?? { text: r.text }) : r.text);
+    return 0;
+  }
+  if (sub === "pull") {
+    const v = await c.api("GET", "/config");
+    out(json({ base_id: v.id, document: v.document }));
+    return 0;
+  }
+  if (sub === "push") {
+    if (!arg) throw new CliError("Usage: openpurr config push FILE (from openpurr config pull)", 2);
+    let file;
+    try {
+      file = JSON.parse(readFileSync(arg, "utf8"));
+    } catch (e) {
+      throw new CliError(`Can't read ${arg} as JSON: ${e.message}`, 2);
+    }
+    if (typeof file?.base_id !== "number" || !file.document) throw new CliError(`${arg} should be what openpurr config pull printed: {"base_id": …, "document": {…}}.`, 2);
+    const r = await c.api("PUT", "/config", { document: file.document, base_id: file.base_id, ...(flags.note ? { note: flags.note } : {}) });
+    out(flags.json ? json(r) : `Saved as version ${r.id}. The back office uses it now; the SDK Worker within a minute.\nPull again before your next change.`);
+    return 0;
+  }
+  if (sub === "history") {
+    const { versions } = await c.api("GET", "/config/versions");
+    if (flags.json) return out(json(versions)), 0;
+    out(table(["VERSION", "SAVED", "BY", "NOTE"], versions.map((v) => [String(v.id), when(v.created_at), v.created_by ?? "", v.note ?? ""])));
+    return 0;
+  }
+  if (sub === "restore") {
+    if (!arg) throw new CliError("Usage: openpurr config restore VERSION", 2);
+    const current = await c.api("GET", "/config");
+    const r = await c.api("POST", `/config/versions/${encodeURIComponent(arg)}/restore`, { base_id: current.id });
+    out(flags.json ? json(r) : `Restored version ${arg} as version ${r.id}.`);
+    return 0;
+  }
+  throw new CliError(`Unknown config command: ${sub}. Use pull, push, history or restore.`, 2);
+}
+
 async function keys(c, rest, flags, out) {
   const [sub, arg] = rest;
   if (!sub) {
-    const { secret_keys } = await c.api("GET", "/secret-keys");
+    const { secret_keys } = await c.api("GET", `/secret-keys${flags.project ? `?project=${encodeURIComponent(flags.project)}` : ""}`);
     if (flags.json) return out(json(secret_keys)), 0;
     if (!secret_keys.length) return out("No secret keys. Create one: openpurr keys create NAME"), 0;
     const state = (k) => (k.revoked_at ? "revoked" : k.expires_at && k.expires_at <= Date.now() ? "expired" : k.expires_at ? `expires ${when(k.expires_at)}` : "active");
-    out(table(["ID", "NAME", "PREFIX", "SCOPES", "LAST USED", "STATUS"], secret_keys.map((k) => [k.id, k.name, `${k.key_prefix}…`, k.scopes.join(","), when(k.last_used_at), state(k)])));
+    out(
+      table(
+        ["ID", "PROJECT", "NAME", "PREFIX", "SCOPES", "LAST USED", "STATUS"],
+        secret_keys.map((k) => [k.id, k.project_id ?? "", k.name, `${k.key_prefix}…`, k.scopes.join(","), when(k.last_used_at), state(k)]),
+      ),
+    );
     return 0;
   }
   if (sub === "create") {
     if (!arg) throw new CliError("Usage: openpurr keys create NAME", 2);
-    const r = await c.api("POST", "/secret-keys", { name: arg });
+    const r = await c.api("POST", "/secret-keys", { name: arg, ...(flags.project ? { project: flags.project } : {}) });
     if (flags.json) return out(json(r)), 0;
-    out(`Created secret key "${arg}". Copy it now; it isn't shown again:\n\n  ${r.key}\n\nUse it from your backend as Authorization: Bearer sk_… on /v1 requests.`);
+    out(`Created secret key "${arg}"${r.project_id ? ` for project ${r.project_id}` : ""}. Copy it now; it isn't shown again:\n\n  ${r.key}\n\nUse it from your backend as Authorization: Bearer sk_… on /v1 requests.`);
     return 0;
   }
   if (sub === "revoke") {

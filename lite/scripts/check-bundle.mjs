@@ -45,7 +45,13 @@ function freshIsolateMs(bundle) {
     const cpu = () => { const u = process.cpuUsage(); return (u.user + u.system) / 1000; };
     const t = cpu();
     const { default: worker } = await import(${JSON.stringify(pathToFileURL(bundle).href)});
-    const db = { prepare: () => ({ bind: () => ({ first: async () => null }) }) };
+    // A fake D1: the config is imported from the bundle on the first load (as on a new deployment)
+    // and read back; every other query finds nothing.
+    let stored = null;
+    const db = { prepare: (sql) => ({ bind: (...args) => ({
+      first: async () => (sql.includes("FROM config_version") && stored ? { id: 1, document: stored } : null),
+      run: async () => { if (sql.includes("INSERT INTO config_version")) stored = args[0]; return { meta: { changes: 1 } }; },
+    }) }) };
     const res = await worker.fetch(new Request("https://x/v1/subscribers/u1", { headers: { authorization: "Bearer appl_replace_with_a_long_random_string" } }), { DB: db }, { waitUntil() {} });
     await res.text();
     console.log(cpu() - t);`;

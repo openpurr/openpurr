@@ -214,7 +214,7 @@ describe("customer list", () => {
     const now = Date.now();
     const writes = [
       env.DB.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, opts.aliases[0], opts.firstSeen),
-      ...opts.aliases.map((a) => env.DB.prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?)").bind(a, id, now)),
+      ...opts.aliases.map((a) => env.DB.prepare("INSERT INTO customer_alias (project_id, app_user_id, customer_id, created_at) VALUES ('default', ?, ?, ?)").bind(a, id, now)),
     ];
     if (opts.email) {
       writes.push(env.DB.prepare("INSERT INTO subscriber_attribute (customer_id, key, value, updated_at, received_at) VALUES (?, '$email', ?, ?, ?)").bind(id, opts.email, now, now));
@@ -376,7 +376,7 @@ describe("promotional grants", () => {
     const old = Date.now() - 400 * 864e5;
     await env.DB.batch([
       env.DB.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, `old-${id}`, old),
-      env.DB.prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?)").bind(`old-${id}`, id, old),
+      env.DB.prepare("INSERT INTO customer_alias (project_id, app_user_id, customer_id, created_at) VALUES ('default', ?, ?, ?)").bind(`old-${id}`, id, old),
       env.DB.prepare("INSERT INTO promotional_grant (id, customer_id, entitlement_id, duration, starts_at, expires_at, granted_by, source, created_at) VALUES (?, ?, 'pro', 'lifetime', ?, NULL, 'x', 'api', ?)").bind(crypto.randomUUID(), id, old, old),
     ]);
     const { runScheduled } = await import("../src/scheduled");

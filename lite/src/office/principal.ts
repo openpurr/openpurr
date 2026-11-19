@@ -7,7 +7,7 @@
 // Permission = the operator's ROLE, further limited by the token's SCOPES when a token is used:
 //   viewer     read
 //   developer  read, replay webhooks, manage secret keys, grant entitlements
-//   admin      everything except managing owners and owner-only settings
+//   admin      everything except managing owners and owner-only settings (including the config)
 //   owner      everything
 // An operator limited to certain apps (app_ids) only sees those apps' data.
 
@@ -16,22 +16,30 @@ import type { AppEnv } from "../env";
 import { type Operator, requireTotpForEveryone, sameOrigin, sessionFor } from "./auth";
 import { sha256Hex } from "./auth-crypto";
 
-export type Permission = "read" | "audit:read" | "webhooks:replay" | "keys:manage" | "grants:manage" | "operators:manage" | "settings:manage";
+export type Permission =
+  | "read"
+  | "audit:read"
+  | "webhooks:replay"
+  | "keys:manage"
+  | "grants:manage"
+  | "operators:manage"
+  | "config:manage"
+  | "settings:manage";
 export const TOKEN_SCOPES = ["read", "write:grants", "write:webhooks", "admin"] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 
 const ROLE_PERMISSIONS: Record<Operator["role"], Permission[]> = {
   viewer: ["read"],
   developer: ["read", "webhooks:replay", "keys:manage", "grants:manage"],
-  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage"],
-  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "settings:manage"],
+  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage"],
+  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage", "settings:manage"],
 };
 
 const SCOPE_PERMISSIONS: Record<TokenScope, Permission[]> = {
   read: ["read", "audit:read"],
   "write:webhooks": ["webhooks:replay"],
   "write:grants": ["grants:manage"],
-  admin: ["keys:manage", "operators:manage", "settings:manage", "audit:read"],
+  admin: ["keys:manage", "operators:manage", "config:manage", "settings:manage", "audit:read"],
 };
 
 export interface Principal {

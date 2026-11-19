@@ -13,6 +13,8 @@ export type Scope = (typeof SCOPES)[number];
 
 export interface SecretKey {
   id: string;
+  /** A secret key reads one project's customers. */
+  projectId: string;
   name: string;
   scopes: Set<string>;
   lastUsedAt: number | null;
@@ -36,12 +38,12 @@ export async function verifySecretKey(db: D1Database, token: string, now = Date.
 
   const row = await db
     .prepare(
-      `SELECT id, name, scopes, last_used_at FROM api_key
+      `SELECT id, project_id, name, scopes, last_used_at FROM api_key
        WHERE key_hash = ? AND revoked_at IS NULL AND (expires_at IS NULL OR expires_at > ?)`,
     )
     .bind(hash, now)
-    .first<{ id: string; name: string; scopes: string; last_used_at: number | null }>();
-  const key = row ? { id: row.id, name: row.name, scopes: new Set<string>(JSON.parse(row.scopes)), lastUsedAt: row.last_used_at } : null;
+    .first<{ id: string; project_id: string; name: string; scopes: string; last_used_at: number | null }>();
+  const key = row ? { id: row.id, projectId: row.project_id, name: row.name, scopes: new Set<string>(JSON.parse(row.scopes)), lastUsedAt: row.last_used_at } : null;
   if (cache.size > 1000) cache.clear();
   cache.set(hash, { key, at: now });
   return key;

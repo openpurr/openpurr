@@ -36,7 +36,10 @@ export function client({ url, token }, fetchImpl = fetch) {
       const res = await request(method, `/admin/v1${path}`, body);
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) throw new CliError(`${data.message ?? "Not signed in."} Run: openpurr login`);
-      if (!res.ok) throw new CliError(data.message ?? `HTTP ${res.status}`);
+      if (!res.ok) {
+        const problems = Array.isArray(data.problems) ? `\n${data.problems.map((p) => `  - ${p}`).join("\n")}` : "";
+        throw new CliError(`${data.message ?? `HTTP ${res.status}`}${problems}`);
+      }
       return data;
     },
     /** Raw text from the admin API (CSV). */

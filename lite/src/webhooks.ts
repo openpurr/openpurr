@@ -1,4 +1,5 @@
-// Outbound webhooks: RevenueCat-shaped events, delivered to the endpoints in the config.
+// Outbound webhooks: RevenueCat-shaped events, delivered to the endpoints in the config. Each
+// project has its own endpoints; an event goes to the endpoints of its app's project.
 //
 // Body: {"api_version": "1.0", "event": {...}}, with RevenueCat's field names, so existing
 // RevenueCat webhook handlers work unchanged. `price` is in USD, converted at the purchase date's
@@ -17,7 +18,7 @@
 //   - Signature: X-RevenueCat-Webhook-Signature: t=<unix>,v1=<hex>, HMAC-SHA256 over
 //     "<t>.<raw body>", the same scheme as RevenueCat. Recomputed on every attempt.
 
-import { type Config, entitlementsFor, type WebhookConfig, type WebhookEventType } from "./config";
+import { type Config, entitlementsFor, type ProjectConfig, projectOfApp, type WebhookConfig, type WebhookEventType } from "./config";
 import type { Env } from "./env";
 import type { TransactionRow } from "./ledger";
 import { toUsd } from "./fx";
@@ -56,11 +57,11 @@ const TIMEOUT_MS = 15_000;
 /** Deliveries retried per scheduled run (each is a subrequest; the free plan allows 50). */
 export const RETRIES_PER_RUN = 20;
 
-export function webhooksFor(config: Config, type: WebhookEventType, environment: "production" | "sandbox") {
+export function webhooksFor(config: ProjectConfig, type: WebhookEventType, environment: "production" | "sandbox") {
   return config.webhooks.filter((w) => w.environments.includes(environment) && (!w.events || w.events.has(type)));
 }
 
-export function eventBody(config: Config, input: EventInput, id: string) {
+export function eventBody(config: ProjectConfig, input: EventInput, id: string) {
   const t = input.transaction;
   const now = input.now ?? Date.now();
   const sign = input.negativePrice ? -1 : 1;
@@ -118,7 +119,7 @@ export function eventBody(config: Config, input: EventInput, id: string) {
  */
 export async function enqueueEvent(
   db: D1Database,
-  config: Config,
+  config: ProjectConfig,
   input: EventInput,
 ): Promise<{ id: string; statements: D1PreparedStatement[] }> {
   const endpoints = webhooksFor(config, input.type, input.environment);
@@ -227,16 +228,17 @@ async function send(env: Env, endpoint: WebhookConfig, body: string, fetchImpl: 
 
 interface DueDelivery {
   event_id: string;
+  app_id: string;
   endpoint: string;
   attempts: number;
   body: string;
 }
 
 async function attempt(env: Env, config: Config, fetchImpl: typeof fetch, rows: DueDelivery[], now: number) {
-  const endpoints = new Map(config.webhooks.map((w) => [w.id, w]));
   const updates = await Promise.all(
     rows.map(async (row) => {
-      const endpoint = endpoints.get(row.endpoint);
+      // Webhook IDs are unique within a project, so look the endpoint up in the event's project.
+      const endpoint = projectOfApp(config, row.app_id)?.webhooks.find((w) => w.id === row.endpoint);
       const attempts = row.attempts + 1;
       // The endpoint was removed from the config: stop trying.
       const result = endpoint ? await send(env, endpoint, row.body, fetchImpl) : { status: 0, error: "endpoint no longer configured" };
@@ -270,7 +272,7 @@ export async function deliverNow(env: Env, config: Config, fetchImpl: typeof fet
   const ids = eventIds.filter(Boolean);
   if (!ids.length) return 0;
   const { results } = await env.DB.prepare(
-    `SELECT d.event_id, d.endpoint, d.attempts, e.body FROM webhook_delivery d JOIN webhook_event e ON e.id = d.event_id
+    `SELECT d.event_id, e.app_id, d.endpoint, d.attempts, e.body FROM webhook_delivery d JOIN webhook_event e ON e.id = d.event_id
      WHERE d.event_id IN (SELECT value FROM json_each(?)) AND d.status = 'pending' AND d.attempts = 0`,
   )
     .bind(JSON.stringify(ids))
@@ -281,7 +283,7 @@ export async function deliverNow(env: Env, config: Config, fetchImpl: typeof fet
 /** Retries deliveries that are due (the scheduled job, every 5 minutes). */
 export async function retryDueDeliveries(env: Env, config: Config, fetchImpl: typeof fetch, now = Date.now()) {
   const { results } = await env.DB.prepare(
-    `SELECT d.event_id, d.endpoint, d.attempts, e.body FROM webhook_delivery d JOIN webhook_event e ON e.id = d.event_id
+    `SELECT d.event_id, e.app_id, d.endpoint, d.attempts, e.body FROM webhook_delivery d JOIN webhook_event e ON e.id = d.event_id
      WHERE d.status = 'pending' AND d.next_attempt_at <= ? ORDER BY d.next_attempt_at LIMIT ${RETRIES_PER_RUN}`,
   )
     .bind(now)

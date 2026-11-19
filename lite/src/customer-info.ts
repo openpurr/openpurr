@@ -28,7 +28,7 @@
 //     (both SDKs know that store), and the entitlement points at it when the grant gives more
 //     access than any purchase: a later expiry, or lifetime. Revoked grants are left out.
 
-import { type Config, entitlementsFor } from "./config";
+import { entitlementsFor, type ProjectConfig } from "./config";
 import type { Customer, GrantRow, SubscriptionStateRow, TransactionRow } from "./ledger";
 import { APPLE_STATUS } from "./stores/apple";
 
@@ -103,7 +103,7 @@ export function computeSnapshot(args: {
   states?: SubscriptionStateRow[];
   /** Promotional grants (including revoked ones, which are skipped). */
   grants?: GrantRow[];
-  config: Config;
+  config: ProjectConfig;
   now?: number;
 }): Snapshot {
   const { config } = args;
@@ -236,7 +236,7 @@ export function promotionalProductId(entitlementId: string, duration: string) {
 /** The CustomerInfo body for one request: the snapshot plus request time and management_url. */
 export function renderCustomerInfo(
   snapshot: Snapshot,
-  config: Config,
+  config: ProjectConfig,
   opts: { now?: number; requestStore?: "app_store" | "play_store" } = {},
 ) {
   const now = opts.now ?? Date.now();
@@ -269,7 +269,7 @@ export function buildCustomerInfo(args: Parameters<typeof computeSnapshot>[0] & 
  * The store page where the user manages the active subscription. Prefers the requesting
  * platform's store when it has one; otherwise the subscription that ends last. Null if none.
  */
-function managementUrl(config: Config, subs: Snapshot["management"], now: number, requestStore?: string): string | null {
+function managementUrl(config: ProjectConfig, subs: Snapshot["management"], now: number, requestStore?: string): string | null {
   const active = subs.filter((m) => m.end > now);
   if (!active.length) return null;
   const pick = active.find((m) => m.store === requestStore) ?? active.reduce((a, b) => (b.end > a.end ? b : a));

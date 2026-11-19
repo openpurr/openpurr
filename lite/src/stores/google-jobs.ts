@@ -4,6 +4,7 @@
 //     was missed. Bounded per run; a per-app checkpoint in job_state means a backlog clears over
 //     several runs.
 
+import type { Config } from "../config";
 import type { Deps, Env } from "../env";
 import type { TransactionRow } from "../ledger";
 import { invalidateSnapshot, refreshSnapshot } from "../snapshot";
@@ -15,7 +16,7 @@ const DAY = 864e5;
 export const ACKS_PER_RUN = 10;
 export const VOIDED_PER_RUN = 20;
 
-export async function retryPlayAcknowledgements(env: Env, deps: Deps, now: number) {
+export async function retryPlayAcknowledgements(env: Env, deps: Deps, config: Config, now: number) {
   const db = env.DB;
   // Too late to matter: Google has refunded these already.
   const { meta: dropped } = await db.prepare("DELETE FROM play_ack_pending WHERE created_at < ?").bind(now - 3 * DAY).run();
@@ -25,7 +26,7 @@ export async function retryPlayAcknowledgements(env: Env, deps: Deps, now: numbe
     .all<{ purchase_token: string; app_id: string; product_id: string; kind: "subscription" | "product" }>();
   let done = 0;
   for (const r of results) {
-    const app = deps.config.apps.get(r.app_id);
+    const app = config.apps.get(r.app_id);
     if (!app?.googlePlayApi) continue;
     const ok = await acknowledge(db, googleClientFor(app, env, deps), app.id, { kind: r.kind, productId: r.product_id, purchaseToken: r.purchase_token });
     if (ok) done++;
@@ -33,12 +34,12 @@ export async function retryPlayAcknowledgements(env: Env, deps: Deps, now: numbe
   return done;
 }
 
-export async function pollVoidedPurchases(env: Env, deps: Deps, now: number) {
+export async function pollVoidedPurchases(env: Env, deps: Deps, config: Config, now: number) {
   const db = env.DB;
-  const { config } = deps;
   let processed = 0;
   for (const app of config.apps.values()) {
     if (app.store !== "play_store" || !app.googlePlayApi) continue;
+    const project = config.projects.get(app.projectId)!;
     const key = `play_voided_checkpoint:${app.id}`;
     const checkpoint = await db.prepare("SELECT value FROM job_state WHERE key = ?").bind(key).first<{ value: string }>();
     // The API looks back at most 30 days.
@@ -72,9 +73,9 @@ export async function pollVoidedPurchases(env: Env, deps: Deps, now: number) {
         owners.add(tx.customer_id);
         const refunded = { ...tx, revoked_at: v.at } as TransactionRow;
         const event = googleRefundEvent(refunded);
-        if (webhooksFor(config, event.type, tx.environment).length) {
+        if (webhooksFor(project, event.type, tx.environment).length) {
           const customer = await loadEventCustomer(db, [tx.customer_id], tx.customer_id);
-          const { id, statements } = await enqueueEvent(db, config, { ...event, appId: app.id, environment: tx.environment, store: "play_store", customer, transaction: refunded, now });
+          const { id, statements } = await enqueueEvent(db, project, { ...event, appId: app.id, environment: tx.environment, store: "play_store", customer, transaction: refunded, now });
           eventIds.push(id);
           writes.push(...statements);
         }

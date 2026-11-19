@@ -19,7 +19,7 @@
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
 import { readAttributes } from "../attributes";
-import { type Config, entitlementsFor } from "../config";
+import { entitlementsFor, type ProjectConfig } from "../config";
 import { computeSnapshot, promotionalProductId } from "../customer-info";
 import type { AppEnv } from "../env";
 import { type GrantRow, loadCustomer, type SubscriptionStateRow, type TransactionRow } from "../ledger";
@@ -28,6 +28,7 @@ import { CHARTS, dayOf, type Interval, readChart } from "../metrics";
 import { deliverNow } from "../webhooks";
 import { audit } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
+import { chooseProject, visibleProjects } from "./project";
 import { runChecks, summarize } from "./doctor";
 import { type Actor, GRANT_DURATIONS, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, oauthTokenOwner, resourceMetadataUrl } from "./oauth";
@@ -35,7 +36,7 @@ import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, p
 
 export const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
 const SERVER_INFO = { name: "openpurr", title: "openpurr", version: "1.0.0" };
-const INSTRUCTIONS = `openpurr is a self-hosted, RevenueCat-compatible subscription backend. Customers are identified by app user ID (what the app passes to the RevenueCat SDK); a customer can have several (aliases). Entitlements, products and apps come from the deployment's config (get_config).
+const INSTRUCTIONS = `openpurr is a self-hosted, RevenueCat-compatible subscription backend. Customers are identified by app user ID (what the app passes to the RevenueCat SDK); a customer can have several (aliases). A deployment has one or more projects (one per title); each has its own apps, entitlements and customers. Projects, apps, products and entitlements come from the deployment's config (get_config). When there are several projects, pass project to the customer tools.
 - To answer "why does (or doesn't) a customer have X", use explain_entitlement: it checks every purchase and grant and says what decided it.
 - To find a customer by email, transaction ID or the start of an ID, use search_customers.
 - Charts (get_metrics) are in USD at each purchase date's exchange rate, days in UTC, and production data unless you ask for sandbox.
@@ -151,7 +152,7 @@ function grantLine(g: GrantRow, now: number) {
   return `- ${g.entitlement_id}, ${g.duration} grant (${state}), given ${day(g.starts_at)}${g.granted_by ? ` by ${g.granted_by}` : ""}${g.note ? ` — "${g.note}"` : ""}. Grant ID ${g.id}.`;
 }
 
-function unlockingProducts(config: Config, entitlementId: string, principal: Principal) {
+function unlockingProducts(config: ProjectConfig, entitlementId: string, principal: Principal) {
   const e = config.entitlements.find((x) => x.id === entitlementId);
   if (!e) return "";
   return [...e.products]
@@ -165,8 +166,8 @@ function unlockingProducts(config: Config, entitlementId: string, principal: Pri
     .join("; ");
 }
 
-async function loadVisible(c: Ctx, principal: Principal, appUserId: string) {
-  const data = await loadCustomer(c.env.DB, appUserId);
+async function loadVisible(c: Ctx, principal: Principal, project: ProjectConfig, appUserId: string) {
+  const data = await loadCustomer(c.env.DB, project.id, appUserId);
   if (!data.customer) return null;
   const transactions = data.transactions.filter((t) => canSeeApp(principal, t.app_id));
   const hidden = data.transactions.length - transactions.length;
@@ -177,23 +178,60 @@ function actorOf(c: Ctx, principal: Principal): Actor {
   return { email: principal.operator.email, operatorId: principal.operator.id, source: "mcp", tokenId: principal.tokenId, ip: c.req.header("cf-connecting-ip") ?? null };
 }
 
+function describeProject(config: ProjectConfig, principal: Principal) {
+  const apps = [...config.apps.values()]
+    .filter((a) => canSeeApp(principal, a.id))
+    .map((a) => ({
+      id: a.id,
+      store: a.store,
+      bundle_id: a.bundleId ?? null,
+      package_name: a.packageName ?? null,
+      products: [...a.products.values()].map((pr) => ({ id: pr.id, type: pr.type, base_plans: pr.basePlans.length ? pr.basePlans : undefined })),
+    }));
+  const entitlements = config.entitlements.map((e) => ({
+    id: e.id,
+    description: e.description,
+    products: Object.fromEntries([...e.products].filter(([app]) => canSeeApp(principal, app)).map(([app, refs]) => [app, refs.map((r) => (r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId))])),
+  }));
+  const offerings = config.offerings.map((o) => ({
+    id: o.id,
+    current: o.id === config.currentOffering,
+    description: o.description,
+    packages: o.packages.map((pk) => ({ id: pk.id, products: Object.fromEntries([...pk.products].filter(([app]) => canSeeApp(principal, app)).map(([app, r]) => [app, r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId])) })),
+  }));
+  const text = [
+    `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
+    `Entitlements:\n${entitlements.map((e) => `- ${e.id}${e.description ? ` (${e.description})` : ""}: ${Object.entries(e.products).map(([app, prs]) => `${app}: ${prs.join(", ")}`).join("; ")}`).join("\n")}`,
+    `Offerings:\n${offerings.map((o) => `- ${o.id}${o.current ? " (current)" : ""}: ${o.packages.map((pk) => `${pk.id} = ${Object.entries(pk.products).map(([app, pr]) => `${app}:${pr}`).join(", ")}`).join("; ")}`).join("\n")}`,
+  ].join("\n\n");
+  return { text: `Project ${config.id} (${config.name})\n\n${text}`, structured: { id: config.id, name: config.name, apps, entitlements, offerings } };
+}
+
 // ---- Tools ------------------------------------------------------------------------------------------
 
 const appUserIdProp = { type: "string", description: "The customer's app user ID (or any alias, including $RCAnonymousID:…)." };
+const projectProp = { type: "string", description: "The project (get_config lists them). Needed only when the deployment has several projects." };
+
+/** The project a tool call is about: the `project` argument, or the caller's only project. */
+function projectArg(c: Ctx, principal: Principal, args: Args): ProjectConfig {
+  const choice = chooseProject(c.get("config"), principal, str(args, "project", { required: false, max: 50 }));
+  if ("project" in choice) return choice.project;
+  throw new ToolError(choice.message);
+}
 
 const TOOLS: Tool[] = [
   {
     name: "lookup_customer",
     title: "Look up a customer",
     description: "Everything about one customer: app user IDs, attributes (email…), entitlements and when they end, subscriptions with their status, recent purchases and promotional grants.",
-    inputSchema: { type: "object", properties: { app_user_id: appUserIdProp }, required: ["app_user_id"], additionalProperties: false },
+    inputSchema: { type: "object", properties: { app_user_id: appUserIdProp, project: projectProp }, required: ["app_user_id"], additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     permission: "read",
     async run(c, principal, args) {
       const appUserId = str(args, "app_user_id")!;
-      const data = await loadVisible(c, principal, appUserId);
+      const config = projectArg(c, principal, args);
+      const data = await loadVisible(c, principal, config, appUserId);
       if (!data) return { text: `No customer with app user ID "${appUserId}". Try search_customers with an email, a transaction ID or the start of the ID.`, isError: true };
-      const { config } = c.get("deps");
       const now = Date.now();
       const db = c.env.DB;
       const [attributes, aliases] = await Promise.all([
@@ -246,6 +284,7 @@ const TOOLS: Tool[] = [
         query: { type: "string", description: "App user ID prefix, email, or transaction ID." },
         purchases_only: { type: "boolean", description: "Only customers who bought something." },
         limit: { type: "integer", minimum: 1, maximum: 50, description: "At most this many (default 20)." },
+        project: projectProp,
       },
       additionalProperties: false,
     },
@@ -257,7 +296,7 @@ const TOOLS: Tool[] = [
       const purchasesOnly = args.purchases_only === true;
       let list;
       try {
-        list = await searchCustomers(c.env.DB, principal.apps, { q: query, purchasesOnly, limit });
+        list = await searchCustomers(c.env.DB, projectArg(c, principal, args).id, principal.apps, { q: query, purchasesOnly, limit });
       } catch (err) {
         if (err instanceof BadInput) throw new ToolError(err.message);
         throw err;
@@ -277,7 +316,7 @@ const TOOLS: Tool[] = [
       "Why a customer does or doesn't have an entitlement right now: which purchase or grant decides it, and what happened to each relevant purchase (expired, refunded, auto-renew off, billing problems, sandbox, not verified). Also says which products unlock it and flags purchases of products no entitlement includes.",
     inputSchema: {
       type: "object",
-      properties: { app_user_id: appUserIdProp, entitlement_id: { type: "string", description: "The entitlement, e.g. pro. get_config lists them." } },
+      properties: { app_user_id: appUserIdProp, entitlement_id: { type: "string", description: "The entitlement, e.g. pro. get_config lists them." }, project: projectProp },
       required: ["app_user_id", "entitlement_id"],
       additionalProperties: false,
     },
@@ -286,12 +325,12 @@ const TOOLS: Tool[] = [
     async run(c, principal, args) {
       const appUserId = str(args, "app_user_id")!;
       const entitlementId = str(args, "entitlement_id")!;
-      const { config } = c.get("deps");
+      const config = projectArg(c, principal, args);
       if (!config.entitlements.some((e) => e.id === entitlementId)) {
-        return { text: `There's no entitlement "${entitlementId}" in this deployment's config. Entitlements: ${config.entitlements.map((e) => e.id).join(", ") || "none"}.`, isError: true };
+        return { text: `There's no entitlement "${entitlementId}" in project ${config.id}. Entitlements: ${config.entitlements.map((e) => e.id).join(", ") || "none"}.`, isError: true };
       }
       const unlocks = unlockingProducts(config, entitlementId, principal);
-      const data = await loadVisible(c, principal, appUserId);
+      const data = await loadVisible(c, principal, config, appUserId);
       if (!data) {
         return {
           text: `No: there's no customer with app user ID "${appUserId}". Products that unlock ${entitlementId}: ${unlocks}.\nIf they did buy, the purchase may be under another app user ID (an anonymous ID before logIn, or another account): try search_customers with their email or the store transaction ID from their receipt.`,
@@ -325,7 +364,7 @@ const TOOLS: Tool[] = [
       if (chains.length) lines.push("", `Their purchases of those products:\n${chains.map((ch) => chainLine(ch, data.states, now)).join("\n")}`);
       if (relevantGrants.length) lines.push("", `Grants of ${entitlementId}:\n${relevantGrants.map((g) => grantLine(g, now)).join("\n")}`);
       if (unmapped.length) {
-        lines.push("", `They also bought ${unmapped.join(", ")}, which no entitlement includes. If one of those should unlock ${entitlementId}, add it to the entitlement in openpurr.config.yaml.`);
+        lines.push("", `They also bought ${unmapped.join(", ")}, which no entitlement includes. If one of those should unlock ${entitlementId}, add it to the entitlement in the config (the dashboard, or PUT /admin/v1/config).`);
       }
       if (!active && !chains.length) {
         lines.push(
@@ -365,6 +404,7 @@ const TOOLS: Tool[] = [
         app: { type: "string", description: "Only this app (get_config lists app IDs)." },
         store: { type: "string", enum: ["app_store", "play_store"] },
         product: { type: "string", description: "Only this product (Google base plans as product:base_plan)." },
+        project: { type: "string", description: "Only this project (get_config lists them). Default: every project." },
       },
       required: ["chart"],
       additionalProperties: false,
@@ -386,11 +426,13 @@ const TOOLS: Tool[] = [
       const environment = (str(args, "environment", { required: false }) ?? "production") as "production" | "sandbox";
       if (environment !== "production" && environment !== "sandbox") throw new ToolError("environment must be production or sandbox.");
       const app = str(args, "app", { required: false });
-      if (app && (!c.get("deps").config.apps.has(app) || !canSeeApp(principal, app))) throw new ToolError(`No app "${app}" you can see.`);
+      if (app && (!c.get("config").apps.has(app) || !canSeeApp(principal, app))) throw new ToolError(`No app "${app}" you can see.`);
+      const chosen = str(args, "project", { required: false, max: 50 }) ? projectArg(c, principal, args) : undefined;
+      const project = chosen ? { id: chosen.id, apps: [...chosen.apps.keys()] } : undefined;
       const store = str(args, "store", { required: false });
       if (store && store !== "app_store" && store !== "play_store") throw new ToolError("store must be app_store or play_store.");
       const product = str(args, "product", { required: false });
-      const result = (await readChart(c.env.DB, chart, { from, to: to > today ? today : to, interval, environment, app, store, product, apps: principal.apps }))!;
+      const result = (await readChart(c.env.DB, chart, { from, to: to > today ? today : to, interval, environment, app, store, product, apps: principal.apps, project }))!;
       if (result.categories) {
         return {
           text: `${result.label} (${result.description}):\n${result.categories.map((x) => `- ${x.label}: ${x.value}`).join("\n")}`,
@@ -403,7 +445,7 @@ const TOOLS: Tool[] = [
       const table = [`| ${interval} | ${keys.join(" | ")} |`, `|${" --- |".repeat(keys.length + 1)}`, ...result.points.map((pt) => `| ${pt.date} | ${keys.map((k) => fmt(pt.values[k])).join(" | ")} |`)];
       const unit = result.unit === "usd" ? "Money values are USD." : result.unit === "percent" ? "Rates are percentages." : "";
       return {
-        text: `${result.label}, ${from} to ${result.to}, by ${interval} (${environment}${app ? `, app ${app}` : ""}${store ? `, ${STORE[store]}` : ""}${product ? `, product ${product}` : ""}). ${result.description} ${unit}\n\n${table.join("\n")}${result.notes.length ? `\n\n${result.notes.join(" ")}` : ""}${result.updated_at ? `\n\nTotals last updated ${when(result.updated_at)} (hourly).` : ""}`,
+        text: `${result.label}, ${from} to ${result.to}, by ${interval} (${environment}${chosen ? `, project ${chosen.id}` : ""}${app ? `, app ${app}` : ""}${store ? `, ${STORE[store]}` : ""}${product ? `, product ${product}` : ""}). ${result.description} ${unit}\n\n${table.join("\n")}${result.notes.length ? `\n\n${result.notes.join(" ")}` : ""}${result.updated_at ? `\n\nTotals last updated ${when(result.updated_at)} (hourly).` : ""}`,
         structured: result as unknown as Record<string, unknown>,
       };
     },
@@ -411,38 +453,14 @@ const TOOLS: Tool[] = [
   {
     name: "get_config",
     title: "Get the configuration",
-    description: "The deployment's apps (store, bundle ID or package name, products), entitlements (which products unlock each, per app) and offerings. From openpurr.config.yaml; no secrets.",
+    description: "The deployment's projects and, for each, its apps (store, bundle ID or package name, products), entitlements (which products unlock each, per app) and offerings. No secrets.",
     inputSchema: { type: "object", additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     permission: "read",
     async run(c, principal) {
-      const { config } = c.get("deps");
-      const apps = [...config.apps.values()]
-        .filter((a) => canSeeApp(principal, a.id))
-        .map((a) => ({
-          id: a.id,
-          store: a.store,
-          bundle_id: a.bundleId ?? null,
-          package_name: a.packageName ?? null,
-          products: [...a.products.values()].map((pr) => ({ id: pr.id, type: pr.type, base_plans: pr.basePlans.length ? pr.basePlans : undefined })),
-        }));
-      const entitlements = config.entitlements.map((e) => ({
-        id: e.id,
-        description: e.description,
-        products: Object.fromEntries([...e.products].filter(([app]) => canSeeApp(principal, app)).map(([app, refs]) => [app, refs.map((r) => (r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId))])),
-      }));
-      const offerings = config.offerings.map((o) => ({
-        id: o.id,
-        current: o.id === config.currentOffering,
-        description: o.description,
-        packages: o.packages.map((pk) => ({ id: pk.id, products: Object.fromEntries([...pk.products].filter(([app]) => canSeeApp(principal, app)).map(([app, r]) => [app, r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId])) })),
-      }));
-      const text = [
-        `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
-        `Entitlements:\n${entitlements.map((e) => `- ${e.id}${e.description ? ` (${e.description})` : ""}: ${Object.entries(e.products).map(([app, prs]) => `${app}: ${prs.join(", ")}`).join("; ")}`).join("\n")}`,
-        `Offerings:\n${offerings.map((o) => `- ${o.id}${o.current ? " (current)" : ""}: ${o.packages.map((pk) => `${pk.id} = ${Object.entries(pk.products).map(([app, pr]) => `${app}:${pr}`).join(", ")}`).join("; ")}`).join("\n")}`,
-      ].join("\n\n");
-      return { text, structured: { apps, entitlements, offerings } };
+      const projects = visibleProjects(c.get("config"), principal).map((config) => describeProject(config, principal));
+      if (!projects.length) return { text: "No projects yet: the config is empty.", structured: { projects: [] } };
+      return { text: projects.map((pr) => pr.text).join("\n\n"), structured: { projects: projects.map((pr) => pr.structured) } };
     },
   },
   {
@@ -493,8 +511,7 @@ const TOOLS: Tool[] = [
         db.prepare("UPDATE webhook_delivery SET status = 'pending', attempts = 0, next_attempt_at = ?, last_error = NULL WHERE event_id = ?").bind(Date.now() + 300_000, id),
         audit(db, { operator: principal.operator, action: "webhook.replayed", target: id, source: "mcp", tokenId: principal.tokenId, ip: c.req.header("cf-connecting-ip") ?? null }),
       ]);
-      const { config, fetch: fetchImpl } = c.get("deps");
-      c.executionCtx.waitUntil(deliverNow(c.env, config, fetchImpl ?? fetch, [id]));
+      c.executionCtx.waitUntil(deliverNow(c.env, c.get("config"), c.get("deps").fetch ?? fetch, [id]));
       return { text: `Replaying ${event.type} event ${id}. It's sent now and retried if an endpoint fails.`, structured: { replayed: id } };
     },
   },
@@ -510,6 +527,7 @@ const TOOLS: Tool[] = [
         duration: { type: "string", enum: [...GRANT_DURATIONS] },
         expires_at: { type: "string", description: "Instead of duration: when it ends (ISO 8601 date or time)." },
         note: { type: "string", description: "Why (shown in the dashboard and audit log)." },
+        project: projectProp,
       },
       required: ["app_user_id", "entitlement_id"],
       additionalProperties: false,
@@ -527,7 +545,7 @@ const TOOLS: Tool[] = [
         expiresAt = Date.parse(expiresRaw);
         if (Number.isNaN(expiresAt)) throw new ToolError("expires_at must be an ISO 8601 date or time.");
       }
-      const { config } = c.get("deps");
+      const config = projectArg(c, principal, args);
       try {
         const { grant, customerId } = await grantEntitlement(
           c.env.DB,
@@ -535,7 +553,7 @@ const TOOLS: Tool[] = [
           { appUserId, entitlementId: str(args, "entitlement_id")!, duration, expiresAt, note: str(args, "note", { required: false, max: 500 }) ?? null },
           actorOf(c, principal),
         );
-        c.executionCtx.waitUntil(rebuildAfterGrant(c.env.DB, config, customerId));
+        c.executionCtx.waitUntil(rebuildAfterGrant(c.env.DB, c.get("config"), customerId));
         return {
           text: `Granted ${grant.entitlement_id} to ${appUserId} ${grant.expires_at === null ? "for life" : `until ${when(grant.expires_at)}`} (grant ${grant.id}). The app sees it the next time it fetches CustomerInfo (on launch, or after a purchase or restore).`,
           structured: { grant, product_identifier: promotionalProductId(grant.entitlement_id, grant.duration) },
@@ -550,7 +568,7 @@ const TOOLS: Tool[] = [
     name: "revoke_grant",
     title: "Revoke a grant",
     description: "Ends a promotional grant now (lookup_customer or explain_entitlement shows grant IDs). Purchases aren't affected. Audited. Confirm with the user first.",
-    inputSchema: { type: "object", properties: { app_user_id: appUserIdProp, grant_id: { type: "string" } }, required: ["app_user_id", "grant_id"], additionalProperties: false },
+    inputSchema: { type: "object", properties: { app_user_id: appUserIdProp, grant_id: { type: "string" }, project: projectProp }, required: ["app_user_id", "grant_id"], additionalProperties: false },
     annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
     permission: "grants:manage",
     allApps: true,
@@ -558,8 +576,8 @@ const TOOLS: Tool[] = [
       const appUserId = str(args, "app_user_id")!;
       const grantId = str(args, "grant_id")!;
       try {
-        const { customerId } = await revokeGrant(c.env.DB, { appUserId, grantId }, actorOf(c, principal));
-        c.executionCtx.waitUntil(rebuildAfterGrant(c.env.DB, c.get("deps").config, customerId));
+        const { customerId } = await revokeGrant(c.env.DB, { projectId: projectArg(c, principal, args).id, appUserId, grantId }, actorOf(c, principal));
+        c.executionCtx.waitUntil(rebuildAfterGrant(c.env.DB, c.get("config"), customerId));
         return { text: `Revoked grant ${grantId} for ${appUserId}. The app sees the change on its next CustomerInfo fetch.`, structured: { revoked: grantId } };
       } catch (err) {
         if (err instanceof GrantError) return { text: err.message, isError: true };

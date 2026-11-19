@@ -6,7 +6,7 @@
 // CustomerInfo snapshot in the same batch, and the caller rebuilds it afterwards, so the SDK
 // sees the change on its next fetch. Every change is in the audit log.
 
-import type { Config } from "../config";
+import type { Config, ProjectConfig } from "../config";
 import { findCustomer } from "../ledger";
 import { invalidateSnapshot, refreshSnapshot } from "../snapshot";
 import { audit } from "./auth";
@@ -69,7 +69,7 @@ export class GrantError extends Error {
 /** Gives a customer an entitlement for `duration`, or until `expiresAt` (a custom end). */
 export async function grantEntitlement(
   db: D1Database,
-  config: Config,
+  config: ProjectConfig,
   input: { appUserId: string; entitlementId: string; duration?: string; expiresAt?: number; note?: string | null },
   actor: Actor,
   now = Date.now(),
@@ -90,7 +90,7 @@ export async function grantEntitlement(
   }
   const note = input.note?.trim() || null;
   if (note && note.length > MAX_NOTE) throw new GrantError(`The note can be at most ${MAX_NOTE} characters.`);
-  const customer = await findCustomer(db, input.appUserId);
+  const customer = await findCustomer(db, config.id, input.appUserId);
   if (!customer) throw new GrantError(`No customer with app user ID "${input.appUserId}". They need to have opened the app (or be logged in) first.`, 404);
 
   const grant = {
@@ -128,13 +128,13 @@ export async function grantEntitlement(
 }
 
 /** Ends a grant now. The row stays, marked revoked. */
-export async function revokeGrant(db: D1Database, input: { appUserId: string; grantId: string }, actor: Actor, now = Date.now()) {
+export async function revokeGrant(db: D1Database, input: { projectId: string; appUserId: string; grantId: string }, actor: Actor, now = Date.now()) {
   const row = await db
     .prepare(
       `SELECT g.id, g.customer_id, g.entitlement_id, g.revoked_at FROM promotional_grant g
-       JOIN customer_alias a ON a.customer_id = g.customer_id WHERE a.app_user_id = ? AND g.id = ?`,
+       JOIN customer_alias a ON a.customer_id = g.customer_id WHERE a.project_id = ? AND a.app_user_id = ? AND g.id = ?`,
     )
-    .bind(input.appUserId, input.grantId)
+    .bind(input.projectId, input.appUserId, input.grantId)
     .first<{ id: string; customer_id: string; entitlement_id: string; revoked_at: number | null }>();
   if (!row) throw new GrantError(`No grant ${input.grantId} for customer "${input.appUserId}".`, 404);
   if (row.revoked_at !== null) throw new GrantError("That grant was already revoked.");

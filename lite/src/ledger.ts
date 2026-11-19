@@ -8,6 +8,8 @@ import type { SubscriptionStateUpdate } from "./stores/apple";
 
 export interface Customer {
   id: string;
+  /** Customers belong to one project; app user IDs are unique within it. */
+  projectId: string;
   /** original_app_user_id */
   appUserId: string;
   firstSeen: number;
@@ -47,11 +49,12 @@ const TX_COLUMNS = `t.app_id, t.store, t.environment, t.transaction_id, t.origin
 
 interface CustomerRecord {
   id: string;
+  project_id: string;
   app_user_id: string;
   first_seen: number;
 }
 
-const toCustomer = (r: CustomerRecord): Customer => ({ id: r.id, appUserId: r.app_user_id, firstSeen: r.first_seen });
+const toCustomer = (r: CustomerRecord): Customer => ({ id: r.id, projectId: r.project_id, appUserId: r.app_user_id, firstSeen: r.first_seen });
 
 export function isAnonymous(appUserId: string) {
   return appUserId.startsWith("$RCAnonymousID:");
@@ -90,22 +93,22 @@ export interface SubscriptionStateRow {
  * The customer an app user ID belongs to, every transaction they own, the store-reported status
  * of their subscriptions, and their promotional grants. One D1 round trip.
  */
-export async function loadCustomer(db: D1Database, appUserId: string) {
+export async function loadCustomer(db: D1Database, projectId: string, appUserId: string) {
   const [customer, transactions, states, grants] = await db.batch([
     db
       .prepare(
-        `SELECT c.id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
-         WHERE a.app_user_id = ?`,
+        `SELECT c.id, c.project_id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
+         WHERE a.project_id = ? AND a.app_user_id = ?`,
       )
-      .bind(appUserId),
+      .bind(projectId, appUserId),
     db
       .prepare(
         `SELECT ${TX_COLUMNS} FROM customer_alias a
          JOIN purchase_owner o ON o.customer_id = a.customer_id
          JOIN store_transaction t ON t.store = o.store AND t.original_transaction_id = o.original_transaction_id
-         WHERE a.app_user_id = ?`,
+         WHERE a.project_id = ? AND a.app_user_id = ?`,
       )
-      .bind(appUserId),
+      .bind(projectId, appUserId),
     db
       .prepare(
         `SELECT s.store, s.original_transaction_id, s.status, s.auto_renew, s.auto_renew_product_id,
@@ -113,12 +116,15 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
          FROM customer_alias a
          JOIN purchase_owner o ON o.customer_id = a.customer_id
          JOIN subscription_state s ON s.store = o.store AND s.original_transaction_id = o.original_transaction_id
-         WHERE a.app_user_id = ?`,
+         WHERE a.project_id = ? AND a.app_user_id = ?`,
       )
-      .bind(appUserId),
+      .bind(projectId, appUserId),
     db
-      .prepare(`SELECT ${GRANT_COLUMNS} FROM customer_alias a JOIN promotional_grant g ON g.customer_id = a.customer_id WHERE a.app_user_id = ? ORDER BY g.created_at`)
-      .bind(appUserId),
+      .prepare(
+        `SELECT ${GRANT_COLUMNS} FROM customer_alias a JOIN promotional_grant g ON g.customer_id = a.customer_id
+         WHERE a.project_id = ? AND a.app_user_id = ? ORDER BY g.created_at`,
+      )
+      .bind(projectId, appUserId),
   ]);
   const row = customer!.results[0] as CustomerRecord | undefined;
   return {
@@ -132,7 +138,7 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
 /** Like loadCustomer, by internal customer ID (for rebuilding snapshots). One D1 round trip. */
 export async function loadCustomerById(db: D1Database, customerId: string) {
   const [customer, transactions, states, grants] = await db.batch([
-    db.prepare("SELECT id, app_user_id, first_seen FROM customer WHERE id = ?").bind(customerId),
+    db.prepare("SELECT id, project_id, app_user_id, first_seen FROM customer WHERE id = ?").bind(customerId),
     db
       .prepare(
         `SELECT ${TX_COLUMNS} FROM purchase_owner o
@@ -160,37 +166,37 @@ export async function loadCustomerById(db: D1Database, customerId: string) {
   };
 }
 
-export async function findCustomer(db: D1Database, appUserId: string): Promise<Customer | null> {
+export async function findCustomer(db: D1Database, projectId: string, appUserId: string): Promise<Customer | null> {
   const row = await db
     .prepare(
-      `SELECT c.id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
-       WHERE a.app_user_id = ?`,
+      `SELECT c.id, c.project_id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
+       WHERE a.project_id = ? AND a.app_user_id = ?`,
     )
-    .bind(appUserId)
+    .bind(projectId, appUserId)
     .first<CustomerRecord>();
   return row ? toCustomer(row) : null;
 }
 
 /** Finds or creates the customer for an app user ID. Write path only. */
-export async function ensureCustomer(db: D1Database, appUserId: string, now = Date.now()): Promise<Customer> {
-  const existing = await findCustomer(db, appUserId);
+export async function ensureCustomer(db: D1Database, projectId: string, appUserId: string, now = Date.now()): Promise<Customer> {
+  const existing = await findCustomer(db, projectId, appUserId);
   if (existing) return existing;
   const id = crypto.randomUUID();
   await db.batch([
-    db.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, appUserId, now),
+    db.prepare("INSERT INTO customer (id, project_id, app_user_id, first_seen) VALUES (?, ?, ?, ?)").bind(id, projectId, appUserId, now),
     db
-      .prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")
-      .bind(appUserId, id, now),
+      .prepare("INSERT INTO customer_alias (project_id, app_user_id, customer_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING")
+      .bind(projectId, appUserId, id, now),
   ]);
   // If a concurrent request created the alias first, ours was ignored; resolve again to agree.
-  return (await findCustomer(db, appUserId))!;
+  return (await findCustomer(db, projectId, appUserId))!;
 }
 
-/** Adds another app user ID to an existing customer. */
-export function addAlias(db: D1Database, appUserId: string, customerId: string, now = Date.now()) {
+/** Adds another app user ID to an existing customer (of the same project). */
+export function addAlias(db: D1Database, projectId: string, appUserId: string, customerId: string, now = Date.now()) {
   return db
-    .prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?) ON CONFLICT DO NOTHING")
-    .bind(appUserId, customerId, now);
+    .prepare("INSERT INTO customer_alias (project_id, app_user_id, customer_id, created_at) VALUES (?, ?, ?, ?) ON CONFLICT DO NOTHING")
+    .bind(projectId, appUserId, customerId, now);
 }
 
 /**
@@ -222,7 +228,7 @@ export function mergeCustomers(db: D1Database, from: string, into: string) {
 export async function purchaseOwner(db: D1Database, store: Store, originalTransactionId: string) {
   const row = await db
     .prepare(
-      `SELECT c.id, c.app_user_id, c.first_seen,
+      `SELECT c.id, c.project_id, c.app_user_id, c.first_seen,
               (SELECT count(*) FROM customer_alias a WHERE a.customer_id = c.id AND a.app_user_id NOT LIKE '$RCAnonymousID:%') AS named
        FROM purchase_owner o JOIN customer c ON c.id = o.customer_id
        WHERE o.store = ? AND o.original_transaction_id = ?`,
@@ -246,7 +252,7 @@ export async function purchaseOwners(db: D1Database, store: Store, originalTrans
   if (!originalTransactionIds.length) return owners;
   const { results } = await db
     .prepare(
-      `SELECT o.original_transaction_id, c.id, c.app_user_id, c.first_seen,
+      `SELECT o.original_transaction_id, c.id, c.project_id, c.app_user_id, c.first_seen,
               (SELECT count(*) FROM customer_alias a WHERE a.customer_id = c.id AND a.app_user_id NOT LIKE '$RCAnonymousID:%') AS named
        FROM purchase_owner o JOIN customer c ON c.id = o.customer_id
        WHERE o.store = ? AND o.original_transaction_id IN (SELECT value FROM json_each(?))`,

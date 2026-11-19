@@ -1,10 +1,20 @@
-// openpurr config: apps, products, entitlements and offerings.
+// openpurr config: projects, and each project's apps, products, entitlements, offerings and webhooks.
 //
-// Operators write openpurr.config.yaml (see openpurr.config.example.yaml). The build step
-// (scripts/build-config.mjs) converts it to JSON and validates it with parseConfig, so
-// mistakes fail the deploy with a readable message. The Worker imports the JSON and runs
-// parseConfig again at load (cheap), so the runtime never trusts an unvalidated file.
-// No YAML parser ships in the Worker.
+// The config lives in D1 (config_version, migrations/0018_projects.sql; src/config-store.ts) and
+// is edited through the admin API and the dashboard. Every save is validated here first, and the
+// Workers validate it again when they load it (cheap), so the runtime never trusts an unvalidated
+// document.
+//
+// A project is one title. Customers, secret keys and webhooks belong to a project, so two titles
+// in one deployment never share customers or entitlements. App IDs, SDK keys, bundle IDs and
+// package names are unique across all projects, because a request or store notification is
+// matched to its app (and so its project) by them.
+//
+// Document shape (version 2):
+//   {"version": 2, "projects": {"<project id>": {"name": "Rose", "apps": {...}, "entitlements": {...},
+//     "offerings": [...], "webhooks": [...]}}}
+// The older single-project file (version 1: apps, entitlements, offerings and webhooks at the top)
+// is still accepted, as the project "default"; see upgradeConfig.
 
 export type Store = "app_store" | "play_store";
 export type ProductType = "subscription" | "non_consumable" | "consumable";
@@ -24,6 +34,8 @@ export interface ProductConfig {
 
 export interface AppConfig {
   id: string;
+  /** The project this app belongs to. */
+  projectId: string;
   store: Store;
   /** App Store: the bundle ID every signed transaction must carry. */
   bundleId?: string;
@@ -107,16 +119,35 @@ export interface WebhookConfig {
   events: Set<WebhookEventType> | null;
 }
 
-export interface Config {
-  /** Changes whenever the config does; CustomerInfo snapshots built from another version are recomputed. */
+/** One title: its apps and everything that's shared between them. */
+export interface ProjectConfig {
+  id: string;
+  name: string;
+  /** Changes whenever this project's config does; CustomerInfo snapshots built from another version are recomputed. */
   version: string;
+  /** This project's apps. */
   apps: Map<string, AppConfig>;
   webhooks: WebhookConfig[];
   entitlements: EntitlementConfig[];
   offerings: OfferingConfig[];
   currentOffering: string | null;
+}
+
+export interface Config {
+  /** Changes whenever any part of the config does. */
+  version: string;
+  projects: Map<string, ProjectConfig>;
+  /** Every app of every project, by app ID. */
+  apps: Map<string, AppConfig>;
   /** SDK key -> app. */
   keys: Map<string, AppConfig>;
+  /** The validated document, as version 2 (what config_version stores). */
+  document: ConfigDocument;
+}
+
+export interface ConfigDocument {
+  version: 2;
+  projects: Record<string, Record<string, unknown>>;
 }
 
 export class ConfigError extends Error {
@@ -135,22 +166,74 @@ const PRODUCT_TYPES: ProductType[] = ["subscription", "non_consumable", "consuma
 type Raw = Record<string, unknown>;
 const isObject = (v: unknown): v is Raw => typeof v === "object" && v !== null && !Array.isArray(v);
 
-/** Validates and normalizes a parsed config file. Throws ConfigError listing every problem found. */
+/** The project that a version 1 (single-project) file becomes. */
+export const DEFAULT_PROJECT_ID = "default";
+const DEFAULT_PROJECT_NAME = "Default";
+const PROJECT_ID = /^[a-z0-9][a-z0-9_-]{0,49}$/;
+const PROJECT_KEYS = ["name", "apps", "entitlements", "offerings", "webhooks"];
+
+/** A version 1 file as a version 2 document, with everything in the project "default". Anything else is returned as is. */
+export function upgradeConfig(raw: unknown): unknown {
+  if (!isObject(raw) || raw.version !== 1) return raw;
+  const { version: _version, ...rest } = raw;
+  return { version: 2, projects: { [DEFAULT_PROJECT_ID]: { name: DEFAULT_PROJECT_NAME, ...rest } } };
+}
+
+/** An empty config: no projects yet (a new deployment, before the first app is added). */
+export const EMPTY_DOCUMENT: ConfigDocument = { version: 2, projects: {} };
+
+/** Validates and normalizes a config document (version 2, or a version 1 file). Throws ConfigError listing every problem found. */
 export function parseConfig(raw: unknown): Config {
   const problems: string[] = [];
   const fail = (path: string, msg: string) => problems.push(`${path}: ${msg}`);
 
   if (!isObject(raw)) throw new ConfigError(["the config must be a mapping"]);
-  if (raw.version !== 1) fail("version", "must be 1");
-  allowOnly(raw, ["version", "apps", "entitlements", "offerings", "webhooks"], "", fail);
+  // A version 1 file's problems keep version 1 paths ("apps.ios...", not "projects.default.apps.ios...").
+  const v1 = raw.version === 1;
+  const doc = upgradeConfig(raw) as Raw;
+  if (doc.version !== 2) fail("version", "must be 2 (or 1, the single-project file)");
+  allowOnly(doc, ["version", "projects"], "", fail);
+  if (doc.projects !== undefined && !isObject(doc.projects)) fail("projects", "must be a mapping of project IDs to projects");
+
+  const globals: Globals = { apps: new Map(), keys: new Map() };
+  const projects = new Map<string, ProjectConfig>();
+  for (const [projectId, project] of Object.entries(isObject(doc.projects) ? doc.projects : {})) {
+    const at = v1 ? "" : `projects.${projectId}`;
+    if (!PROJECT_ID.test(projectId)) fail(at || "projects", `project IDs are 1–50 lowercase letters, digits, '_' and '-' (got ${projectId})`);
+    if (!isObject(project)) {
+      fail(at || "projects", "must be a mapping");
+      continue;
+    }
+    projects.set(projectId, parseProject(projectId, project, at, globals, fail));
+  }
+
+  if (problems.length) throw new ConfigError(problems);
+  const document = { version: 2 as const, projects: (isObject(doc.projects) ? doc.projects : {}) as ConfigDocument["projects"] };
+  return { version: fnv1a(JSON.stringify(document)), projects, apps: globals.apps, keys: globals.keys, document };
+}
+
+/** What must be unique across every project. */
+interface Globals {
+  apps: Map<string, AppConfig>;
+  keys: Map<string, AppConfig>;
+}
+
+function parseProject(projectId: string, raw: Raw, prefix: string, globals: Globals, fail: (path: string, msg: string) => void): ProjectConfig {
+  const path = (p: string) => (prefix ? `${prefix}.${p}` : p);
+  allowOnly(raw, PROJECT_KEYS, prefix, fail);
+  if (raw.name !== undefined && (typeof raw.name !== "string" || !raw.name.trim() || raw.name.length > 100)) {
+    fail(path("name"), "must be a name of 1–100 characters");
+  }
+  const name = typeof raw.name === "string" && raw.name.trim() ? raw.name.trim() : projectId;
 
   // --- apps -------------------------------------------------------------------------------
   const apps = new Map<string, AppConfig>();
-  const keys = new Map<string, AppConfig>();
-  if (!isObject(raw.apps) || Object.keys(raw.apps).length === 0) fail("apps", "at least one app is required");
+  if (raw.apps !== undefined && !isObject(raw.apps)) fail(path("apps"), "must be a mapping of app IDs to apps");
   for (const [appId, a] of Object.entries(isObject(raw.apps) ? raw.apps : {})) {
-    const at = `apps.${appId}`;
+    const at = path(`apps.${appId}`);
     if (!ID.test(appId)) fail(at, "app IDs may only contain letters, digits, '.', '_', '-' and '$'");
+    const taken = globals.apps.get(appId);
+    if (taken) fail(at, `app ID ${appId} is already used in project ${taken.projectId}; app IDs are unique across projects`);
     if (!isObject(a)) {
       fail(at, "must be a mapping");
       continue;
@@ -170,7 +253,7 @@ export function parseConfig(raw: unknown): Config {
     if (store === "play_store" && !nonEmptyString(a.package_name)) fail(`${at}.package_name`, "required for play_store apps");
     // Store notifications identify their app by bundle ID or package name, so each must be unique.
     const storeId = store === "app_store" ? a.bundle_id : a.package_name;
-    const twin = [...apps.values()].find(
+    const twin = [...globals.apps.values()].find(
       (other) => other.store === store && (store === "app_store" ? other.bundleId : other.packageName) === storeId,
     );
     if (nonEmptyString(storeId) && twin) {
@@ -179,6 +262,7 @@ export function parseConfig(raw: unknown): Config {
 
     const app: AppConfig = {
       id: appId,
+      projectId,
       store,
       bundleId: nonEmptyString(a.bundle_id) ? a.bundle_id : undefined,
       packageName: nonEmptyString(a.package_name) ? a.package_name : undefined,
@@ -247,15 +331,16 @@ export function parseConfig(raw: unknown): Config {
         fail(kat, "must not start with test_: the SDKs treat test_ keys as RevenueCat's simulated store");
       } else if (!key.startsWith(KEY_PREFIX[store])) {
         fail(kat, `${store} keys must start with ${KEY_PREFIX[store]}`);
-      } else if (keys.has(key)) {
-        fail(kat, `already used by app ${keys.get(key)!.id}`);
+      } else if (globals.keys.has(key)) {
+        fail(kat, `already used by app ${globals.keys.get(key)!.id}`);
       } else {
         app.sdkKeys.push(key);
-        keys.set(key, app);
+        globals.keys.set(key, app);
       }
     }
 
-    if (!isObject(a.products) || Object.keys(a.products).length === 0) fail(`${at}.products`, "list at least one product");
+    // An app may start without products (added from the dashboard); the setup checks flag it.
+    if (a.products !== undefined && !isObject(a.products)) fail(`${at}.products`, "must be a mapping of product IDs, e.g. { pro_monthly: { type: subscription } }");
     for (const [productId, p] of Object.entries(isObject(a.products) ? a.products : {})) {
       const pat = `${at}.products.${productId}`;
       if (!ID.test(productId) || productId.includes(":")) fail(pat, "invalid product ID");
@@ -285,6 +370,7 @@ export function parseConfig(raw: unknown): Config {
       });
     }
     apps.set(appId, app);
+    if (!taken) globals.apps.set(appId, app);
   }
 
   // A product reference: "pro" or, for Play subscriptions, "pro:monthly".
@@ -309,7 +395,7 @@ export function parseConfig(raw: unknown): Config {
   // --- entitlements -------------------------------------------------------------------------
   const entitlements: EntitlementConfig[] = [];
   for (const [id, e] of Object.entries(isObject(raw.entitlements) ? raw.entitlements : {})) {
-    const at = `entitlements.${id}`;
+    const at = path(`entitlements.${id}`);
     if (!ID.test(id)) fail(at, "invalid entitlement ID");
     if (!isObject(e)) {
       fail(at, "must be a mapping");
@@ -328,15 +414,15 @@ export function parseConfig(raw: unknown): Config {
     if (!isObject(e.products)) fail(`${at}.products`, "map each app to the products that grant this entitlement");
     entitlements.push(ent);
   }
-  if (raw.entitlements !== undefined && !isObject(raw.entitlements)) fail("entitlements", "must be a mapping");
+  if (raw.entitlements !== undefined && !isObject(raw.entitlements)) fail(path("entitlements"), "must be a mapping");
 
   // --- offerings ----------------------------------------------------------------------------
   const offerings: OfferingConfig[] = [];
   let currentOffering: string | null = null;
   const rawOfferings = raw.offerings ?? [];
-  if (!Array.isArray(rawOfferings)) fail("offerings", "must be a list");
+  if (!Array.isArray(rawOfferings)) fail(path("offerings"), "must be a list");
   for (const [i, o] of (Array.isArray(rawOfferings) ? rawOfferings : []).entries()) {
-    const at = `offerings[${i}]`;
+    const at = path(`offerings[${i}]`);
     if (!isObject(o)) {
       fail(at, "must be a mapping");
       continue;
@@ -373,14 +459,14 @@ export function parseConfig(raw: unknown): Config {
     }
     offerings.push(offering);
   }
-  if (offerings.length && !currentOffering) fail("offerings", "mark one offering as current: true");
+  if (offerings.length && !currentOffering) fail(path("offerings"), "mark one offering as current: true");
 
   // --- webhooks -----------------------------------------------------------------------------
   const webhooks: WebhookConfig[] = [];
   const rawWebhooks = raw.webhooks ?? [];
-  if (!Array.isArray(rawWebhooks)) fail("webhooks", "must be a list");
+  if (!Array.isArray(rawWebhooks)) fail(path("webhooks"), "must be a list");
   for (const [i, w] of (Array.isArray(rawWebhooks) ? rawWebhooks : []).entries()) {
-    const at = `webhooks[${i}]`;
+    const at = path(`webhooks[${i}]`);
     if (!isObject(w)) {
       fail(at, "must be a mapping with id and url");
       continue;
@@ -430,8 +516,7 @@ export function parseConfig(raw: unknown): Config {
     });
   }
 
-  if (problems.length) throw new ConfigError(problems);
-  return { version: fnv1a(JSON.stringify(raw)), apps, entitlements, offerings, currentOffering, keys, webhooks };
+  return { id: projectId, name, version: fnv1a(JSON.stringify(raw)), apps, entitlements, offerings, currentOffering, webhooks };
 }
 
 /** FNV-1a, 32-bit, hex. Synchronous, so the config can be versioned at module load. */
@@ -457,7 +542,7 @@ function allowOnly(obj: Raw, allowed: string[], at: string, fail: (path: string,
 // --- lookups ------------------------------------------------------------------------------
 
 /** Entitlement IDs granted by a purchase of productId (and base plan) in app. */
-export function entitlementsFor(config: Config, appId: string, productId: string, basePlanId: string | null): string[] {
+export function entitlementsFor(config: ProjectConfig, appId: string, productId: string, basePlanId: string | null): string[] {
   return config.entitlements
     .filter((e) =>
       (e.products.get(appId) ?? []).some(
@@ -465,4 +550,10 @@ export function entitlementsFor(config: Config, appId: string, productId: string
       ),
     )
     .map((e) => e.id);
+}
+
+/** The project an app belongs to. */
+export function projectOfApp(config: Config, appId: string): ProjectConfig | undefined {
+  const app = config.apps.get(appId);
+  return app ? config.projects.get(app.projectId) : undefined;
 }

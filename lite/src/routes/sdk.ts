@@ -102,8 +102,8 @@ sdk.use("*", async (c, next) => {
   await next();
 });
 
-// The key identifies the caller. A public SDK key identifies the app (and so the store). A secret
-// key identifies a server, which may only read customers.
+// The key identifies the caller and its project. A public SDK key identifies the app (and so the
+// store and project). A secret key identifies a server, which may only read its project's customers.
 sdk.use("*", async (c, next) => {
   const key = bearer(c);
   if (key.startsWith(SECRET_KEY_PREFIX)) {
@@ -117,14 +117,19 @@ sdk.use("*", async (c, next) => {
     if (c.req.method !== "GET" || !/^\/v1\/subscribers\/[^/]+$/.test(c.req.path)) {
       return error(c, 403, INVALID_API_KEY, "Secret keys can only read customers: GET /v1/subscribers/{app_user_id}.");
     }
+    const project = c.get("config").projects.get(secret.projectId);
+    if (!project) return error(c, 401, INVALID_API_KEY, "This key's project no longer exists.");
     c.set("secretKey", secret);
+    c.set("project", project);
     const touch = touchSecretKey(c.env.DB, secret);
     if (touch) c.executionCtx.waitUntil(touch.run());
     return next();
   }
-  const app = key ? c.get("deps").config.keys.get(key) : undefined;
+  const config = c.get("config");
+  const app = key ? config.keys.get(key) : undefined;
   if (!app) return error(c, 401, INVALID_API_KEY, "Invalid API key.");
   c.set("app", app);
+  c.set("project", config.projects.get(app.projectId)!);
   await next();
 });
 
@@ -150,7 +155,7 @@ sdk.use("*", async (c, next) => {
 sdk.get("/subscribers/:id", async (c) => {
   const secret = c.get("secretKey");
   if (secret) return serverCustomerInfo(c, c.req.param("id"));
-  const { body, etag } = await readCustomerInfo(c.env.DB, c.get("deps").config, c.req.param("id"), {
+  const { body, etag } = await readCustomerInfo(c.env.DB, c.get("project"), c.req.param("id"), {
     requestStore: c.get("app").store,
   });
   if (etag) c.header("ETag", etag);
@@ -166,7 +171,7 @@ async function serverCustomerInfo(c: Ctx, appUserId: string) {
   const secret = c.get("secretKey")!;
   if (!secret.scopes.has("customers:read")) return error(c, 403, INVALID_API_KEY, "This key lacks the customers:read scope.");
   const db = c.env.DB;
-  const { body, customerId } = await readCustomerInfo(db, c.get("deps").config, appUserId);
+  const { body, customerId } = await readCustomerInfo(db, c.get("project"), appUserId);
   const attributes = customerId ? await readAttributes(db, customerId) : {};
   const subscriber = { ...body.subscriber, subscriber_attributes: attributes };
   const { last_seen: _lastSeen, ...stable } = subscriber;
@@ -222,7 +227,8 @@ async function recordForCustomer(
   extraWrites: D1PreparedStatement[] = [],
 ) {
   const db = c.env.DB;
-  const customer = await ensureCustomer(db, appUserId);
+  const project = c.get("project");
+  const customer = await ensureCustomer(db, project.id, appUserId);
   if (attributes.size) await enforceCustomLimit(db, customer.id, attributes);
   const chains = new Map(transactions.map((t) => [t.original_transaction_id, t]));
   const store = transactions[0]?.store;
@@ -231,7 +237,8 @@ async function recordForCustomer(
   const writes: D1PreparedStatement[] = [];
   const merged = new Set<string>();
   for (const owner of owners.values()) {
-    if (owner.id !== customer.id && owner.anonymousOnly && !merged.has(owner.id)) {
+    // A purchase chain belongs to one app, so its owner is always in this project; never merge across projects.
+    if (owner.id !== customer.id && owner.anonymousOnly && owner.projectId === customer.projectId && !merged.has(owner.id)) {
       merged.add(owner.id);
       writes.push(...mergeCustomers(db, owner.id, customer.id));
     }
@@ -248,7 +255,7 @@ async function recordForCustomer(
   // Webhook events, in the same batch: purchase events for recent transactions, and TRANSFER
   // when a named user loses a purchase to this customer.
   const eventIds: string[] = [];
-  const { config } = c.get("deps");
+  const config = project;
   const app = c.get("app");
   if (config.webhooks.length && transactions.length) {
     const now = Date.now();
@@ -291,10 +298,10 @@ async function recordForCustomer(
   }
 
   if (writes.length) await db.batch(writes);
-  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
+  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, c.get("config"), c.get("deps").fetch ?? fetch, eventIds));
   // Customers who lost a purchase get fresh snapshots in the background.
   const others = [...affected].filter((id) => id !== customer.id && !merged.has(id));
-  if (others.length) c.executionCtx.waitUntil(Promise.all(others.map((id) => refreshSnapshot(db, config, id))));
+  if (others.length) c.executionCtx.waitUntil(Promise.all(others.map((id) => refreshSnapshot(db, c.get("config"), id))));
   return customer.id;
 }
 
@@ -306,7 +313,8 @@ sdk.post("/subscribers/identify", async (c) => {
   if (!current || !next) return error(c, 400, BAD_REQUEST, "app_user_id and new_app_user_id are required.");
 
   const db = c.env.DB;
-  const [from, to] = await Promise.all([findCustomer(db, current), findCustomer(db, next)]);
+  const projectId = c.get("project").id;
+  const [from, to] = await Promise.all([findCustomer(db, projectId, current), findCustomer(db, projectId, next)]);
   let created = false;
   let customerId: string;
   if (to) {
@@ -315,11 +323,11 @@ sdk.post("/subscribers/identify", async (c) => {
     customerId = to.id;
   } else if (from && isAnonymous(current)) {
     // A new ID for an anonymous user who already exists: alias it, keeping their purchases.
-    await addAlias(db, next, from.id).run();
+    await addAlias(db, projectId, next, from.id).run();
     customerId = from.id;
     created = true;
   } else {
-    customerId = (await ensureCustomer(db, next)).id;
+    customerId = (await ensureCustomer(db, projectId, next)).id;
     created = true;
   }
   return c.json(await freshCustomerInfo(c, customerId, next), created ? 201 : 200);
@@ -329,7 +337,7 @@ sdk.post("/subscribers/identify", async (c) => {
 sdk.post("/subscribers/:id/alias", (c) => c.json({}));
 
 sdk.get("/subscribers/:id/offerings", (c) => {
-  const { config } = c.get("deps");
+  const config = c.get("project");
   const app = c.get("app");
   return c.json({
     current_offering_id: config.currentOffering,
@@ -356,7 +364,7 @@ sdk.get("/subscribers/:id/offerings", (c) => {
 
 // Lets the SDK compute entitlements offline when the server is down.
 sdk.get("/product_entitlement_mapping", (c) => {
-  const { config } = c.get("deps");
+  const config = c.get("project");
   const app = c.get("app");
   const mapping: Record<string, { product_identifier: string; base_plan_id: string | null; entitlements: string[] }> = {};
   const add = (productId: string, basePlanId: string | null, entitlement: string) => {
@@ -384,7 +392,7 @@ sdk.post("/subscribers/:id/attributes", async (c) => {
   const { updates, errors } = parseAttributes(body.attributes);
   if (updates.size) {
     const db = c.env.DB;
-    const customer = await ensureCustomer(db, c.req.param("id"));
+    const customer = await ensureCustomer(db, c.get("project").id, c.req.param("id"));
     errors.push(...(await enforceCustomLimit(db, customer.id, updates)));
     if (updates.size) await writeAttributes(db, customer.id, updates).run();
   }
@@ -408,7 +416,7 @@ sdk.post("/subscribers/:id/intro_eligibility", async (c) => {
       // A malformed receipt just means we know less; the answer may be null.
     }
   }
-  const { transactions } = await loadCustomer(c.env.DB, c.req.param("id"));
+  const { transactions } = await loadCustomer(c.env.DB, c.get("project").id, c.req.param("id"));
   return c.json(
     await introEligibility({
       db: c.env.DB,
@@ -616,13 +624,13 @@ async function googleReceipt(c: Ctx, body: ReceiptBody, app: AppConfig): Promise
  * if the rebuild fails (the snapshot is then simply missing until the next write or backfill).
  */
 async function freshCustomerInfo(c: Ctx, customerId: string, appUserId: string) {
-  const { config } = c.get("deps");
+  const config = c.get("project");
   const requestStore = c.get("app").store;
   try {
-    const fresh = await refreshSnapshot(c.env.DB, config, customerId);
+    const fresh = await refreshSnapshot(c.env.DB, c.get("config"), customerId);
     if (fresh) {
       c.header("ETag", fresh.etag);
-      return renderCustomerInfo(fresh.snapshot, config, { requestStore });
+      return renderCustomerInfo(fresh.snapshot, fresh.project, { requestStore });
     }
   } catch (err) {
     console.error("Snapshot rebuild failed; serving a computed CustomerInfo.", err);

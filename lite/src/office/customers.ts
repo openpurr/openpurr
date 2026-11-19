@@ -1,5 +1,5 @@
-// Finding customers: the newest first, or a search by app user ID prefix, email or store
-// transaction ID. Used by the admin API (the dashboard's Customers page) and the MCP server.
+// Finding a project's customers: the newest first, or a search by app user ID prefix, email or
+// store transaction ID. Used by the admin API (the dashboard's Customers page) and the MCP server.
 
 // The customer list: newest first, or a search. Every query reads through an index and stops at the
 // page size, because D1's free plan counts rows read per day. D1 also allows at most 100 bound
@@ -32,6 +32,7 @@ export interface CustomerList {
 
 export async function searchCustomers(
   db: D1Database,
+  projectId: string,
   apps: string[] | null,
   opts: { q?: string; purchasesOnly?: boolean; limit?: number; before?: string | null } = {},
 ): Promise<CustomerList> {
@@ -54,7 +55,9 @@ export async function searchCustomers(
   if (q) {
     // An app user ID prefix (any alias), an exact email, or an exact store transaction ID.
     const lookups = [
-      db.prepare("SELECT customer_id FROM customer_alias WHERE app_user_id >= ? AND app_user_id < ? ORDER BY app_user_id LIMIT ?").bind(q, q + MAX_STRING, limit),
+      db
+        .prepare("SELECT customer_id FROM customer_alias WHERE project_id = ? AND app_user_id >= ? AND app_user_id < ? ORDER BY app_user_id LIMIT ?")
+        .bind(projectId, q, q + MAX_STRING, limit),
       db
         .prepare(
           `SELECT o.customer_id FROM store_transaction t JOIN purchase_owner o ON o.store = t.store AND o.original_transaction_id = t.original_transaction_id
@@ -70,8 +73,11 @@ export async function searchCustomers(
     const ids = [...new Set(found.flatMap((r) => r.results.map((x) => x.customer_id)))].slice(0, limit);
     if (!ids.length) return { customers: [], next_before: null };
     ({ results: rows } = await db
-      .prepare(`SELECT c.id, c.app_user_id, c.first_seen FROM customer c WHERE c.id IN (${ids.map(() => "?").join(", ")}) AND ${owned} ORDER BY c.first_seen DESC, c.id DESC`)
-      .bind(...ids, ...ownedBinds)
+      .prepare(
+        `SELECT c.id, c.app_user_id, c.first_seen FROM customer c
+         WHERE c.id IN (${ids.map(() => "?").join(", ")}) AND c.project_id = ? AND ${owned} ORDER BY c.first_seen DESC, c.id DESC`,
+      )
+      .bind(...ids, projectId, ...ownedBinds)
       .all<CustomerRow>());
   } else {
     // Newest first. The cursor is "first_seen:id" of the last row on the previous page.
@@ -84,8 +90,11 @@ export async function searchCustomers(
       cursor = [at, before.slice(i + 1)];
     }
     ({ results: rows } = await db
-      .prepare(`SELECT c.id, c.app_user_id, c.first_seen FROM customer c WHERE ${cursor ? "(c.first_seen, c.id) < (?, ?)" : "1"} AND ${owned} ORDER BY c.first_seen DESC, c.id DESC LIMIT ?`)
-      .bind(...(cursor ?? []), ...ownedBinds, limit)
+      .prepare(
+        `SELECT c.id, c.app_user_id, c.first_seen FROM customer c
+         WHERE c.project_id = ? AND ${cursor ? "(c.first_seen, c.id) < (?, ?)" : "1"} AND ${owned} ORDER BY c.first_seen DESC, c.id DESC LIMIT ?`,
+      )
+      .bind(projectId, ...(cursor ?? []), ...ownedBinds, limit)
       .all<CustomerRow>());
     if (rows.length === limit) nextBefore = `${rows.at(-1)!.first_seen}:${rows.at(-1)!.id}`;
   }

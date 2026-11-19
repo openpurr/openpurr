@@ -109,8 +109,9 @@ notifications.post("/apple", async (c) => {
   // Webhook events, in the same batch as the ledger change. A purchase nobody owns yet has no
   // app user to report; the SDK's POST /v1/receipts produces its purchase event when it arrives.
   const eventIds: string[] = [];
-  const { config } = c.get("deps");
-  if (row && app && config.webhooks.length) {
+  const all = c.get("config");
+  const config = app ? all.projects.get(app.projectId) : undefined;
+  if (row && app && config?.webhooks.length) {
     const owner = await purchaseOwner(db, "app_store", row.original_transaction_id);
     const previous =
       notification.notificationType === "DID_RENEW" || notification.subtype === "RESUBSCRIBE"
@@ -160,18 +161,18 @@ notifications.post("/apple", async (c) => {
   // One D1 batch is one transaction: the ledger update, its webhook events and the "processed"
   // record land together.
   await db.batch(writes);
-  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, config, c.get("deps").fetch ?? fetch, eventIds));
+  if (eventIds.length) c.executionCtx.waitUntil(deliverNow(c.env, all, c.get("deps").fetch ?? fetch, eventIds));
   // Rebuild the owner's snapshot in the background; until then, reads compute it.
   if (chain) {
     c.executionCtx.waitUntil(
-      purchaseOwner(db, "app_store", String(chain)).then((owner) => (owner ? refreshSnapshot(db, config, owner.id) : null)),
+      purchaseOwner(db, "app_store", String(chain)).then((owner) => (owner ? refreshSnapshot(db, all, owner.id) : null)),
     );
   }
   return reply(c, 200, "OK");
 });
 
 function appForBundle(c: Ctx, bundleId: string): AppConfig | undefined {
-  for (const app of c.get("deps").config.apps.values()) {
+  for (const app of c.get("config").apps.values()) {
     if (app.store === "app_store" && app.bundleId === bundleId) return app;
   }
   return undefined;
