@@ -102,13 +102,16 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
     </div>
     <div class="wrap">
       <figure class="shot">
-        <img
-          src="/dashboard.png"
-          width="2880"
-          height="2000"
-          alt="The openpurr Lite dashboard, showing 90 days of active subscriptions, new customers, trials, refunds and non-subscription purchases"
-          decoding="async"
-        />
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="/dashboard-dark.png" />
+          <img
+            src="/dashboard.png"
+            width="2880"
+            height="2000"
+            alt="The openpurr Lite dashboard, showing 12 months of MRR movement, active subscriptions, churn, new customers, new trials and active trials"
+            decoding="async"
+          />
+        </picture>
       </figure>
     </div>
   </section>
