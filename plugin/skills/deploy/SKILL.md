@@ -24,7 +24,7 @@ Check, and tell the user what's missing:
 
 Run these one at a time, and stop to fix anything that fails. Never print or echo secret values.
 
-1. **Create the database.** `npx wrangler d1 create openpurr`. Copy the `database_id` it prints into `lite/wrangler.jsonc`. It appears once per environment (top level, `office`, `bench`); replace every occurrence.
+1. **Create the database.** `npx wrangler d1 create openpurr`. Nothing to copy: `wrangler.jsonc` finds the database by name. If wrangler offers to add the binding or writes a `database_id` into `wrangler.jsonc`, decline or discard that change.
 2. **Write the config.** `cp openpurr.config.example.yaml openpurr.config.yaml`, then edit it with the user: their apps (bundle ID, package name), products, entitlements and offerings. Generate each SDK key as `appl_` or `goog_` plus at least 32 random characters, for example `node -e "console.log('appl_' + require('crypto').randomBytes(24).toString('base64url'))"`. SDK keys ship inside the app, so they're identifiers, not secrets. Store credentials never go in this file. The deploy validates it and says what's wrong.
 3. **Apply the migrations.** `pnpm db:migrate:remote`.
 4. **Set the operator secret** on the back office. It signs sessions and peppers passwords. Ask the user to run it, so the value never passes through this conversation:
@@ -35,6 +35,17 @@ Run these one at a time, and stop to fix anything that fails. Never print or ech
 7. **Check the setup.** See "Check and connect" below.
 
 Then set up the stores: the `app-store-setup` and `play-setup` skills. Then point the app at the SDK Worker: the `integrate` skill.
+
+## Deploy from GitHub Actions (optional)
+
+Instead of deploying from a laptop, a fork of the repo can deploy itself on every push to `main` with `.github/workflows/lite-deploy.yml`. It applies migrations, then deploys both Workers. Do the first deploy above first (or at least steps 1, 2 and 4), then in the fork's Settings → Secrets and variables → Actions, add:
+
+- `CLOUDFLARE_API_TOKEN`: a token with Workers Scripts: Edit and D1: Edit (plus Zone: Workers Routes: Edit and DNS: Edit for custom domains).
+- `CLOUDFLARE_ACCOUNT_ID`.
+- `OPENPURR_CONFIG_YAML`: the whole contents of `openpurr.config.yaml`, which isn't committed.
+- Optional: `OPENPURR_WORKER_NAME`, `OPENPURR_D1_DATABASE_NAME`, `OPENPURR_D1_DATABASE_ID`, `OPENPURR_SDK_DOMAIN`, `OPENPURR_OFFICE_DOMAIN` (see `lite/scripts/deploy-config.mjs`).
+
+Worker secrets such as `OPERATOR_SECRET` stay in Cloudflare; deploys don't change them. Run the workflow once by hand (Actions → Deploy Lite → Run workflow) to check the secrets.
 
 ## Custom domains (recommended)
 
