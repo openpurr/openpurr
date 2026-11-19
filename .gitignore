@@ -24,3 +24,6 @@ lite/src/config.generated.json
 
 # Per-deployment wrangler config, written by lite/scripts/deploy-config.mjs
 lite/wrangler.deploy.json
+
+# Database exports from `pnpm db:backup`: customer data, never commit them
+lite/backups/

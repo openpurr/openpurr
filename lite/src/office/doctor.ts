@@ -21,6 +21,8 @@ export interface Check {
 }
 
 const DAY = 864e5;
+/** Cloudflare's free plan caps each D1 database at 500 MB (Workers Paid: 10 GB). Writes fail past it. */
+export const FREE_PLAN_DB_BYTES = 500e6;
 type Ctx = Context<AppEnv>;
 const secretSet = (c: Ctx, name: string) => typeof (c.env as unknown as Record<string, unknown>)[name] === "string" && !!(c.env as unknown as Record<string, string>)[name];
 
@@ -31,7 +33,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
   const checks: Check[] = [];
   const add = (check: Check) => checks.push(check);
 
-  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp] = await Promise.all([
+  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp, dbBytes] = await Promise.all([
     db.prepare("SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 1").first<{ name: string }>().catch(() => null),
     db
       .prepare("SELECT app_id, store, max(received_at) AS last FROM store_notification WHERE received_at > ? AND app_id IS NOT NULL GROUP BY app_id, store")
@@ -42,6 +44,12 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
     db.prepare("SELECT count(*) AS n FROM webhook_delivery WHERE status = 'failed' AND created_at > ?").bind(now - DAY).first<{ n: number }>(),
     db.prepare("SELECT count(*) AS n, sum(totp_enabled) AS totp FROM operator WHERE role = 'owner' AND disabled_at IS NULL").first<{ n: number; totp: number | null }>(),
     requireTotpForEveryone(db),
+    // Every D1 result reports the database's size; a no-op query reads no rows.
+    db
+      .prepare("SELECT 1")
+      .run()
+      .then((r) => (r.meta as { size_after?: number }).size_after ?? null)
+      .catch(() => null),
   ]);
 
   // Database schema.
@@ -51,6 +59,21 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
     add({ id: "database", title: "Database", status: "fail", message: `Migrations are behind: the newest applied is ${applied ?? "none"}, this version needs ${EXPECTED_MIGRATION}.`, fix: "Run: pnpm db:migrate:remote" });
   } else {
     add({ id: "database", title: "Database", status: "warn", message: `The database (${applied}) is newer than this Worker expects (${EXPECTED_MIGRATION}).`, fix: "Deploy the latest code: pnpm run deploy && pnpm deploy:office" });
+  }
+
+  // Database size against the free plan's limit, with time to act before writes start failing.
+  if (typeof dbBytes === "number") {
+    const share = dbBytes / FREE_PLAN_DB_BYTES;
+    const size = `${(dbBytes / 1e6).toFixed(1)} MB of the free plan's 500 MB per database`;
+    if (share >= 0.75) {
+      add({
+        id: "storage",
+        title: "Database size",
+        status: share >= 0.9 ? "fail" : "warn",
+        message: `${size} (${Math.round(share * 100)}%). On the free plan, writes fail at the limit, and purchases stop being recorded. On Workers Paid the limit is 10 GB; ignore this if you're on it.`,
+        fix: "Take a backup (pnpm db:backup), then move to Workers Paid in the Cloudflare dashboard, or delete data you no longer need.",
+      });
+    } else add({ id: "storage", title: "Database size", status: "ok", message: `${size}.` });
   }
 
   // Custom domain: proxyURL and store notification URLs should never point at workers.dev.

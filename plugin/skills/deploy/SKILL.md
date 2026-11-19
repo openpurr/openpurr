@@ -20,6 +20,10 @@ Check, and tell the user what's missing:
 - A Cloudflare account, signed in: `npx wrangler whoami`. If not signed in, ask the user to run `! npx wrangler login` themselves (it opens a browser).
 - A clone of github.com/openpurr/openpurr, then `pnpm install` at the repo root.
 
+## Quick path: guided setup
+
+`pnpm run setup` (in `lite/`) does the whole first deploy below in one go: it asks for the bundle ID and package name, writes `openpurr.config.yaml` with fresh SDK keys, creates the database, applies migrations, deploys both Workers, generates and sets `OPERATOR_SECRET` without printing it, and creates the first owner. It's safe to rerun; finished steps are skipped. It asks questions, so ask the user to run it themselves: `! cd lite && pnpm run setup`. Then go to "Check and connect". Use the steps below when the user wants to see each one, or when the setup stops with an error.
+
 ## First deploy
 
 Run these one at a time, and stop to fix anything that fails. Never print or echo secret values.
@@ -62,7 +66,14 @@ Walk through each failing or warning check and apply its fix.
 
 ## Upgrading
 
-After pulling a new version: `pnpm install`, then `pnpm db:migrate:remote`, then `pnpm run deploy && pnpm deploy:office`. Migrations always go first: the new code expects the new tables. `openpurr doctor` reports migrations that are behind (Database check).
+After pulling a new version: `pnpm db:backup`, `pnpm install`, then `pnpm db:migrate:remote`, then `pnpm run deploy && pnpm deploy:office`. Migrations always go first: the new code expects the new tables. `openpurr doctor` reports migrations that are behind (Database check).
+
+## Backups
+
+- **Time Travel:** D1 keeps point-in-time history, 7 days on the free plan and 30 on Workers Paid. `npx wrangler d1 time-travel restore openpurr --timestamp=<ISO time>` overwrites the database in place and prints a bookmark that undoes it. Confirm with the user before restoring.
+- **File backups:** `pnpm db:backup` exports everything to `lite/backups/` (git-ignored). The file holds customer data; tell the user to keep it private and encrypted, never in a repo. Suggest one before every upgrade and on a regular schedule.
+- **Restoring a file:** into a new database (`npx wrangler d1 create openpurr-restored`, then `npx wrangler d1 execute openpurr-restored --remote --file <file>`), then point the deployment at it with `OPENPURR_D1_DATABASE_NAME`, or by changing `database_name` in `wrangler.jsonc`, and deploy.
+- **Size:** `openpurr doctor` warns at 75% of the free plan's 500 MB per database.
 
 ## When a deploy fails
 

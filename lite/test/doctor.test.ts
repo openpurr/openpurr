@@ -34,6 +34,8 @@ describe("setup checks", () => {
     const r = await doctor();
     expect(r.byId.database).toMatchObject({ status: "ok" });
     expect(r.byId.domain).toMatchObject({ status: "ok" }); // not workers.dev
+    expect(r.byId.storage).toMatchObject({ status: "ok" });
+    expect(r.byId.storage!.message).toMatch(/MB of the free plan's 500 MB/);
     // The test config: iOS without an In-App Purchase key; Android accepting unverified purchases.
     expect(r.byId["app:ios:server-api"]).toMatchObject({ status: "warn" });
     expect(r.byId["app:android:play-api"]).toMatchObject({ status: "warn" });
