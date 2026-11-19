@@ -22,6 +22,7 @@ const usdWhole = new Intl.NumberFormat("en-US", { style: "currency", currency: "
 const countFull = new Intl.NumberFormat("en-US");
 
 function compact(n, unit) {
+  if (unit === "percent") return `${trim(n)}%`;
   const abs = Math.abs(n);
   const sign = n < 0 ? "-" : "";
   const prefix = unit === "usd" ? "$" : "";
@@ -29,12 +30,13 @@ function compact(n, unit) {
   if (abs >= 1e4) return `${sign}${prefix}${trim(abs / 1e3)}K`;
   return unit === "usd" ? usdWhole.format(n) : countFull.format(n);
 }
-const trim = (n) => (n >= 100 ? Math.round(n) : Math.round(n * 10) / 10).toString();
+const trim = (n) => (Math.abs(n) >= 100 ? Math.round(n) : Math.round(n * 10) / 10).toString();
 
 /** A value for display: full precision for money in tooltips, compact for headlines. */
 export function formatValue(n, unit, { compact: short = false, whole = false } = {}) {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   if (short) return compact(n, unit);
+  if (unit === "percent") return `${n.toFixed(1)}%`;
   if (whole && unit === "usd" && Math.abs(n) >= 1000) return usdWhole.format(n);
   return unit === "usd" ? usdFull.format(n) : countFull.format(n);
 }
@@ -68,7 +70,11 @@ function niceTicks(min, max, count = 4) {
 /**
  * Draws a chart into `host` and keeps it up to date with the host's width and the theme.
  * opts: { points: [{date, values}], series: [{key, label}], unit, interval,
- *         form: "column" | "line", height, extra: (point) => [[label, text], ...] }
+ *         form: "column" | "line" | "stacked", height, extra: (point) => [[label, text], ...],
+ *         colors: CSS variable names per series (default --chart-1, --chart-2, ...) }
+ * "stacked": columns with positive series stacked up from zero and negative ones down, in series
+ * order, separated by a 2px surface gap; only each stack's outermost end is rounded.
+ * A null value in a line is a gap (no data for that period), not zero.
  */
 export function renderChart(host, opts) {
   host.classList.add("chart");
@@ -81,10 +87,16 @@ export function renderChart(host, opts) {
     const width = Math.max(plot.clientWidth, 240);
     const height = opts.height ?? 220;
     const style = getComputedStyle(host);
-    const color = (i) => style.getPropertyValue(`--chart-${i + 1}`).trim() || "#7050e8";
+    const color = (i) => style.getPropertyValue(opts.colors?.[i] ?? `--chart-${i + 1}`).trim() || "#7050e8";
     const surface = style.getPropertyValue("--app-surface").trim() || "#ffffff";
     const { points, series, unit } = opts;
-    const values = points.flatMap((p) => series.map((s) => p.values[s.key] ?? 0));
+    const values =
+      opts.form === "stacked"
+        ? points.flatMap((p) => {
+            const vs = series.map((s) => p.values[s.key] ?? 0);
+            return [vs.filter((v) => v > 0).reduce((a, b) => a + b, 0), vs.filter((v) => v < 0).reduce((a, b) => a + b, 0)];
+          })
+        : points.flatMap((p) => series.map((s) => p.values[s.key] ?? 0));
     const ticks = niceTicks(Math.min(0, ...values), Math.max(0, ...values));
     const yMin = ticks[0];
     const yMax = ticks.at(-1);
@@ -116,7 +128,41 @@ export function renderChart(host, opts) {
       root.append(label);
     });
 
-    if (opts.form === "column") {
+    /** A bar from v0 to v1 (data units), rounded at the v1 end when `round`. */
+    const bar = (i, w, v0, v1, round) => {
+      const x0 = x(i) - w / 2;
+      const up = v1 > v0;
+      const a = y(v0); // the end nearest zero
+      const b = y(v1); // the data end
+      const r = round ? Math.min(4, w / 2, Math.abs(a - b)) : 0;
+      return up
+        ? `M${x0},${a} V${b + r} Q${x0},${b} ${x0 + r},${b} H${x0 + w - r} Q${x0 + w},${b} ${x0 + w},${b + r} V${a} Z`
+        : `M${x0},${a} V${b - r} Q${x0},${b} ${x0 + r},${b} H${x0 + w - r} Q${x0 + w},${b} ${x0 + w},${b - r} V${a} Z`;
+    };
+
+    if (opts.form === "stacked") {
+      const w = Math.max(1, Math.min(24, band - 2, band * 0.7));
+      const gap = 2 / ((ih / (yMax - yMin)) || 1); // 2px, in data units
+      points.forEach((p, i) => {
+        const vs = series.map((s) => p.values[s.key] ?? 0);
+        const lastUp = vs.findLastIndex((v) => v > 0);
+        const lastDown = vs.findLastIndex((v) => v < 0);
+        let up = 0;
+        let down = 0;
+        vs.forEach((v, si) => {
+          if (!v) return;
+          const start = v > 0 ? up : down;
+          const end = start + v;
+          // A surface gap separates a segment from the one before it in the same stack.
+          const from = start === 0 ? start : start + (v > 0 ? gap : -gap);
+          if (Math.abs(end - from) > 0 && Math.sign(end - from) === Math.sign(v)) {
+            root.append(svg("path", { d: bar(i, w, from, end, si === (v > 0 ? lastUp : lastDown)), fill: color(si), class: "chart-column", "data-i": i }));
+          }
+          if (v > 0) up = end;
+          else down = end;
+        });
+      });
+    } else if (opts.form === "column") {
       // One series per chart here; several would be grouped side by side.
       const s = series[0];
       const w = Math.max(1, Math.min(24, band - 2, band * 0.7));
@@ -136,15 +182,17 @@ export function renderChart(host, opts) {
       });
     } else {
       series.forEach((s, si) => {
-        const coords = points.map((p, i) => [x(i), y(p.values[s.key] ?? 0)]);
-        if (!coords.length) return;
-        const line = coords.map(([cx, cy], i) => `${i ? "L" : "M"}${cx.toFixed(1)},${cy.toFixed(1)}`).join(" ");
-        if (series.length === 1) {
+        // Null values are gaps: the line breaks there.
+        const coords = points.map((p, i) => (p.values[s.key] === null || p.values[s.key] === undefined ? null : [x(i), y(p.values[s.key])]));
+        const drawn = coords.filter(Boolean);
+        if (!drawn.length) return;
+        const line = coords.map((c, i) => (c ? `${i && coords[i - 1] ? "L" : "M"}${c[0].toFixed(1)},${c[1].toFixed(1)}` : "")).join(" ");
+        if (series.length === 1 && drawn.length === coords.length) {
           root.append(svg("path", { d: `${line} L${coords.at(-1)[0]},${y(Math.max(0, yMin))} L${coords[0][0]},${y(Math.max(0, yMin))} Z`, fill: color(si), "fill-opacity": 0.1, stroke: "none" }));
         }
         root.append(svg("path", { d: line, fill: "none", stroke: color(si), "stroke-width": 2, "stroke-linejoin": "round", "stroke-linecap": "round" }));
         // The end point, marked.
-        const [ex, ey] = coords.at(-1);
+        const [ex, ey] = drawn.at(-1);
         root.append(svg("circle", { cx: ex, cy: ey, r: 4, fill: color(si), stroke: surface, "stroke-width": 2 }));
       });
     }
@@ -152,7 +200,7 @@ export function renderChart(host, opts) {
     // Hover layer.
     const cross = svg("line", { y1: m.top, y2: m.top + ih, class: "chart-cross", visibility: "hidden" });
     const dots = series.map((_, si) => svg("circle", { r: 4, fill: color(si), stroke: surface, "stroke-width": 2, visibility: "hidden" }));
-    root.append(cross, ...(opts.form === "column" ? [] : dots));
+    root.append(cross, ...(opts.form === "line" ? dots : []));
     const hit = svg("rect", { x: m.left, y: m.top, width: iw, height: ih, fill: "transparent" });
     root.append(hit);
 
@@ -164,17 +212,18 @@ export function renderChart(host, opts) {
       cross.setAttribute("x2", x(i));
       cross.setAttribute("visibility", "visible");
       dots.forEach((dot, si) => {
+        const v = p.values[series[si].key];
         dot.setAttribute("cx", x(i));
-        dot.setAttribute("cy", y(p.values[series[si].key] ?? 0));
-        dot.setAttribute("visibility", "visible");
+        dot.setAttribute("cy", y(v ?? 0));
+        dot.setAttribute("visibility", v === null || v === undefined ? "hidden" : "visible");
       });
       for (const col of root.querySelectorAll(".chart-column")) col.classList.toggle("dim", Number(col.dataset.i) !== i);
       tooltip.replaceChildren(
         h("div", { class: "chart-tooltip-title" }, formatPeriod(p.date, opts.interval, { long: true })),
         ...series.map((s, si) =>
-          h("div", { class: "chart-tooltip-row" }, h("span", { class: "chart-swatch", style: { background: color(si) } }), h("span", null, s.label), h("strong", null, formatValue(p.values[s.key] ?? 0, unit))),
+          h("div", { class: "chart-tooltip-row" }, h("span", { class: "chart-swatch", style: { background: color(si) } }), h("span", null, s.label), h("strong", null, formatValue(p.values[s.key], unit))),
         ),
-        ...(opts.extra?.(p) ?? []).map(([label, text]) => h("div", { class: "chart-tooltip-row muted" }, h("span", { class: "chart-swatch empty" }), h("span", null, label), h("span", null, text))),
+        ...(opts.extra?.(p) ?? []).map(([label, text]) => h("div", { class: "chart-tooltip-row muted" }, h("span", { class: "chart-swatch chart-swatch-blank" }), h("span", null, label), h("span", null, text))),
       );
       tooltip.hidden = false;
       const tw = tooltip.offsetWidth;

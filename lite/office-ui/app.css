@@ -48,6 +48,11 @@
      surface in each theme (colorblind separation and contrast). */
   --chart-1: #7050e8;
   --chart-2: #eb6834;
+  /* Movement charts (also validated, in stacking order: expansion, reactivation, new | contraction, churn). */
+  --chart-blue: #2a78d6;
+  --chart-aqua: #1baf7a;
+  --chart-yellow: #eda100;
+  --chart-magenta: #e87ba4;
 
   --row-py: 12px;
   --card-pad: 24px;
@@ -86,6 +91,10 @@
   --app-table-head: #1d2023;
   --chart-1: #9179ff;
   --chart-2: #d95926;
+  --chart-blue: #3987e5;
+  --chart-aqua: #199e70;
+  --chart-yellow: #c98500;
+  --chart-magenta: #d55181;
   color-scheme: dark;
 }
 
@@ -545,6 +554,7 @@ h1, h2, h3, p { margin: 0; }
 /* ===== Charts ===== */
 .filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 20px; }
 .select-auto { width: auto; height: 30px; padding: 0 10px; font-size: 12px; }
+.filter-status { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; white-space: nowrap; }
 .stat-figure { font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.15; color: var(--app-text); }
 .stat-delta.up { color: var(--app-success); }
 .stat-delta.down { color: var(--app-danger); }
@@ -578,8 +588,17 @@ h1, h2, h3, p { margin: 0; }
 .chart-tooltip-row > :last-child { margin-left: auto; padding-left: 14px; font-variant-numeric: tabular-nums; }
 .chart-tooltip-row.muted { color: var(--app-text-muted); }
 .chart-swatch { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
-.chart-swatch.empty { background: transparent; }
+.chart-swatch-blank { background: transparent; }
 .chart-legend { display: flex; flex-wrap: wrap; gap: 14px; margin-bottom: 6px; font-size: 12px; color: var(--app-text-muted); }
 .chart-legend-item { display: inline-flex; align-items: center; gap: 6px; }
 .chart-notes p { margin: 0; }
 .table th.num, .table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Breakdown (Subscription status): one thin bar per category. */
+.breakdown { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px; }
+.breakdown-row { display: grid; grid-template-columns: minmax(140px, 220px) 1fr 64px; align-items: center; gap: 14px; font-size: 13px; }
+.breakdown-label { color: var(--app-text); }
+.breakdown-track { height: 16px; display: flex; align-items: center; }
+.breakdown-bar { display: block; height: 16px; min-width: 2px; background: var(--chart-1); border-radius: 0 4px 4px 0; }
+.breakdown-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--app-text); }
+@media (max-width: 560px) { .breakdown-row { grid-template-columns: 1fr 56px; } .breakdown-track { grid-column: 1 / -1; order: 3; } }

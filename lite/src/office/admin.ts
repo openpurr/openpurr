@@ -5,6 +5,7 @@
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
 import { readAttributes } from "../attributes";
+import type { AppConfig } from "../config";
 import type { AppEnv } from "../env";
 import { findCustomer, loadCustomer } from "../ledger";
 import { hashKey, SCOPES as SECRET_KEY_SCOPES } from "../secret-keys";
@@ -51,13 +52,18 @@ admin.get("/me", (c) => {
   return c.json({ operator: publicOperator(principal.operator), via: principal.via, permissions: [...principal.permissions] });
 });
 
+/** An app's products as charts name them: Google Play base plans separately ("pro:monthly"). */
+function chartProducts(app: AppConfig) {
+  return [...app.products.values()].flatMap((p) => (p.basePlans.length ? p.basePlans.map((b) => `${p.id}:${b}`) : [p.id]));
+}
+
 // --- apps (from openpurr.config.yaml) ------------------------------------------------------------
 
 admin.get("/apps", requirePermission("read"), (c) => {
   const principal = p(c);
   const apps = [...c.get("deps").config.apps.values()]
     .filter((a) => canSeeApp(principal, a.id))
-    .map((a) => ({ id: a.id, store: a.store, bundle_id: a.bundleId ?? null, package_name: a.packageName ?? null, products: a.products.size }));
+    .map((a) => ({ id: a.id, store: a.store, bundle_id: a.bundleId ?? null, package_name: a.packageName ?? null, products: chartProducts(a) }));
   return c.json({ apps });
 });
 
@@ -455,9 +461,15 @@ admin.get("/metrics/:chart", requirePermission("read"), async (c) => {
   const store = c.req.query("store") || undefined;
   if (store && store !== "app_store" && store !== "play_store") return bad(c, "store must be app_store or play_store.");
   const app = c.req.query("app") || undefined;
+  const product = c.req.query("product") || undefined;
+  if (product) {
+    const { config } = c.get("deps");
+    const known = [...config.apps.values()].some((a) => canSeeApp(principal, a.id) && (!app || a.id === app) && chartProducts(a).includes(product));
+    if (!known) return notFound(c, "Product");
+  }
   if (app && (!c.get("deps").config.apps.has(app) || !canSeeApp(principal, app))) return notFound(c, "App");
 
-  const result = await readChart(c.env.DB, c.req.param("chart"), { from, to: to > today ? today : to, interval, environment, store, app, apps: principal.apps });
+  const result = await readChart(c.env.DB, c.req.param("chart"), { from, to: to > today ? today : to, interval, environment, store, app, product, apps: principal.apps });
   if (!result) return notFound(c, "Chart");
   if (c.req.query("format") === "csv") {
     return c.body(chartCsv(result), 200, {

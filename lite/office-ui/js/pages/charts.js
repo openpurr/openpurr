@@ -22,10 +22,66 @@ const INTERVALS = [
   { value: "month", label: "Month" },
 ];
 
-/** How each chart draws, and what its tooltip adds beyond the plotted series. */
+/**
+ * How each chart draws: its form, series colors (CSS variables, checked with the dataviz palette
+ * validator in the order they stack), what its tooltip adds, and its headline number.
+ */
 const usd = (n) => formatValue(n, "usd");
+const count = (n) => formatValue(n, "count");
+const pct = (n) => formatValue(n, "percent");
+const signed = (n, unit) => `${n > 0 ? "+" : ""}${formatValue(n, unit, { compact: Math.abs(n) >= 1e5, whole: true })}`;
+const sum = (r, key) => r.points.reduce((n, p) => n + (p.values[key] ?? 0), 0);
+// One color per meaning across the movement charts: new purple, reactivation/conversion aqua,
+// expansion blue, contraction yellow, churn/expiry magenta.
+const C = { new: "--chart-1", second: "--chart-2", up: "--chart-aqua", expansion: "--chart-blue", contraction: "--chart-yellow", out: "--chart-magenta" };
+const rangeLabel = (f) => RANGES.find((x) => x.value === f.range).label.toLowerCase();
 const VIEW = {
   revenue: { form: "column", plot: ["net"], extra: (p) => [["Gross", usd(p.values.gross)], ["Refunded", usd(p.values.refunds)]] },
+  mrr_movement: {
+    form: "stacked",
+    colors: [C.new, C.up, C.expansion, C.contraction, C.out],
+    extra: (p) => [["Net change", usd(p.values.net)]],
+    headline: (r) => ({ text: signed(sum(r, "net"), "usd"), sub: (f) => `net change, ${rangeLabel(f)}` }),
+  },
+  subscription_movement: {
+    form: "stacked",
+    colors: [C.new, C.up, C.out],
+    extra: (p) => [["Net change", count(p.values.net)], ["Renewed", count(p.values.renewed)]],
+    headline: (r) => ({ text: signed(sum(r, "net"), "count"), sub: (f) => `net change, ${rangeLabel(f)}` }),
+  },
+  trial_movement: {
+    form: "stacked",
+    colors: [C.new, C.up, C.out],
+    extra: (p) => [["Cancelled", count(p.values.cancelled)], ["Conversion rate", pct(p.values.conversion_rate)]],
+    headline: (r) => {
+      const converted = -sum(r, "converted");
+      const ended = converted - sum(r, "expired");
+      return { text: ended ? pct(Math.round((converted / ended) * 1000) / 10) : "—", sub: (f) => `of ended trials converted, ${rangeLabel(f)}` };
+    },
+  },
+  churn: {
+    form: "line",
+    extra: (p) => [["Churned", count(p.values.churned)], ["Paying at start", count(p.values.paying_at_start)]],
+    headline: (r) => {
+      const rates = r.points.map((p) => p.values.rate).filter((v) => v !== null && v !== undefined);
+      return { text: rates.length ? pct(rates.reduce((a, b) => a + b, 0) / rates.length) : "—", sub: () => `average per ${r.interval}` };
+    },
+  },
+  refund_rate: {
+    form: "line",
+    extra: (p) => [["Refunds", `${count(p.values.refunds)} of ${count(p.values.transactions)}`], ["Of revenue", pct(p.values.amount_rate)]],
+    headline: (r) => {
+      const t = sum(r, "transactions");
+      return { text: t ? pct(Math.round((sum(r, "refunds") / t) * 1000) / 10) : "—", sub: (f) => `of purchases, ${rangeLabel(f)}` };
+    },
+  },
+  subscription_status: {
+    form: "breakdown",
+    headline: (r) => {
+      const access = r.categories.filter((c) => ["active", "cancelled", "trial", "grace"].includes(c.key)).reduce((n, c) => n + c.value, 0);
+      return { text: count(access), sub: () => "with access now" };
+    },
+  },
   mrr: { form: "line" },
   arr: { form: "line" },
   active_subscriptions: { form: "line" },
@@ -36,7 +92,18 @@ const VIEW = {
   refunds: { form: "column", extra: (p) => [["Amount", usd(p.values.amount)]] },
   non_subscription_purchases: { form: "column", extra: (p) => [["Revenue", usd(p.values.revenue)]] },
 };
-const OVERVIEW = ["revenue", "mrr", "active_subscriptions", "new_customers", "new_trials", "active_trials", "refunds", "non_subscription_purchases"];
+const OVERVIEW = [
+  "revenue",
+  "mrr",
+  "mrr_movement",
+  "active_subscriptions",
+  "churn",
+  "new_customers",
+  "new_trials",
+  "active_trials",
+  "refunds",
+  "non_subscription_purchases",
+];
 
 // ---- Filters (kept in the URL) ------------------------------------------------------------------
 
@@ -49,6 +116,7 @@ function readFilters() {
     environment: p.get("environment") === "sandbox" ? "sandbox" : "production",
     app: p.get("app") ?? "",
     store: p.get("store") ?? "",
+    product: p.get("product") ?? "",
   };
 }
 
@@ -60,6 +128,7 @@ function filterQuery(f) {
   if (f.environment !== "production") p.set("environment", f.environment);
   if (f.app) p.set("app", f.app);
   if (f.store) p.set("store", f.store);
+  if (f.product) p.set("product", f.product);
   return p.size ? `?${p}` : "";
 }
 
@@ -90,6 +159,7 @@ function apiQuery(f, from, to, interval = f.interval) {
   const p = new URLSearchParams({ from, to, interval, environment: f.environment });
   if (f.app) p.set("app", f.app);
   if (f.store) p.set("store", f.store);
+  if (f.product) p.set("product", f.product);
   return p;
 }
 
@@ -107,7 +177,16 @@ function filterBar(ctx, f, onChange, info, onRefresh) {
     const s = select([{ value: "", label: "All apps" }, ...ctx.apps.map((a) => ({ value: a.id, label: a.id }))], f.app);
     s.classList.add("select-auto");
     s.setAttribute("aria-label", "App");
-    s.addEventListener("change", () => set({ app: s.value }));
+    // A product filter belongs to the apps it came from; changing app clears it if it doesn't fit.
+    s.addEventListener("change", () => set({ app: s.value, product: s.value && !productsFor(ctx, s.value).includes(f.product) ? "" : f.product }));
+    controls.push(s);
+  }
+  const products = productsFor(ctx, f.app);
+  if (products.length > 1) {
+    const s = select([{ value: "", label: "All products" }, ...products.map((p) => ({ value: p, label: p }))], f.product);
+    s.classList.add("select-auto");
+    s.setAttribute("aria-label", "Product");
+    s.addEventListener("change", () => set({ product: s.value }));
     controls.push(s);
   }
   const stores = [...new Set(ctx.apps.map((a) => a.store))];
@@ -129,10 +208,19 @@ function filterBar(ctx, f, onChange, info, onRefresh) {
     "div",
     { class: "filter-bar" },
     controls,
-    h("span", { class: "spacer" }),
-    h("span", { class: "small muted", title: info.updated_at ? `Totals last updated ${fmtDateTime(info.updated_at)}` : "" }, info.updated_at ? ["Updated ", when(info.updated_at)] : "Not updated yet"),
-    refresh,
+    // Kept together, so a wrapping filter row never strands the refresh button.
+    h(
+      "span",
+      { class: "filter-status" },
+      h("span", { class: "small muted", title: info.updated_at ? `Totals last updated ${fmtDateTime(info.updated_at)}` : "" }, info.updated_at ? ["Updated ", when(info.updated_at)] : "Not updated yet"),
+      refresh,
+    ),
   );
+}
+
+/** Product IDs as charts name them (Google base plans separately), for one app or all of them. */
+function productsFor(ctx, app) {
+  return [...new Set(ctx.apps.filter((a) => !app || a.id === app).flatMap((a) => a.products ?? []))].sort();
 }
 
 /** Makes sure the totals exist: the first view after setup (or demo data) builds them. */
@@ -155,7 +243,7 @@ async function refreshNow(rerender) {
 
 /** The headline for a chart over a range: the latest value (point in time) or the total (per period). */
 function headline(result, key = (VIEW[result.chart].plot ?? [result.series[0].key])[0]) {
-  if (!result.points.length) return 0;
+  if (!result.points?.length) return 0;
   if (result.kind === "running") {
     const last = result.points.at(-1).values;
     return result.chart === "active_subscriptions" ? (last.paid ?? 0) + (last.trials ?? 0) : last[key] ?? 0;
@@ -181,10 +269,39 @@ function statTile(label, value, unit, deltaNode) {
 
 function legend(result, plotted) {
   if (plotted.length < 2) return null;
+  const colors = VIEW[result.chart].colors;
   return h(
     "div",
     { class: "chart-legend" },
-    plotted.map((s, i) => h("span", { class: "chart-legend-item" }, h("span", { class: "chart-swatch", style: { background: `var(--chart-${i + 1})` } }), s.label)),
+    plotted.map((s, i) => h("span", { class: "chart-legend-item" }, h("span", { class: "chart-swatch", style: { background: `var(${colors?.[i] ?? `--chart-${i + 1}`})` } }), s.label)),
+  );
+}
+
+/** The figure at the top of a chart card: the chart's own headline, or its latest value / total. */
+function figure(r, f, opts = {}) {
+  const custom = VIEW[r.chart].headline?.(r);
+  if (custom) return { text: custom.text, sub: custom.sub(f) };
+  return {
+    text: formatValue(headline(r), r.unit, { compact: opts.compact ?? true }),
+    sub: r.kind === "running" ? "now" : opts.long ?? `total, ${rangeLabel(f)}`,
+  };
+}
+
+/** A breakdown (Subscription status): one bar per category, longest = 100%. */
+function breakdown(r) {
+  const max = Math.max(1, ...r.categories.map((c) => c.value));
+  return h(
+    "div",
+    { class: "breakdown", role: "list" },
+    r.categories.map((c) =>
+      h(
+        "div",
+        { class: "breakdown-row", role: "listitem" },
+        h("span", { class: "breakdown-label" }, c.label),
+        h("span", { class: "breakdown-track" }, c.value ? h("span", { class: "breakdown-bar", style: { width: `${(c.value / max) * 100}%` } }) : null),
+        h("span", { class: "breakdown-value" }, count(c.value)),
+      ),
+    ),
   );
 }
 
@@ -252,13 +369,15 @@ export async function chartsPage(ctx) {
               "div",
               { class: "chart-card-head" },
               h("a", { class: "chart-card-title", href: `/admin/charts/${r.chart}${filterQuery(f)}`, "data-nav": "" }, r.label),
-              h("div", { class: "chart-card-figure" }, formatValue(headline(r), r.unit, { compact: true })),
-              h("div", { class: "card-sub" }, r.kind === "running" ? "now" : `total, ${RANGES.find((x) => x.value === f.range).label.toLowerCase()}`),
+              h("div", { class: "chart-card-figure" }, figure(r, f).text),
+              h("div", { class: "card-sub" }, figure(r, f).sub),
             ),
             legend(r, shown),
             host,
           );
-          queueMicrotask(() => renderChart(host, { points: r.points, series: shown, unit: r.unit, interval: r.interval, form: VIEW[r.chart].form, height: 200, label: r.label, extra: VIEW[r.chart].extra }));
+          queueMicrotask(() =>
+            renderChart(host, { points: r.points, series: shown, unit: r.unit, interval: r.interval, form: VIEW[r.chart].form, height: 200, label: r.label, extra: VIEW[r.chart].extra, colors: VIEW[r.chart].colors }),
+          );
           return card;
         }),
       ),
@@ -279,11 +398,31 @@ export async function chartsPage(ctx) {
   return page;
 }
 
-/** Money or a count, per value: some count charts carry an amount alongside (refunds, purchases). */
+/** Money, a count or a percentage, per value: some charts carry extra values alongside their series. */
 function unitOf(r, key) {
-  if (["gross", "amount", "revenue", "net", "mrr", "arr"].includes(key)) return "usd";
-  if (r.chart === "revenue") return "usd";
+  if (["rate", "amount_rate", "conversion_rate"].includes(key)) return "percent";
+  if (["gross", "amount", "revenue", "net", "mrr", "arr"].includes(key)) return r.chart === "subscription_movement" && key === "net" ? "count" : "usd";
+  if (r.chart === "revenue" || r.chart === "mrr_movement") return "usd";
   return "count";
+}
+
+/** Table column names for values that aren't plotted series. */
+const EXTRA_LABELS = {
+  gross: "Gross",
+  amount: "Amount (USD)",
+  revenue: "Revenue (USD)",
+  net: "Net change",
+  renewed: "Renewed",
+  cancelled: "Cancelled",
+  conversion_rate: "Conversion rate",
+  churned: "Churned",
+  paying_at_start: "Paying at start",
+  amount_rate: "Refunded share of revenue",
+  refunds: "Refunds",
+  transactions: "Purchases",
+};
+function labelOf(r, key) {
+  return r.series.find((s) => s.key === key)?.label ?? EXTRA_LABELS[key] ?? key;
 }
 
 // ---- One chart ----------------------------------------------------------------------------------
@@ -300,40 +439,47 @@ export async function chartPage(ctx, id) {
     const { from, to } = dates(f, info.first_date);
     const q = apiQuery(f, from, to);
     const r = await get(`/metrics/${id}?${q}`);
+    const csv = h("a", { class: "btn btn-outline btn-sm", href: `/admin/v1/metrics/${id}?${q}&format=csv`, download: "" }, "Download CSV");
+    const top = figure(r, f, { compact: false, long: `total, ${formatPeriod(r.from, "day", { long: true })} to ${formatPeriod(r.to, "day", { long: true })}` });
+    const head = h("div", { class: "chart-card-head" }, h("div", { class: "chart-card-figure big" }, top.text), h("div", { class: "card-sub" }, top.sub));
+    const notes = r.notes.length ? h("div", { class: "chart-notes small muted" }, r.notes.map((n) => h("p", null, n))) : null;
+
+    if (r.kind === "breakdown") {
+      replace(
+        body,
+        h("section", { class: "card chart-card" }, head, breakdown(r), notes),
+        h(
+          "section",
+          { class: "card card-tight" },
+          h("div", { class: "card-header" }, h("h2", { class: "card-title" }, "Table"), h("div", { class: "actions" }, csv)),
+          table([{ label: "Status" }, { label: "Subscriptions", class: "num" }], r.categories.map((c) => [c.label, count(c.value)])),
+        ),
+      );
+      return;
+    }
+
     const shown = plotted(r);
     const host = h("div");
     const keys = [...new Set(r.points.flatMap((p) => Object.keys(p.values)))];
-    const labelOf = (k) => r.series.find((s) => s.key === k)?.label ?? { gross: "Gross", amount: "Amount (USD)", revenue: "Revenue (USD)" }[k] ?? k;
-    const csv = h("a", { class: "btn btn-outline btn-sm", href: `/admin/v1/metrics/${id}?${q}&format=csv`, download: "" }, "Download CSV");
     replace(
       body,
-      h(
-        "section",
-        { class: "card chart-card" },
-        h(
-          "div",
-          { class: "chart-card-head" },
-          h("div", { class: "chart-card-figure big" }, formatValue(headline(r), r.unit)),
-          h("div", { class: "card-sub" }, r.kind === "running" ? "now" : `total, ${formatPeriod(r.from, "day", { long: true })} to ${formatPeriod(r.to, "day", { long: true })}`),
-        ),
-        legend(r, shown),
-        host,
-        r.notes.length ? h("div", { class: "chart-notes small muted" }, r.notes.map((n) => h("p", null, n))) : null,
-      ),
+      h("section", { class: "card chart-card" }, head, legend(r, shown), host, notes),
       h(
         "section",
         { class: "card card-tight" },
         h("div", { class: "card-header" }, h("h2", { class: "card-title" }, "Table"), h("div", { class: "actions" }, csv)),
         table(
-          [{ label: r.interval === "day" ? "Day" : r.interval === "week" ? "Week" : "Month" }, ...keys.map((k) => ({ label: labelOf(k), class: "num" }))],
+          [{ label: r.interval === "day" ? "Day" : r.interval === "week" ? "Week" : "Month" }, ...keys.map((k) => ({ label: labelOf(r, k), class: "num" }))],
           r.points
             .slice()
             .reverse()
-            .map((p) => [formatPeriod(p.date, r.interval, { long: true }), ...keys.map((k) => formatValue(p.values[k] ?? 0, unitOf(r, k)))]),
+            .map((p) => [formatPeriod(p.date, r.interval, { long: true }), ...keys.map((k) => formatValue(p.values[k], unitOf(r, k)))]),
         ),
       ),
     );
-    queueMicrotask(() => renderChart(host, { points: r.points, series: shown, unit: r.unit, interval: r.interval, form: VIEW[id].form, height: 320, label: r.label, extra: VIEW[id].extra }));
+    queueMicrotask(() =>
+      renderChart(host, { points: r.points, series: shown, unit: r.unit, interval: r.interval, form: VIEW[id].form, height: 320, label: r.label, extra: VIEW[id].extra, colors: VIEW[id].colors }),
+    );
   };
 
   const picker = select(info.charts.map((c) => ({ value: c.id, label: c.label })), id);

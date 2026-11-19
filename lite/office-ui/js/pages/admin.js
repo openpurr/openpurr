@@ -257,7 +257,7 @@ export async function settingsPage(ctx) {
         ctx.apps.length
           ? table(
               [{ label: "App ID" }, { label: "Store" }, { label: "Bundle ID / package" }, { label: "Products" }],
-              ctx.apps.map((a) => [h("span", { class: "cell-strong mono" }, a.id), STORE[a.store] ?? a.store, h("span", { class: "mono small" }, a.bundle_id ?? a.package_name ?? "—"), String(a.products)]),
+              ctx.apps.map((a) => [h("span", { class: "cell-strong mono" }, a.id), STORE[a.store] ?? a.store, h("span", { class: "mono small" }, a.bundle_id ?? a.package_name ?? "—"), String(a.products.length)]),
             )
           : h("div", { class: "card-body muted small" }, "No apps you can see."),
       ),
