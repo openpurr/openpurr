@@ -100,7 +100,9 @@ jobs:
         run: |
           umask 077
           printf '%s\n' "$OPENPURR_CONFIG_YAML" > "$RUNNER_TEMP/openpurr.config.yaml"
-          echo "OPENPURR_CONFIG=$RUNNER_TEMP/openpurr.config.yaml" >> "$GITHUB_ENV"
+          # GITHUB_ENV only reaches later steps (wrangler's build runs build-config again); export for this one.
+          export OPENPURR_CONFIG="$RUNNER_TEMP/openpurr.config.yaml"
+          echo "OPENPURR_CONFIG=$OPENPURR_CONFIG" >> "$GITHUB_ENV"
           node scripts/build-config.mjs
           node scripts/deploy-config.mjs
 
