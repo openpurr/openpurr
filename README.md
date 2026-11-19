@@ -34,7 +34,7 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 - **Store notifications:** receives App Store Server Notifications V2 and Google Play Real-time Developer Notifications.
 - **Webhooks:** sends RevenueCat-shaped events to your backend, signed with HMAC-SHA256 and retried for about 72 hours.
 - **Charts:** a small dashboard with active subscriptions, MRR, trials, conversions and churn.
-- **Auth:** SDK keys and secret keys, operator login (password with optional authenticator codes, or Cloudflare Access), roles, and an audit log.
+- **Auth:** SDK keys and secret keys, operator login (password with optional authenticator codes; Cloudflare Access is planned), roles, and an audit log.
 - **MCP server and Claude skills:** an AI assistant can look up customers, explain why someone does or doesn't have an entitlement, and walk you through App Store and Play Console setup.
 
 **Out of scope for now:** paywalls, ad events, Customer Center, virtual currencies, web billing, Amazon, experiments, and third-party analytics integrations.
@@ -78,7 +78,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Getting started
 
-Lite v1 is still in progress, so expect changes. To try it on your own Cloudflare account (the free plan is enough), with Node 22.12 or later:
+Lite is at 0.1.0, its first release, so expect changes before 1.0. To try it on your own Cloudflare account (the free plan is enough), with Node 22.12 or later:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
