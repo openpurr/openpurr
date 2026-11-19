@@ -15,6 +15,7 @@ import { deliverNow } from "../webhooks";
 import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
+import { runChecks, summarize } from "./doctor";
 import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oauth";
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
@@ -453,6 +454,13 @@ admin.post("/metrics/refresh", requirePermission("read"), async (c) => {
   const result = await rollupMetrics(c.env.DB, Date.now(), { full: !!full });
   if (full) await auditBy(c, "metrics.rebuilt", null, { from: result.from, rows: result.rows }).run();
   return c.json({ refreshed: true, ...result, updated_at: await lastRollupAt(c.env.DB) });
+});
+
+// --- setup checks ----------------------------------------------------------------------------------
+
+admin.get("/doctor", requirePermission("read"), async (c) => {
+  const checks = await runChecks(c, p(c));
+  return c.json({ summary: summarize(checks), checks });
 });
 
 // --- OAuth: the consent screen and connected apps (dashboard sessions only) ---------------------

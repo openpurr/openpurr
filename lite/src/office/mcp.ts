@@ -28,6 +28,7 @@ import { CHARTS, dayOf, type Interval, readChart } from "../metrics";
 import { deliverNow } from "../webhooks";
 import { audit } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
+import { runChecks, summarize } from "./doctor";
 import { type Actor, GRANT_DURATIONS, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, oauthTokenOwner, resourceMetadataUrl } from "./oauth";
 import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, principalOf, type TokenScope, tokenPrincipal } from "./principal";
@@ -564,6 +565,23 @@ const TOOLS: Tool[] = [
         if (err instanceof GrantError) return { text: err.message, isError: true };
         throw err;
       }
+    },
+  },
+  {
+    name: "check_setup",
+    title: "Check the setup",
+    description:
+      "Checks this openpurr deployment: database migrations, custom domain, store credentials per app, store notifications received, webhook secrets and failures, the scheduled job, exchange rates and two-step sign-in. Each problem comes with the exact fix.",
+    inputSchema: { type: "object", additionalProperties: false },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+    permission: "read",
+    async run(c, principal) {
+      const checks = await runChecks(c, principal);
+      const mark = { ok: "✓", warn: "!", fail: "✗", info: "·" } as const;
+      return {
+        text: `${summarize(checks)}\n\n${checks.map((x) => `${mark[x.status]} ${x.title}: ${x.message}${x.fix && x.status !== "ok" ? `\n  Fix: ${x.fix}` : ""}`).join("\n")}`,
+        structured: { summary: summarize(checks), checks },
+      };
     },
   },
   {

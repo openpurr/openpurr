@@ -1,0 +1,27 @@
+{
+  "name": "openpurr",
+  "version": "0.1.0",
+  "description": "The openpurr command line: check your setup, look up customers, explain entitlements, grant access, read charts and manage keys.",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": {
+    "openpurr": "bin/openpurr.js"
+  },
+  "files": [
+    "bin",
+    "src"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/openpurr/openpurr.git",
+    "directory": "cli"
+  },
+  "homepage": "https://openpurr.org",
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "typecheck": "node --check bin/openpurr.js && node --check src/main.js && node --check src/client.js && node --check src/credentials.js && node --check src/output.js"
+  }
+}
