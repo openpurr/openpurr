@@ -10,6 +10,7 @@ import {
   cardWith,
   checkboxes,
   confirmDialog,
+  copyField,
   empty,
   field,
   fmtDateTime,
@@ -184,11 +185,14 @@ export async function secretKeysPage(ctx) {
 
 // ---- Personal access tokens ---------------------------------------------------------------------
 
+/** The Claude Code command that adds this deployment's MCP server. */
+const mcpCommand = (token) => `claude mcp add --transport http openpurr ${location.origin}/mcp --header "Authorization: Bearer ${token}"`;
+
 const TOKEN_SCOPES = [
   { value: "read", label: "read", sub: "Read customers, webhook deliveries, the team and the audit log" },
   { value: "write:webhooks", label: "write:webhooks", sub: "Replay webhook events" },
   { value: "admin", label: "admin", sub: "Manage secret keys, the team and settings" },
-  { value: "write:grants", label: "write:grants", sub: "Grant entitlements (arrives with the MCP tools)" },
+  { value: "write:grants", label: "write:grants", sub: "Grant and revoke promotional entitlements" },
 ];
 
 export async function tokensPage(ctx) {
@@ -222,7 +226,12 @@ export async function tokensPage(ctx) {
         );
         if (!created) return false;
         m.close();
-        showSecretOnce({ title: "Copy your access token", sub: "This is the only time it's shown.", value: created.token, note: `Use it as Authorization: Bearer pat_… against ${location.origin}/admin/v1.` });
+        showSecretOnce({
+          title: "Copy your access token",
+          sub: "This is the only time it's shown.",
+          value: created.token,
+          note: `Use it as Authorization: Bearer pat_… against ${location.origin}/admin/v1, or connect Claude Code to openpurr with: ${mcpCommand(created.token)}`,
+        });
         ctx.rerender();
         return false;
       },
@@ -242,6 +251,23 @@ export async function tokensPage(ctx) {
 
   const live = tokens.filter((t) => !t.revoked_at && !(t.expires_at && t.expires_at <= Date.now()));
   const old = tokens.filter((t) => !live.includes(t));
+  const mcpCard = cardWith(
+    "Connect an AI assistant (MCP)",
+    "Ask Claude why a customer doesn't have an entitlement, look up purchases, read charts and grant access. It acts as you, limited to the token's scopes.",
+    h(
+      "div",
+      { class: "card-body stack-sm" },
+      h("p", { class: "small" }, "MCP server URL:"),
+      copyField(`${location.origin}/mcp`),
+      h("p", { class: "small" }, "Claude Code (replace pat_… with a token from this page):"),
+      copyField(mcpCommand("pat_…")),
+      h(
+        "p",
+        { class: "small muted" },
+        "Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access and write:webhooks to replay webhooks.",
+      ),
+    ),
+  );
   const rows = (list) =>
     list
       .slice()
@@ -267,6 +293,7 @@ export async function tokensPage(ctx) {
         ? table(columns, rows(live))
         : h("div", { class: "card" }, empty({ icon: IconTerminal, title: "No access tokens", text: "Create one to use the admin API from a terminal or an AI assistant.", action: button("New token", { icon: IconPlus(15), onClick: create }) })),
       old.length ? cardWith("Revoked and expired", null, table(columns, rows(old))) : null,
+      mcpCard,
     ),
   );
 }

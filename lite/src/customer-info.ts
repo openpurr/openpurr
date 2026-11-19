@@ -23,9 +23,13 @@
 //     the grace end, and grace_period_expires_date is set alongside.
 //   - An upgraded transaction (Apple isUpgraded) no longer grants entitlements; the upgrade's
 //     own transaction does.
+//   - A promotional grant (given by an operator) appears the way RevenueCat shows one: a
+//     subscriptions entry with store "promotional" and product "rc_promo_<entitlement>_<duration>"
+//     (both SDKs know that store), and the entitlement points at it when the grant gives more
+//     access than any purchase: a later expiry, or lifetime. Revoked grants are left out.
 
 import { type Config, entitlementsFor } from "./config";
-import type { Customer, SubscriptionStateRow, TransactionRow } from "./ledger";
+import type { Customer, GrantRow, SubscriptionStateRow, TransactionRow } from "./ledger";
 import { APPLE_STATUS } from "./stores/apple";
 
 interface Entitlement {
@@ -97,6 +101,8 @@ export function computeSnapshot(args: {
   transactions: TransactionRow[];
   /** Store-reported subscription status (auto-renew, billing issues, grace periods). */
   states?: SubscriptionStateRow[];
+  /** Promotional grants (including revoked ones, which are skipped). */
+  grants?: GrantRow[];
   config: Config;
   now?: number;
 }): Snapshot {
@@ -175,6 +181,35 @@ export function computeSnapshot(args: {
     };
   }
 
+  // Promotional grants, furthest-out last so it wins a shared product key.
+  const knownEntitlements = new Set(config.entitlements.map((e) => e.id));
+  const grants = (args.grants ?? [])
+    .filter((g) => g.revoked_at === null && knownEntitlements.has(g.entitlement_id))
+    .sort((a, b) => (a.expires_at ?? Infinity) - (b.expires_at ?? Infinity));
+  for (const g of grants) {
+    const product = promotionalProductId(g.entitlement_id, g.duration);
+    subscriptions[product] = {
+      purchase_date: iso(g.starts_at),
+      original_purchase_date: iso(g.starts_at),
+      expires_date: iso(g.expires_at),
+      store: "promotional",
+      is_sandbox: false,
+      period_type: "normal",
+      ownership_type: "PURCHASED",
+      store_transaction_id: g.id,
+      unsubscribe_detected_at: null,
+      billing_issues_detected_at: null,
+      grace_period_expires_date: null,
+      refunded_at: null,
+      auto_resume_date: null,
+    };
+    const current = entitlements[g.entitlement_id];
+    const moreAccess = !current || (current.expires_date !== null && (g.expires_at === null || g.expires_at > Date.parse(current.expires_date)));
+    if (moreAccess) {
+      entitlements[g.entitlement_id] = { expires_date: iso(g.expires_at), grace_period_expires_date: null, product_identifier: product, purchase_date: iso(g.starts_at) };
+    }
+  }
+
   return {
     subscriber: {
       original_app_user_id: args.customer?.appUserId ?? args.appUserId,
@@ -191,6 +226,11 @@ export function computeSnapshot(args: {
       .filter((t) => t.revoked_at === null)
       .map((t) => ({ store: t.store, app_id: t.app_id, product_id: t.product_id, end: effectiveEnd(t, stateOf(t)) ?? 0 })),
   };
+}
+
+/** The product ID a promotional grant shows under, as RevenueCat names them. */
+export function promotionalProductId(entitlementId: string, duration: string) {
+  return `rc_promo_${entitlementId}_${duration}`;
 }
 
 /** The CustomerInfo body for one request: the snapshot plus request time and management_url. */

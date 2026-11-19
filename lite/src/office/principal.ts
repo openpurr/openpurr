@@ -2,11 +2,11 @@
 //
 // Two ways in:
 //   - the dashboard session cookie (full and recovery sessions, not setup; changes must be same-origin, see auth.ts);
-//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and MCP.
+//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and the MCP server (/mcp).
 //
 // Permission = the operator's ROLE, further limited by the token's SCOPES when a token is used:
 //   viewer     read
-//   developer  read, replay webhooks, manage secret keys
+//   developer  read, replay webhooks, manage secret keys, grant entitlements
 //   admin      everything except managing owners and owner-only settings
 //   owner      everything
 // An operator limited to certain apps (app_ids) only sees those apps' data.
@@ -16,22 +16,21 @@ import type { AppEnv } from "../env";
 import { type Operator, requireTotpForEveryone, sameOrigin, sessionFor } from "./auth";
 import { sha256Hex } from "./auth-crypto";
 
-export type Permission = "read" | "audit:read" | "webhooks:replay" | "keys:manage" | "operators:manage" | "settings:manage";
+export type Permission = "read" | "audit:read" | "webhooks:replay" | "keys:manage" | "grants:manage" | "operators:manage" | "settings:manage";
 export const TOKEN_SCOPES = ["read", "write:grants", "write:webhooks", "admin"] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 
 const ROLE_PERMISSIONS: Record<Operator["role"], Permission[]> = {
   viewer: ["read"],
-  developer: ["read", "webhooks:replay", "keys:manage"],
-  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "operators:manage"],
-  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "operators:manage", "settings:manage"],
+  developer: ["read", "webhooks:replay", "keys:manage", "grants:manage"],
+  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage"],
+  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "settings:manage"],
 };
 
 const SCOPE_PERMISSIONS: Record<TokenScope, Permission[]> = {
   read: ["read", "audit:read"],
   "write:webhooks": ["webhooks:replay"],
-  // Grants arrive with the MCP tools (M6).
-  "write:grants": [],
+  "write:grants": ["grants:manage"],
   admin: ["keys:manage", "operators:manage", "settings:manage", "audit:read"],
 };
 
@@ -67,26 +66,36 @@ function principalOf(operator: Operator, via: Principal["via"], tokenId: string 
   return { operator, via, tokenId, permissions, apps: operator.app_ids ? (JSON.parse(operator.app_ids) as string[]) : null };
 }
 
+/**
+ * The principal for a personal access token ("pat_..."), or null if it's invalid, expired, revoked
+ * or its operator is disabled. Used by the admin API and the MCP server.
+ */
+export async function tokenPrincipal(c: Ctx, token: string): Promise<Principal | null> {
+  const db = c.env.DB;
+  const row = await db
+    .prepare(
+      `SELECT t.id AS token_id, t.scopes, t.last_used_at AS token_last_used, o.* FROM access_token t JOIN operator o ON o.id = t.operator_id
+       WHERE t.token_hash = ? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at > ?) AND o.disabled_at IS NULL`,
+    )
+    .bind(await sha256Hex(token), Date.now())
+    .first<Operator & { token_id: string; scopes: string; token_last_used: number | null }>();
+  if (!row) return null;
+  const { token_id, scopes, token_last_used, ...operator } = row;
+  if (!token_last_used || Date.now() - token_last_used > LAST_USED_EVERY_MS) {
+    c.executionCtx.waitUntil(db.prepare("UPDATE access_token SET last_used_at = ? WHERE id = ?").bind(Date.now(), token_id).run());
+  }
+  return principalOf(operator as Operator, "token", token_id, JSON.parse(scopes) as TokenScope[]);
+}
+
 /** Authenticates every /admin/v1 request except /admin/v1/auth/*. Sets c.var.principal. */
 export const adminAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (c.req.path.startsWith("/admin/v1/auth/")) return next();
   const header = c.req.header("authorization") ?? "";
 
   if (header.startsWith(`Bearer ${ACCESS_TOKEN_PREFIX}`)) {
-    const db = c.env.DB;
-    const row = await db
-      .prepare(
-        `SELECT t.id AS token_id, t.scopes, t.last_used_at AS token_last_used, o.* FROM access_token t JOIN operator o ON o.id = t.operator_id
-         WHERE t.token_hash = ? AND t.revoked_at IS NULL AND (t.expires_at IS NULL OR t.expires_at > ?) AND o.disabled_at IS NULL`,
-      )
-      .bind(await sha256Hex(header.slice(7).trim()), Date.now())
-      .first<Operator & { token_id: string; scopes: string; token_last_used: number | null }>();
-    if (!row) return deny(c, 401, "invalid_token", "Invalid, expired or revoked access token.");
-    const { token_id, scopes, token_last_used, ...operator } = row;
-    if (!token_last_used || Date.now() - token_last_used > LAST_USED_EVERY_MS) {
-      c.executionCtx.waitUntil(db.prepare("UPDATE access_token SET last_used_at = ? WHERE id = ?").bind(Date.now(), token_id).run());
-    }
-    c.set("principal", principalOf(operator as Operator, "token", token_id, JSON.parse(scopes) as TokenScope[]));
+    const principal = await tokenPrincipal(c, header.slice(7).trim());
+    if (!principal) return deny(c, 401, "invalid_token", "Invalid, expired or revoked access token.");
+    c.set("principal", principal);
     return next();
   }
 

@@ -57,6 +57,23 @@ export function isAnonymous(appUserId: string) {
   return appUserId.startsWith("$RCAnonymousID:");
 }
 
+/** An entitlement given by an operator (promotional_grant, migration 0016). */
+export interface GrantRow {
+  id: string;
+  entitlement_id: string;
+  duration: string;
+  starts_at: number;
+  expires_at: number | null;
+  note: string | null;
+  granted_by: string | null;
+  source: string;
+  created_at: number;
+  revoked_at: number | null;
+  revoked_by: string | null;
+}
+
+const GRANT_COLUMNS = "g.id, g.entitlement_id, g.duration, g.starts_at, g.expires_at, g.note, g.granted_by, g.source, g.created_at, g.revoked_at, g.revoked_by";
+
 export interface SubscriptionStateRow {
   store: Store;
   original_transaction_id: string;
@@ -70,11 +87,11 @@ export interface SubscriptionStateRow {
 }
 
 /**
- * The customer an app user ID belongs to, every transaction they own, and the store-reported
- * status of their subscriptions. One D1 round trip.
+ * The customer an app user ID belongs to, every transaction they own, the store-reported status
+ * of their subscriptions, and their promotional grants. One D1 round trip.
  */
 export async function loadCustomer(db: D1Database, appUserId: string) {
-  const [customer, transactions, states] = await db.batch([
+  const [customer, transactions, states, grants] = await db.batch([
     db
       .prepare(
         `SELECT c.id, c.app_user_id, c.first_seen FROM customer_alias a JOIN customer c ON c.id = a.customer_id
@@ -99,18 +116,22 @@ export async function loadCustomer(db: D1Database, appUserId: string) {
          WHERE a.app_user_id = ?`,
       )
       .bind(appUserId),
+    db
+      .prepare(`SELECT ${GRANT_COLUMNS} FROM customer_alias a JOIN promotional_grant g ON g.customer_id = a.customer_id WHERE a.app_user_id = ? ORDER BY g.created_at`)
+      .bind(appUserId),
   ]);
   const row = customer!.results[0] as CustomerRecord | undefined;
   return {
     customer: row ? toCustomer(row) : null,
     transactions: transactions!.results as unknown as TransactionRow[],
     states: states!.results as unknown as SubscriptionStateRow[],
+    grants: grants!.results as unknown as GrantRow[],
   };
 }
 
 /** Like loadCustomer, by internal customer ID (for rebuilding snapshots). One D1 round trip. */
 export async function loadCustomerById(db: D1Database, customerId: string) {
-  const [customer, transactions, states] = await db.batch([
+  const [customer, transactions, states, grants] = await db.batch([
     db.prepare("SELECT id, app_user_id, first_seen FROM customer WHERE id = ?").bind(customerId),
     db
       .prepare(
@@ -128,12 +149,14 @@ export async function loadCustomerById(db: D1Database, customerId: string) {
          WHERE o.customer_id = ?`,
       )
       .bind(customerId),
+    db.prepare(`SELECT ${GRANT_COLUMNS} FROM promotional_grant g WHERE g.customer_id = ? ORDER BY g.created_at`).bind(customerId),
   ]);
   const row = customer!.results[0] as CustomerRecord | undefined;
   return {
     customer: row ? toCustomer(row) : null,
     transactions: transactions!.results as unknown as TransactionRow[],
     states: states!.results as unknown as SubscriptionStateRow[],
+    grants: grants!.results as unknown as GrantRow[],
   };
 }
 

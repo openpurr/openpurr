@@ -6,7 +6,7 @@
 // Hourly tasks (storage, so the database stays under the free plan's 500 MB):
 //   - drop raw notification payloads after 30 days (the summary row stays);
 //   - delete spike request captures after 14 days;
-//   - delete customers who never purchased, were first seen over 90 days ago and haven't
+//   - delete customers who never purchased (or got a grant), were first seen over 90 days ago and haven't
 //     logged in or synced attributes since. Nothing is lost that matters: they own no
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired;
@@ -68,6 +68,7 @@ const pruneInactiveCustomers: Task = async (env, now) => {
     `SELECT c.id FROM customer c
      WHERE c.first_seen < ?1
        AND NOT EXISTS (SELECT 1 FROM purchase_owner o WHERE o.customer_id = c.id)
+       AND NOT EXISTS (SELECT 1 FROM promotional_grant g WHERE g.customer_id = c.id)
        AND NOT EXISTS (SELECT 1 FROM customer_alias a WHERE a.customer_id = c.id AND a.created_at >= ?1)
        AND NOT EXISTS (SELECT 1 FROM subscriber_attribute s WHERE s.customer_id = c.id AND s.received_at >= ?1)
      LIMIT ${BATCH.customers}`,
