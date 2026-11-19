@@ -31,7 +31,8 @@ export async function customersPage(ctx) {
   };
 
   const row = (cust) => {
-    const href = `/admin/customers/${encodeURIComponent(cust.app_user_id)}`;
+    // With several projects, the link names the project (a customer belongs to one).
+    const href = `/admin/customers/${encodeURIComponent(cust.app_user_id)}${ctx.projects.length > 1 ? `?project=${encodeURIComponent(ctx.project.id)}` : ""}`;
     const tr = h(
       "tr",
       { class: "clickable", onClick: (e) => !e.target.closest("a") && ctx.navigate(href) },

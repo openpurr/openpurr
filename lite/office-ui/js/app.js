@@ -1,14 +1,15 @@
 // The openpurr dashboard: sign-in, then a sidebar shell whose pages call the admin API.
 // Plain ES modules, no build step. Pages live under /admin/…; the Worker answers every unknown
 // page path with index.html, and this file routes it.
-import { get, onAuthChange, post } from "./api.js";
+import { get, onAuthChange, post, setProject } from "./api.js";
 import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment, renderSetPassword } from "./auth.js";
 import { renderConsent } from "./consent.js";
 import { h, replace } from "./dom.js";
-import { IconAlert, IconBolt, IconChart, IconCustomers, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
+import { IconAlert, IconApps, IconBolt, IconChart, IconCustomers, IconFolder, IconGift, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTag, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
 import { auditPage, settingsPage, teamPage } from "./pages/admin.js";
 import { chartPage, chartsPage } from "./pages/charts.js";
+import { appsPage, entitlementsPage, offeringsPage, projectsPage } from "./pages/config.js";
 import { customerPage, customersPage } from "./pages/customers.js";
 import { secretKeysPage, tokensPage, webhooksPage } from "./pages/developers.js";
 import { applyTheme, avatar, brand, empty, errorCard } from "./ui.js";
@@ -20,6 +21,10 @@ const root = document.getElementById("app");
 const ROUTES = [
   { key: "charts", label: "Charts", icon: IconChart, section: "Overview", perm: "read", page: chartsPage },
   { key: "customers", label: "Customers", icon: IconCustomers, section: "Overview", perm: "read", page: customersPage },
+  { key: "apps", label: "Apps and products", icon: IconApps, section: "Configuration", perm: "read", page: appsPage },
+  { key: "entitlements", label: "Entitlements", icon: IconTag, section: "Configuration", perm: "read", page: entitlementsPage },
+  { key: "offerings", label: "Offerings", icon: IconGift, section: "Configuration", perm: "read", page: offeringsPage },
+  { key: "projects", label: "Projects", icon: IconFolder, section: "Configuration", perm: "read", page: projectsPage },
   { key: "webhooks", label: "Webhooks", icon: IconBolt, section: "Developers", perm: "read", page: webhooksPage },
   { key: "secret-keys", label: "Secret keys", icon: IconKey, section: "Developers", perm: "keys:manage", page: secretKeysPage },
   { key: "tokens", label: "Access tokens", icon: IconTerminal, section: "Developers", page: tokensPage },
@@ -29,7 +34,10 @@ const ROUTES = [
   { key: "account", label: "Your account", icon: IconUser, page: accountPage, hidden: true },
 ];
 
-/** Signed-in state: { session, operator, permissions, apps }. */
+/**
+ * Signed-in state: { session, operator, permissions, projects, project, apps, allApps }. `project`
+ * is the project being shown (null before the first one exists); `apps` are its apps.
+ */
 let state = null;
 let returnTo = null;
 let renderSeq = 0;
@@ -40,7 +48,9 @@ const can = (perm) => !perm || state.permissions.has(perm);
 
 function parsePath() {
   const parts = location.pathname.replace(/^\/admin\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
-  const route = ROUTES.find((r) => r.key === (parts[0] ?? "charts"));
+  // Before the first app exists, the dashboard opens on adding it.
+  const home = state.allApps.length || !can("config:manage") ? "charts" : "apps";
+  const route = ROUTES.find((r) => r.key === (parts[0] ?? home));
   return { route, rest: parts.slice(1) };
 }
 
@@ -93,13 +103,14 @@ async function boot() {
     return renderRequiredEnrollment(root, { operator: me.operator, onDone: () => boot(), onSignOut: signOut });
   }
 
-  let principal, apps;
+  let principal, apps, projects;
   try {
-    [principal, { apps }] = await Promise.all([get("/me"), get("/apps").catch(() => ({ apps: [] }))]);
+    [principal, { apps }, { projects }] = await Promise.all([get("/me"), get("/apps").catch(() => ({ apps: [] })), get("/projects").catch(() => ({ projects: [] }))]);
   } catch (err) {
     return fatal(err);
   }
-  state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), apps };
+  state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), projects, allApps: apps, project: null, apps: [] };
+  selectProject(new URLSearchParams(location.search).get("project") ?? storedProject(), { quiet: true });
   if (path === "/admin/login") history.replaceState(null, "", returnTo ?? "/admin");
   returnTo = null;
   // An app asking to connect (OAuth): its own screen, outside the dashboard shell.
@@ -109,6 +120,51 @@ async function boot() {
     return renderConsent(root, state.operator);
   }
   renderRoute();
+}
+
+// ---- Projects -----------------------------------------------------------------------------------
+
+const PROJECT_KEY = "openpurr_project";
+
+function storedProject() {
+  try {
+    return localStorage.getItem(PROJECT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+/** Shows a project: its customers, charts, keys and configuration. Unknown IDs fall back to the first project. */
+function selectProject(id, { quiet = false } = {}) {
+  const project = state.projects.find((p) => p.id === id) ?? state.projects[0] ?? null;
+  const changed = project?.id !== state.project?.id;
+  state.project = project;
+  state.apps = project ? state.allApps.filter((a) => a.project_id === project.id) : [];
+  setProject(project?.id ?? null);
+  try {
+    // Remembers a project that was just created, too: the next load (which knows it) shows it.
+    const remember = quiet ? project?.id : (id ?? project?.id);
+    if (remember) localStorage.setItem(PROJECT_KEY, remember);
+  } catch {
+    /* private browsing */
+  }
+  if (!quiet && changed && shell) {
+    shell = null; // the sidebar shows the project
+    // A customer belongs to one project; their page doesn't carry over.
+    if (/^\/admin\/customers\/./.test(location.pathname)) history.replaceState(null, "", "/admin/customers");
+    renderRoute();
+  }
+}
+
+function projectSwitcher() {
+  if (state.projects.length < 2) return null;
+  const s = h(
+    "select",
+    { class: "select project-select", "aria-label": "Project" },
+    state.projects.map((p) => h("option", { value: p.id, selected: p.id === state.project?.id ? true : null }, p.name)),
+  );
+  s.addEventListener("change", () => selectProject(s.value));
+  return h("div", { class: "project-switcher" }, h("span", { class: "nav-label" }, "Project"), s);
 }
 
 function showLogin(notice) {
@@ -181,6 +237,7 @@ function buildShell() {
     "aside",
     { class: "sidebar" },
     h("div", { class: "sidebar-brand" }, brand(), h("span", { class: "brand-edition" }, "Lite"), h("button", { class: "sidebar-close", type: "button", "aria-label": "Close menu", onClick: closeDrawer }, IconX(18))),
+    projectSwitcher(),
     nav,
     h("div", { class: "sidebar-footer" }, accountMenu()),
   );
@@ -238,6 +295,7 @@ async function renderRoute() {
     navigate,
     rerender: () => renderRoute(),
     reload: () => boot(),
+    selectProject: (id) => selectProject(id),
   };
   const pageKey = `${route.key}/${rest.join("/")}`;
   if (pageKey !== shownPage) replace(shell.inner, h("div", { class: "loading" }, "Loading…"));

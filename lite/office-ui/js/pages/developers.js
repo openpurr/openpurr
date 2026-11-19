@@ -2,6 +2,7 @@
 import { del, get, post } from "../api.js";
 import { h, replace } from "../dom.js";
 import { IconBolt, IconKey, IconPlus, IconRefresh, IconTerminal } from "../icons.js";
+import { webhookEndpoints } from "./config.js";
 import { replayButton } from "./customers.js";
 import {
   badge,
@@ -53,7 +54,7 @@ export async function webhooksPage(ctx) {
               ];
             }),
           )
-        : h("div", { class: "card" }, empty({ icon: IconBolt, title: status ? `No ${DELIVERY[status][0].toLowerCase()} deliveries` : "No webhook deliveries yet", text: "Webhook endpoints are set in openpurr.config.yaml under webhooks. Events are sent when purchases, renewals, cancellations and other changes happen." })),
+        : h("div", { class: "card" }, empty({ icon: IconBolt, title: status ? `No ${DELIVERY[status][0].toLowerCase()} deliveries` : "No webhook deliveries yet", text: "Events are sent to the endpoints above when purchases, renewals, cancellations and other changes happen." })),
     );
   };
   const filter = seg(
@@ -69,14 +70,14 @@ export async function webhooksPage(ctx) {
       void load().catch((err) => toast(err.message, "error"));
     },
   );
-  await load();
+  const [endpoints] = await Promise.all([webhookEndpoints(ctx), load()]);
   return h(
     "div",
     null,
     pageHeader("Webhooks", "Events sent to your webhook endpoints. Failed deliveries are retried with backoff for about three days. Replay sends the same event again (same ID, so consumers can deduplicate).", [
       button(null, { variant: "outline", icon: IconRefresh(15), title: "Refresh", onClick: () => load().catch((err) => toast(err.message, "error")) }),
     ]),
-    h("div", { class: "stack" }, h("div", null, filter), body),
+    h("div", { class: "stack" }, endpoints, h("h2", { class: "section-title" }, "Deliveries"), h("div", null, filter), body),
   );
 }
 
@@ -161,7 +162,7 @@ export async function secretKeysPage(ctx) {
   return h(
     "div",
     null,
-    pageHeader("Secret keys", "Server-to-server keys for your backend to read customers from the openpurr API. Your apps use the public SDK keys from openpurr.config.yaml instead.", [
+    pageHeader("Secret keys", `Server-to-server keys for your backend to read ${ctx.project ? `${ctx.project.name}'s` : "your"} customers from the openpurr API. Each key reads one project. Your apps use the public SDK keys under Apps and products instead.`, [
       button("New secret key", { icon: IconPlus(15), onClick: create }),
     ]),
     keys.length

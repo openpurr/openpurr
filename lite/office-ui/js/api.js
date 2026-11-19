@@ -3,11 +3,30 @@
 // change, which the server checks (CSRF protection).
 
 export class ApiError extends Error {
-  constructor(status, code, message) {
-    super(message);
+  constructor(status, code, message, problems = null) {
+    super(problems?.length ? `${message}\n${problems.map((p) => `• ${p}`).join("\n")}` : message);
     this.status = status;
     this.code = code;
+    /** Config saves: every problem found, each "path: what's wrong". */
+    this.problems = problems;
   }
+}
+
+// The project the dashboard is showing. Customers, grants, secret keys and charts belong to a
+// project, so their requests carry it (the server needs it only when there are several).
+let project = null;
+const PROJECT_SCOPED = /^\/(customers|secret-keys|metrics)(\/|\?|$)/;
+
+export function setProject(id) {
+  project = id;
+}
+
+export const currentProject = () => project;
+
+/** Adds ?project= to project-scoped paths. */
+export function withProject(path) {
+  if (!project || !PROJECT_SCOPED.test(path) || /[?&]project=/.test(path)) return path;
+  return `${path}${path.includes("?") ? "&" : "?"}project=${encodeURIComponent(project)}`;
 }
 
 const handlers = { signedOut: null, enrollmentRequired: null };
@@ -21,7 +40,7 @@ export function onAuthChange(signedOut, enrollmentRequired) {
 export async function api(method, path, body) {
   let res;
   try {
-    res = await fetch(`/admin/v1${path}`, {
+    res = await fetch(`/admin/v1${withProject(path)}`, {
       method,
       headers: body === undefined ? undefined : { "content-type": "application/json" },
       body: body === undefined ? undefined : JSON.stringify(body),
@@ -34,7 +53,7 @@ export async function api(method, path, body) {
   const data = await res.json().catch(() => ({}));
   if (res.ok) return data;
 
-  const err = new ApiError(res.status, data.code || "error", data.message || `Request failed (HTTP ${res.status}).`);
+  const err = new ApiError(res.status, data.code || "error", data.message || `Request failed (HTTP ${res.status}).`, Array.isArray(data.problems) ? data.problems : null);
   const authCall = path.startsWith("/auth/");
   if (!authCall && err.code === "signed_out") handlers.signedOut?.();
   if (!authCall && err.code === "totp_enrollment_required") handlers.enrollmentRequired?.();

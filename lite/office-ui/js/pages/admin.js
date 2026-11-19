@@ -79,12 +79,12 @@ export async function teamPage(ctx) {
     const email = input({ type: "email", required: true, placeholder: "teammate@example.com" });
     const name = input({ placeholder: "Their name" });
     const role = select(roleOptions, "developer");
-    const apps = appPicker(ctx.apps, null);
+    const apps = appPicker(ctx.allApps, null);
     const submit = button("Add and create link", { type: "submit" });
     const m = modal({
       title: "Add a teammate",
       sub: "You'll get a one-time setup link to send them. They choose their own password.",
-      body: h("div", { class: "stack" }, errors.el, h("div", null, field("Email", email), field("Name", name), field("Role", role, ROLES.find((r) => r.value === "developer").sub)), ctx.apps.length > 1 ? h("div", null, h("span", { class: "label" }, "Apps"), apps.el) : null),
+      body: h("div", { class: "stack" }, errors.el, h("div", null, field("Email", email), field("Name", name), field("Role", role, ROLES.find((r) => r.value === "developer").sub)), ctx.allApps.length > 1 ? h("div", null, h("span", { class: "label" }, "Apps"), apps.el) : null),
       actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
       onSubmit: async () => {
         const created = await busy(submit, () => post("/operators", { email: email.value.trim(), name: name.value.trim(), role: role.value, app_ids: apps.value() }), errors);
@@ -104,16 +104,16 @@ export async function teamPage(ctx) {
     const name = input({ value: op.name, required: true });
     const role = select(self ? ROLES : roleOptions, op.role);
     role.disabled = self;
-    const apps = appPicker(ctx.apps, op.app_ids);
+    const apps = appPicker(ctx.allApps, op.app_ids);
     const submit = button("Save", { type: "submit" });
     const m = modal({
       title: `Edit ${op.email}`,
-      body: h("div", { class: "stack" }, errors.el, h("div", null, field("Name", name), field("Role", role, self ? "You can't change your own role." : null)), ctx.apps.length > 1 ? h("div", null, h("span", { class: "label" }, "Apps"), apps.el) : null),
+      body: h("div", { class: "stack" }, errors.el, h("div", null, field("Name", name), field("Role", role, self ? "You can't change your own role." : null)), ctx.allApps.length > 1 ? h("div", null, h("span", { class: "label" }, "Apps"), apps.el) : null),
       actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
       onSubmit: async () => {
         const body = { name: name.value.trim() };
         if (!self && role.value !== op.role) body.role = role.value;
-        if (ctx.apps.length > 1) body.app_ids = apps.value();
+        if (ctx.allApps.length > 1) body.app_ids = apps.value();
         const ok = await busy(submit, () => patch(`/operators/${op.id}`, body), errors);
         if (!ok) return false;
         toast("Saved", "success");
@@ -242,7 +242,7 @@ export async function settingsPage(ctx) {
   return h(
     "div",
     null,
-    pageHeader("Settings", "Deployment-wide settings. Apps, products, entitlements and webhooks live in openpurr.config.yaml and deploy with the Worker."),
+    pageHeader("Settings", "Deployment-wide settings. Apps, products, entitlements, offerings and webhooks are under Configuration, per project."),
     h(
       "div",
       { class: "stack" },
@@ -253,11 +253,11 @@ export async function settingsPage(ctx) {
       ),
       cardWith(
         "Apps",
-        "From openpurr.config.yaml.",
-        ctx.apps.length
+        h("span", null, "Every project's apps. Change them under ", h("a", { href: "/admin/apps", "data-nav": "" }, "Apps and products"), "."),
+        ctx.allApps.length
           ? table(
-              [{ label: "App ID" }, { label: "Store" }, { label: "Bundle ID / package" }, { label: "Products" }],
-              ctx.apps.map((a) => [h("span", { class: "cell-strong mono" }, a.id), STORE[a.store] ?? a.store, h("span", { class: "mono small" }, a.bundle_id ?? a.package_name ?? "—"), String(a.products.length)]),
+              [{ label: "App ID" }, { label: "Project", class: "hide-below-md" }, { label: "Store" }, { label: "Bundle ID / package" }, { label: "Products" }],
+              ctx.allApps.map((a) => [h("span", { class: "cell-strong mono" }, a.id), ctx.projects.find((p) => p.id === a.project_id)?.name ?? a.project_id, STORE[a.store] ?? a.store, h("span", { class: "mono small" }, a.bundle_id ?? a.package_name ?? "—"), String(a.products.length)]),
             )
           : h("div", { class: "card-body muted small" }, "No apps you can see."),
       ),
