@@ -103,13 +103,18 @@ async function boot() {
     return renderRequiredEnrollment(root, { operator: me.operator, onDone: () => boot(), onSignOut: signOut });
   }
 
-  let principal, apps, projects;
+  let principal, apps, projects, usage;
   try {
-    [principal, { apps }, { projects }] = await Promise.all([get("/me"), get("/apps").catch(() => ({ apps: [] })), get("/projects").catch(() => ({ projects: [] }))]);
+    [principal, { apps }, { projects }, usage] = await Promise.all([
+      get("/me"),
+      get("/apps").catch(() => ({ apps: [] })),
+      get("/projects").catch(() => ({ projects: [] })),
+      get("/usage").catch(() => null),
+    ]);
   } catch (err) {
     return fatal(err);
   }
-  state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), projects, allApps: apps, project: null, apps: [] };
+  state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), projects, allApps: apps, project: null, apps: [], usage };
   selectProject(new URLSearchParams(location.search).get("project") ?? storedProject(), { quiet: true });
   if (path === "/admin/login") history.replaceState(null, "", returnTo ?? "/admin");
   returnTo = null;
@@ -254,6 +259,12 @@ function buildShell() {
   return { nav, inner, content, banner, closeDrawer };
 }
 
+/** The free-plan metric closest to its daily limit, if it's at the warning level. */
+function usageAlert() {
+  const metrics = state.usage?.metrics ?? [];
+  return metrics.filter((m) => m.status === "fail" || m.status === "warn").sort((a, b) => b.share - a.share)[0] ?? null;
+}
+
 function renderBanner() {
   const b = shell.banner;
   if (state.session === "recovery") {
@@ -263,6 +274,21 @@ function renderBanner() {
       b,
       h("span", { class: "banner-icon" }, IconAlert(16)),
       h("span", null, h("strong", null, "Signed in with a recovery link. "), "Set a new password or replace your authenticator on ", h("a", { href: "/admin/account", "data-nav": "" }, "Your account"), ". This session ends after 30 minutes."),
+    );
+  } else if (usageAlert()) {
+    const m = usageAlert();
+    b.className = `banner ${m.status === "fail" ? "danger" : "warning"}`;
+    b.hidden = false;
+    replace(
+      b,
+      h("span", { class: "banner-icon" }, IconAlert(16)),
+      h(
+        "span",
+        null,
+        h("strong", null, `${m.label}: ${Math.round(m.share * 100)}% of today's free-plan limit. `),
+        m.share >= 1 ? "Requests are failing until 00:00 UTC; purchases stay queued on devices." : "Past the limit, requests fail until 00:00 UTC.",
+      ),
+      h("span", { class: "right" }, h("a", { href: "/admin/settings", "data-nav": "" }, "See usage")),
     );
   } else if (!state.operator.totp_enabled) {
     b.className = "banner";

@@ -17,6 +17,7 @@ import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./
 import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { runChecks, summarize } from "./doctor";
+import { assessUsage, cloudflarePlan, type Plan, readUsage, refreshUsage, usageConfigured } from "./usage";
 import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oauth";
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
@@ -672,19 +673,51 @@ admin.post("/config/versions/:id/restore", requirePermission("config:manage"), a
 
 // --- settings ------------------------------------------------------------------------------------
 
-admin.get("/settings", requirePermission("read"), async (c) => c.json({ require_totp: await requireTotpForEveryone(c.env.DB) }));
+admin.get("/settings", requirePermission("read"), async (c) =>
+  c.json({ require_totp: await requireTotpForEveryone(c.env.DB), cloudflare_plan: await cloudflarePlan(c.env.DB) }),
+);
 
+const setSetting = (c: Ctx, key: string, value: string) =>
+  c.env.DB.prepare(
+    "INSERT INTO setting (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
+  ).bind(key, value, Date.now());
+
+// Send only the settings to change.
 admin.put("/settings", requirePermission("settings:manage"), async (c) => {
-  const b = await body<{ require_totp: boolean }>(c);
-  if (typeof b.require_totp !== "boolean") return bad(c, "require_totp must be true or false.");
+  const b = await body<{ require_totp: boolean; cloudflare_plan: Plan }>(c);
+  if (b.require_totp === undefined && b.cloudflare_plan === undefined) return bad(c, "Send require_totp and/or cloudflare_plan.");
+  if (b.require_totp !== undefined && typeof b.require_totp !== "boolean") return bad(c, "require_totp must be true or false.");
+  if (b.cloudflare_plan !== undefined && b.cloudflare_plan !== "free" && b.cloudflare_plan !== "paid") return bad(c, "cloudflare_plan must be free or paid.");
   if (b.require_totp && !p(c).operator.totp_enabled) return forbidden(c, "Turn on two-step sign-in for yourself first.");
-  await c.env.DB.batch([
-    c.env.DB.prepare(
-      "INSERT INTO setting (key, value, updated_at) VALUES ('require_totp', ?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at",
-    ).bind(String(b.require_totp), Date.now()),
-    auditBy(c, "setting.require_totp", null, { value: b.require_totp }),
-  ]);
-  return c.json({ require_totp: b.require_totp });
+  const writes: D1PreparedStatement[] = [];
+  if (b.require_totp !== undefined) writes.push(setSetting(c, "require_totp", String(b.require_totp)), auditBy(c, "setting.require_totp", null, { value: b.require_totp }));
+  if (b.cloudflare_plan !== undefined) writes.push(setSetting(c, "cloudflare_plan", b.cloudflare_plan), auditBy(c, "setting.cloudflare_plan", null, { value: b.cloudflare_plan }));
+  await c.env.DB.batch(writes);
+  return c.json({ require_totp: await requireTotpForEveryone(c.env.DB), cloudflare_plan: await cloudflarePlan(c.env.DB) });
+});
+
+// --- free-plan usage -----------------------------------------------------------------------------
+
+async function usageReport(c: Ctx) {
+  const [snapshot, plan] = await Promise.all([readUsage(c.env.DB), cloudflarePlan(c.env.DB)]);
+  return {
+    configured: usageConfigured(c.env),
+    plan,
+    updated_at: snapshot?.at || null,
+    error: snapshot?.error ?? null,
+    error_at: snapshot?.errorAt ?? null,
+    metrics: assessUsage(snapshot, plan),
+  };
+}
+
+admin.get("/usage", requirePermission("read"), async (c) => c.json(await usageReport(c)));
+
+// Fetch now instead of waiting for the scheduled job (at most once a minute).
+admin.post("/usage/refresh", requirePermission("read"), async (c) => {
+  if (!usageConfigured(c.env)) return bad(c, "Usage alerts are off: set the CLOUDFLARE_ANALYTICS_TOKEN secret on the back office first.");
+  const last = await readUsage(c.env.DB);
+  if (Date.now() - Math.max(last?.at ?? 0, last?.errorAt ?? 0) >= 60_000) await refreshUsage(c.env, c.get("deps").fetch ?? fetch, Date.now(), true);
+  return c.json(await usageReport(c));
 });
 
 admin.all("*", (c) => notFound(c, "Endpoint"));

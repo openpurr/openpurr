@@ -32,7 +32,7 @@ The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1,
 5. **Cloudflare packaging:**
    - ✅ a guided setup (`pnpm run setup`) and deploys from GitHub Actions;
    - ✅ backups (`pnpm db:backup`, plus D1's own history);
-   - 🚧 usage alerts before you hit free-plan limits: the database size is checked; request counts are next;
+   - ✅ usage alerts before you hit free-plan limits: daily Workers requests, D1 rows read and written, and the database size, in the dashboard and `openpurr doctor`;
    - ⏳ a Deploy to Cloudflare button.
 6. ✅ **MCP server:** ask an AI assistant why a customer does or doesn't have an entitlement, look up purchases, grant access and change the configuration. Works from Claude Code and as a Claude.ai connector.
 7. ✅ **CLI and Claude skills:** `npx openpurr` for setup and checks, plus skills that walk you through App Store Connect and Play Console configuration.

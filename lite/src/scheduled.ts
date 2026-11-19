@@ -13,14 +13,16 @@
 //   - fetch exchange rates once a day's are published (src/fx.ts);
 //   - Google Play: retry failed acknowledgements, and poll voided purchases for missed refunds;
 //   - update the chart totals from the ledger (src/metrics.ts), last, after the exchange rates.
-// Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
-// for customers that lack one (created before snapshots existed, or built from an older config).
+// Every run (5 minutes): retry webhook deliveries that are due, build CustomerInfo snapshots
+// for customers that lack one (created before snapshots existed, or built from an older config),
+// and, every 15 minutes, fetch today's free-plan usage (src/office/usage.ts).
 
 import type { Config } from "./config";
 import { currentConfig, type Deps, type Env } from "./env";
 import { ecbProvider, refreshRates } from "./fx";
 import { rollupMetrics } from "./metrics";
 import { pruneOAuth } from "./office/oauth";
+import { refreshUsage } from "./office/usage";
 import { refreshSnapshot } from "./snapshot";
 import { pollVoidedPurchases, retryPlayAcknowledgements } from "./stores/google-jobs";
 import { retryDueDeliveries } from "./webhooks";
@@ -124,6 +126,10 @@ function snapshotBackfill(config: Config): Task {
   };
 }
 
+function usage(deps: Deps): Task {
+  return async (env, now) => ({ task: "refresh-usage", rows: (await refreshUsage(env, deps.fetch ?? fetch, now)) ? 1 : 0 });
+}
+
 function playAcks(deps: Deps, config: Config): Task {
   return async (env, now) => ({ task: "retry-play-acknowledgements", rows: await retryPlayAcknowledgements(env, deps, config, now) });
 }
@@ -144,7 +150,7 @@ export async function runScheduled(
 ): Promise<TaskResult[]> {
   const due: Task[] = [];
   const config = opts.deps ? await currentConfig(opts.deps, env.DB) : null;
-  if (opts.deps && config) due.push(webhookRetries(opts.deps, config), snapshotBackfill(config));
+  if (opts.deps && config) due.push(webhookRetries(opts.deps, config), snapshotBackfill(config), usage(opts.deps));
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) {
     due.push(...HOURLY_TASKS);
     if (opts.deps && config) due.push(exchangeRates(opts.deps), playAcks(opts.deps, config), playVoided(opts.deps, config));

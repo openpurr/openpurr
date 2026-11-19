@@ -7,6 +7,7 @@ import type { AppEnv } from "../env";
 import { requireTotpForEveryone } from "./auth";
 import { canSeeApp, type Principal } from "./principal";
 import { visibleProjects } from "./project";
+import { assessUsage, cloudflarePlan, describe as describeUsage, readUsage, usageConfigured } from "./usage";
 
 /** The newest migration this code expects. A test keeps it in step with migrations/. */
 export const EXPECTED_MIGRATION = "0018_projects.sql";
@@ -24,6 +25,7 @@ export interface Check {
 const DAY = 864e5;
 /** Cloudflare's free plan caps each D1 database at 500 MB (Workers Paid: 10 GB). Writes fail past it. */
 export const FREE_PLAN_DB_BYTES = 500e6;
+const PAID_PLAN_DB_BYTES = 10e9;
 type Ctx = Context<AppEnv>;
 const secretSet = (c: Ctx, name: string) => typeof (c.env as unknown as Record<string, unknown>)[name] === "string" && !!(c.env as unknown as Record<string, string>)[name];
 
@@ -34,7 +36,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
   const checks: Check[] = [];
   const add = (check: Check) => checks.push(check);
 
-  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp, dbBytes] = await Promise.all([
+  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp, dbBytes, plan, usage] = await Promise.all([
     db.prepare("SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 1").first<{ name: string }>().catch(() => null),
     db
       .prepare("SELECT app_id, store, max(received_at) AS last FROM store_notification WHERE received_at > ? AND app_id IS NOT NULL GROUP BY app_id, store")
@@ -51,6 +53,8 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
       .run()
       .then((r) => (r.meta as { size_after?: number }).size_after ?? null)
       .catch(() => null),
+    cloudflarePlan(db),
+    readUsage(db),
   ]);
 
   // Database schema.
@@ -62,19 +66,54 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
     add({ id: "database", title: "Database", status: "warn", message: `The database (${applied}) is newer than this Worker expects (${EXPECTED_MIGRATION}).`, fix: "Deploy the latest code: pnpm run deploy && pnpm deploy:office" });
   }
 
-  // Database size against the free plan's limit, with time to act before writes start failing.
+  // Database size against the plan's limit, with time to act before writes start failing.
   if (typeof dbBytes === "number") {
-    const share = dbBytes / FREE_PLAN_DB_BYTES;
-    const size = `${(dbBytes / 1e6).toFixed(1)} MB of the free plan's 500 MB per database`;
+    const share = dbBytes / (plan === "paid" ? PAID_PLAN_DB_BYTES : FREE_PLAN_DB_BYTES);
+    const size = plan === "paid" ? `${(dbBytes / 1e6).toFixed(1)} MB of Workers Paid's 10 GB per database` : `${(dbBytes / 1e6).toFixed(1)} MB of the free plan's 500 MB per database`;
     if (share >= 0.75) {
       add({
         id: "storage",
         title: "Database size",
         status: share >= 0.9 ? "fail" : "warn",
-        message: `${size} (${Math.round(share * 100)}%). On the free plan, writes fail at the limit, and purchases stop being recorded. On Workers Paid the limit is 10 GB; ignore this if you're on it.`,
+        message: `${size} (${Math.round(share * 100)}%). Writes fail at the limit, and purchases stop being recorded. On Workers Paid the limit is 10 GB: if you're on it, set the plan in Settings.`,
         fix: "Take a backup (pnpm db:backup), then move to Workers Paid in the Cloudflare dashboard, or delete data you no longer need.",
       });
     } else add({ id: "storage", title: "Database size", status: "ok", message: `${size}.` });
+  }
+
+  // Today's requests and D1 rows against the free plan's daily limits (src/office/usage.ts).
+  if (plan === "paid") {
+    add({ id: "usage", title: "Daily usage", status: "info", message: "Workers Paid: no daily request cap. Usage beyond what's included is billed by Cloudflare." });
+  } else if (!usageConfigured(c.env)) {
+    add({
+      id: "usage",
+      title: "Daily usage",
+      status: "info",
+      message: "Usage alerts are off. On the free plan, requests fail for the rest of the day (until 00:00 UTC) once the account passes 100,000 Workers requests, and purchases stay queued on devices.",
+      fix: "Create a Cloudflare API token with Account Analytics: Read (My Profile → API Tokens), then: wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office. On Workers Paid, set the plan in Settings instead.",
+    });
+  } else if (!usage || (usage.error && !usage.at)) {
+    add(
+      usage?.error
+        ? { id: "usage", title: "Daily usage", status: "warn", message: `Couldn't read usage: ${usage.error}`, fix: "Check the token (Account Analytics: Read) and, if it reaches several accounts, set CLOUDFLARE_ACCOUNT_ID on the back office." }
+        : { id: "usage", title: "Daily usage", status: "info", message: "Not fetched yet (the scheduled job fetches it every 15 minutes)." },
+    );
+  } else {
+    const metrics = assessUsage(usage, plan, now);
+    const worst = metrics.find((m) => m.status === "fail") ?? metrics.find((m) => m.status === "warn");
+    const lines = metrics.map(describeUsage).join("; ");
+    const stale = usage.error ? ` (the latest fetch failed: ${usage.error})` : "";
+    add(
+      worst
+        ? {
+            id: "usage",
+            title: "Daily usage",
+            status: worst.status === "fail" ? "fail" : "warn",
+            message: `${lines}${stale}. Past a limit, ${worst.metric === "workers_requests" ? "requests fail" : "database queries fail"} until 00:00 UTC, and purchases stay queued on devices.`,
+            fix: "Find what's sending the traffic (Workers & Pages → the Worker → Metrics in the Cloudflare dashboard), or move to Workers Paid ($5 a month, no daily cap) and set the plan in Settings.",
+          }
+        : { id: "usage", title: "Daily usage", status: usage.error ? "warn" : "ok", message: `${lines}${stale}.` },
+    );
   }
 
   // Custom domain: proxyURL and store notification URLs should never point at workers.dev.

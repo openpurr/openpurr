@@ -78,6 +78,8 @@ Once the owner can sign in:
 
 Walk through each failing or warning check and apply its fix.
 
+**Usage alerts (recommended on the free plan):** the free plan allows 100,000 Workers requests and 100,000 D1 rows written a day per account; past that, requests fail until 00:00 UTC and purchases stay queued on devices. To get warnings from 75% (in the dashboard, Settings → Daily usage, and in `doctor`), the user creates a Cloudflare API token with **Account Analytics: Read** (My Profile → API Tokens) and sets it on the back office: `! npx wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office`. If the token can reach several accounts, also set `CLOUDFLARE_ACCOUNT_ID` the same way. On Workers Paid, set the plan in Settings instead.
+
 ## Upgrading
 
 After pulling a new version: `pnpm db:backup`, `pnpm install`, then `pnpm db:migrate:remote`, then `pnpm run deploy && pnpm deploy:office`. Migrations always go first: the new code expects the new tables. `openpurr doctor` reports migrations that are behind (Database check).

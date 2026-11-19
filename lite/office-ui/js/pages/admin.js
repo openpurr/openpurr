@@ -1,7 +1,7 @@
 // Admin pages: the team (operators), the audit log and deployment settings.
 import { get, patch, post, put } from "../api.js";
-import { h } from "../dom.js";
-import { IconPlus, IconShield } from "../icons.js";
+import { h, replace } from "../dom.js";
+import { IconPlus, IconRefresh, IconShield } from "../icons.js";
 import {
   avatar,
   badge,
@@ -19,6 +19,7 @@ import {
   kv,
   modal,
   pageHeader,
+  seg,
   select,
   table,
   toast,
@@ -220,8 +221,70 @@ export async function auditPage() {
 
 const STORE = { app_store: "App Store", play_store: "Google Play" };
 
+// Free-plan usage: today's requests and D1 rows against the daily limits (src/office/usage.ts).
+const fmtCount = (n) => n.toLocaleString();
+const USAGE_TONE = { ok: "", info: "", warn: "warning", fail: "danger" };
+
+export function usageCard(ctx, initial) {
+  const owner = ctx.can("settings:manage");
+  const body = h("div", { class: "card-body stack-sm" });
+  const render = (r) => {
+    const rows = r.metrics.map((m) =>
+      h(
+        "div",
+        { class: "meter-row" },
+        h("div", { class: "meter-head" }, h("span", { class: "small" }, m.label), h("span", { class: "small mono" }, `${fmtCount(m.used)} / ${fmtCount(m.limit)}`, m.projected && m.projected > m.used && r.plan === "free" ? h("span", { class: "faint" }, ` · on pace for ${fmtCount(m.projected)}`) : null)),
+        h("div", { class: `meter ${USAGE_TONE[m.status]}` }, h("div", { class: "meter-fill", style: { width: `${Math.min(100, m.share * 100)}%` } })),
+      ),
+    );
+    const plan = owner
+      ? seg(
+          [
+            { value: "free", label: "Free plan" },
+            { value: "paid", label: "Workers Paid" },
+          ],
+          r.plan,
+          async (v) => {
+            try {
+              await put("/settings", { cloudflare_plan: v });
+              render(await get("/usage"));
+              toast(v === "paid" ? "Workers Paid: no daily-limit warnings" : "Free plan: warnings from 75% of each daily limit", "success");
+            } catch (err) {
+              toast(err.message, "error");
+            }
+          },
+        )
+      : h("span", { class: "small" }, r.plan === "paid" ? "Workers Paid" : "Free plan");
+    const status = !r.configured
+      ? h(
+          "p",
+          { class: "small muted" },
+          "Usage alerts are off. To turn them on, create a Cloudflare API token with Account Analytics: Read (My Profile → API Tokens), then run ",
+          h("code", { class: "code-inline" }, "wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office"),
+          ". If the token can reach several accounts, also set CLOUDFLARE_ACCOUNT_ID.",
+        )
+      : h(
+          "p",
+          { class: "small muted" },
+          r.error ? `The latest fetch failed: ${r.error}. ` : "",
+          r.updated_at ? ["Updated ", when(r.updated_at), ". "] : "Not fetched yet. ",
+          r.plan === "free" ? "Limits reset at 00:00 UTC. Past one, requests fail until then and purchases stay queued on devices." : "Workers Paid has no daily cap; usage beyond what's included is billed.",
+        );
+    replace(body, h("div", null, plan), r.configured ? rows : null, status);
+  };
+  render(initial);
+  const refresh = button(null, {
+    variant: "outline",
+    size: "sm",
+    icon: IconRefresh(14),
+    title: "Fetch now",
+    onClick: (e) => busy(e.currentTarget, async () => render(await post("/usage/refresh"))),
+  });
+  return cardWith("Daily usage", "Today's requests and database rows against Cloudflare's free-plan limits.", body, initial.configured ? [refresh] : []);
+}
+
 export async function settingsPage(ctx) {
-  const settings = await get("/settings");
+  const [settings, usage] = await Promise.all([get("/settings"), get("/usage")]);
   const owner = ctx.can("settings:manage");
   const requireTotp = toggle({
     checked: settings.require_totp,
@@ -246,6 +309,7 @@ export async function settingsPage(ctx) {
     h(
       "div",
       { class: "stack" },
+      usageCard(ctx, usage),
       cardWith(
         "Security",
         owner ? null : "Only owners can change these.",
