@@ -55,8 +55,9 @@
   "triggers": { "crons": [] },
 
   "vars": {
-    // "on" stores every SDK request in the D1 `capture` table (spike only).
-    "CAPTURE": "on"
+    // "on" stores every SDK request in the D1 `capture` table (spike tooling, off in production;
+    // the tests turn it on in vitest.config.ts).
+    "CAPTURE": "off"
   },
 
   // Public SDK keys live in openpurr.config.yaml (they ship inside apps, so they aren't secrets).
