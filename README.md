@@ -78,13 +78,22 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Getting started
 
-Nothing to install yet. Once the Lite edition ships, setup will look like this:
+Lite v1 is still in progress, so expect changes. To try it on your own Cloudflare account (the free plan is enough), with Node 22.12 or later:
 
 ```sh
-npx openpurr init      # writes config and wrangler.toml, creates D1, KV and secrets
-npx wrangler deploy
-npx openpurr doctor    # checks store credentials, notification URLs and keys
+git clone https://github.com/openpurr/openpurr && cd openpurr
+npx pnpm install
+cd lite && npx wrangler login
+npx pnpm run setup      # config, database, both Workers, operator secret and your owner account
 ```
+
+The setup asks for your bundle ID and package name, and it's safe to run again if it stops halfway. Afterwards:
+
+- **Check your setup:** run `npx openpurr login`, then `npx openpurr doctor`. It reports what's missing and how to fix each item.
+- **Back up your data:** `npx pnpm db:backup` exports the database to a file. D1 also keeps 7 days of history on the free plan (30 on Workers Paid).
+- **Deploy on every push:** fork the repo and add your Cloudflare details as repository secrets. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) lists them.
+
+Using Claude Code? The [openpurr plugin](plugin/) walks through the same steps, plus App Store Connect and Play Console setup.
 
 ## Contributing
 

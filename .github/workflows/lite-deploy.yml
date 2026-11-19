@@ -1,0 +1,130 @@
+name: Deploy Lite
+
+# Deploys openpurr Lite (the SDK Worker and the back office) to the Cloudflare account in this
+# repository's secrets, on every merge to main that touches lite/, or by hand. Forks can use it
+# as is: add the secrets below to your fork. Without them, the run skips with a notice.
+#
+# Required secrets:
+#   CLOUDFLARE_API_TOKEN    token with Workers Scripts: Edit and D1: Edit (plus Zone: Workers
+#                           Routes: Edit and DNS: Edit if you use custom domains)
+#   CLOUDFLARE_ACCOUNT_ID
+#   OPENPURR_CONFIG_YAML    the full contents of your openpurr.config.yaml
+# Optional secrets (see lite/scripts/deploy-config.mjs):
+#   OPENPURR_WORKER_NAME, OPENPURR_D1_DATABASE_NAME, OPENPURR_D1_DATABASE_ID,
+#   OPENPURR_SDK_DOMAIN, OPENPURR_OFFICE_DOMAIN
+#
+# Worker secrets (OPERATOR_SECRET, APPLE_IAP_KEY, GOOGLE_SERVICE_ACCOUNT, webhook secrets) stay
+# in Cloudflare, set once with `wrangler secret put`. Deploys don't touch them.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "lite/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/lite-deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Never cancel a deploy halfway through (between migrations and code).
+concurrency:
+  group: lite-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Migrate and deploy both Workers
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: lite
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      OPENPURR_WORKER_NAME: ${{ secrets.OPENPURR_WORKER_NAME }}
+      OPENPURR_D1_DATABASE_NAME: ${{ secrets.OPENPURR_D1_DATABASE_NAME }}
+      OPENPURR_D1_DATABASE_ID: ${{ secrets.OPENPURR_D1_DATABASE_ID }}
+      OPENPURR_SDK_DOMAIN: ${{ secrets.OPENPURR_SDK_DOMAIN }}
+      OPENPURR_OFFICE_DOMAIN: ${{ secrets.OPENPURR_OFFICE_DOMAIN }}
+    steps:
+      - name: Check secrets
+        id: secrets
+        env:
+          OPENPURR_CONFIG_YAML: ${{ secrets.OPENPURR_CONFIG_YAML }}
+        run: |
+          missing=""
+          [ -n "$CLOUDFLARE_API_TOKEN" ] || missing="$missing CLOUDFLARE_API_TOKEN"
+          [ -n "$CLOUDFLARE_ACCOUNT_ID" ] || missing="$missing CLOUDFLARE_ACCOUNT_ID"
+          [ -n "$OPENPURR_CONFIG_YAML" ] || missing="$missing OPENPURR_CONFIG_YAML"
+          if [ -z "$missing" ]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          elif [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ]; then
+            echo "::error::Missing repository secrets:$missing"
+            exit 1
+          else
+            echo "::notice::Skipping the Lite deploy. Missing repository secrets:$missing"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          persist-credentials: false
+
+      # Uses the pnpm version pinned in package.json's "packageManager".
+      - uses: pnpm/action-setup@v4
+        if: steps.secrets.outputs.ready == 'true'
+
+      - uses: actions/setup-node@v4
+        if: steps.secrets.outputs.ready == 'true'
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        if: steps.secrets.outputs.ready == 'true'
+        run: pnpm install --frozen-lockfile --filter @openpurr/lite...
+
+      # Same checks as CI, so a broken main never reaches production.
+      - name: Typecheck and test
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        run: pnpm typecheck && pnpm test
+
+      - name: Write the deploy config
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        env:
+          OPENPURR_CONFIG_YAML: ${{ secrets.OPENPURR_CONFIG_YAML }}
+        run: |
+          umask 077
+          printf '%s\n' "$OPENPURR_CONFIG_YAML" > "$RUNNER_TEMP/openpurr.config.yaml"
+          echo "OPENPURR_CONFIG=$RUNNER_TEMP/openpurr.config.yaml" >> "$GITHUB_ENV"
+          node scripts/build-config.mjs
+          node scripts/deploy-config.mjs
+
+      # The first deploy to a new account creates the database; migrations need it to exist first.
+      - name: Create the database if needed
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        run: |
+          if ! pnpm exec wrangler d1 info DB -c wrangler.deploy.json > /dev/null 2>&1; then
+            pnpm exec wrangler d1 create "${OPENPURR_D1_DATABASE_NAME:-openpurr}"
+          fi
+
+      # Migrations go first: the new code expects the new tables.
+      - name: Apply migrations
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        run: pnpm exec wrangler d1 migrations apply DB --remote -c wrangler.deploy.json
+
+      - name: Deploy the SDK Worker
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        run: pnpm exec wrangler deploy -c wrangler.deploy.json --env=
+
+      - name: Deploy the back office
+        if: steps.secrets.outputs.ready == 'true'
+        working-directory: lite
+        run: pnpm exec wrangler deploy -c wrangler.deploy.json --env office

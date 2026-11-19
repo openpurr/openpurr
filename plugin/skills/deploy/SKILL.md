@@ -20,11 +20,15 @@ Check, and tell the user what's missing:
 - A Cloudflare account, signed in: `npx wrangler whoami`. If not signed in, ask the user to run `! npx wrangler login` themselves (it opens a browser).
 - A clone of github.com/openpurr/openpurr, then `pnpm install` at the repo root.
 
+## Quick path: guided setup
+
+`pnpm run setup` (in `lite/`) does the whole first deploy below in one go: it asks for the bundle ID and package name, writes `openpurr.config.yaml` with fresh SDK keys, creates the database, applies migrations, deploys both Workers, generates and sets `OPERATOR_SECRET` without printing it, and creates the first owner. It's safe to rerun; finished steps are skipped. It asks questions, so ask the user to run it themselves: `! cd lite && pnpm run setup`. Then go to "Check and connect". Use the steps below when the user wants to see each one, or when the setup stops with an error.
+
 ## First deploy
 
 Run these one at a time, and stop to fix anything that fails. Never print or echo secret values.
 
-1. **Create the database.** `npx wrangler d1 create openpurr`. Copy the `database_id` it prints into `lite/wrangler.jsonc`. It appears once per environment (top level, `office`, `bench`); replace every occurrence.
+1. **Create the database.** `npx wrangler d1 create openpurr`. Nothing to copy: `wrangler.jsonc` finds the database by name. If wrangler offers to add the binding or writes a `database_id` into `wrangler.jsonc`, decline or discard that change.
 2. **Write the config.** `cp openpurr.config.example.yaml openpurr.config.yaml`, then edit it with the user: their apps (bundle ID, package name), products, entitlements and offerings. Generate each SDK key as `appl_` or `goog_` plus at least 32 random characters, for example `node -e "console.log('appl_' + require('crypto').randomBytes(24).toString('base64url'))"`. SDK keys ship inside the app, so they're identifiers, not secrets. Store credentials never go in this file. The deploy validates it and says what's wrong.
 3. **Apply the migrations.** `pnpm db:migrate:remote`.
 4. **Set the operator secret** on the back office. It signs sessions and peppers passwords. Ask the user to run it, so the value never passes through this conversation:
@@ -35,6 +39,17 @@ Run these one at a time, and stop to fix anything that fails. Never print or ech
 7. **Check the setup.** See "Check and connect" below.
 
 Then set up the stores: the `app-store-setup` and `play-setup` skills. Then point the app at the SDK Worker: the `integrate` skill.
+
+## Deploy from GitHub Actions (optional)
+
+Instead of deploying from a laptop, a fork of the repo can deploy itself on every push to `main` with `.github/workflows/lite-deploy.yml`. It applies migrations, then deploys both Workers. Do the first deploy above first (or at least steps 1, 2 and 4), then in the fork's Settings → Secrets and variables → Actions, add:
+
+- `CLOUDFLARE_API_TOKEN`: a token with Workers Scripts: Edit and D1: Edit (plus Zone: Workers Routes: Edit and DNS: Edit for custom domains).
+- `CLOUDFLARE_ACCOUNT_ID`.
+- `OPENPURR_CONFIG_YAML`: the whole contents of `openpurr.config.yaml`, which isn't committed.
+- Optional: `OPENPURR_WORKER_NAME`, `OPENPURR_D1_DATABASE_NAME`, `OPENPURR_D1_DATABASE_ID`, `OPENPURR_SDK_DOMAIN`, `OPENPURR_OFFICE_DOMAIN` (see `lite/scripts/deploy-config.mjs`).
+
+Worker secrets such as `OPERATOR_SECRET` stay in Cloudflare; deploys don't change them. Run the workflow once by hand (Actions → Deploy Lite → Run workflow) to check the secrets.
 
 ## Custom domains (recommended)
 
@@ -51,7 +66,14 @@ Walk through each failing or warning check and apply its fix.
 
 ## Upgrading
 
-After pulling a new version: `pnpm install`, then `pnpm db:migrate:remote`, then `pnpm run deploy && pnpm deploy:office`. Migrations always go first: the new code expects the new tables. `openpurr doctor` reports migrations that are behind (Database check).
+After pulling a new version: `pnpm db:backup`, `pnpm install`, then `pnpm db:migrate:remote`, then `pnpm run deploy && pnpm deploy:office`. Migrations always go first: the new code expects the new tables. `openpurr doctor` reports migrations that are behind (Database check).
+
+## Backups
+
+- **Time Travel:** D1 keeps point-in-time history, 7 days on the free plan and 30 on Workers Paid. `npx wrangler d1 time-travel restore openpurr --timestamp=<ISO time>` overwrites the database in place and prints a bookmark that undoes it. Confirm with the user before restoring.
+- **File backups:** `pnpm db:backup` exports everything to `lite/backups/` (git-ignored). The file holds customer data; tell the user to keep it private and encrypted, never in a repo. Suggest one before every upgrade and on a regular schedule.
+- **Restoring a file:** into a new database (`npx wrangler d1 create openpurr-restored`, then `npx wrangler d1 execute openpurr-restored --remote --file <file>`), then point the deployment at it with `OPENPURR_D1_DATABASE_NAME`, or by changing `database_name` in `wrangler.jsonc`, and deploy.
+- **Size:** `openpurr doctor` warns at 75% of the free plan's 500 MB per database.
 
 ## When a deploy fails
 
