@@ -201,3 +201,39 @@ describe("tools", () => {
     expect(pro).toMatchObject({ product_identifier: "rc_promo_pro_lifetime", expires_date: null });
   });
 });
+
+describe("MCP config tools", () => {
+  it("get_config returns the document and its version; save_config saves a new version, refusing stale or invalid ones", async () => {
+    const { token } = await tokenFor("owner", ["read", "write:config"]);
+    const got = await tool(token, "get_config");
+    expect(got.structuredContent.version_id).toBe(0);
+    expect(got.structuredContent.projects[0].apps.find((a: { id: string }) => a.id === "ios").sdk_keys).toEqual(["appl_test_ios_0123456789"]);
+    const document = structuredClone(got.structuredContent.document);
+    document.projects.default.name = "Renamed";
+
+    const saved = await tool(token, "save_config", { document, base_id: 0, note: "Rename" });
+    expect(saved.isError).toBeFalsy();
+    const id = saved.structuredContent.version_id;
+    const row = await env.DB.prepare("SELECT created_by, note, document FROM config_version WHERE id = ?").bind(id).first<{ created_by: string; note: string; document: string }>();
+    expect(row!.note).toBe("Rename");
+    expect(JSON.parse(row!.document).projects.default.name).toBe("Renamed");
+
+    const stale = await tool(token, "save_config", { document, base_id: 0 });
+    expect(stale.isError).toBe(true);
+    expect(text(stale)).toMatch(/changed by someone else/);
+
+    document.projects.default.apps.ios.sdk_keys = ["test_nope_nope_nope_nope"];
+    const invalid = await tool(token, "save_config", { document, base_id: id });
+    expect(invalid.isError).toBe(true);
+    expect(text(invalid)).toMatch(/apps\.ios\.sdk_keys\[0\]: must not start with test_/);
+    const audit = await env.DB.prepare("SELECT source FROM audit_log WHERE action = 'config.saved'").all();
+    expect(audit.results).toEqual([{ source: "mcp" }]);
+  });
+
+  it("offers save_config only to tokens that may change the config", async () => {
+    const names = async (token: string) => ((await rpc(token, "tools/list")).body.result.tools as { name: string }[]).map((t) => t.name);
+    expect(await names((await tokenFor("owner", ["read"])).token)).not.toContain("save_config");
+    expect(await names((await tokenFor("developer", ["read", "write:config"])).token)).not.toContain("save_config");
+    expect(await names((await tokenFor("admin", ["read", "write:config"])).token)).toContain("save_config");
+  });
+});

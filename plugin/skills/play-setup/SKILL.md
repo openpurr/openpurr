@@ -5,21 +5,23 @@ description: Connect an Android app on Google Play to openpurr. Covers the servi
 
 # Connect Google Play
 
-openpurr verifies every Play purchase with the Google Play Developer API, acknowledges it, and follows Real-time Developer Notifications (RTDN). Without API access, Play purchases are refused and stay queued on the device. Most steps happen in Google Cloud and the Play Console, where the user clicks. You help with the config and commands in `lite/`. Never ask the user to paste a service account key into the conversation.
+openpurr verifies every Play purchase with the Google Play Developer API, acknowledges it, and follows Real-time Developer Notifications (RTDN). Without API access, Play purchases are refused and stay queued on the device. Most steps happen in Google Cloud and the Play Console, where the user clicks. You help with openpurr's config and the commands in `lite/`. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx openpurr config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. Never ask the user to paste a service account key into the conversation.
 
 ## 1. The app and its products in the config
 
-```yaml
-apps:
-  android:
-    store: play_store
-    package_name: com.example.myapp
-    sdk_keys:
-      - goog_<long random string>
-    products:
-      pro: { type: subscription, base_plans: [monthly, annual] }
-      lifetime: { type: non_consumable }
-      coins_100: { type: consumable }
+In the dashboard: Configuration → Apps and products → Add app (Google Play, the package name), which also creates its SDK key; then Add product for each one. In the config document, the app sits in its project's `apps`:
+
+```json
+"rose_android": {
+  "store": "play_store",
+  "package_name": "com.example.rose",
+  "sdk_keys": ["goog_<long random string>"],
+  "products": {
+    "pro": { "type": "subscription", "base_plans": ["monthly", "annual"] },
+    "lifetime": { "type": "non_consumable" },
+    "coins_100": { "type": "consumable" }
+  }
+}
 ```
 
 - Subscriptions list their base plans. In entitlements and offerings, `pro` means every base plan and `pro:monthly` means just one.
@@ -30,18 +32,15 @@ apps:
 1. In Google Cloud (any project): IAM & Admin → Service accounts → create one, for example `openpurr`. Then Keys → Add key → JSON. Keep the downloaded file safe.
 2. In the Play Console: Users and permissions → Invite new users → the service account's email. Under app permissions, grant **View app information**, **View financial data** (for prices) and **Manage orders and subscriptions**.
 3. Enable the **Google Play Android Developer API** in that Cloud project.
-4. Add to the app in the config:
-   ```yaml
-       google_play_api:
-         service_account_secret: GOOGLE_SERVICE_ACCOUNT
+4. Turn on API access for the app: Apps and products → the app → Google Play Developer API → Set up. In the document:
+   ```json
+   "google_play_api": { "service_account_secret": "GOOGLE_SERVICE_ACCOUNT" }
    ```
 5. Store the JSON key as a secret **on both Workers**. Ask the user to run these:
    ```sh
    ! npx wrangler secret put GOOGLE_SERVICE_ACCOUNT < service-account.json
    ! npx wrangler secret put GOOGLE_SERVICE_ACCOUNT --env office < service-account.json
    ```
-6. Deploy: `pnpm run deploy && pnpm deploy:office`.
-
 Permissions for a new service account can take up to a day to apply in Play. If verification fails with a 401 or 403 right after setup, wait and retry before changing anything.
 
 ## 3. Real-time Developer Notifications
@@ -50,14 +49,14 @@ Permissions for a new service account can take up to a day to apply in Play. If 
 2. Play Console → Monetization setup → Real-time developer notifications: enter the topic's full name (`projects/<project>/topics/play-rtdn`).
 3. Create a service account for the push, for example `rtdn-push`. It needs no roles.
 4. Add a **push** subscription to the topic, endpoint `https://<back office>/notifications/google` (the back-office Worker), with **authentication enabled**, using the `rtdn-push` service account.
-5. Name that account in the config, so openpurr accepts only pushes signed by it:
-   ```yaml
-       google_play_api:
-         service_account_secret: GOOGLE_SERVICE_ACCOUNT
-         pubsub_push_account: rtdn-push@<project>.iam.gserviceaccount.com
-         # pubsub_audience: https://...   only if you set a custom audience on the subscription
+5. Name that account in the app's Google Play Developer API settings (Pub/Sub push account), so openpurr accepts only pushes signed by it:
+   ```json
+   "google_play_api": {
+     "service_account_secret": "GOOGLE_SERVICE_ACCOUNT",
+     "pubsub_push_account": "rtdn-push@<project>.iam.gserviceaccount.com"
+   }
    ```
-   Deploy again.
+   Add `pubsub_audience` only if you set a custom audience on the subscription.
 6. In the Play Console, click **Send test notification**.
 
 ## 4. Check

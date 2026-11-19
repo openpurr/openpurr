@@ -17,8 +17,8 @@
   "minify": true,
   "upload_source_maps": true,
 
-  // Compiles openpurr.config.yaml into src/config.generated.json before every deploy and dev run.
-  // A config mistake fails here with a message saying what's wrong.
+  // Bundles openpurr.config.yaml, if there is one, for a new deployment's first config import
+  // (scripts/build-config.mjs). The config itself lives in D1 and is edited in the dashboard.
   "build": { "command": "node scripts/build-config.mjs" },
 
   // Workers Logs records CPU time per invocation; M0 reads benchmark results from it.
@@ -60,7 +60,7 @@
     "CAPTURE": "off"
   },
 
-  // Public SDK keys live in openpurr.config.yaml (they ship inside apps, so they aren't secrets).
+  // Public SDK keys live in the config (they ship inside apps, so they aren't secrets).
   // Secrets (set with `wrangler secret put`, or in .dev.vars locally):
   //   BENCH_TOKEN   bearer token for the /__capture endpoint (and /__bench on the bench Worker)
 

@@ -194,6 +194,7 @@ const TOKEN_SCOPES = [
   { value: "write:webhooks", label: "write:webhooks", sub: "Replay webhook events" },
   { value: "admin", label: "admin", sub: "Manage secret keys, the team and settings" },
   { value: "write:grants", label: "write:grants", sub: "Grant and revoke promotional entitlements" },
+  { value: "write:config", label: "write:config", sub: "Change the configuration: apps, products, entitlements, offerings and webhooks" },
 ];
 
 export async function tokensPage(ctx) {
@@ -265,7 +266,7 @@ export async function tokensPage(ctx) {
       h(
         "p",
         { class: "small muted" },
-        "Claude.ai and other apps that sign in: add a custom connector with the MCP server URL, and approve it here when asked. Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access and write:webhooks to replay webhooks.",
+        "Claude.ai and other apps that sign in: add a custom connector with the MCP server URL, and approve it here when asked. Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access, write:webhooks to replay webhooks and write:config to change the configuration.",
       ),
     ),
   );

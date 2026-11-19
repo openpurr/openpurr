@@ -25,7 +25,7 @@ export type Permission =
   | "operators:manage"
   | "config:manage"
   | "settings:manage";
-export const TOKEN_SCOPES = ["read", "write:grants", "write:webhooks", "admin"] as const;
+export const TOKEN_SCOPES = ["read", "write:grants", "write:webhooks", "write:config", "admin"] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 
 const ROLE_PERMISSIONS: Record<Operator["role"], Permission[]> = {
@@ -39,6 +39,7 @@ const SCOPE_PERMISSIONS: Record<TokenScope, Permission[]> = {
   read: ["read", "audit:read"],
   "write:webhooks": ["webhooks:replay"],
   "write:grants": ["grants:manage"],
+  "write:config": ["config:manage"],
   admin: ["keys:manage", "operators:manage", "config:manage", "settings:manage", "audit:read"],
 };
 

@@ -22,7 +22,7 @@ Then, for the full picture, `lookup_customer` (or `npx openpurr customer <app us
 | What you see | Likely cause | Fix |
 |---|---|---|
 | No purchases at all | The app isn't using openpurr (missing `proxyURL`, or set after `configure`), or the purchase is under another app user ID | Check the app's SDK setup (`integrate` skill). Search by transaction ID |
-| Purchase present, entitlement missing | The product isn't in that entitlement in the config | Add it under `entitlements` (Play: `pro` for every base plan or `pro:monthly` for one), then deploy |
+| Purchase present, entitlement missing | The product isn't in that entitlement in the config | Add it to the entitlement (dashboard: Configuration → Entitlements; Play: `pro` for every base plan or `pro:monthly` for one). Takes effect within a minute, no deploy |
 | Only sandbox purchases | A TestFlight or license-tester build | Expected: sandbox access works in sandbox builds only |
 | Subscription expired, but the store says it renewed | Store notifications aren't arriving | `check_setup` / `npx openpurr doctor`; see the `app-store-setup` or `play-setup` skill |
 | Google Play purchase pending in the app | Play API access isn't configured, so openpurr refuses the purchase | `play-setup` skill |

@@ -218,7 +218,7 @@ async function login(io, flags, out, s) {
   if (!/^https?:\/\//.test(url)) throw new CliError("The URL must start with https:// (or http:// for a local wrangler dev).", 2);
   let token = flags.token || io.env.OPENPURR_TOKEN || "";
   if (!token) {
-    out(`Create a personal access token at ${url}/admin/tokens (scopes: read, plus write:grants or admin if you need them).`);
+    out(`Create a personal access token at ${url}/admin/tokens (scopes: read, plus write:grants, write:config or admin if you need them).`);
     token = (await ask(io, "Token: ", true)).trim();
   }
   if (!token.startsWith("pat_")) throw new CliError("That isn't a personal access token (they start with pat_).", 2);
