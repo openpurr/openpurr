@@ -4,9 +4,10 @@
 import { get, onAuthChange, post } from "./api.js";
 import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment, renderSetPassword } from "./auth.js";
 import { h, replace } from "./dom.js";
-import { IconAlert, IconBolt, IconCustomers, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
+import { IconAlert, IconBolt, IconChart, IconCustomers, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
 import { auditPage, settingsPage, teamPage } from "./pages/admin.js";
+import { chartPage, chartsPage } from "./pages/charts.js";
 import { customerPage, customersPage } from "./pages/customers.js";
 import { secretKeysPage, tokensPage, webhooksPage } from "./pages/developers.js";
 import { applyTheme, avatar, brand, empty, errorCard } from "./ui.js";
@@ -16,7 +17,8 @@ const root = document.getElementById("app");
 // Sidebar sections. `perm` hides an item from operators without that permission (the API enforces
 // it either way).
 const ROUTES = [
-  { key: "customers", label: "Customers", icon: IconCustomers, section: "Customers", perm: "read", page: customersPage },
+  { key: "charts", label: "Charts", icon: IconChart, section: "Overview", perm: "read", page: chartsPage },
+  { key: "customers", label: "Customers", icon: IconCustomers, section: "Overview", perm: "read", page: customersPage },
   { key: "webhooks", label: "Webhooks", icon: IconBolt, section: "Developers", perm: "read", page: webhooksPage },
   { key: "secret-keys", label: "Secret keys", icon: IconKey, section: "Developers", perm: "keys:manage", page: secretKeysPage },
   { key: "tokens", label: "Access tokens", icon: IconTerminal, section: "Developers", page: tokensPage },
@@ -37,7 +39,7 @@ const can = (perm) => !perm || state.permissions.has(perm);
 
 function parsePath() {
   const parts = location.pathname.replace(/^\/admin\/?/, "").split("/").filter(Boolean).map(decodeURIComponent);
-  const route = ROUTES.find((r) => r.key === (parts[0] ?? "customers"));
+  const route = ROUTES.find((r) => r.key === (parts[0] ?? "charts"));
   return { route, rest: parts.slice(1) };
 }
 
@@ -234,7 +236,8 @@ async function renderRoute() {
   if (pageKey !== shownPage) replace(shell.inner, h("div", { class: "loading" }, "Loading…"));
   shownPage = pageKey;
   try {
-    const node = route.key === "customers" && rest[0] ? await customerPage(ctx, rest[0]) : await route.page(ctx);
+    const node =
+      route.key === "customers" && rest[0] ? await customerPage(ctx, rest[0]) : route.key === "charts" && rest[0] ? await chartPage(ctx, rest[0]) : await route.page(ctx);
     show(node);
   } catch (err) {
     if (err.code === "signed_out" || err.code === "totp_enrollment_required") return; // handled in api.js

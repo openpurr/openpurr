@@ -79,7 +79,8 @@ describe("scheduled job", () => {
   });
 
   it("runs the hourly tasks only in the first slot of each hour", async () => {
-    expect(await runScheduled(env, Date.parse("2026-12-01T10:00:00Z"))).toHaveLength(4);
+    // Four storage tasks, then the chart rollup (the exchange-rate and Google tasks need deps).
+    expect(await runScheduled(env, Date.parse("2026-12-01T10:00:00Z"))).toHaveLength(5);
     expect(await runScheduled(env, Date.parse("2026-12-01T10:35:00Z"))).toHaveLength(0);
   });
 

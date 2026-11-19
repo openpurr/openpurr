@@ -15,6 +15,11 @@ export default defineConfig(async () => {
         },
       }),
     ],
-    test: { setupFiles: ["./test/apply-migrations.ts"] },
+    test: {
+      setupFiles: ["./test/apply-migrations.ts"],
+      // Locally every test takes milliseconds, but a busy CI runner can be many times slower
+      // (password hashing, several requests in a row), so allow 15 s before calling it a hang.
+      testTimeout: 15_000,
+    },
   };
 });

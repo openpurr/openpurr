@@ -11,12 +11,14 @@
 //     purchases, and the SDK recreates them (and re-syncs attributes) when needed;
 //   - forget verified Apple certificate chains that have expired;
 //   - fetch exchange rates once a day's are published (src/fx.ts);
-//   - Google Play: retry failed acknowledgements, and poll voided purchases for missed refunds.
+//   - Google Play: retry failed acknowledgements, and poll voided purchases for missed refunds;
+//   - update the chart totals from the ledger (src/metrics.ts), last, after the exchange rates.
 // Every run (5 minutes): retry webhook deliveries that are due, and build CustomerInfo snapshots
 // for customers that lack one (created before snapshots existed, or built from an older config).
 
 import type { Deps, Env } from "./env";
 import { ecbProvider, refreshRates } from "./fx";
+import { rollupMetrics } from "./metrics";
 import { refreshSnapshot } from "./snapshot";
 import { pollVoidedPurchases, retryPlayAcknowledgements } from "./stores/google-jobs";
 import { retryDueDeliveries } from "./webhooks";
@@ -90,6 +92,8 @@ const pruneExpiredChains: Task = async (env, now) => {
 
 export const HOURLY_TASKS: Task[] = [pruneNotificationPayloads, pruneCaptures, pruneInactiveCustomers, pruneExpiredChains];
 
+const chartTotals: Task = async (env, now) => ({ task: "rollup-metrics", rows: (await rollupMetrics(env.DB, now)).rows });
+
 function webhookRetries(deps: Deps): Task {
   return async (env, now) => ({
     task: "retry-webhooks",
@@ -133,6 +137,7 @@ export async function runScheduled(
   if (opts.all || new Date(scheduledTime).getUTCMinutes() < 5) {
     due.push(...HOURLY_TASKS);
     if (opts.deps) due.push(exchangeRates(opts.deps), playAcks(opts.deps), playVoided(opts.deps));
+    due.push(chartTotals);
   }
 
   const results: TaskResult[] = [];

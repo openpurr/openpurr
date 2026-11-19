@@ -290,6 +290,47 @@ describe("customer list", () => {
   });
 });
 
+describe("charts API", () => {
+  it("lists charts and serves one as JSON or CSV, with validated parameters", async () => {
+    const { session } = await operator("viewer");
+    const list = await api("GET", "/metrics", { session });
+    expect(list.status).toBe(200);
+    expect(list.body.charts.map((c: { id: string }) => c.id)).toEqual(expect.arrayContaining(["revenue", "mrr", "active_subscriptions", "new_customers"]));
+
+    const mrr = await api("GET", "/metrics/mrr?from=2026-01-01&to=2026-01-31&interval=week", { session });
+    expect(mrr.status).toBe(200);
+    expect(mrr.body).toMatchObject({ chart: "mrr", unit: "usd", kind: "running", interval: "week" });
+    expect(mrr.body.points[0]).toMatchObject({ date: "2025-12-29", values: { mrr: expect.any(Number) } });
+
+    const ctx = createExecutionContext();
+    const csv = await testApp.fetch(
+      new Request(`${ORIGIN}/admin/v1/metrics/revenue?from=2026-01-01&to=2026-01-03&format=csv`, { headers: { cookie: `${SESSION_COOKIE}=${session}` } }),
+      adminEnv(),
+      ctx,
+    );
+    await waitOnExecutionContext(ctx);
+    expect(csv.headers.get("content-type")).toMatch(/text\/csv/);
+    expect((await csv.text()).split("\n")[0]).toBe("date,net,refunds,gross");
+
+    for (const bad of ["from=2026-02-01&to=2026-01-01", "from=yesterday", "interval=hour", "environment=staging", "store=amazon", "from=2000-01-01&to=2026-01-01"]) {
+      expect((await api("GET", `/metrics/revenue?${bad}`, { session })).status).toBe(400);
+    }
+    expect((await api("GET", "/metrics/ltv", { session })).status).toBe(404);
+    expect((await api("GET", "/metrics/revenue?app=not-an-app", { session })).status).toBe(404);
+  });
+
+  it("refreshes at most once a minute; only owners rebuild all history", async () => {
+    const { session } = await operator("viewer");
+    const first = await api("POST", "/metrics/refresh", { session }, { body: {} });
+    expect(first.status).toBe(200);
+    expect((await api("POST", "/metrics/refresh", { session }, { body: {} })).body.refreshed).toBe(false);
+    expect((await api("POST", "/metrics/refresh", { session }, { body: { full: true } })).status).toBe(403);
+    const owner = await operator("owner");
+    const full = await api("POST", "/metrics/refresh", { session: owner.session }, { body: { full: true } });
+    expect(full.body).toMatchObject({ refreshed: true, full: true });
+  });
+});
+
 describe("webhooks", () => {
   it("lists deliveries and replays an event", async () => {
     let status = 500;

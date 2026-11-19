@@ -42,5 +42,9 @@ try {
   throw err;
 }
 
-writeFileSync(path("src/config.generated.json"), `${JSON.stringify(raw, null, 2)}\n`);
+// Write only on a change: wrangler dev watches src/, and rewriting an identical file would make it
+// rebuild (which runs this script again) in a loop.
+const out = path("src/config.generated.json");
+const json = `${JSON.stringify(raw, null, 2)}\n`;
+if (!existsSync(out) || readFileSync(out, "utf8") !== json) writeFileSync(out, json);
 console.log(`config: ${source} -> src/config.generated.json`);
