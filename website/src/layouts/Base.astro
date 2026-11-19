@@ -37,7 +37,6 @@ const ogImage = new URL("/logo.png", Astro.site);
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary" />
-    <Analytics />
   </head>
   <body>
     <Header />
@@ -45,5 +44,6 @@ const ogImage = new URL("/logo.png", Astro.site);
       <slot />
     </main>
     <Footer />
+    <Analytics />
   </body>
 </html>
