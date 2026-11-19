@@ -10,7 +10,7 @@ interface Props {
 
 const {
   title = "openpurr: an open-source, self-hosted RevenueCat replacement",
-  description = "Self-host your in-app purchase backend. Keep the Purchases SDK you already use, point it at your own server, and pay no revenue share.",
+  description = "openpurr is an open-source, self-hosted RevenueCat alternative. Keep the Purchases SDK you already use, point it at your own server, and pay no revenue share.",
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -25,7 +25,9 @@ const ogImage = new URL("/logo.png", Astro.site);
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/png" href="/mark.png" />
+    <link rel="icon" href="/favicon.ico" sizes="32x32" />
+    <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#7050e8" />
 
     <meta property="og:type" content="website" />

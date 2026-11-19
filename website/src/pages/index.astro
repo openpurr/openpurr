@@ -1,6 +1,7 @@
 ---
 import Base from "../layouts/Base.astro";
 import SdkSnippet from "../components/SdkSnippet.astro";
+import Faq from "../components/Faq.astro";
 import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL } from "../consts";
 
 const reasons = [
@@ -297,6 +298,8 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
     </div>
   </section>
 
+  <Faq />
+
   <!-- CTA -->
   <section class="cta-section">
     <div class="wrap">
@@ -592,9 +595,6 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
   }
 
   /* CTA */
-  .cta-section {
-    padding-top: 0;
-  }
   .cta {
     background: linear-gradient(135deg, #7050e8, #4a2fc4);
     color: #fff;
