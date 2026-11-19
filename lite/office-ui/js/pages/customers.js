@@ -1,8 +1,8 @@
 // Customers: look one up by app user ID (or any alias), then see what they own and why.
 import { get, post } from "../api.js";
 import { h, replace } from "../dom.js";
-import { IconCustomers, IconRefresh, IconSearch } from "../icons.js";
-import { badge, breadcrumb, busy, button, cardWith, copy, empty, errorCard, fmtDate, fmtDateTime, kv, pageHeader, seg, table, toast, when } from "../ui.js";
+import { IconCustomers, IconPlus, IconRefresh, IconSearch } from "../icons.js";
+import { badge, breadcrumb, busy, button, cardWith, confirmDialog, copy, empty, errorCard, field, fmtDate, fmtDateTime, formError, kv, modal, pageHeader, seg, select, table, toast, when } from "../ui.js";
 
 // ---- List ---------------------------------------------------------------------------------------
 
@@ -158,7 +158,7 @@ export async function customerPage(ctx, appUserId) {
     return h("div", null, crumbs, pageHeader("Customer not found"), h("div", { class: "stack" }, h("div", { class: "card" }, empty({ icon: IconCustomers, title: `No customer “${appUserId}”`, text: "No customer has this app user ID or alias. IDs are case-sensitive." }))));
   }
 
-  const { customer, aliases, customer_info: info, attributes, transactions, subscription_states: states, webhook_events: events } = data;
+  const { customer, aliases, customer_info: info, attributes, transactions, subscription_states: states, webhook_events: events, grants, entitlement_ids: entitlementIds } = data;
   const entitlements = Object.entries(info?.subscriber?.entitlements ?? {});
   const now = Date.now();
   const activeEntitlements = entitlements.filter(([, e]) => !e.expires_date || Date.parse(e.expires_date) > now);
@@ -183,7 +183,7 @@ export async function customerPage(ctx, appUserId) {
     sections.push(
       cardWith(
         "Entitlements",
-        "What the SDK reports as unlocked, computed from the purchases below.",
+        "What the SDK reports as unlocked, computed from the purchases and grants below.",
         entitlements.length
           ? table(
               [{ label: "Entitlement" }, { label: "Product" }, { label: "Since", class: "hide-below-md" }, { label: "Expires" }, { label: "Status" }],
@@ -191,7 +191,7 @@ export async function customerPage(ctx, appUserId) {
                 const active = !e.expires_date || Date.parse(e.expires_date) > now;
                 return [
                   h("span", { class: "cell-strong" }, id),
-                  h("span", { class: "mono small" }, e.product_identifier),
+                  e.product_identifier.startsWith("rc_promo_") ? h("span", null, badge("Promotional grant", "info")) : h("span", { class: "mono small" }, e.product_identifier),
                   fmtDate(Date.parse(e.purchase_date)),
                   e.expires_date ? fmtDateTime(Date.parse(e.expires_date)) : "Never",
                   active ? badge("Active", "success", true) : badge("Expired"),
@@ -204,6 +204,8 @@ export async function customerPage(ctx, appUserId) {
   } else {
     sections.push(h("div", { class: "card small muted" }, "Entitlements span every app, so they're shown only to operators with access to all apps. The purchases below are limited to your apps."));
   }
+
+  if (grants) sections.push(grantsCard(ctx, appUserId, grants, entitlementIds));
 
   sections.push(
     cardWith(
@@ -316,4 +318,89 @@ export function replayButton(eventId) {
       }),
   });
   return btn;
+}
+
+// ---- Promotional grants -------------------------------------------------------------------------
+
+const DURATIONS = [
+  { value: "daily", label: "1 day" },
+  { value: "three_day", label: "3 days" },
+  { value: "weekly", label: "1 week" },
+  { value: "monthly", label: "1 month" },
+  { value: "two_month", label: "2 months" },
+  { value: "three_month", label: "3 months" },
+  { value: "six_month", label: "6 months" },
+  { value: "yearly", label: "1 year" },
+  { value: "lifetime", label: "Lifetime" },
+  { value: "custom", label: "Until a date…" },
+];
+const durationLabel = (d) => DURATIONS.find((x) => x.value === d)?.label ?? "Custom";
+
+function grantsCard(ctx, appUserId, grants, entitlementIds) {
+  const canGrant = ctx.can("grants:manage") && ctx.operator.app_ids === null;
+  const now = Date.now();
+  const status = (g) =>
+    g.revoked_at ? badge("Revoked") : g.expires_at === null || g.expires_at > now ? badge("Active", "success", true) : badge("Ended");
+
+  const grant = () => {
+    const errors = formError();
+    const entitlement = select(entitlementIds.map((id) => ({ value: id, label: id })), entitlementIds[0]);
+    const duration = select(DURATIONS, "monthly");
+    const until = h("input", { class: "input", type: "date", min: new Date(now + 864e5).toISOString().slice(0, 10) });
+    const untilField = field("Ends on", until, "Access ends at the start of this day (UTC).");
+    untilField.hidden = true;
+    duration.addEventListener("change", () => (untilField.hidden = duration.value !== "custom"));
+    const note = h("input", { class: "input", maxlength: 500, placeholder: "e.g. Support make-good for the outage on May 3" });
+    const submit = button("Grant", { type: "submit" });
+    const m = modal({
+      title: `Grant an entitlement to ${appUserId}`,
+      sub: "Gives access without a purchase. The app sees it the next time it fetches CustomerInfo, as a promotional entitlement. Purchases aren't affected.",
+      body: h("div", { class: "stack" }, errors.el, h("div", null, field("Entitlement", entitlement), field("For", duration), untilField, field("Note", note, "Why: shown here and in the audit log."))),
+      actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
+      onSubmit: async () => {
+        const body = { entitlement_id: entitlement.value, note: note.value.trim() || undefined };
+        if (duration.value === "custom") {
+          if (!until.value) return errors.show(new Error("Pick the day it ends.")), false;
+          body.expires_at = `${until.value}T00:00:00Z`;
+        } else body.duration = duration.value;
+        const ok = await busy(submit, () => post(`/customers/${encodeURIComponent(appUserId)}/grants`, body), errors);
+        if (!ok) return false;
+        toast("Granted", "success");
+        ctx.rerender();
+      },
+    });
+  };
+
+  const revoke = async (g) => {
+    if (!(await confirmDialog({ title: `Revoke ${g.entitlement_id}?`, text: `${appUserId} loses this grant now. Purchases aren't affected.`, confirmLabel: "Revoke grant", danger: true }))) return;
+    try {
+      await post(`/customers/${encodeURIComponent(appUserId)}/grants/${g.id}/revoke`, {});
+      toast("Grant revoked", "success");
+      ctx.rerender();
+    } catch (err) {
+      toast(err.message, "error");
+    }
+  };
+
+  return cardWith(
+    "Promotional grants",
+    "Entitlements given without a purchase: support, testing, partners.",
+    grants.length
+      ? table(
+          [{ label: "Entitlement" }, { label: "For", class: "hide-below-md" }, { label: "Ends" }, { label: "Granted by", class: "hide-below-md" }, { label: "Status" }, { label: "", class: "actions" }],
+          grants
+            .slice()
+            .reverse()
+            .map((g) => [
+              h("div", { class: "cell-stack" }, h("span", { class: "cell-strong" }, g.entitlement_id), g.note ? h("span", { class: "cell-sub cell-truncate", title: g.note }, g.note) : null),
+              durationLabel(g.duration),
+              g.revoked_at ? h("span", { title: `Revoked ${fmtDateTime(g.revoked_at)}${g.revoked_by ? ` by ${g.revoked_by}` : ""}` }, fmtDate(g.revoked_at)) : g.expires_at ? fmtDateTime(g.expires_at) : "Never",
+              h("div", { class: "cell-stack" }, h("span", { class: "small" }, g.granted_by ?? "—"), h("span", { class: "cell-sub" }, `${fmtDate(g.created_at)} · ${g.source}`)),
+              status(g),
+              canGrant && !g.revoked_at && (g.expires_at === null || g.expires_at > now) ? button("Revoke", { variant: "outline", size: "sm", onClick: () => revoke(g) }) : null,
+            ]),
+        )
+      : h("div", { class: "card-body muted small" }, "No grants."),
+    canGrant && entitlementIds.length ? [button("Grant entitlement", { size: "sm", icon: IconPlus(14), onClick: grant })] : [],
+  );
 }

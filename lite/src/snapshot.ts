@@ -38,9 +38,9 @@ export function invalidateOwnerSnapshot(db: D1Database, store: Store, originalTr
 
 /** Rebuilds and stores a customer's snapshot. Returns it, or null if the customer is gone. */
 export async function refreshSnapshot(db: D1Database, config: Config, customerId: string): Promise<{ snapshot: Snapshot; etag: string } | null> {
-  const { customer, transactions, states } = await loadCustomerById(db, customerId);
+  const { customer, transactions, states, grants } = await loadCustomerById(db, customerId);
   if (!customer) return null;
-  const snapshot = computeSnapshot({ appUserId: customer.appUserId, customer, transactions, states, config });
+  const snapshot = computeSnapshot({ appUserId: customer.appUserId, customer, transactions, states, grants, config });
   const body = JSON.stringify(snapshot);
   const etag = await etagOf(body);
   await db
@@ -83,7 +83,7 @@ export async function readCustomerInfo(
     const snapshot = computeSnapshot({ appUserId, customer, transactions: [], config, now: opts.now });
     return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: null, source: "empty" as const };
   }
-  const { customer, transactions, states } = await loadCustomer(db, appUserId);
-  const snapshot = computeSnapshot({ appUserId, customer, transactions, states, config });
+  const { customer, transactions, states, grants } = await loadCustomer(db, appUserId);
+  const snapshot = computeSnapshot({ appUserId, customer, transactions, states, grants, config });
   return { body: renderCustomerInfo(snapshot, config, opts), etag: null, customerId: row.id, source: "computed" as const };
 }

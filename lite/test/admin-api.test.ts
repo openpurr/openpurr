@@ -343,6 +343,48 @@ describe("charts API", () => {
   });
 });
 
+describe("promotional grants", () => {
+  it("grants and revokes from the dashboard, needs grants:manage and all apps, and shows on the customer", async () => {
+    const user = `dash-grant-${crypto.randomUUID()}`;
+    await postAppleTransaction(user, { productId: "coins_100", type: "Consumable", expiresDate: undefined }); // makes the customer
+    const dev = await operator("developer");
+    const created = await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", duration: "three_day", note: "beta tester" } });
+    expect(created.status).toBe(201);
+    expect(created.body.grant).toMatchObject({ entitlement_id: "pro", duration: "three_day", source: "dashboard", granted_by: dev.email });
+    const custom = await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "annual_perks", expires_at: new Date(Date.now() + 864e5 * 40).toISOString() } });
+    expect(custom.body.grant.duration).toBe("custom");
+
+    const detail = await api("GET", `/customers/${encodeURIComponent(user)}`, { session: dev.session });
+    expect(detail.body.grants).toHaveLength(2);
+    expect(detail.body.entitlement_ids).toEqual(["pro", "annual_perks"]);
+    expect(detail.body.customer_info.subscriber.entitlements.pro.product_identifier).toBe("rc_promo_pro_three_day");
+
+    const revoked = await api("POST", `/customers/${encodeURIComponent(user)}/grants/${created.body.grant.id}/revoke`, { session: dev.session }, { body: {} });
+    expect(revoked.status).toBe(200);
+    expect((await api("GET", `/customers/${encodeURIComponent(user)}`, { session: dev.session })).body.customer_info.subscriber.entitlements.pro).toBeUndefined();
+
+    const viewer = await operator("viewer");
+    expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: viewer.session }, { body: { entitlement_id: "pro", duration: "weekly" } })).status).toBe(403);
+    const limited = await operator("admin", { apps: ["ios"] });
+    expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: limited.session }, { body: { entitlement_id: "pro", duration: "weekly" } })).status).toBe(403);
+    expect((await api("POST", `/customers/nobody-${crypto.randomUUID()}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", duration: "weekly" } })).status).toBe(404);
+    expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", expires_at: "2001-01-01" } })).status).toBe(400);
+  });
+
+  it("keeps customers with grants out of the inactive-customer cleanup", async () => {
+    const id = crypto.randomUUID();
+    const old = Date.now() - 400 * 864e5;
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO customer (id, app_user_id, first_seen) VALUES (?, ?, ?)").bind(id, `old-${id}`, old),
+      env.DB.prepare("INSERT INTO customer_alias (app_user_id, customer_id, created_at) VALUES (?, ?, ?)").bind(`old-${id}`, id, old),
+      env.DB.prepare("INSERT INTO promotional_grant (id, customer_id, entitlement_id, duration, starts_at, expires_at, granted_by, source, created_at) VALUES (?, ?, 'pro', 'lifetime', ?, NULL, 'x', 'api', ?)").bind(crypto.randomUUID(), id, old, old),
+    ]);
+    const { runScheduled } = await import("../src/scheduled");
+    await runScheduled(env, Date.parse("2026-12-01T10:00:00Z"));
+    expect(await env.DB.prepare("SELECT 1 AS ok FROM customer WHERE id = ?").bind(id).first()).toEqual({ ok: 1 });
+  });
+});
+
 describe("webhooks", () => {
   it("lists deliveries and replays an event", async () => {
     let status = 500;
