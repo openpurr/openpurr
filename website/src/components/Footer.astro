@@ -1,0 +1,68 @@
+---
+import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL } from "../consts";
+---
+
+<footer>
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <img src="/mark.png" alt="" width="40" height="40" />
+        <p class="tag">Open-source purchase infrastructure you run yourself.</p>
+      </div>
+      <ul>
+        <li><a href={REPO_URL}>GitHub</a></li>
+        <li><a href={ROADMAP_URL}>Roadmap</a></li>
+        <li><a href={CONTRIBUTING_URL}>Contributing</a></li>
+        <li><a href={SPONSOR_URL}>Sponsor</a></li>
+      </ul>
+    </div>
+    <p class="fine">
+      openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc. App Store is a
+      trademark of Apple Inc. Google Play is a trademark of Google LLC.
+    </p>
+    <p class="fine">
+      <a href={LICENSE_URL}>Apache License 2.0</a>. Copyright {new Date().getFullYear()} openpurr contributors.
+    </p>
+  </div>
+</footer>
+
+<style>
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 0 40px;
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .top {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+  }
+  .tag {
+    margin: 10px 0 0;
+  }
+  ul {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    margin: 0;
+    padding: 0;
+  }
+  ul a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  ul a:hover {
+    color: var(--purple);
+  }
+  .fine {
+    margin: 0 0 6px;
+    font-size: 0.85rem;
+  }
+  .fine a {
+    color: inherit;
+  }
+</style>

@@ -1,0 +1,632 @@
+---
+import Base from "../layouts/Base.astro";
+import SdkSnippet from "../components/SdkSnippet.astro";
+import Faq from "../components/Faq.astro";
+import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL } from "../consts";
+
+const reasons = [
+  {
+    title: "Your data, your servers",
+    body: "Purchase records, entitlements and store credentials live in a database you run, query, back up and export. No outside service sits between your app and your customers.",
+  },
+  {
+    title: "No revenue share",
+    body: "No percentage of revenue and no per-transaction fees. The Lite edition is designed to fit Cloudflare's free plan, so a small app can run it for nothing.",
+  },
+  {
+    title: "No vendor to depend on",
+    body: "It's open source under Apache 2.0. Read the code, change it, and move it between Cloudflare and your own cloud.",
+  },
+];
+
+const features = [
+  {
+    title: "Purchases",
+    body: "Validates StoreKit 2 transactions and Google Play purchases, and returns the CustomerInfo and entitlements the SDK expects.",
+  },
+  {
+    title: "Store notifications",
+    body: "Receives App Store Server Notifications V2 and Google Play Real-time Developer Notifications, so renewals, refunds and grace periods stay current.",
+  },
+  {
+    title: "Webhooks",
+    body: "Sends RevenueCat-shaped events to your backend, signed with HMAC-SHA256 and retried for about 72 hours.",
+  },
+  {
+    title: "Charts",
+    body: "A small dashboard with active subscriptions, MRR, trials, conversions and churn.",
+  },
+  {
+    title: "Auth and audit",
+    body: "SDK keys and secret keys, operator sign-in with optional authenticator codes or Cloudflare Access, roles, and an audit log.",
+  },
+  {
+    title: "MCP server and Claude skills",
+    body: "Ask an AI assistant why a customer does or doesn't have an entitlement, look up purchases, or get walked through App Store and Play Console setup.",
+  },
+];
+
+type Status = "done" | "wip" | "planned" | "later";
+const roadmap: { phase: string; status: Status; tagline?: string; items: string[] }[] = [
+  {
+    phase: "Lite",
+    status: "wip",
+    tagline: "Designed to run on Cloudflare's free plan.",
+    items: [
+      "App Store and Google Play",
+      "Webhooks, dashboard and admin",
+      "Guided Cloudflare setup",
+      "MCP server, CLI and Claude skills",
+    ],
+  },
+  {
+    phase: "Standard edition",
+    status: "planned",
+    items: [
+      "Go and Postgres in containers",
+      "GCP first, then AWS",
+      "Same conformance suite as Lite",
+      "Move from Lite with no app update",
+    ],
+  },
+  {
+    phase: "Shaped by the community",
+    status: "later",
+    items: [
+      "Verified end-user identity",
+      "Standard extras for larger teams",
+      "Whatever you ask for in issues",
+    ],
+  },
+];
+
+const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", planned: "Planned", later: "Your call" };
+---
+
+<Base>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>An open-source, self&#8209;hosted <span class="accent">RevenueCat replacement</span></h1>
+        <p class="lede">
+          Control your own purchase infrastructure, share none of your revenue, and depend on no commercial service.
+          Keep the Purchases SDK you already use: change one URL, not your purchase code.
+        </p>
+        <div class="ctas">
+          <a class="btn btn-primary" href={REPO_URL}>Star on GitHub</a>
+          <a class="btn btn-ghost" href="#how">How it works</a>
+        </div>
+      </div>
+      <SdkSnippet />
+    </div>
+  </section>
+
+  <!-- Who it's for -->
+  <section class="alt" id="why">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Who it's for</span>
+        <h2>For app developers who'd rather run it themselves</h2>
+        <p class="lede">
+          openpurr works with the official, unmodified SDKs. Switching starts with changing one URL, not rewriting your
+          purchase code.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {
+          reasons.map((r) => (
+            <div class="card">
+              <h3>{r.title}</h3>
+              <p>{r.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Your server sits where the vendor used to</h2>
+        <p class="lede">
+          Your app keeps the open-source Purchases SDK it already ships with. The SDK talks to openpurr.
+          openpurr talks to the stores, keeps the subscription state, and tells your backend what changed.
+        </p>
+      </div>
+      <div class="flow" aria-label="Request flow">
+        <div class="node">
+          <strong>Your app</strong>
+          <div class="sdk">
+            <strong>Purchases SDK</strong>
+            <span>Official, unmodified, MIT licensed</span>
+            <span>iOS, Android, Flutter or React Native</span>
+          </div>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node core">
+          <img src="/mark.png" alt="" width="36" height="36" />
+          <strong>openpurr</strong>
+          <span>On Cloudflare Workers or your own cloud</span>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node stack">
+          <div><strong>App Store</strong><span>Server API and notifications</span></div>
+          <div><strong>Google Play</strong><span>Developer API and RTDN</span></div>
+          <div><strong>Your backend</strong><span>Signed webhooks</span></div>
+        </div>
+      </div>
+      <ol class="steps">
+        <li>
+          <h3>Deploy</h3>
+          <p>
+            Run openpurr Lite on your own Cloudflare account. A guided setup, <code>npx openpurr init</code>, is coming
+            with Lite v1.
+          </p>
+        </li>
+        <li>
+          <h3>Point the SDK</h3>
+          <p>Set the proxy URL before <code>configure</code>. Use a custom domain you own so you can move later.</p>
+        </li>
+        <li>
+          <h3>Connect the stores</h3>
+          <p>Add your store credentials and notification URLs. A setup check that verifies them is coming too.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="alt" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">What it does</span>
+        <h2>The subscription backend, without the extras you don't use</h2>
+      </div>
+      <div class="grid grid-3">
+        {
+          features.map((f) => (
+            <div class="card">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Editions -->
+  <section id="editions">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Two editions</span>
+        <h2>Start small, move up without an app update</h2>
+        <p class="lede">
+          Both editions pass the same conformance suite. If your app points at a custom domain you own, moving from
+          Lite to Standard needs no app release.
+        </p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card edition">
+          <div class="edition-head">
+            <h3>Lite</h3>
+            <span class="badge">For indie apps</span>
+          </div>
+          <p class="price">$0 <span>on Cloudflare's free plan</span></p>
+          <ul>
+            <li>TypeScript on Cloudflare Workers and D1</li>
+            <li>Lightweight and cheap to run</li>
+            <li>Usage alerts before you hit free-plan limits</li>
+          </ul>
+        </div>
+        <div class="card edition">
+          <div class="edition-head">
+            <h3>Standard</h3>
+            <span class="badge muted">Coming soon</span>
+          </div>
+          <p class="price">Your cloud bill <span>nothing more</span></p>
+          <ul>
+            <li>Go and Postgres in containers</li>
+            <li>GCP or AWS</li>
+            <li>For larger portfolios of apps</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Honest fit -->
+  <section class="alt">
+    <div class="wrap fit">
+      <div>
+        <span class="eyebrow">Being upfront</span>
+        <h2>It may not be for you yet</h2>
+        <p class="lede">
+          If you need paywall builders, A/B experiments, third-party analytics integrations or a support contract,
+          commercial platforms offer those today.
+        </p>
+      </div>
+      <div class="card">
+        <h3>Out of scope for now</h3>
+        <p class="tags">
+          {
+            [
+              "Paywalls",
+              "Ad events",
+              "Customer Center",
+              "Virtual currencies",
+              "Web billing",
+              "Amazon",
+              "Experiments",
+              "Analytics integrations",
+            ].map((t) => <span>{t}</span>)
+          }
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Roadmap</span>
+        <h2>Where it's headed</h2>
+        <p class="lede">The order is firm, but there are no dates. If something matters to you, say so in an issue.</p>
+      </div>
+      <div class="grid grid-3">
+        {
+          roadmap.map((r) => (
+            <div class="card phase">
+              <span class={`status ${r.status}`}>{statusLabel[r.status]}</span>
+              <h3>{r.phase}</h3>
+              {r.tagline && <p class="tagline">{r.tagline}</p>}
+              <ul>
+                {r.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+      <p class="more"><a href={ROADMAP_URL}>Read the full roadmap →</a></p>
+    </div>
+  </section>
+
+  <Faq />
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Help shape it</h2>
+        <p>
+          The most useful help right now is feedback: wrong assumptions about the SDKs or the stores, and real-world
+          edge cases in renewals, refunds and grace periods.
+        </p>
+        <div class="ctas">
+          <a class="btn btn-light" href={REPO_URL}>Star on GitHub</a>
+          <a class="btn btn-outline" href={ISSUES_URL}>Open an issue</a>
+          <a class="btn btn-outline" href={SPONSOR_URL}>Buy us a coffee</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 88px 0 96px;
+    background:
+      radial-gradient(900px 420px at 85% 0%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 70%),
+      var(--bg);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+  @media (max-width: 920px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+    .hero {
+      padding: 56px 0 64px;
+    }
+  }
+  .accent {
+    color: var(--purple);
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .card p:last-child {
+    margin-bottom: 0;
+  }
+  .card p {
+    color: var(--muted);
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1.2fr;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  .node {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    min-width: 0;
+  }
+  .node strong {
+    color: var(--ink);
+  }
+  .node span {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .sdk {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px dashed color-mix(in srgb, var(--purple) 55%, var(--line));
+    border-radius: 10px;
+    background: var(--bg-alt);
+  }
+  .sdk strong {
+    font-size: 0.92rem;
+  }
+  .sdk span {
+    font-size: 0.82rem;
+  }
+  .node.core {
+    border: 2px solid var(--purple);
+    background: var(--purple-soft);
+    align-items: flex-start;
+  }
+  .node.core img {
+    margin-bottom: 6px;
+  }
+  .node.stack {
+    gap: 14px;
+  }
+  .node.stack div {
+    display: flex;
+    flex-direction: column;
+  }
+  .node.stack div + div {
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .arrow {
+    font-size: 1.6rem;
+    color: var(--purple);
+  }
+  @media (max-width: 820px) {
+    .flow {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .arrow {
+      transform: rotate(90deg);
+      justify-self: center;
+    }
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 32px;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-top: 52px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--purple);
+    color: #fff;
+    font-weight: 700;
+  }
+  .steps p {
+    color: var(--muted);
+  }
+
+  /* Editions */
+  .edition-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .edition-head h3 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  .badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--purple-soft);
+    color: var(--purple);
+  }
+  .badge.muted {
+    background: var(--bg-alt);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink) !important;
+    margin: 18px 0;
+    letter-spacing: -0.02em;
+  }
+  .price span {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+  .edition ul,
+  .phase ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .edition li,
+  .phase li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 8px;
+  }
+  .edition li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  /* Fit */
+  .fit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 820px) {
+    .fit {
+      grid-template-columns: 1fr;
+    }
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tags span {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+  }
+
+  /* Roadmap */
+  .status {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .status.done {
+    color: var(--ok);
+  }
+  .status.wip {
+    color: var(--wip);
+  }
+  .status.planned,
+  .status.later {
+    color: var(--muted);
+  }
+  .tagline {
+    color: var(--ink) !important;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin: -4px 0 14px;
+  }
+  .phase li {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .phase li::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple);
+    opacity: 0.6;
+  }
+  .more {
+    margin-top: 28px;
+    font-weight: 600;
+  }
+  .more a {
+    text-decoration: none;
+  }
+
+  /* CTA */
+  .cta {
+    background: linear-gradient(135deg, #7050e8, #4a2fc4);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 48px;
+    text-align: center;
+  }
+  @media (max-width: 600px) {
+    .cta {
+      padding: 40px 22px;
+    }
+  }
+  .cta h2 {
+    color: #fff;
+  }
+  .cta p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cta .ctas {
+    justify-content: center;
+  }
+  .btn-light {
+    background: #fff;
+    color: #2a1c7a;
+  }
+  .btn-outline {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .btn-outline:hover {
+    border-color: #fff;
+  }
+</style>

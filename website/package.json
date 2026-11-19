@@ -1,0 +1,20 @@
+{
+  "name": "@openpurr/website",
+  "private": true,
+  "license": "Apache-2.0",
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro build && wrangler dev",
+    "deploy": "astro build && wrangler deploy"
+  },
+  "dependencies": {
+    "astro": "7.4.10"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.12",
+    "typescript": "5.9.3",
+    "wrangler": "4.160.0"
+  }
+}
