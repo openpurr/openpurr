@@ -109,7 +109,9 @@ export function renderChart(host, opts) {
     const every = Math.max(1, Math.ceil(n / Math.max(1, Math.floor(iw / 80))));
     points.forEach((p, i) => {
       if ((n - 1 - i) % every !== 0) return;
-      const label = svg("text", { x: x(i), y: height - 6, class: "chart-axis", "text-anchor": "middle" });
+      // Labels near an edge are anchored to it, so they're never clipped.
+      const anchor = x(i) + 24 > width ? "end" : x(i) - 24 < 0 ? "start" : "middle";
+      const label = svg("text", { x: anchor === "end" ? width - 2 : anchor === "start" ? 2 : x(i), y: height - 6, class: "chart-axis", "text-anchor": anchor });
       label.textContent = formatPeriod(p.date, opts.interval);
       root.append(label);
     });

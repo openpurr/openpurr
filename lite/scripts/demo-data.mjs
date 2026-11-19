@@ -182,15 +182,16 @@ function addTx(c, app, t) {
   purchases++;
 }
 
-function subscribe(c, app, kind, at) {
+function subscribe(c, app, kind, at, opts = {}) {
   const plan = app[kind];
   if (!plan) return;
   const [mPrice, aPrice] = c.market.prices;
-  const price = kind === "annual" ? aPrice : mPrice;
+  // New subscribers after the price increase pay more; existing ones keep their price.
+  const price = raise(kind === "annual" ? aPrice : mPrice, c.priceFactor);
   const periodDays = kind === "annual" ? 365 : 30.4375;
   const chainId = app.store === "app_store" ? ids.appleTx() : ids.token();
   const order = ids.googleOrder();
-  const withTrial = chance(0.82);
+  const withTrial = opts.trial ?? chance(0.82);
   const renewP = kind === "annual" ? 0.62 : 0.91;
   row("purchase_owner", ["store", "original_transaction_id", "customer_id", "app_id", "updated_at"], [app.store, chainId, c.id, app.id, Math.min(at + 3600_000, NOW)]);
 
@@ -205,8 +206,9 @@ function subscribe(c, app, kind, at) {
   if (withTrial) {
     const end = start + 7 * DAY;
     addTx(c, app, { ...base, purchased: start, expires: end, period: "trial", price: 0, renewal: renewal++ });
-    if (chance(0.34)) unsubscribedAt = Math.min(start + rand() * 6 * DAY, NOW);
-    const converts = !unsubscribedAt && chance(0.72);
+    if (chance(0.34)) unsubscribedAt = start + rand() * 6 * DAY;
+    if (unsubscribedAt !== null && unsubscribedAt >= NOW) unsubscribedAt = null; // hasn't happened yet
+    const converts = !unsubscribedAt && chance(opts.convert ?? 0.72);
     if (end > NOW) return finish(1);
     if (!converts) return finish(2, 0);
     start = end;
@@ -214,7 +216,9 @@ function subscribe(c, app, kind, at) {
   // Paid periods until churn or today.
   for (;;) {
     const end = start + periodDays * DAY;
-    const refunded = chance(0.018) ? Math.min(start + (1 + rand() * 13) * DAY, NOW) : null;
+    // Events after today haven't happened yet: they're left out, never moved to today.
+    let refunded = chance(0.018) ? start + (1 + rand() * 13) * DAY : null;
+    if (refunded !== null && refunded >= NOW) refunded = null;
     addTx(c, app, { ...base, chainId, purchased: start, expires: end, period: "normal", price, renewal: renewal++, revoked: refunded && refunded < end ? refunded : null });
     if (refunded && refunded < end) return finish(2, 0);
     if (end > NOW) return finish(1);
@@ -246,13 +250,50 @@ function oneTime(c, app, kind, at) {
   addTx(c, app, { chainId: id, original: at, product, basePlan: null, type: kind === "lifetime" ? "non_consumable" : "consumable", order: ids.googleOrder(), purchased: at, period: "normal", price, renewal: 0 });
 }
 
+// The demo business's story, so revenue doesn't just mirror signups:
+//   - a viral moment (22% into the range): a flood of signups who mostly don't buy;
+//   - an App Store feature (45%): more signups, converting normally;
+//   - a paywall redesign (55%): conversion up a third, with no change in traffic;
+//   - a price increase (68%): new subscribers pay 20% more, existing ones keep their price;
+//   - a New Year promotion every year (Nov 24 to Jan 7): annual plans sell 2.5 times as well, and
+//     those renewals come back as a revenue spike a year later, with no matching signup spike;
+//   - fewer signups in July and August;
+//   - short trial campaigns (an influencer post, a "free week" offer) every few weeks: a burst of
+//     trial starts for a few days, converting to paid less often than usual.
+const at = (fraction) => START + fraction * (NOW - START);
+const STORY = { viral: at(0.22), feature: at(0.45), paywall: at(0.55), priceUp: at(0.68) };
+function raise(price, factor) {
+  if (factor === 1) return price;
+  const p = price * factor;
+  return price < 100 ? Math.ceil(p) - 0.01 : Math.round(p / 10) * 10 - (price % 1 ? 0.01 : 0); // charm prices: 11.99, 71.99, 1800
+}
+const CAMPAIGN_COUNT = Math.max(3, Math.round(months * 0.9));
+const CAMPAIGNS = Array.from({ length: CAMPAIGN_COUNT }, (_, i) => at((i + 0.3 + rand() * 0.5) / CAMPAIGN_COUNT));
+const inPromo = (ms) => {
+  const d = new Date(ms);
+  const m = d.getUTCMonth();
+  const day = d.getUTCDate();
+  return (m === 10 && day >= 24) || m === 11 || (m === 0 && day <= 7);
+};
+
 for (let day = START; day < NOW; day += DAY) {
   const t = (day - START) / (NOW - START);
   const weekday = new Date(day).getUTCDay();
-  // Growth, weekends, and two launch bumps (a feature at 40% and a big update at 75% of the range).
-  const bump = (center, width, height) => 1 + height * Math.exp(-((((t - center) * (NOW - START)) / DAY / width) ** 2));
-  const daily = scale * (14 + 70 * t ** 1.3) * (weekday === 0 || weekday === 6 ? 1.22 : 1) * bump(0.4, 3, 2.2) * bump(0.75, 4, 1.4);
-  const n = Math.round(daily * (0.85 + rand() * 0.3));
+  const month = new Date(day).getUTCMonth();
+  const near = (when, widthDays) => Math.exp(-(((day - when) / DAY / widthDays) ** 2));
+  const viral = near(STORY.viral, 2.5);
+  const traffic =
+    (14 + 70 * t ** 1.3) *
+    (weekday === 0 || weekday === 6 ? 1.22 : 1) *
+    (month === 6 || month === 7 ? 0.82 : 1) *
+    (1 + 5.5 * viral) *
+    (1 + 1.6 * near(STORY.feature, 4));
+  // How likely a new customer is to buy: viral visitors rarely do; the new paywall helps.
+  const conversion = (day >= STORY.paywall ? 1.35 : 1) * (1 - 0.75 * (viral * 5.5) / (1 + viral * 5.5));
+  const promo = inPromo(day);
+  const campaign = CAMPAIGNS.reduce((n, c) => n + near(c, 1.6), 0);
+  const priceFactor = day >= STORY.priceUp ? 1.2 : 1;
+  const n = Math.round(scale * traffic * (0.85 + rand() * 0.3));
   for (let i = 0; i < n; i++) {
     const firstSeen = day + Math.floor(rand() * DAY);
     if (firstSeen >= NOW) continue;
@@ -260,7 +301,7 @@ for (let day = START; day < NOW; day += DAY) {
     const anon = `$RCAnonymousID:${hex(32)}`;
     const market = pick(MARKETS.map((m) => [m, m.weight]));
     const app = !playStore ? appStore : !appStore ? playStore : chance(0.62) ? appStore : playStore;
-    const c = { id, market };
+    const c = { id, market, priceFactor };
     row("customer", ["id", "app_user_id", "first_seen"], [id, anon, firstSeen]);
     row("customer_alias", ["app_user_id", "customer_id", "created_at"], [anon, id, firstSeen]);
     customers++;
@@ -273,12 +314,17 @@ for (let day = START; day < NOW; day += DAY) {
       }
     }
     // What this customer buys, if anything.
-    const when = Math.min(firstSeen + rand() * rand() * 5 * DAY, NOW - 60_000);
-    const r = rand();
-    if (r < 0.085) subscribe(c, app, chance(0.56) ? "annual" : "monthly", when);
-    else if (r < 0.1) subscribe(c, app, "monthly", when);
-    else if (r < 0.112) oneTime(c, app, "lifetime", when);
-    if (chance(0.03)) oneTime(c, app, "consumable", Math.min(firstSeen + rand() * 20 * DAY, NOW - 60_000));
+    // (Anything that would happen after today is skipped: it hasn't happened yet.)
+    const when = firstSeen + rand() * rand() * 5 * DAY;
+    const r = when < NOW ? rand() / conversion : Infinity;
+    const annualShare = promo ? 0.8 : 0.5;
+    if (r < (promo ? 0.17 : 0.075)) subscribe(c, app, chance(annualShare) ? "annual" : "monthly", when);
+    else if (r < (promo ? 0.185 : 0.09)) subscribe(c, app, "monthly", when);
+    else if (r < (promo ? 0.197 : 0.102)) oneTime(c, app, "lifetime", when);
+    // Trial campaigns: extra trial starts on top of the usual buyers.
+    if (when < NOW && campaign > 0.05 && chance(0.3 * campaign)) subscribe(c, app, chance(0.5) ? "annual" : "monthly", when, { trial: true, convert: 0.4 });
+    const later = firstSeen + rand() * 20 * DAY;
+    if (later < NOW && chance(0.03)) oneTime(c, app, "consumable", later);
   }
 }
 

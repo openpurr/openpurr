@@ -118,7 +118,11 @@ function filterBar(ctx, f, onChange, info, onRefresh) {
     s.addEventListener("change", () => set({ store: s.value }));
     controls.push(s);
   }
-  controls.push(seg([{ value: "production", label: "Production" }, { value: "sandbox", label: "Sandbox" }], f.environment, (v) => set({ environment: v })));
+  const env = select([{ value: "production", label: "Production" }, { value: "sandbox", label: "Sandbox" }], f.environment);
+  env.classList.add("select-auto");
+  env.setAttribute("aria-label", "Environment");
+  env.addEventListener("change", () => set({ environment: env.value }));
+  controls.push(env);
   const refresh = button(null, { variant: "outline", size: "sm", icon: IconRefresh(14), title: "Update the totals now" });
   refresh.addEventListener("click", () => busy(refresh, onRefresh));
   return h(
