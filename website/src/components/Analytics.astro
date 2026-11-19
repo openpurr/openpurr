@@ -1,13 +1,14 @@
 ---
-// Google Analytics 4, only with the visitor's consent. Nothing is loaded from Google, and no
-// cookie is set, until they accept in the banner (Consent Mode's "basic" setup). The choice is
-// kept in localStorage; "Cookie settings" in the footer opens the banner again. Ads signals stay
-// denied either way: the site has no ads.
-import { gaId } from "../analytics";
+// Google Tag Manager (or a GA4 tag), only with the visitor's consent. Nothing is loaded from
+// Google, and no cookie is set, until they accept in the banner (Consent Mode's "basic" setup).
+// Consent is granted for analytics before the container loads, so its tags can rely on it; ad
+// signals stay denied (the site has no ads). The choice is kept in localStorage; "Cookie
+// settings" in the footer opens the banner again.
+import { googleTag } from "../analytics";
 ---
 
 {
-  gaId && (
+  googleTag && (
     <>
       <div id="consent" class="consent" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
         <p>
@@ -19,7 +20,7 @@ import { gaId } from "../analytics";
           <button type="button" class="consent-btn primary" data-consent="granted">Accept</button>
         </div>
       </div>
-      <script is:inline define:vars={{ id: gaId }}>
+      <script is:inline define:vars={{ id: googleTag }}>
         (() => {
           const KEY = "openpurr_analytics_consent";
           const read = () => {
@@ -45,16 +46,19 @@ import { gaId } from "../analytics";
             loaded = true;
             gtag("consent", "update", { analytics_storage: "granted" });
             gtag("js", new Date());
-            gtag("config", id);
+            const gtm = id.startsWith("GTM-");
+            // A GA4 tag is configured here; a Tag Manager container configures its own tags.
+            if (gtm) dataLayer.push({ "gtm.start": Date.now(), event: "gtm.js" });
+            else gtag("config", id);
             const s = document.createElement("script");
             s.async = true;
-            s.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
+            s.src = `https://www.googletagmanager.com/${gtm ? "gtm.js" : "gtag/js"}?id=${id}`;
             document.head.append(s);
           };
           // Declining after accepting: stop tracking and remove the cookies GA set on this domain.
           const unload = () => {
             gtag("consent", "update", { analytics_storage: "denied" });
-            window[`ga-disable-${id}`] = true;
+            if (!id.startsWith("GTM-")) window[`ga-disable-${id}`] = true;
             for (const c of document.cookie.split(";")) {
               const name = c.split("=")[0].trim();
               if (name === "_ga" || name.startsWith("_ga_")) {

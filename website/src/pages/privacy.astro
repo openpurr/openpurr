@@ -1,6 +1,6 @@
 ---
 import Base from "../layouts/Base.astro";
-import { gaId } from "../analytics";
+import { gaId, googleTag } from "../analytics";
 import { ISSUES_URL, PRIVACY_EMAIL, REPO_URL } from "../consts";
 
 const updated = "November 19, 2026";
@@ -34,8 +34,7 @@ const updated = "November 19, 2026";
         {
           gaId ? (
             <li>
-              <strong>Google Analytics, only if you accept.</strong> With your consent, we use Google Analytics to count
-              visits and see which pages are useful. It sets cookies (<code>_ga</code> and <code>_ga_*</code>) and sends
+              <strong>Google Analytics, only if you accept.</strong> With your consent, we use Google Analytics{googleTag?.startsWith("GTM-") ? " (loaded through Google Tag Manager)" : ""} to count visits and see which pages are useful. It sets cookies (<code>_ga</code> and <code>_ga_*</code>) and sends
               Google the pages you view, how you arrived, and your browser, device and approximate location. Google
               Analytics doesn't store IP addresses. Google keeps this data for at most 14 months, and may process it in the
               United States. See{" "}

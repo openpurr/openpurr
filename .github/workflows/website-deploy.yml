@@ -47,9 +47,10 @@ jobs:
       - name: Build
         run: pnpm --filter @openpurr/website build
         env:
-          # Google Analytics 4 measurement ID (G-XXXXXXX), a repository variable (Settings →
-          # Secrets and variables → Actions → Variables). Analytics is off when it's unset.
-          PUBLIC_GA_ID: ${{ vars.GA_MEASUREMENT_ID }}
+          # Google Tag Manager container (GTM-XXXXXXX) or GA4 measurement ID (G-XXXXXXX), a
+          # repository variable (Settings → Secrets and variables → Actions → Variables). Loaded only
+          # after a visitor accepts the consent banner; off when the variable is unset.
+          PUBLIC_GOOGLE_TAG_ID: ${{ vars.GOOGLE_TAG_ID }}
 
       - name: Deploy
         working-directory: website
