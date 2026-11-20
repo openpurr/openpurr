@@ -10,7 +10,7 @@ openpurr speaks the RevenueCat SDK's API, so apps keep the official, unmodified 
 ## 1. Find the values
 
 - **SDK Worker URL:** the `openpurr` Worker's custom domain, or `https://openpurr.<account>.workers.dev`.
-- **SDK key:** in the dashboard, Configuration → Apps and products (`appl_…` for App Store apps, `goog_…` for Google Play apps). Or run the `get_config` MCP tool, or `npx openpurr config`. With several projects, use the key of the right project's app.
+- **SDK key:** in the dashboard, Configuration → Apps and products (`appl_…` for App Store apps, `goog_…` for Google Play apps). Or run the `get_config` MCP tool, or `npx @openpurr/cli config`. With several projects, use the key of the right project's app.
 
 If the user is migrating from RevenueCat, the code that calls `configure` already exists. Change only the key and add the proxy URL.
 
@@ -58,7 +58,7 @@ openpurr follows RevenueCat's identity model. Without `logIn`, the SDK creates a
 
 Never trust the app's word that a user is subscribed. Ask openpurr from your server:
 
-1. Create a secret key: dashboard → Developers → Secret keys, or `npx openpurr keys create "Backend"`. It's shown once. Store it in your backend's secret store, never in the app.
+1. Create a secret key: dashboard → Developers → Secret keys, or `npx @openpurr/cli keys create "Backend"`. It's shown once. Store it in your backend's secret store, never in the app.
 2. Call the SDK Worker:
    ```sh
    curl -H "Authorization: Bearer sk_…" https://purchases.example.com/v1/subscribers/<app user ID>
@@ -69,4 +69,4 @@ Secret keys can only read customers. For changes as they happen, use webhooks (t
 
 ## 5. Verify
 
-Make a sandbox purchase in the app, then look the customer up: the `lookup_customer` or `explain_entitlement` MCP tool, or `npx openpurr customer <app user ID>` and `npx openpurr explain <app user ID> <entitlement>`. If the purchase doesn't show up or doesn't unlock the entitlement, use the `debug-purchase` skill.
+Make a sandbox purchase in the app, then look the customer up: the `lookup_customer` or `explain_entitlement` MCP tool, or `npx @openpurr/cli customer <app user ID>` and `npx @openpurr/cli explain <app user ID> <entitlement>`. If the purchase doesn't show up or doesn't unlock the entitlement, use the `debug-purchase` skill.

@@ -6,7 +6,7 @@ name: Publish CLI
 # example a release made before this workflow existed. A version that's already on npm is skipped.
 #
 # Authentication, either:
-#   - npm trusted publishing (no secret): on npmjs.com, the openpurr package → Settings → Trusted
+#   - npm trusted publishing (no secret): on npmjs.com, the @openpurr/cli package → Settings → Trusted
 #     publisher → GitHub Actions, repository openpurr/openpurr, workflow release-cli.yml,
 #     environment npm. npm only offers this for a package that already exists, so the very first
 #     publish needs the token below (or a manual `npm publish` in cli/).
@@ -37,7 +37,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: npm
-      url: https://www.npmjs.com/package/openpurr
+      url: https://www.npmjs.com/package/@openpurr/cli
     permissions:
       contents: read
       id-token: write # npm trusted publishing and provenance
@@ -75,8 +75,8 @@ jobs:
             exit 1
           fi
           echo "version=$version" >> "$GITHUB_OUTPUT"
-          if npm view "openpurr@$version" version > /dev/null 2>&1; then
-            echo "::notice::openpurr@$version is already on npm; nothing to publish."
+          if npm view "@openpurr/cli@$version" version > /dev/null 2>&1; then
+            echo "::notice::@openpurr/cli@$version is already on npm; nothing to publish."
             echo "published=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -95,4 +95,4 @@ jobs:
         run: |
           prerelease=$(printf '%s' "$TAG" | grep -q -- '-' && echo "--tag next" || true)
           npm publish --provenance --access public $prerelease
-          echo "::notice::Published openpurr@${{ steps.version.outputs.version }}: https://www.npmjs.com/package/openpurr"
+          echo "::notice::Published @openpurr/cli@${{ steps.version.outputs.version }}: https://www.npmjs.com/package/@openpurr/cli"

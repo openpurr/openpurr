@@ -183,8 +183,8 @@ Next:
   2. ${existsSync(here("openpurr.config.yaml")) ? "Your openpurr.config.yaml is imported on the first start; check it under Configuration." : "The dashboard opens on adding your first app: its bundle ID and package name. You get the SDK keys there."}
      Then add the products, an entitlement and an offering (Configuration).
   3. Check the setup: create an access token in the dashboard (Developers → Access tokens), then
-       npx openpurr login --url ${office}
-       npx openpurr doctor
+       npx @openpurr/cli login --url ${office}
+       npx @openpurr/cli doctor
      Every problem it finds comes with the fix.
   4. Store notifications: App Store → ${office}/notifications/apple, Google Play → ${office}/notifications/google
   5. Usage alerts (free plan): create a Cloudflare API token with Account Analytics: Read, then

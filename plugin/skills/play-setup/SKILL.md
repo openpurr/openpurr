@@ -5,7 +5,7 @@ description: Connect an Android app on Google Play to openpurr. Covers the servi
 
 # Connect Google Play
 
-openpurr verifies every Play purchase with the Google Play Developer API, acknowledges it, and follows Real-time Developer Notifications (RTDN). Without API access, Play purchases are refused and stay queued on the device. Most steps happen in Google Cloud and the Play Console, where the user clicks. You help with openpurr's config and the commands in `lite/`. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx openpurr config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. Never ask the user to paste a service account key into the conversation.
+openpurr verifies every Play purchase with the Google Play Developer API, acknowledges it, and follows Real-time Developer Notifications (RTDN). Without API access, Play purchases are refused and stay queued on the device. Most steps happen in Google Cloud and the Play Console, where the user clicks. You help with openpurr's config and the commands in `lite/`. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx @openpurr/cli config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. Never ask the user to paste a service account key into the conversation.
 
 ## 1. The app and its products in the config
 
@@ -61,12 +61,12 @@ Permissions for a new service account can take up to a day to apply in Play. If 
 
 ## 4. Check
 
-Run the `check_setup` MCP tool, or `npx openpurr doctor`. The Google Play checks confirm the API credentials and notifications.
+Run the `check_setup` MCP tool, or `npx @openpurr/cli doctor`. The Google Play checks confirm the API credentials and notifications.
 
 ## Testing purchases
 
 - Add testers under Play Console → Settings → License testing, and install the app from a testing track. License testers' purchases are free, tagged `sandbox`, and renew quickly (a monthly plan renews every 5 minutes).
-- After a test purchase, look the customer up: the `lookup_customer` tool, or `npx openpurr customer <app user ID>`.
+- After a test purchase, look the customer up: the `lookup_customer` tool, or `npx @openpurr/cli customer <app user ID>`.
 
 ## Common problems
 

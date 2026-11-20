@@ -35,7 +35,7 @@ The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1,
    - ✅ usage alerts before you hit free-plan limits: daily Workers requests, D1 rows read and written, and the database size, in the dashboard and `openpurr doctor`;
    - ⏳ a Deploy to Cloudflare button.
 6. ✅ **MCP server:** ask an AI assistant why a customer does or doesn't have an entitlement, look up purchases, grant access and change the configuration. Works from Claude Code and as a Claude.ai connector.
-7. ✅ **CLI and Claude skills:** `npx openpurr` for setup and checks, plus skills that walk you through App Store Connect and Play Console configuration.
+7. ✅ **CLI and Claude skills:** `npx @openpurr/cli` for setup and checks, plus skills that walk you through App Store Connect and Play Console configuration.
 
 ## Standard edition (coming soon) ⏳
 

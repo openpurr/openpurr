@@ -59,7 +59,7 @@ Worker secrets such as `OPERATOR_SECRET` stay in Cloudflare; deploys don't chang
 Apps, products, entitlements, offerings and webhooks are one JSON document per deployment, `{"version": 2, "projects": {"<id>": {"name", "apps", "entitlements", "offerings", "webhooks"}}}`, saved as versions (Configuration → Projects shows the history, and any version can be restored).
 
 - **With MCP:** `get_config` returns the document and its `version_id`; `save_config` takes the edited `document`, that `base_id` and a short `note`. It needs the admin token scope (admins and owners).
-- **With the CLI:** `npx openpurr config pull > config.json`, edit, `npx openpurr config push config.json --note "…"`.
+- **With the CLI:** `npx @openpurr/cli config pull > config.json`, edit, `npx @openpurr/cli config push config.json --note "…"`.
 
 Change only what the user asked for and keep everything else as it is. A save is refused, with every problem listed, if the document is invalid; if someone saved in between (pull or get it again and redo the edit); if an app would move to another project; or if a project with customers would disappear. New SDK keys are `appl_` (App Store) or `goog_` (Google Play) plus at least 32 random letters and digits, for example `node -e "console.log('appl_' + require('crypto').randomBytes(24).toString('base64url').replace(/[-_]/g, 'x'))"`. They ship inside the app, so they're identifiers, not secrets. Store credentials never go in the config, only the names of the Worker secrets that hold them.
 
@@ -73,7 +73,7 @@ The `workers.dev` URLs work, but a custom domain is easier to keep if the accoun
 
 Once the owner can sign in:
 
-- **CLI:** in the dashboard, Developers → Access tokens, create a token. Then `npx openpurr login --url https://<back office>` (it prompts for the token) and `npx openpurr doctor`. Every problem comes with its fix.
+- **CLI:** in the dashboard, Developers → Access tokens, create a token. Then `npx @openpurr/cli login --url https://<back office>` (it prompts for the token) and `npx @openpurr/cli doctor`. Every problem comes with its fix.
 - **MCP (lets Claude use the openpurr tools directly):** `claude mcp add --transport http openpurr https://<back office>/mcp`. Claude Code then signs in through the dashboard with OAuth; the user approves the connection on the consent page. After that, the `check_setup` tool runs the same checks as `openpurr doctor`.
 
 Walk through each failing or warning check and apply its fix.
