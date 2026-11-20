@@ -1,0 +1,159 @@
+name: Release
+
+# Cuts a release when a version bump lands on main: tags the commit vX.Y.Z, creates the GitHub
+# release with the notes from releases/vX.Y.Z.md, and publishes the CLI (cli/) to npm.
+#
+# cli/package.json's version is the release version. To release, open a PR that sets it to X.Y.Z
+# and adds releases/vX.Y.Z.md (the release notes, in Markdown), and merge it. If the tag already
+# exists there's nothing to release, so ordinary pushes to main do nothing; a bumped version without
+# its notes file fails. A version with a suffix (0.2.0-beta.1) is marked as a pre-release on GitHub
+# and goes out under npm's `next` tag.
+#
+# Re-run it (Actions → Release → Run workflow) after a failure: it skips whatever is already done.
+#
+# The npm step authenticates with npm trusted publishing (on npmjs.com, @openpurr/cli → Settings →
+# Trusted publisher → GitHub Actions: repository openpurr/openpurr, workflow release.yml,
+# environment npm), or with an NPM_TOKEN secret on the "npm" environment when that's set. Either way
+# the package gets a provenance attestation linking it to this run.
+#
+# The release is created here, not by hand, because a release created with the workflow's own token
+# doesn't trigger other workflows, so the npm publish has to happen in the same run.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - cli/package.json
+      - releases/**
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Tag and create the GitHub release
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write # create the tag and the release
+    outputs:
+      tag: ${{ steps.plan.outputs.tag }}
+      version: ${{ steps.plan.outputs.version }}
+      prerelease: ${{ steps.plan.outputs.prerelease }}
+      release: ${{ steps.plan.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Work out what to release
+        id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(node -p "require('./cli/package.json').version")
+          tag="v$version"
+          if ! printf '%s' "$version" | grep -Eq '^[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::cli/package.json's version must look like 1.2.3 or 1.2.3-beta.1 (got '$version')."
+            exit 1
+          fi
+          prerelease=$(printf '%s' "$version" | grep -q -- '-' && echo true || echo false)
+          {
+            echo "version=$version"
+            echo "tag=$tag"
+            echo "prerelease=$prerelease"
+          } >> "$GITHUB_OUTPUT"
+
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "::notice::$tag is already released on GitHub."
+            # Still let the npm job run, in case an earlier run released but didn't publish.
+            echo "release=done" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if git ls-remote --exit-code --tags origin "refs/tags/$tag" > /dev/null; then
+            echo "::error::The tag $tag exists but has no GitHub release. Create the release for it by hand, or bump the version."
+            exit 1
+          fi
+          if [ ! -s "releases/$tag.md" ]; then
+            echo "::error::cli/package.json is $version, but releases/$tag.md is missing or empty. Add the release notes in a PR, then re-run this workflow."
+            exit 1
+          fi
+
+          site=$(grep -Eo 'version: "[^"]+"' website/src/consts.ts | head -1 | cut -d'"' -f2 || true)
+          if [ -n "$site" ] && [ "$site" != "$version" ]; then
+            echo "::warning::website/src/consts.ts still says RELEASE version $site. Update it so the website and llms.txt show $version."
+          fi
+          echo "release=create" >> "$GITHUB_OUTPUT"
+
+      # Test before releasing, so a failure doesn't leave a release with nothing on npm. The CLI has
+      # no dependencies, so there's nothing to install.
+      - name: Typecheck and test the CLI
+        if: steps.plan.outputs.release == 'create'
+        working-directory: cli
+        run: npm run typecheck && npm test
+
+      - name: Create the tag and the release
+        if: steps.plan.outputs.release == 'create'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.plan.outputs.tag }}
+          PRERELEASE: ${{ steps.plan.outputs.prerelease }}
+        run: |
+          if [ "$PRERELEASE" = true ]; then kind=--prerelease; else kind=--latest; fi
+          gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "$TAG" --notes-file "releases/$TAG.md" "$kind"
+          echo "::notice::Released $TAG: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
+
+  publish-cli:
+    name: Test and publish the CLI to npm
+    needs: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@openpurr/cli
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    env:
+      VERSION: ${{ needs.release.outputs.version }}
+      PRERELEASE: ${{ needs.release.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ needs.release.outputs.tag }}
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing needs npm 11.5.1 or later.
+      - name: Update npm
+        run: npm install -g npm@11.6.2
+
+      - name: Check whether it's already on npm
+        id: npm
+        run: |
+          if npm view "@openpurr/cli@$VERSION" version > /dev/null 2>&1; then
+            echo "::notice::@openpurr/cli@$VERSION is already on npm; nothing to publish."
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish
+        if: steps.npm.outputs.published != 'true'
+        working-directory: cli
+        env:
+          # Empty when there's no NPM_TOKEN secret; npm then uses trusted publishing (OIDC).
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          args=(--provenance --access public)
+          if [ "$PRERELEASE" = true ]; then args+=(--tag next); fi
+          npm publish "${args[@]}"
+          echo "::notice::Published @openpurr/cli@$VERSION: https://www.npmjs.com/package/@openpurr/cli"
