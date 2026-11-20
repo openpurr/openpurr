@@ -9,7 +9,7 @@ openpurr POSTs RevenueCat-shaped events to the user's backend, so existing Reven
 
 ## 1. Configure an endpoint
 
-Each project has its own endpoints: in the dashboard, Webhooks → Endpoints → Add endpoint. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx openpurr config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. In the config document, they're the project's `webhooks`:
+Each project has its own endpoints: in the dashboard, Webhooks → Endpoints → Add endpoint. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx @openpurr/cli config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. In the config document, they're the project's `webhooks`:
 
 ```json
 "webhooks": [
@@ -83,8 +83,8 @@ Use the raw body exactly as received. Re-serialized JSON won't match.
 
 ## 4. Failed deliveries
 
-- List them: the `list_webhook_deliveries` MCP tool, or `npx openpurr webhooks --status failed`. Each shows the endpoint's last response.
+- List them: the `list_webhook_deliveries` MCP tool, or `npx @openpurr/cli webhooks --status failed`. Each shows the endpoint's last response.
 - Common causes: the handler rejects the signature (secret differs between the Workers and the backend, or it hashes a re-serialized body); a wrong URL or one that needs auth the config doesn't send; a timeout; a missing secret (doctor reports it).
-- Once the endpoint is fixed, replay: the `replay_webhook` MCP tool, or `npx openpurr webhooks replay <event ID>`. Doctor warns when deliveries gave up in the last 24 hours.
+- Once the endpoint is fixed, replay: the `replay_webhook` MCP tool, or `npx @openpurr/cli webhooks replay <event ID>`. Doctor warns when deliveries gave up in the last 24 hours.
 
 To try a handler without a real purchase, make a sandbox purchase (events are sent for sandbox too, unless `environments` excludes it).

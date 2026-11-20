@@ -1,5 +1,5 @@
 {
-  "name": "openpurr",
+  "name": "@openpurr/cli",
   "version": "0.1.0",
   "description": "The openpurr command line: check your setup, look up customers, explain entitlements, grant access, read charts and manage keys.",
   "license": "Apache-2.0",

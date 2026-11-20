@@ -5,7 +5,7 @@ description: Connect an iOS, iPadOS, macOS or tvOS app on the App Store to openp
 
 # Connect the App Store
 
-The steps below happen partly in App Store Connect, where the user has to click, and partly in openpurr's config, where you can help. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx openpurr config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. Secrets are set from the repo's `lite/` directory. Ask for the values you need. Never ask the user to paste a private key into the conversation.
+The steps below happen partly in App Store Connect, where the user has to click, and partly in openpurr's config, where you can help. Change the config in the dashboard (Configuration), or for the user with the MCP tools `get_config` / `save_config` or `npx @openpurr/cli config pull` / `push` (see the `deploy` skill, "Changing the config"). No deploy is needed; the SDK picks changes up within a minute. Secrets are set from the repo's `lite/` directory. Ask for the values you need. Never ask the user to paste a private key into the conversation.
 
 ## 1. The app and its products in the config
 
@@ -59,13 +59,13 @@ These tell openpurr about renewals, cancellations, refunds and billing problems 
 
 ## 4. Check
 
-Run the `check_setup` MCP tool, or `npx openpurr doctor`. The App Store checks confirm that the key works and that Apple has the right notification URL. Fix anything it flags; each problem carries its fix.
+Run the `check_setup` MCP tool, or `npx @openpurr/cli doctor`. The App Store checks confirm that the key works and that Apple has the right notification URL. Fix anything it flags; each problem carries its fix.
 
 ## Testing purchases
 
 - Use a Sandbox Apple Account (App Store Connect → Users and Access → Sandbox), or StoreKit testing in Xcode. Sandbox purchases are tagged `sandbox` and kept apart from production in charts and webhooks.
 - Sandbox subscriptions renew fast (a monthly plan renews every 5 minutes), so renewals and expirations show up quickly.
-- After a test purchase, look the customer up: the `lookup_customer` tool, or `npx openpurr customer <app user ID>`.
+- After a test purchase, look the customer up: the `lookup_customer` tool, or `npx @openpurr/cli customer <app user ID>`.
 
 ## Common problems
 

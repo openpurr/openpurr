@@ -56,7 +56,7 @@ The back office also runs the **MCP server** at `/mcp` (`lite/src/office/mcp.ts`
 
 For screenshots, or to see the charts with something in them, fill the **local** database with 18 months of realistic, fictional customers and purchases: `pnpm --filter @openpurr/lite demo:data` (add `--wipe` to clear local data first, `--remove` to take the demo data out). It never writes anywhere but the local database. The Charts page builds its totals on first view.
 
-**CLI (`cli/`):** the `openpurr` command (`npx openpurr`), plain Node ES modules with no dependencies and no build. It's a thin client: customers, entitlements, grants, charts, webhooks and the audit log go through the MCP tools (so the CLI and an AI assistant give the same answers), and secret keys and the team through the admin API (secrets never pass through MCP). Try it against a local back office with `node cli/bin/openpurr.js login --url http://localhost:8787 --token pat_…`, then `doctor`. Tests: `pnpm --filter openpurr test` (Node's test runner, against a fake back office).
+**CLI (`cli/`):** the `openpurr` command (`npx @openpurr/cli`), plain Node ES modules with no dependencies and no build. It's a thin client: customers, entitlements, grants, charts, webhooks and the audit log go through the MCP tools (so the CLI and an AI assistant give the same answers), and secret keys and the team through the admin API (secrets never pass through MCP). Try it against a local back office with `node cli/bin/openpurr.js login --url http://localhost:8787 --token pat_…`, then `doctor`. Tests: `pnpm --filter @openpurr/cli test` (Node's test runner, against a fake back office).
 
 **Claude Code plugin (`plugin/`):** skills for deploying, store setup, app integration, webhooks and purchase debugging, listed in the repo's marketplace (`.claude-plugin/marketplace.json`). Install it with `claude plugin marketplace add openpurr/openpurr`, then `claude plugin install openpurr@openpurr`; for a local checkout, `claude plugin marketplace add ./`. Skills use the MCP tools when they're connected and the CLI otherwise, so every command, path and message they quote must exist: check it against the code when you change either. Validate with `claude plugin validate plugin`.
 
@@ -69,6 +69,16 @@ Use pnpm, not npm. npm 10 and 11 crash on vitest's peer dependencies. pnpm also 
 **Standard (`standard/`):** Go (latest stable) and Docker for Postgres. Not started yet; see [ROADMAP.md](ROADMAP.md).
 
 **Conformance (`spec/conformance/`):** runs against a local edition over HTTP. Coming with the App Store work in Lite v1.
+
+## Releasing
+
+Releases are tagged `vX.Y.Z` for the whole repo. To release:
+
+1. In a pull request, set `cli/package.json`'s `version` to `X.Y.Z` (and update the roadmap if a milestone moved).
+2. Once it's merged, create a GitHub release with the tag `vX.Y.Z` on that commit, with release notes.
+3. Publishing the release runs [Publish CLI](.github/workflows/release-cli.yml): it checks that the tag and `cli/package.json` agree, runs the CLI's checks and tests, and publishes `openpurr` to npm with a provenance attestation. A tag with a suffix (`v0.2.0-beta.1`) goes out under npm's `next` tag.
+
+Lite deploys itself from `main` (see [lite-deploy.yml](.github/workflows/lite-deploy.yml)); a release doesn't deploy anything.
 
 ## Pull requests
 
