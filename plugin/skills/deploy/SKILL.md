@@ -35,7 +35,7 @@ Run these one at a time, and stop to fix anything that fails. Never print or ech
 3. **Set the operator secret** on the back office. It signs sessions and peppers passwords. Ask the user to run it, so the value never passes through this conversation:
    `! openssl rand -base64 48 | npx wrangler secret put OPERATOR_SECRET --env office`
    If they later change it, existing passwords stop working, and everyone has to sign in again with a login link.
-4. **Deploy both Workers.** `pnpm run deploy && pnpm deploy:office`. Note the two `*.workers.dev` URLs wrangler prints.
+4. **Deploy both Workers.** `pnpm run deploy && pnpm deploy:office`. Note the two `*.workers.dev` URLs wrangler prints. Once signed in, set the SDK Worker's URL under Settings → This deployment → SDK URL, so the dashboard's setup code shows it.
 5. **Create the first owner.** `pnpm admin create --email <their email> --name "<their name>" --role owner --url https://<back office URL>`. It prints a one-time setup link (valid 24 hours). The user opens it, sets a password and, ideally, two-step sign-in.
 6. **Add the apps.** The dashboard opens on adding the first app: the user enters the bundle ID and/or package name and gets an SDK key per app. Then, under Configuration, the products (exactly as in App Store Connect and Play Console), an entitlement they unlock, and an offering if the paywall uses one. If you're connected (MCP or CLI), you can do this for them; see "Changing the config" below.
 7. **Check the setup.** See "Check and connect" below.
@@ -67,7 +67,7 @@ An `openpurr.config.yaml` in `lite/` (see `openpurr.config.example.yaml`) is opt
 
 ## Custom domains (recommended)
 
-The `workers.dev` URLs work, but a custom domain is easier to keep if the account changes. In the Cloudflare dashboard: Workers & Pages → each Worker → Settings → Domains & Routes → add a custom domain (for example `purchases.example.com` for the SDK Worker and `office.example.com` for the back office). Use the custom domains for the app's `proxyURL` and the store notification URLs.
+The `workers.dev` URLs work, but a custom domain is easier to keep if the account changes. In the Cloudflare dashboard: Workers & Pages → each Worker → Settings → Domains & Routes → add a custom domain (for example `purchases.example.com` for the SDK Worker and `office.example.com` for the back office). Use the custom domains for the app's `proxyURL` and the store notification URLs, and update the SDK URL under Settings.
 
 ## Check and connect
 

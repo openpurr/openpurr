@@ -1,5 +1,6 @@
 // Admin pages: the team (operators), the audit log and deployment settings.
 import { get, patch, post, put } from "../api.js";
+import { sdkUrlBlock } from "../connect.js";
 import { h, replace } from "../dom.js";
 import { IconPlus, IconRefresh, IconShield } from "../icons.js";
 import {
@@ -325,7 +326,11 @@ export async function settingsPage(ctx) {
             )
           : h("div", { class: "card-body muted small" }, "No apps you can see."),
       ),
-      cardWith("This deployment", null, h("div", { class: "card-body" }, kv([["Back office", h("span", { class: "mono small" }, location.origin)], ["Edition", "Lite (Cloudflare Workers + D1)"]]))),
+      cardWith(
+        "This deployment",
+        null,
+        h("div", { class: "card-body" }, kv([["Back office", h("span", { class: "mono small" }, location.origin)], ["SDK URL", sdkUrlBlock(ctx, settings)], ["Edition", "Lite (Cloudflare Workers + D1)"]])),
+      ),
     ),
   );
 }

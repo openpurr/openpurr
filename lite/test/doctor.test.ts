@@ -34,6 +34,7 @@ describe("setup checks", () => {
     const r = await doctor();
     expect(r.byId.database).toMatchObject({ status: "ok" });
     expect(r.byId.domain).toMatchObject({ status: "ok" }); // not workers.dev
+    expect(r.byId["sdk-url"]).toMatchObject({ status: "info" }); // not set
     expect(r.byId.storage).toMatchObject({ status: "ok" });
     expect(r.byId.storage!.message).toMatch(/MB of the free plan's 500 MB/);
     // The test config: iOS without an In-App Purchase key; Android accepting unverified purchases.

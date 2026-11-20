@@ -8,6 +8,7 @@ import { requireTotpForEveryone } from "./auth";
 import { canSeeApp, type Principal } from "./principal";
 import { visibleProjects } from "./project";
 import { assessUsage, cloudflarePlan, describe as describeUsage, readUsage, usageConfigured } from "./usage";
+import { guessSdkUrl, storedSdkUrl } from "./setup";
 
 /** The newest migration this code expects. A test keeps it in step with migrations/. */
 export const EXPECTED_MIGRATION = "0018_projects.sql";
@@ -126,6 +127,29 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
       fix: "In the Cloudflare dashboard: Workers & Pages → each openpurr Worker → Settings → Domains & Routes → add a custom domain. Then use it for the SDK's proxyURL and the store notification URLs.",
     });
   } else add({ id: "domain", title: "Custom domain", status: "ok", message: `Served on ${new URL(origin).hostname}.` });
+
+  // The SDK Worker's address, for the dashboard's setup code.
+  const sdkUrl = await storedSdkUrl(db);
+  if (!sdkUrl) {
+    const guess = guessSdkUrl(origin);
+    add({
+      id: "sdk-url",
+      title: "SDK URL",
+      status: "info",
+      message: guess
+        ? `Not set, so the dashboard's setup code guesses ${guess} for Purchases.proxyURL.`
+        : "Not set, so the dashboard's setup code can't show the address your apps use as Purchases.proxyURL.",
+      fix: "Set it on the dashboard's Settings page: the openpurr SDK Worker's address, ideally a custom domain.",
+    });
+  } else if (new URL(sdkUrl).hostname.endsWith(".workers.dev")) {
+    add({
+      id: "sdk-url",
+      title: "SDK URL",
+      status: "warn",
+      message: `Apps reach openpurr at ${new URL(sdkUrl).hostname}. A proxyURL ships inside your app, so moving it later needs an app release.`,
+      fix: "Add a custom domain to the SDK Worker (Workers & Pages → openpurr → Settings → Domains & Routes), set it as the SDK URL on the Settings page, and use it as proxyURL in your next app release.",
+    });
+  } else add({ id: "sdk-url", title: "SDK URL", status: "ok", message: `Apps use ${sdkUrl}.` });
 
   // Projects and their apps. With one project, checks keep their plain IDs; with several, each is
   // prefixed with its project.

@@ -34,6 +34,7 @@ import { runChecks, summarize } from "./doctor";
 import { type Actor, GRANT_DURATIONS, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, oauthTokenOwner, resourceMetadataUrl } from "./oauth";
 import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, principalOf, type TokenScope, tokenPrincipal } from "./principal";
+import { guessSdkUrl, notificationUrl, storedSdkUrl } from "./setup";
 
 export const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
 const SERVER_INFO = { name: "openpurr", title: "openpurr", version: "1.0.0" };
@@ -179,7 +180,7 @@ function actorOf(c: Ctx, principal: Principal): Actor {
   return { email: principal.operator.email, operatorId: principal.operator.id, source: "mcp", tokenId: principal.tokenId, ip: c.req.header("cf-connecting-ip") ?? null };
 }
 
-function describeProject(config: ProjectConfig, principal: Principal) {
+function describeProject(config: ProjectConfig, principal: Principal, origin: string) {
   const apps = [...config.apps.values()]
     .filter((a) => canSeeApp(principal, a.id))
     .map((a) => ({
@@ -188,6 +189,7 @@ function describeProject(config: ProjectConfig, principal: Principal) {
       bundle_id: a.bundleId ?? null,
       package_name: a.packageName ?? null,
       sdk_keys: a.sdkKeys,
+      notification_url: notificationUrl(a.store, origin),
       products: [...a.products.values()].map((pr) => ({ id: pr.id, type: pr.type, base_plans: pr.basePlans.length ? pr.basePlans : undefined })),
     }));
   const entitlements = config.entitlements.map((e) => ({
@@ -202,7 +204,7 @@ function describeProject(config: ProjectConfig, principal: Principal) {
     packages: o.packages.map((pk) => ({ id: pk.id, products: Object.fromEntries([...pk.products].filter(([app]) => canSeeApp(principal, app)).map(([app, r]) => [app, r.basePlanId ? `${r.productId}:${r.basePlanId}` : r.productId])) })),
   }));
   const text = [
-    `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}; SDK key ${a.sdk_keys.join(", ")}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
+    `Apps:\n${apps.map((a) => `- ${a.id} (${STORE[a.store]}, ${a.bundle_id ?? a.package_name}; SDK key ${a.sdk_keys.join(", ")}; store notifications to ${a.notification_url}): ${a.products.map((pr) => `${pr.id} [${pr.type}${pr.base_plans ? `; base plans ${pr.base_plans.join(", ")}` : ""}]`).join(", ")}`).join("\n")}`,
     `Entitlements:\n${entitlements.map((e) => `- ${e.id}${e.description ? ` (${e.description})` : ""}: ${Object.entries(e.products).map(([app, prs]) => `${app}: ${prs.join(", ")}`).join("; ")}`).join("\n")}`,
     `Offerings:\n${offerings.map((o) => `- ${o.id}${o.current ? " (current)" : ""}: ${o.packages.map((pk) => `${pk.id} = ${Object.entries(pk.products).map(([app, pr]) => `${app}:${pr}`).join(", ")}`).join("; ")}`).join("\n")}`,
   ].join("\n\n");
@@ -456,17 +458,26 @@ const TOOLS: Tool[] = [
     name: "get_config",
     title: "Get the configuration",
     description:
-      "The deployment's projects and, for each, its apps (store, bundle ID or package name, SDK keys, products), entitlements (which products unlock each, per app) and offerings. For operators with access to every app, the structured result also has the whole config document and its version_id, for save_config. No secrets.",
+      "The SDK URL apps use as Purchases.proxyURL, and the deployment's projects and, for each, its apps (store, bundle ID or package name, SDK keys, products, store notification URL), entitlements (which products unlock each, per app) and offerings. For operators with access to every app, the structured result also has the whole config document and its version_id, for save_config. No secrets.",
     inputSchema: { type: "object", additionalProperties: false },
     annotations: { readOnlyHint: true, openWorldHint: false },
     permission: "read",
     async run(c, principal) {
-      const projects = visibleProjects(c.get("config"), principal).map((config) => describeProject(config, principal));
+      const origin = new URL(c.req.url).origin;
+      const stored = await storedSdkUrl(c.env.DB);
+      const sdkUrl = stored ?? guessSdkUrl(origin);
+      const sdkLine = stored
+        ? `SDK URL (Purchases.proxyURL): ${stored}`
+        : sdkUrl
+          ? `SDK URL (Purchases.proxyURL): probably ${sdkUrl} (a guess from this back office's workers.dev address; set it on the dashboard's Settings page to be sure)`
+          : "SDK URL (Purchases.proxyURL): not set. It's the openpurr SDK Worker's address; set it on the dashboard's Settings page.";
+      const sdk = { sdk_url: sdkUrl, sdk_url_source: stored ? "setting" : sdkUrl ? "guess" : null };
+      const projects = visibleProjects(c.get("config"), principal).map((config) => describeProject(config, principal, origin));
       // The whole document spans every app, so only operators who can see every app get it.
-      const stored = principal.apps === null ? await currentVersion(c.env.DB) : null;
-      const full = principal.apps === null ? { version_id: stored?.id ?? 0, document: stored?.document ?? c.get("config").document } : {};
-      if (!projects.length) return { text: "No projects yet: the config is empty.", structured: { projects: [], ...full } };
-      return { text: projects.map((pr) => pr.text).join("\n\n"), structured: { projects: projects.map((pr) => pr.structured), ...full } };
+      const version = principal.apps === null ? await currentVersion(c.env.DB) : null;
+      const full = principal.apps === null ? { version_id: version?.id ?? 0, document: version?.document ?? c.get("config").document } : {};
+      if (!projects.length) return { text: `${sdkLine}\n\nNo projects yet: the config is empty.`, structured: { ...sdk, projects: [], ...full } };
+      return { text: [sdkLine, ...projects.map((pr) => pr.text)].join("\n\n"), structured: { ...sdk, projects: projects.map((pr) => pr.structured), ...full } };
     },
   },
   {
