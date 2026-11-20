@@ -19,7 +19,7 @@
     "url": "git+https://github.com/openpurr/openpurr.git",
     "directory": "cli"
   },
-  "homepage": "https://openpurr.org",
+  "homepage": "https://www.openpurr.org",
   "scripts": {
     "test": "node --test test/*.test.js",
     "typecheck": "node --check bin/openpurr.js && node --check src/main.js && node --check src/client.js && node --check src/credentials.js && node --check src/output.js"

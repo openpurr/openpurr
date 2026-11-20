@@ -1,6 +1,6 @@
 name: Deploy website
 
-# Deploys website/ to Cloudflare (Workers static assets, openpurr.org).
+# Deploys website/ to Cloudflare (Workers static assets, www.openpurr.org).
 # Runs on merges to main that touch the site, or by hand from the Actions tab.
 on:
   push:
@@ -25,7 +25,7 @@ jobs:
     timeout-minutes: 10
     environment:
       name: website
-      url: https://openpurr.org
+      url: https://www.openpurr.org
     steps:
       - uses: actions/checkout@v4
         with:

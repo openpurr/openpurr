@@ -10,8 +10,10 @@
     "not_found_handling": "404-page",
     "html_handling": "auto-trailing-slash"
   },
-  // The openpurr.org zone must be in the same Cloudflare account; deploy creates the DNS records.
-  // Both hostnames serve the site; pages declare openpurr.org as canonical.
+  // The openpurr.org zone must be in the same Cloudflare account; deploy creates the DNS records
+  // and certificates for both hostnames. www.openpurr.org is the main address (pages declare it as
+  // canonical). The apex stays attached so it resolves, and a Cloudflare Redirect Rule on the zone
+  // sends it to www with a 301; the rule runs before the site is served.
   "routes": [
     { "pattern": "openpurr.org", "custom_domain": true },
     { "pattern": "www.openpurr.org", "custom_domain": true }

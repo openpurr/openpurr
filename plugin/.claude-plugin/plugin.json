@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Deploy openpurr, connect the App Store and Google Play, point your app at it, handle webhooks, and debug purchases.",
   "author": { "name": "openpurr" },
-  "homepage": "https://openpurr.org",
+  "homepage": "https://www.openpurr.org",
   "repository": "https://github.com/openpurr/openpurr",
   "license": "Apache-2.0",
   "keywords": ["in-app-purchases", "subscriptions", "revenuecat", "cloudflare-workers", "storekit", "google-play-billing"]

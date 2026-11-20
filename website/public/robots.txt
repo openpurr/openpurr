@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://openpurr.org/sitemap.xml
+Sitemap: https://www.openpurr.org/sitemap.xml
