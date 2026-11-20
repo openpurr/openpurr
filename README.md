@@ -5,9 +5,9 @@
   </picture>
 </h1>
 
-An open-source, self-hosted backend for the RevenueCat SDKs.
+A self-hosted, open source RevenueCat alternative backend.
 
-Point your app's `Purchases.proxyURL` at your own server and keep using the SDK you already have. openpurr validates App Store and Google Play purchases, tracks entitlements, receives store notifications, sends webhooks to your backend, and charts your core subscription metrics. It runs on infrastructure you control.
+Using RevenueCat's open source Purchases SDKs, point your app's `Purchases.proxyURL` at your own server. openpurr validates App Store and Google Play purchases, tracks entitlements, receives store notifications, sends webhooks to your backend, and charts your core subscription metrics. It runs on infrastructure you control.
 
 openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc.
 
