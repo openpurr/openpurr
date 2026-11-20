@@ -1,0 +1,30 @@
+<!doctype html>
+<!-- The social preview card (public/og.png, 1200x630). To regenerate after changing it or the
+     dashboard screenshot, from website/:
+       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+         --force-device-scale-factor=2 --window-size=1200,630 --screenshot=og@2x.png "file://$PWD/og/og.html"
+       sips -z 630 1200 og@2x.png --out public/og.png && rm og@2x.png --><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;color:#1e1a33;
+ background:radial-gradient(760px 520px at 100% 0%,rgba(112,80,232,.20),transparent 70%),radial-gradient(600px 400px at 0% 100%,rgba(112,80,232,.08),transparent 70%),#fff;position:relative}
+.copy{position:absolute;left:72px;top:60px;width:560px}
+.logo{height:62px;display:block;margin-bottom:34px}
+h1{font-size:54px;line-height:1.06;letter-spacing:-.025em;font-weight:800}
+h1 .a{color:#7050e8}
+.nw{white-space:nowrap}
+p{margin-top:22px;font-size:24px;line-height:1.4;color:#625d7a}
+.url{position:absolute;left:72px;bottom:58px;font-size:22px;font-weight:600;color:#7050e8;display:flex;gap:0;align-items:center}
+.url span::before{content:'·';margin:0 12px}
+.url span{color:#625d7a;font-weight:500}
+.shot{position:absolute;left:660px;top:86px;width:760px;border-radius:14px;border:1px solid #e6e3f0;
+ box-shadow:0 30px 70px -20px rgba(20,16,40,.35),0 0 0 8px rgba(112,80,232,.06)}
+</style></head><body>
+<div class="copy">
+ <img class="logo" src="../public/logo.png" alt="">
+ <h1><span class="nw">Self-hosted,</span> <span class="nw">open-source</span> <span class="a">RevenueCat alternative</span></h1>
+ <p>Keep the Purchases SDK you already use. Change one URL. Pay no revenue share.</p>
+</div>
+<div class="url">openpurr.org<span>Apache 2.0 · Runs free on Cloudflare</span></div>
+<img class="shot" src="../public/dashboard.png" alt="">
+</body></html>

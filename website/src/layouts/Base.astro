@@ -15,7 +15,7 @@ const {
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL("/logo.png", Astro.site);
+const ogImage = new URL("/og.png", Astro.site);
 ---
 
 <!doctype html>
@@ -32,11 +32,15 @@ const ogImage = new URL("/logo.png", Astro.site);
     <meta name="theme-color" content="#7050e8" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="openpurr" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="openpurr: a self-hosted, open-source RevenueCat alternative, next to its subscription charts dashboard" />
+    <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
     <Header />
