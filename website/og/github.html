@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- The GitHub repo's social preview (.github/assets/social-preview.png, 1280x640; everything
+     important stays 80px inside the edges, as GitHub recommends). Render like og.html, with
+     --window-size=1280,640 and sips -z 640 1280, then upload it in the repo's Settings → General →
+     Social preview (GitHub has no API for it). --><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1280px;height:640px;overflow:hidden}
+body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;color:#1e1a33;
+ background:radial-gradient(760px 520px at 100% 0%,rgba(112,80,232,.20),transparent 70%),radial-gradient(600px 400px at 0% 100%,rgba(112,80,232,.08),transparent 70%),#fff;position:relative}
+.copy{position:absolute;left:100px;top:96px;width:560px}
+.logo{height:58px;display:block;margin-bottom:30px}
+h1{font-size:52px;line-height:1.06;letter-spacing:-.025em;font-weight:800}
+h1 .a{color:#7050e8}
+.nw{white-space:nowrap}
+p{margin-top:20px;font-size:23px;line-height:1.4;color:#625d7a}
+.url{position:absolute;left:100px;bottom:96px;font-size:22px;font-weight:600;color:#7050e8;display:flex;gap:0;align-items:center}
+.url span::before{content:'·';margin:0 12px}
+.url span{color:#625d7a;font-weight:500}
+.shot{position:absolute;left:720px;top:96px;width:800px;border-radius:14px;border:1px solid #e6e3f0;
+ box-shadow:0 30px 70px -20px rgba(20,16,40,.35),0 0 0 8px rgba(112,80,232,.06)}
+</style></head><body>
+<div class="copy">
+ <img class="logo" src="../public/logo.png" alt="">
+ <h1><span class="nw">Self-hosted,</span> <span class="nw">open-source</span> <span class="a">RevenueCat alternative</span></h1>
+ <p>Keep the Purchases SDK you already use. Change one URL. Pay no revenue share.</p>
+</div>
+<div class="url">openpurr.org<span>Apache 2.0 · Runs free on Cloudflare</span></div>
+<img class="shot" src="../public/dashboard.png" alt="">
+</body></html>
