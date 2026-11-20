@@ -1,0 +1,51 @@
+---
+// What openpurr is, for search engines and AI assistants: the software (SoftwareApplication) and
+// the project behind it (Organization). The FAQ's FAQPage data lives in Faq.astro.
+import { RELEASE, REPO_URL, LICENSE_URL } from "../consts";
+
+const site = Astro.site!.href.replace(/\/$/, "");
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${site}/#organization`,
+      name: "openpurr",
+      url: `${site}/`,
+      logo: `${site}/icon-192.png`,
+      sameAs: [REPO_URL],
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": `${site}/#software`,
+      name: "openpurr",
+      description:
+        "A self-hosted, open-source RevenueCat alternative: a backend for App Store and Google Play in-app purchases and subscriptions that works with the official, unmodified Purchases SDK. It validates purchases, tracks entitlements, receives store notifications, sends webhooks and charts subscription metrics.",
+      url: `${site}/`,
+      applicationCategory: "DeveloperApplication",
+      applicationSubCategory: "In-app purchase and subscription backend",
+      operatingSystem: "Cloudflare Workers",
+      softwareVersion: RELEASE.version,
+      datePublished: RELEASE.date,
+      license: LICENSE_URL,
+      isAccessibleForFree: true,
+      offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
+      downloadUrl: REPO_URL,
+      screenshot: `${site}/dashboard.png`,
+      featureList: [
+        "Works with the official RevenueCat Purchases SDK for iOS, Android, Flutter and React Native",
+        "StoreKit 2 and Google Play purchase validation",
+        "App Store Server Notifications V2 and Google Play Real-time Developer Notifications",
+        "RevenueCat-shaped webhooks signed with HMAC-SHA256",
+        "16 subscription charts, including MRR, churn and trial conversion",
+        "MCP server, CLI and Claude skills",
+      ],
+      publisher: { "@id": `${site}/#organization` },
+    },
+  ],
+};
+// Escape "<" so no text can close the script element.
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+---
+
+<script is:inline type="application/ld+json" set:html={jsonLdText} />

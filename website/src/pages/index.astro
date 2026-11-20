@@ -2,7 +2,8 @@
 import Base from "../layouts/Base.astro";
 import SdkSnippet from "../components/SdkSnippet.astro";
 import Faq from "../components/Faq.astro";
-import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL } from "../consts";
+import StructuredData from "../components/StructuredData.astro";
+import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
 
 const reasons = [
   {
@@ -52,7 +53,7 @@ const roadmap: { phase: string; status: Status; items: string[] }[] = [
     phase: "Lite",
     status: "wip",
     items: [
-      "First release: 0.1.0",
+      `First release: ${RELEASE.version}`,
       "Designed for Cloudflare's free plan",
       "App Store and Google Play",
       "Webhooks, dashboard and admin",
@@ -90,7 +91,7 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <h1>An open-source, self&#8209;hosted <span class="accent">RevenueCat replacement</span></h1>
+        <h1>A <span class="nowrap">self-hosted,</span> open-source <span class="accent">RevenueCat alternative</span></h1>
         <p class="lede">
           Control your own purchase infrastructure, share none of your revenue, and depend on no commercial service.
           Keep the Purchases SDK you already use: change one URL, not your purchase code.
@@ -189,7 +190,10 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
         </li>
         <li>
           <h3>Connect the stores</h3>
-          <p>Add your store credentials and notification URLs. A setup check that verifies them is coming too.</p>
+          <p>
+            Add your store credentials and notification URLs. The setup check, <code>openpurr doctor</code>, verifies
+            them and says how to fix anything that's missing.
+          </p>
         </li>
       </ol>
     </div>
@@ -314,6 +318,7 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
   </section>
 
   <Faq />
+  <StructuredData />
 
   <!-- CTA -->
   <section class="cta-section">
@@ -355,6 +360,9 @@ const statusLabel: Record<Status, string> = { done: "Done", wip: "In progress", 
     .hero {
       padding: 56px 0 64px;
     }
+  }
+  .nowrap {
+    white-space: nowrap;
   }
   .accent {
     color: var(--purple);
