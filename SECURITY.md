@@ -31,7 +31,14 @@ There is no bug bounty.
 
 ## Supported versions
 
-openpurr hasn't had a first release yet. Until it does, security fixes go to the `main` branch only. Once releases begin, this section will list which versions receive fixes.
+Until 1.0, only the latest release receives security fixes. Fixes land on `main` first and ship in the next release; older releases don't get backports.
+
+| Component | Supported | How to get fixes |
+|---|---|---|
+| Lite edition | `main` and the [latest release](https://github.com/openpurr/openpurr/releases/latest) | Lite deploys from `main`, so a deployment that follows `main` gets a fix as soon as it merges. |
+| CLI (`@openpurr/cli`) | The latest version on npm | `npm install -g @openpurr/cli@latest` |
+| Claude Code plugin | `main` | `claude plugin marketplace update openpurr` |
+| Standard edition | Not released yet | |
 
 ## Scope
 
