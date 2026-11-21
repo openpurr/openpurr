@@ -37,6 +37,7 @@ The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1,
 6. ✅ **MCP server:** ask an AI assistant why a customer does or doesn't have an entitlement, look up purchases, grant access and change the configuration. Works from Claude Code and as a Claude.ai connector.
 7. ✅ **CLI and Claude skills:** `npx @openpurr/cli` for setup and checks, plus skills that walk you through App Store Connect and Play Console configuration.
 8. ✅ **Moving from RevenueCat:** `openpurr import` brings existing customers over from RevenueCat's export, fetching each purchase from Apple and Google, and a [step-by-step guide](docs/migrating-from-revenuecat.md) covers running both backends during the switch.
+9. ✅ **Price experiments:** show customers new to the app different offerings, with `getOfferings()` and your paywall unchanged, then compare trials, conversion to paid, revenue per customer, MRR and churn per variant, with the chance that each variant beats the control. See the [guide](docs/price-experiments.md).
 
 ## Standard edition (coming soon) ⏳
 
@@ -51,7 +52,6 @@ For larger portfolios of apps: Go and Postgres in containers on your own cloud.
 Ideas we expect to pick up based on demand:
 - **Verified end-user identity**, so customer data can't be read with only a guessable app user ID.
 - **Standard extras** for larger teams.
-- **Price experiments:** test prices by showing customers different offerings. openpurr would assign each customer to a variant by app user ID and return that variant's offering as the current one, so `getOfferings()` and your own paywall need no changes. Charts would compare trial conversion, conversion to paid, revenue and churn per variant. Prices stay in the stores, so each price is its own product.
 
 ## Not planned for now
 

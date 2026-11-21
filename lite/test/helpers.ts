@@ -319,6 +319,12 @@ export function appWithWebhooks(receiver: { fetch: typeof fetch }, webhook: Reco
   return { app: buildApp(deps), deps };
 }
 
+/** An app with a changed copy of the test config; webhooks, if it has any, go to `receiver`. */
+export function appWithRawConfig(raw: object, receiver?: { fetch: typeof fetch }) {
+  const noRates = { name: "none", latest: async () => [], history: async () => [] };
+  return buildApp({ config: parseConfig(raw), appleRoots, rateLimiters: () => ({}), fx: noRates, ...(receiver ? { fetch: receiver.fetch } : {}) });
+}
+
 export const envWithWebhookSecrets = (signing = WEBHOOK_SIGNING_KEY) => ({ ...env, WEBHOOK_AUTH, WEBHOOK_SECRET: signing });
 
 // --- Google Play Developer API -----------------------------------------------------------------

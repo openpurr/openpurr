@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲�
 - **驗證：** SDK 金鑰和私密金鑰、管理員登入（密碼，可選用驗證器 App 動態密碼；Cloudflare Access 已在規劃中）、角色，以及稽核記錄。
 - **MCP 伺服器和 Claude Skills：** AI 助理可以查詢客戶、說明某人為什麼有或沒有某項權益，並帶你完成 App Store 和 Play Console 的設定。
 
-**目前暫不支援：** 付費牆、廣告事件、Customer Center、虛擬貨幣、Web 計費、Amazon 和第三方分析整合。價格實驗已列入[路線圖](ROADMAP.md#later-)（英文）。
+**目前暫不支援：** 付費牆、廣告事件、Customer Center、虛擬貨幣、Web 計費、Amazon 和第三方分析整合。價格實驗已內建，請參閱[指南](docs/price-experiments.md)（英文）。
 
 ## 兩個版本
 

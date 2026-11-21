@@ -16,6 +16,7 @@ import { type AttributeUpdate, enforceCustomLimit, parseAttributes, readAttribut
 import type { AppConfig } from "../config";
 import { renderCustomerInfo } from "../customer-info";
 import { introEligibility } from "../intro-eligibility";
+import { assignVariant } from "../experiments";
 import type { AppEnv } from "../env";
 import {
   addAlias,
@@ -336,11 +337,20 @@ sdk.post("/subscribers/identify", async (c) => {
 // Android only: Block Store recovery of an anonymous ID. Body is ignored by the SDK.
 sdk.post("/subscribers/:id/alias", (c) => c.json({}));
 
-sdk.get("/subscribers/:id/offerings", (c) => {
+// A running price experiment (src/experiments.ts) swaps in the customer's variant as the current
+// offering; every offering is still listed.
+sdk.get("/subscribers/:id/offerings", async (c) => {
   const config = c.get("project");
   const app = c.get("app");
+  let current = config.currentOffering;
+  const assigned = await assignVariant(c.env.DB, config.id, c.req.param("id"));
+  if (assigned) {
+    if (assigned.write) c.executionCtx.waitUntil(assigned.write.run());
+    // An offering removed from the config since the experiment started: the current one instead.
+    if (config.offerings.some((o) => o.id === assigned.variant.offering_id)) current = assigned.variant.offering_id;
+  }
   return c.json({
-    current_offering_id: config.currentOffering,
+    current_offering_id: current,
     offerings: config.offerings.map((o) => ({
       identifier: o.id,
       description: o.description,

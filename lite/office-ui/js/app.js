@@ -6,12 +6,13 @@ import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment,
 import { renderConsent } from "./consent.js";
 import { h, replace } from "./dom.js";
 import { detect, setLocale, t, tk, tx } from "./i18n.js";
-import { IconAlert, IconApps, IconBolt, IconChart, IconCustomers, IconFolder, IconGift, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTag, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
+import { IconAlert, IconApps, IconBolt, IconChart, IconCustomers, IconFlask, IconFolder, IconGift, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTag, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
 import { auditPage, settingsPage, teamPage } from "./pages/admin.js";
 import { chartPage, chartsPage } from "./pages/charts.js";
 import { appsPage, entitlementsPage, offeringsPage, projectsPage } from "./pages/config.js";
 import { customerPage, customersPage } from "./pages/customers.js";
+import { experimentsPage } from "./pages/experiments.js";
 import { secretKeysPage, tokensPage, webhooksPage } from "./pages/developers.js";
 import { applyTheme, avatar, brand, empty, errorCard } from "./ui.js";
 
@@ -25,6 +26,7 @@ const ROUTES = [
   { key: "apps", label: tk("Apps and products"), icon: IconApps, section: tk("Configuration"), perm: "read", page: appsPage },
   { key: "entitlements", label: tk("Entitlements"), icon: IconTag, section: tk("Configuration"), perm: "read", page: entitlementsPage },
   { key: "offerings", label: tk("Offerings"), icon: IconGift, section: tk("Configuration"), perm: "read", page: offeringsPage },
+  { key: "experiments", label: tk("Experiments"), icon: IconFlask, section: tk("Configuration"), perm: "read", page: experimentsPage },
   { key: "projects", label: tk("Projects"), icon: IconFolder, section: tk("Configuration"), perm: "read", page: projectsPage },
   { key: "webhooks", label: tk("Webhooks"), icon: IconBolt, section: tk("Developers"), perm: "read", page: webhooksPage },
   { key: "secret-keys", label: tk("Secret keys"), icon: IconKey, section: tk("Developers"), perm: "keys:manage", page: secretKeysPage },
@@ -348,7 +350,13 @@ async function renderRoute() {
   shownPage = pageKey;
   try {
     const node =
-      route.key === "customers" && rest[0] ? await customerPage(ctx, rest[0]) : route.key === "charts" && rest[0] ? await chartPage(ctx, rest[0]) : await route.page(ctx);
+      route.key === "customers" && rest[0]
+        ? await customerPage(ctx, rest[0])
+        : route.key === "charts" && rest[0]
+          ? await chartPage(ctx, rest[0])
+          : route.key === "experiments" && rest[0]
+            ? await experimentsPage(ctx, rest[0])
+            : await route.page(ctx);
     show(node);
   } catch (err) {
     if (err.code === "signed_out" || err.code === "totp_enrollment_required") return; // handled in api.js

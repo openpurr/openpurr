@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 - **Auth:** SDK keys और secret keys, operator login (password, साथ में optional authenticator codes; Cloudflare Access planned है), roles और एक audit log।
 - **MCP server और Claude skills:** कोई AI assistant ग्राहकों को खोज सकता है, समझा सकता है कि किसी के पास entitlement क्यों है या क्यों नहीं, और App Store और Play Console का setup step by step करवा सकता है।
 
-**फ़िलहाल scope से बाहर:** paywalls, ad events, Customer Center, virtual currencies, web billing, Amazon और third-party analytics integrations। Price experiments [roadmap](ROADMAP.md#later-) (अंग्रेज़ी में) पर हैं।
+**फ़िलहाल scope से बाहर:** paywalls, ad events, Customer Center, virtual currencies, web billing, Amazon और third-party analytics integrations। Price experiments शामिल हैं: [guide](docs/price-experiments.md) (अंग्रेज़ी में) देखें।
 
 ## दो editions
 

@@ -20,6 +20,7 @@
 
 import { type Config, entitlementsFor, type ProjectConfig, projectOfApp, type WebhookConfig, type WebhookEventType } from "./config";
 import type { Env } from "./env";
+import { type CustomerExperiment, customerExperimentsQuery } from "./experiments";
 import type { TransactionRow } from "./ledger";
 import { toUsd } from "./fx";
 import { alpha2FromAlpha3 } from "./lib/countries";
@@ -31,6 +32,8 @@ export interface EventCustomer {
   originalAppUserId: string;
   aliases: string[];
   attributes: Record<string, { value: string; updated_at_ms: number }>;
+  /** Price experiments the customer is enrolled in (RevenueCat's `experiments`). */
+  experiments?: CustomerExperiment[];
 }
 
 export interface EventInput {
@@ -107,6 +110,7 @@ export function eventBody(config: ProjectConfig, input: EventInput, id: string) 
           }
         : {}),
       subscriber_attributes: input.customer.attributes,
+      ...(input.customer.experiments?.length ? { experiments: input.customer.experiments } : {}),
       ...input.extra,
     },
   };
@@ -156,7 +160,7 @@ export async function enqueueEvent(
 /** Customer context for event bodies: aliases (newest last) and attributes. One D1 round trip. */
 export async function loadEventCustomer(db: D1Database, customerIds: string[], into: string, lastAppUserId?: string) {
   const ids = JSON.stringify(customerIds);
-  const [aliases, attrs, customer] = await db.batch([
+  const [aliases, attrs, customer, experiments] = await db.batch([
     db
       .prepare("SELECT app_user_id FROM customer_alias WHERE customer_id IN (SELECT value FROM json_each(?)) ORDER BY created_at, app_user_id")
       .bind(ids),
@@ -166,6 +170,7 @@ export async function loadEventCustomer(db: D1Database, customerIds: string[], i
       )
       .bind(ids),
     db.prepare("SELECT app_user_id FROM customer WHERE id = ?").bind(into),
+    customerExperimentsQuery(db, ids, into),
   ]);
   const aliasList = (aliases!.results as { app_user_id: string }[]).map((r) => r.app_user_id);
   // Newest value per key wins, as when customers merge.
@@ -180,6 +185,7 @@ export async function loadEventCustomer(db: D1Database, customerIds: string[], i
     originalAppUserId: original,
     aliases: aliasList,
     attributes,
+    experiments: (experiments!.results as unknown as CustomerExperiment[]).map(({ experiment_id, experiment_variant, enrolled_at_ms }) => ({ experiment_id, experiment_variant, enrolled_at_ms })),
   } satisfies EventCustomer;
 }
 

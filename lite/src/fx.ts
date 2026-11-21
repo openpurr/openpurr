@@ -116,3 +116,15 @@ export async function toUsd(db: D1Database, amount: number | null, currency: str
     .first<{ per_usd: number }>();
   return row ? Math.round((amount / row.per_usd) * 100) / 100 : null;
 }
+
+/** A transaction's price in USD at its purchase date: the rate for that day or the closest earlier one (else the closest later one). */
+export function usdSql(t: string) {
+  const day = `date(${t}.purchased_at / 1000, 'unixepoch')`;
+  return `CASE
+    WHEN ${t}.price_micros IS NULL OR ${t}.currency IS NULL THEN NULL
+    WHEN ${t}.currency = 'USD' THEN ${t}.price_micros / 1e6
+    ELSE ${t}.price_micros / 1e6 / coalesce(
+      (SELECT f.per_usd FROM fx_rate f WHERE f.currency = ${t}.currency AND f.date <= ${day} ORDER BY f.date DESC LIMIT 1),
+      (SELECT f.per_usd FROM fx_rate f WHERE f.currency = ${t}.currency AND f.date > ${day} ORDER BY f.date LIMIT 1))
+  END`;
+}

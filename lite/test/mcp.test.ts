@@ -241,3 +241,35 @@ describe("MCP config tools", () => {
     expect(await names((await tokenFor("admin", ["read", "write:config"])).token)).toContain("save_config");
   });
 });
+
+describe("get_experiments", () => {
+  it("lists experiments with results per variant, for operators who see every app", async () => {
+    const id = `exp_mcp_${Date.now()}`;
+    const variants = JSON.stringify([
+      { id: "a", offering_id: "default", weight: 50 },
+      { id: "b", offering_id: "default_v2", weight: 50 },
+    ]);
+    await env.DB.batch([
+      env.DB.prepare("INSERT INTO experiment (id, project_id, name, variants, status, created_at, started_at, stopped_at) VALUES (?, 'default', 'MCP price test', ?, 'stopped', ?, ?, ?)").bind(
+        id,
+        variants,
+        Date.now() - 10 * DAY,
+        Date.now() - 9 * DAY,
+        Date.now() - DAY,
+      ),
+      env.DB.prepare("INSERT INTO experiment_enrollment (experiment_id, app_user_id, variant, enrolled_at) VALUES (?, 'mcp-exp-1', 'a', ?), (?, 'mcp-exp-2', 'b', ?)").bind(id, Date.now() - 8 * DAY, id, Date.now() - 8 * DAY),
+    ]);
+    const { token } = await tokenFor("viewer", ["read"]);
+    const r = await tool(token, "get_experiments");
+    expect(text(r)).toContain(`MCP price test (${id}): stopped`);
+    expect(text(r)).toMatch(/b: 1 customers, .*vs a: .*too early to call/);
+    const mine = r.structuredContent.experiments.find((e: { id: string }) => e.id === id);
+    expect(mine.variants[1]).toMatchObject({ offering_id: "default_v2", offering_exists: false });
+    expect(mine.results.variants.map((v: { customers: number }) => v.customers)).toEqual([1, 1]);
+
+    const { token: limited } = await tokenFor("viewer", ["read"], { apps: ["ios"] });
+    const l = await tool(limited, "get_experiments");
+    expect(text(l)).toContain("Results aren't shown");
+    expect(l.structuredContent.experiments.find((e: { id: string }) => e.id === id).results).toBeNull();
+  });
+});

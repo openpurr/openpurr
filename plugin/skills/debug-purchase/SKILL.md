@@ -28,6 +28,7 @@ Then, for the full picture, `lookup_customer` (or `npx @openpurr/cli customer <a
 | Google Play purchase pending in the app | Play API access isn't configured, so openpurr refuses the purchase | `play-setup` skill |
 | Access on one device, not another | Different app user IDs (no `logIn`, or a different one) | `logIn` with the same ID everywhere. The customer can also restore purchases |
 | Access after a refund | The refund hasn't been reported yet | Apple and Google report refunds through notifications, often days later |
+| Some users see a different paywall or price | A price experiment is running: customers new to the app get a variant's offering as `current` | Expected. `get_experiments`, or the dashboard's Experiments page and the customer's page, show who is in which variant |
 | Purchase moved to another user | Restore by a different user ID transferred it (`TRANSFER` event) | Expected behavior, as in RevenueCat |
 
 If the customer's data doesn't match what the store shows, compare with the store's own records (App Store Connect, Play Console order management) before changing anything.

@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr cũng phù hợp nếu bạn đang dùng SDK của RevenueCat và muố
 - **Xác thực:** SDK key và secret key, đăng nhập cho người vận hành (mật khẩu kèm mã xác thực hai bước tùy chọn; Cloudflare Access đang được lên kế hoạch), vai trò và nhật ký kiểm tra (audit log).
 - **MCP server và Claude skill:** trợ lý AI có thể tra cứu khách hàng, giải thích vì sao một người có hoặc không có entitlement, và hướng dẫn bạn từng bước thiết lập App Store và Play Console.
 
-**Tạm thời ngoài phạm vi:** paywall, sự kiện quảng cáo, Customer Center, tiền tệ ảo, thanh toán trên web, Amazon và tích hợp analytics bên thứ ba. Thử nghiệm giá đã có trong [lộ trình](ROADMAP.md#later-) (tiếng Anh).
+**Tạm thời ngoài phạm vi:** paywall, sự kiện quảng cáo, Customer Center, tiền tệ ảo, thanh toán trên web, Amazon và tích hợp analytics bên thứ ba. Thử nghiệm giá đã được tích hợp sẵn: xem [hướng dẫn](docs/price-experiments.md) (tiếng Anh).
 
 ## Hai phiên bản
 

@@ -19,7 +19,9 @@ import { pathToFileURL } from "node:url";
 
 const WORKERS = [
   { env: "", name: "SDK Worker", maxKib: 100, probe: true },
-  { env: "office", name: "back-office Worker", maxKib: 250, probe: false },
+  // Raised from 250 with price experiments (src/office/experiments.ts): the dashboard's API grows
+  // with each feature, and this Worker serves operators, webhooks retries and cron, not apps.
+  { env: "office", name: "back-office Worker", maxKib: 300, probe: false },
 ];
 
 // The build step compiles the config; CI has no operator config, so use the example.

@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ Es passt auch gut, wenn du die RevenueCat SDKs schon nutzt und behalten willst. 
 - **Anmeldung:** SDK-Keys und Secret Keys, Anmeldung für Betreiber (Passwort mit optionalen Authenticator-Codes; Cloudflare Access ist geplant), Rollen und ein Audit-Log.
 - **MCP-Server und Claude-Skills:** Ein KI-Assistent kann Kunden nachschlagen, erklären, warum jemand ein Entitlement hat oder nicht, und dich durch die Einrichtung in App Store und Play Console führen.
 
-**Vorerst nicht vorgesehen:** Paywalls, Werbeereignisse, Customer Center, virtuelle Währungen, Web-Billing, Amazon und Analytics-Integrationen von Drittanbietern. Preisexperimente stehen auf der [Roadmap](ROADMAP.md#later-) (Englisch).
+**Vorerst nicht vorgesehen:** Paywalls, Werbeereignisse, Customer Center, virtuelle Währungen, Web-Billing, Amazon und Analytics-Integrationen von Drittanbietern. Preisexperimente sind eingebaut: siehe die [Anleitung](docs/price-experiments.md) (Englisch).
 
 ## Zwei Editionen
 
