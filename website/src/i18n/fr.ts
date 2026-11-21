@@ -1,5 +1,5 @@
-// French copy. Follows en.ts; see the notes there. Uses "vous". " " is the non-breaking space
-// French puts before : ? ! and between a number and its currency.
+// French copy. Follows en.ts; see the notes there. Uses "vous". French puts a non-breaking space
+// (U+00A0) before : ? ! and between a number and its currency; this file uses the character itself.
 import type { Dict } from "./en";
 
 export const fr: Dict = {
@@ -217,6 +217,11 @@ export const fr: Dict = {
       {
         q: "Dois-je réécrire mon code d'achat pour quitter RevenueCat ?",
         a: "Non. openpurr fonctionne avec le SDK Purchases officiel, sans modification. Vous définissez l'URL de proxy du SDK sur votre serveur openpurr avant d'appeler configure, et le reste de votre code d'achat ne change pas. Utilisez un domaine personnalisé qui vous appartient pour pouvoir changer de serveur plus tard sans mise à jour de l'application.",
+      },
+      {
+        q: "Comment transférer mes clients existants depuis RevenueCat ?",
+        a: "En les important. Demandez un export de migration à RevenueCat : openpurr import récupère les achats de chaque client auprès d'Apple et de Google et les attribue aux mêmes identifiants d'utilisateur. La nouvelle version de votre application envoie aussi une fois les achats de chaque client, et les deux backends restent à jour pendant que les utilisateurs mettent à jour l'application : personne ne perd son accès.",
+        link: "Lire le guide de migration (en anglais)",
       },
       {
         q: "Quelles plateformes et quels stores openpurr prend-il en charge ?",

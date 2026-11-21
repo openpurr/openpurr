@@ -1,7 +1,7 @@
 // llms.txt (https://llmstxt.org): a plain-text summary of openpurr for AI assistants, with links to
 // the details. Keep it factual and in step with the homepage and the README.
 import type { APIRoute } from "astro";
-import { CONTRIBUTING_URL, LICENSE_URL, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
+import { CONTRIBUTING_URL, LICENSE_URL, MIGRATION_URL, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
 
 export const GET: APIRoute = ({ site }) => {
   const text = `# openpurr
@@ -32,6 +32,7 @@ Paywalls, A/B experiments, third-party analytics integrations, Customer Center, 
 ## Links
 
 - [Source code and README](${REPO_URL}): what it is, quick start and setup
+- [Moving from RevenueCat](${MIGRATION_URL}): importing existing customers and switching an app over, step by step
 - [Roadmap](${ROADMAP_URL}): what's done and what's next
 - [Releases](${REPO_URL}/releases): release notes
 - [Contributing](${CONTRIBUTING_URL}): how the code is organized, and how to run and test it

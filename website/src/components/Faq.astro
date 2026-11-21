@@ -1,6 +1,7 @@
 ---
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
+import { MIGRATION_URL } from "../consts";
 import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
 
 interface Props {
@@ -14,10 +15,11 @@ const jsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   inLanguage: locale,
-  mainEntity: faqs.map(({ q, a }) => ({
+  mainEntity: faqs.map(({ q, a, link }) => ({
     "@type": "Question",
     name: q,
-    acceptedAnswer: { "@type": "Answer", text: a },
+    // Google allows links in an answer's text.
+    acceptedAnswer: { "@type": "Answer", text: link ? `${a} <a href="${MIGRATION_URL}">${link}</a>` : a },
   })),
 };
 // Escape "<" so answer text can never close the script element.
@@ -33,12 +35,20 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     </div>
     <div class="list">
       {
-        faqs.map(({ q, a }) => (
+        faqs.map(({ q, a, link }) => (
           <details>
             <summary>
               <h3>{q}</h3>
             </summary>
-            <p>{a}</p>
+            <p>
+              {a}
+              {link && (
+                <>
+                  {" "}
+                  <a href={MIGRATION_URL}>{link} →</a>
+                </>
+              )}
+            </p>
           </details>
         ))
       }

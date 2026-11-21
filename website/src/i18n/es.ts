@@ -209,6 +209,11 @@ export const es: Dict = {
         a: "No. openpurr funciona con el SDK de Purchases oficial, sin modificar. Configuras la URL del proxy del SDK con tu servidor de openpurr antes de llamar a configure, y el resto de tu código de compras sigue igual. Usa un dominio propio para poder cambiar de servidor más adelante sin actualizar la app.",
       },
       {
+        q: "¿Cómo paso mis clientes actuales de RevenueCat a openpurr?",
+        a: "Importándolos. Pide a RevenueCat una exportación de migración, y openpurr import obtiene las compras de cada cliente de Apple y Google y las asigna a los mismos IDs de usuario. La nueva versión de tu app también envía una vez las compras de cada cliente, y los dos backends se mantienen al día mientras la gente actualiza, así que nadie pierde el acceso.",
+        link: "Lee la guía de migración (en inglés)",
+      },
+      {
         q: "¿Qué plataformas y tiendas admite openpurr?",
         a: "El SDK de Purchases para iOS, Android, Flutter y React Native, con compras del App Store y de Google Play. Amazon y los pagos web quedan fuera de alcance por ahora.",
       },
