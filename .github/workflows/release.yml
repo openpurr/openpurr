@@ -88,6 +88,10 @@ jobs:
           if [ -n "$site" ] && [ "$site" != "$version" ]; then
             echo "::warning::website/src/consts.ts still says RELEASE version $site. Update it so the website and llms.txt show $version."
           fi
+          plugin=$(node -p "require('./plugin/.claude-plugin/plugin.json').version")
+          if [ "$plugin" != "$version" ]; then
+            echo "::warning::plugin/.claude-plugin/plugin.json is still version $plugin. Update it so the Claude Code plugin shows $version."
+          fi
           echo "release=create" >> "$GITHUB_OUTPUT"
 
       # Test before releasing, so a failure doesn't leave a release with nothing on npm. The CLI has
