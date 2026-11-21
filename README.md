@@ -37,7 +37,7 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 - **Auth:** SDK keys and secret keys, operator login (password with optional authenticator codes; Cloudflare Access is planned), roles, and an audit log.
 - **MCP server and Claude skills:** an AI assistant can look up customers, explain why someone does or doesn't have an entitlement, and walk you through App Store and Play Console setup.
 
-**Out of scope for now:** paywalls, ad events, Customer Center, virtual currencies, web billing, Amazon, experiments, and third-party analytics integrations.
+**Out of scope for now:** paywalls, ad events, Customer Center, virtual currencies, web billing, Amazon, experiments (price experiments are on the [roadmap](ROADMAP.md#later-)), and third-party analytics integrations.
 
 ## Two editions
 
