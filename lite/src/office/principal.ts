@@ -24,15 +24,16 @@ export type Permission =
   | "grants:manage"
   | "operators:manage"
   | "config:manage"
-  | "settings:manage";
+  | "settings:manage"
+  | "customers:import";
 export const TOKEN_SCOPES = ["read", "write:grants", "write:webhooks", "write:config", "admin"] as const;
 export type TokenScope = (typeof TOKEN_SCOPES)[number];
 
 const ROLE_PERMISSIONS: Record<Operator["role"], Permission[]> = {
   viewer: ["read"],
   developer: ["read", "webhooks:replay", "keys:manage", "grants:manage"],
-  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage"],
-  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage", "settings:manage"],
+  admin: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage", "customers:import"],
+  owner: ["read", "audit:read", "webhooks:replay", "keys:manage", "grants:manage", "operators:manage", "config:manage", "settings:manage", "customers:import"],
 };
 
 const SCOPE_PERMISSIONS: Record<TokenScope, Permission[]> = {
@@ -40,7 +41,7 @@ const SCOPE_PERMISSIONS: Record<TokenScope, Permission[]> = {
   "write:webhooks": ["webhooks:replay"],
   "write:grants": ["grants:manage"],
   "write:config": ["config:manage"],
-  admin: ["keys:manage", "operators:manage", "config:manage", "settings:manage", "audit:read"],
+  admin: ["keys:manage", "operators:manage", "config:manage", "settings:manage", "audit:read", "customers:import"],
 };
 
 export interface Principal {

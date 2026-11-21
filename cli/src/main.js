@@ -6,6 +6,7 @@ import { createInterface } from "node:readline";
 import { parseArgs } from "node:util";
 import { CliError, client } from "./client.js";
 import { credentialsPath, readCredentials, resolveTarget, writeCredentials } from "./credentials.js";
+import { runImport } from "./import.js";
 import { json, styles, table, when } from "./output.js";
 
 const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
@@ -28,6 +29,15 @@ Customers
         --duration daily|three_day|weekly|monthly|two_month|three_month|six_month|yearly|lifetime
         or --until YYYY-MM-DD, and optionally --note "why"
   revoke-grant APP_USER_ID GRANT_ID   End a grant now
+
+Moving from RevenueCat
+  import FILE.csv [--dry-run]         Bring existing customers over: each row's purchase is fetched from
+                                      Apple or Google and given to its app user. Columns: app_user_id, and
+                                      original_transaction_id (App Store) or purchase_token and product_id
+                                      (Google Play); optionally store, app, aliases, first_seen, $email…
+        [--app ID] [--store S]        For files without an app or store column
+        [--limit N] [--concurrency N] Rows this run (resume by running again), requests at once (4)
+        [--restart]                   Start over instead of resuming
 
 Charts and config
   metrics CHART [--from D] [--to D] [--interval day|week|month] [--environment sandbox]
@@ -86,6 +96,9 @@ const OPTIONS = {
   name: { type: "string" },
   "in-hours": { type: "string" },
   project: { type: "string" },
+  "dry-run": { type: "boolean" },
+  restart: { type: "boolean" },
+  concurrency: { type: "string" },
 };
 
 /** Runs the CLI. Returns the exit code. io: { env, stdout, stderr, stdin, fetch? }. */
@@ -191,6 +204,13 @@ export async function main(argv, io) {
       case "audit":
         show(await api().tool("get_audit_log", { ...(flags.action ? { action: flags.action } : {}), ...(flags.limit ? { limit: Number(flags.limit) } : {}) }));
         return 0;
+      case "import":
+        return await runImport(
+          api(),
+          { file: rest[0], dryRun: flags["dry-run"], restart: flags.restart, limit: flags.limit, concurrency: flags.concurrency, project: flags.project, app: flags.app, store: flags.store, json: flags.json, sleep: io.sleep },
+          out,
+          s,
+        );
       case "keys":
         return await keys(api(), rest, flags, out);
       case "team":

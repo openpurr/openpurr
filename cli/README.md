@@ -43,6 +43,7 @@ openpurr config pull > config.json            # edit, then:
 openpurr config push config.json --note "Add yearly plan"
 openpurr webhooks --status failed             # then: openpurr webhooks replay EVENT_ID
 openpurr keys create "Backend"                # a secret key for your server
+openpurr import revenuecat-export.csv --dry-run   # moving from RevenueCat: check, then import
 ```
 
 Add `--json` to any command for machine-readable output, and `--project ID` when the deployment has several projects (apps or titles).
@@ -55,6 +56,7 @@ Add `--json` to any command for machine-readable output, and `--project ID` when
 | **Customers** | `customers`, `customer`, `explain`, `grant`, `revoke-grant` |
 | **Charts and config** | `metrics` (revenue, MRR, ARR, churn, trials, refunds and more), `config`, `config pull` / `push` / `history` / `restore` |
 | **Operations** | `webhooks`, `webhooks replay`, `audit`, `keys`, `team` |
+| **Moving from RevenueCat** | `import` (see the [migration guide](https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-revenuecat.md)) |
 
 Run `openpurr --help` for every option.
 

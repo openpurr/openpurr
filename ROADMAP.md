@@ -36,6 +36,7 @@ The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1,
    - ⏳ a Deploy to Cloudflare button.
 6. ✅ **MCP server:** ask an AI assistant why a customer does or doesn't have an entitlement, look up purchases, grant access and change the configuration. Works from Claude Code and as a Claude.ai connector.
 7. ✅ **CLI and Claude skills:** `npx @openpurr/cli` for setup and checks, plus skills that walk you through App Store Connect and Play Console configuration.
+8. ✅ **Moving from RevenueCat:** `openpurr import` brings existing customers over from RevenueCat's export, fetching each purchase from Apple and Google, and a [step-by-step guide](docs/migrating-from-revenuecat.md) covers running both backends during the switch.
 
 ## Standard edition (coming soon) ⏳
 

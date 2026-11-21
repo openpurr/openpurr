@@ -42,6 +42,16 @@ export function client({ url, token }, fetchImpl = fetch) {
       }
       return data;
     },
+    /**
+     * Admin API call that returns the status instead of throwing on 4xx/5xx (for commands that
+     * decide per status, like import). Throws CliError on 401 and when the server can't be reached.
+     */
+    async apiStatus(method, path, body) {
+      const res = await request(method, `/admin/v1${path}`, body);
+      const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new CliError(`${data.message ?? "Not signed in."} Run: openpurr login`);
+      return { status: res.status, data, retryAfter: Number(res.headers.get("retry-after")) || null };
+    },
     /** Raw text from the admin API (CSV). */
     async apiText(path) {
       const res = await request("GET", `/admin/v1${path}`, undefined, "text/csv");

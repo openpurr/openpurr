@@ -18,6 +18,7 @@ import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { runChecks, summarize } from "./doctor";
 import { assessUsage, cloudflarePlan, type Plan, readUsage, refreshUsage, usageConfigured } from "./usage";
+import { ImportError, importRow, type ImportRow } from "./import";
 import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oauth";
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
@@ -439,6 +440,32 @@ admin.post("/customers/:app_user_id/grants/:grant_id/revoke", requirePermission(
     return c.json({ revoked: c.req.param("grant_id") });
   } catch (err) {
     if (err instanceof GrantError) return c.json({ code: err.status === 404 ? "not_found" : "bad_request", message: err.message }, err.status);
+    throw err;
+  }
+});
+
+// --- importing purchases (from RevenueCat or another backend; see src/office/import.ts) ----------
+
+// One row per request. Importing writes every app's purchases, so it needs access to all apps.
+admin.post("/import", requirePermission("customers:import"), async (c) => {
+  if (p(c).apps !== null) return forbidden(c, "Importing needs access to all apps.");
+  const b = await body<{ row: ImportRow; dry_run: boolean; project: string }>(c);
+  if (!b.row || typeof b.row !== "object") return bad(c, 'Expected {"row": {...}}.');
+  const project = projectOf(c, b.project);
+  if (project instanceof Response) return project;
+  const dryRun = b.dry_run === true;
+  const appUserId = typeof b.row.app_user_id === "string" ? b.row.app_user_id : null;
+  try {
+    const result = await importRow(c.env.DB, c.env, c.get("deps"), project, b.row, {
+      dryRun,
+      extraWrites: dryRun ? [] : [auditBy(c, "customers.import", appUserId, { project: project.id, store: b.row.store ?? null, app: b.row.app ?? null })],
+    });
+    return c.json(result);
+  } catch (err) {
+    if (err instanceof ImportError) {
+      if (err.status === 429 || err.status === 503) c.header("Retry-After", err.status === 429 ? "3600" : "30");
+      return c.json({ code: err.code, message: err.message }, err.status);
+    }
     throw err;
   }
 });
