@@ -1,0 +1,558 @@
+---
+// The migration page, in any of the site's languages (/migrate-from-revenuecat/, /<lang>/…). The
+// copy is in src/i18n/migrate/; this file is the layout. The full, step-by-step guide stays in the
+// repo, in English (docs/migrating-from-revenuecat.md); keep the two in step.
+import Base from "../layouts/Base.astro";
+import { ISSUES_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, MIGRATION_UPDATED, REPO_URL } from "../consts";
+import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
+import { tm } from "../i18n/migrate";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const m = tm(locale);
+const tag = langTag(locale);
+const pagePath = localePath(locale, MIGRATION_PAGE);
+const homePath = localePath(locale, "/");
+// Western digits everywhere, as the translations use them.
+const updatedLabel = new Date(`${MIGRATION_UPDATED}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+const REVENUECAT_EXPORTS = "https://www.revenuecat.com/docs/revenuecat-support/common-tickets/export-data-or-migrate-away";
+const REVENUECAT_APPLE_NOTIFICATIONS = "https://www.revenuecat.com/docs/platform-resources/server-notifications/apple-server-notifications";
+/** Source links for steps 2 and 3 (by index). */
+const sources: Record<number, { href: string; label: string }> = {
+  1: { href: REVENUECAT_APPLE_NOTIFICATIONS, label: m.steps.sourceNotifications },
+  2: { href: REVENUECAT_EXPORTS, label: m.steps.sourceExports },
+};
+
+/** Code lines, with comments marked so they can be dimmed. */
+const lines = (code: string) => code.split("\n").map((text, i) => ({ text, comment: /^\s*(\/\/|#)/.test(text), first: i === 0 }));
+
+const appChange = lines(`// ${m.app.proxyComment}
+Purchases.proxyURL = URL(string: "https://purchases.example.com")!
+Purchases.configure(withAPIKey: "appl_…")
+
+// ${m.app.syncComment}
+let synced = "openpurr.synced"
+if !UserDefaults.standard.bool(forKey: synced) {
+  Purchases.shared.syncPurchases { _, error in
+    if error == nil { UserDefaults.standard.set(true, forKey: synced) }
+  }
+}`);
+
+const importCommands = lines(`npm install -g @openpurr/cli
+openpurr login --url https://<your back office>
+
+# ${m.import.dryRunComment}
+openpurr import revenuecat-export.csv --dry-run --limit 50
+
+# ${m.import.importComment}
+openpurr import revenuecat-export.csv`);
+
+const site = Astro.site!.href.replace(/\/$/, "");
+const pageUrl = `${site}${pagePath}`;
+const plain = (html: string) => html.replace(/<[^>]+>/g, "");
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": `${pageUrl}#article`,
+      headline: m.hero.headline,
+      description: m.meta.description,
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      image: `${site}/og-migrate.png`,
+      inLanguage: tag,
+      datePublished: MIGRATION_UPDATED,
+      dateModified: MIGRATION_UPDATED,
+      author: { "@id": `${site}/#organization` },
+      publisher: { "@id": `${site}/#organization` },
+      about: [
+        { "@type": "SoftwareApplication", "@id": `${site}/#software`, name: "openpurr", url: `${site}/` },
+        { "@type": "Organization", name: "RevenueCat", sameAs: "https://www.revenuecat.com" },
+      ],
+      isBasedOn: MIGRATION_GUIDE_URL,
+      citation: [REVENUECAT_EXPORTS, REVENUECAT_APPLE_NOTIFICATIONS],
+    },
+    { "@type": "Organization", "@id": `${site}/#organization`, name: "openpurr", url: `${site}/`, logo: `${site}/icon-192.png`, sameAs: [REPO_URL] },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      name: m.meta.title,
+      description: m.meta.description,
+      inLanguage: tag,
+      step: m.steps.items.map((s, i) => ({ "@type": "HowToStep", position: i + 1, name: s.title, text: plain(s.body), url: `${pageUrl}#step-${i + 1}` })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "openpurr", item: `${site}${homePath}` },
+        { "@type": "ListItem", position: 2, name: m.hero.crumb, item: pageUrl },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      inLanguage: tag,
+      mainEntity: m.faq.items.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+    },
+  ],
+};
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+const enGuide = locale === "en" ? undefined : "en";
+---
+
+<Base
+  locale={locale}
+  alternates={allLocales(MIGRATION_PAGE)}
+  title={m.meta.title}
+  description={m.meta.description}
+  ogType="article"
+  ogImage="/og-migrate.png"
+  ogImageAlt={m.meta.ogImageAlt}
+>
+  <section class="hero">
+    <div class="wrap narrow">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href={homePath}>openpurr</a></li>
+          <li aria-current="page">{m.hero.crumb}</li>
+        </ol>
+      </nav>
+      <span class="eyebrow">{m.hero.eyebrow}</span>
+      <h1>{m.hero.headline}</h1>
+      <p class="lede">{m.hero.lede}</p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={MIGRATION_GUIDE_URL} hreflang={enGuide}>{m.hero.guide}</a>
+        <a class="btn btn-ghost" href="#steps">{m.hero.steps}</a>
+      </div>
+      <p class="updated" set:html={fill(m.hero.updated, { date: `<time datetime="${MIGRATION_UPDATED}">${updatedLabel}</time>` })} />
+      <div class="summary" role="note" aria-labelledby="in-short">
+        <h2 id="in-short">{m.summary.title}</h2>
+        <ul>
+          {m.summary.items.map((s) => <li set:html={s} />)}
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{m.how.eyebrow}</span>
+        <h2>{m.how.title}</h2>
+        <p class="lede">{m.how.lede}</p>
+      </div>
+      <div class="grid grid-3">
+        {
+          m.how.ways.map((w) => (
+            <div class="card">
+              <h3>{w.title}</h3>
+              <p set:html={w.body} />
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">{m.app.eyebrow}</span>
+        <h2>{m.app.title}</h2>
+        <p class="lede">{m.app.lede}</p>
+      </div>
+      <pre class="code" tabindex="0" role="region" aria-label={m.app.codeLabel}><code>{appChange.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">{m.import.eyebrow}</span>
+        <h2>{m.import.title}</h2>
+        <p class="lede" set:html={m.import.lede} />
+      </div>
+      <pre class="code" tabindex="0" role="region" aria-label={m.import.codeLabel}><code>{importCommands.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+    </div>
+    <div class="wrap">
+      <div class="grid grid-3 safeguards">
+        {
+          m.import.safeguards.map(([t, b]) => (
+            <div>
+              <h3>{t}</h3>
+              <p>{b}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="steps">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{m.steps.eyebrow}</span>
+        <h2>{m.steps.title}</h2>
+        <p class="lede">{m.steps.lede}</p>
+      </div>
+      <ol class="steps">
+        {
+          m.steps.items.map((s, i) => (
+            <li id={`step-${i + 1}`}>
+              <h3>{s.title}</h3>
+              <p set:html={s.body} />
+              {sources[i] && (
+                <p class="source">
+                  {m.steps.source} <a href={sources[i].href} rel="noopener" hreflang={enGuide}>{sources[i].label}</a>
+                </p>
+              )}
+            </li>
+          ))
+        }
+      </ol>
+      <p class="more"><a href={MIGRATION_GUIDE_URL} hreflang={enGuide}>{m.steps.more}</a></p>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap narrow">
+      <div class="section-head">
+        <span class="eyebrow">{m.moves.eyebrow}</span>
+        <h2>{m.moves.title}</h2>
+      </div>
+      <table class="moves">
+        <tbody>
+          {
+            m.moves.rows.map(([what, how]) => (
+              <tr>
+                <th scope="row">{what}</th>
+                <td>{how}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap narrow">
+      <div class="section-head">
+        <span class="eyebrow">{m.faq.eyebrow}</span>
+        <h2>{m.faq.title}</h2>
+      </div>
+      <div class="faq">
+        {
+          m.faq.items.map(({ q, a }) => (
+            <details>
+              <summary>
+                <h3>{q}</h3>
+              </summary>
+              <p>{a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+    <script is:inline type="application/ld+json" set:html={jsonLdText} />
+  </section>
+
+  <section class="cta-section">
+    <div class="wrap">
+      <div class="cta">
+        <h2>{m.cta.title}</h2>
+        <p>{m.cta.body}</p>
+        <div class="ctas">
+          <a class="btn btn-light" href={MIGRATION_GUIDE_URL} hreflang={enGuide}>{m.cta.guide}</a>
+          <a class="btn btn-outline" href={REPO_URL}>{m.cta.github}</a>
+          <a class="btn btn-outline" href={ISSUES_URL}>{m.cta.issue}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 88px 0 72px;
+    background:
+      radial-gradient(900px 420px at 85% 0%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 70%),
+      var(--bg);
+  }
+  @media (max-width: 700px) {
+    .hero {
+      padding: 56px 0 48px;
+    }
+  }
+  .narrow {
+    max-width: 880px;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 22px;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .crumbs li + li::before {
+    content: "/";
+    margin-inline-end: 6px;
+    opacity: 0.6;
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .updated {
+    margin: 22px 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .summary {
+    margin-top: 36px;
+    padding: 24px 28px;
+    border: 1px solid var(--line);
+    border-inline-start: 4px solid var(--purple);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+  .summary h2 {
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+  .summary ul {
+    margin: 0;
+    padding-inline-start: 20px;
+  }
+  .summary li {
+    margin: 6px 0;
+    color: var(--text);
+  }
+  @media (max-width: 600px) {
+    .summary {
+      padding: 20px 18px;
+    }
+  }
+  .source {
+    margin-top: 8px !important;
+    font-size: 0.86rem;
+  }
+  .source a {
+    color: var(--muted);
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .card p,
+  .safeguards p,
+  .steps p {
+    color: var(--muted);
+  }
+  .card p:last-child {
+    margin-bottom: 0;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+    gap: 44px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+  }
+  .code {
+    margin: 0;
+    padding: 20px 22px;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    line-height: 1.75;
+    overflow-x: auto;
+  }
+  .code .c {
+    color: var(--code-muted);
+  }
+  .code:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 3px;
+  }
+
+  .safeguards {
+    margin-top: 56px;
+  }
+  .safeguards h3 {
+    font-size: 1.02rem;
+    margin-bottom: 6px;
+  }
+  .safeguards p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 32px 40px;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-top: 52px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--purple);
+    color: #fff;
+    font-weight: 700;
+  }
+  .steps p {
+    margin: 0;
+  }
+  .more {
+    margin-top: 36px;
+    font-weight: 600;
+  }
+  .more a {
+    text-decoration: none;
+  }
+
+  .moves {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.97rem;
+  }
+  .moves th,
+  .moves td {
+    text-align: start;
+    vertical-align: top;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .moves th {
+    font-weight: 500;
+    color: var(--ink);
+    width: 55%;
+  }
+  .moves td {
+    color: var(--muted);
+  }
+  @media (max-width: 600px) {
+    .moves th,
+    .moves td {
+      display: block;
+      width: auto;
+      padding: 0;
+      border: 0;
+    }
+    .moves th {
+      padding-top: 14px;
+    }
+    .moves td {
+      padding: 2px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+  }
+
+  .faq {
+    border-top: 1px solid var(--line);
+  }
+  .faq details {
+    border-bottom: 1px solid var(--line);
+  }
+  .faq summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary::after {
+    content: "+";
+    flex: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--purple);
+    transition: transform 0.2s;
+  }
+  .faq details[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faq summary h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .faq details p {
+    margin: 0 0 22px;
+    color: var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq summary::after {
+      transition: none;
+    }
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #7050e8, #4a2fc4);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 48px;
+    text-align: center;
+  }
+  @media (max-width: 600px) {
+    .cta {
+      padding: 40px 22px;
+    }
+  }
+  .cta h2 {
+    color: #fff;
+  }
+  .cta p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cta .ctas {
+    justify-content: center;
+  }
+  .btn-light {
+    background: #fff;
+    color: #2a1c7a;
+  }
+  .btn-outline {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .btn-outline:hover {
+    border-color: #fff;
+  }
+</style>

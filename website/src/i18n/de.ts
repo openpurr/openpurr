@@ -206,7 +206,7 @@ export const de: Dict = {
       {
         q: "Wie bringe ich meine bestehenden Kunden von RevenueCat zu openpurr?",
         a: "Per Import. Fordere bei RevenueCat einen Migrationsexport an, und openpurr import holt die Käufe jedes Kunden bei Apple und Google ab und ordnet sie denselben App-User-IDs zu. Die neue Version deiner App sendet die Käufe jedes Kunden außerdem einmal, und beide Backends bleiben auf dem neuesten Stand, während die Leute aktualisieren. So verliert niemand seinen Zugang.",
-        link: "So funktioniert der Umstieg (Englisch)",
+        link: "So funktioniert der Umstieg",
       },
       {
         q: "Welche Plattformen und Stores unterstützt openpurr?",

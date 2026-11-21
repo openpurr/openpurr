@@ -201,7 +201,7 @@ export const zhTw: Dict = {
       {
         q: "要怎麼把現有客戶從 RevenueCat 搬過來？",
         a: "用匯入的方式。向 RevenueCat 申請遷移匯出檔，接著 openpurr import 指令會從 Apple 和 Google 取得每位客戶的購買紀錄，並對應到相同的 App User ID。新版 App 也會把每位客戶的購買紀錄傳送一次，在使用者陸續更新期間，兩個後端都會保持同步，因此不會有人失去存取權。",
-        link: "遷移指南（英文）",
+        link: "遷移指南",
       },
       {
         q: "openpurr 支援哪些平台和商店？",

@@ -206,7 +206,7 @@ export const nl: Dict = {
       {
         q: "Hoe verhuis ik mijn bestaande klanten van RevenueCat?",
         a: "Door ze te importeren. Vraag RevenueCat om een migratie-export, waarna openpurr import de aankopen van elke klant bij Apple en Google ophaalt en ze aan dezelfde app-user-ID's koppelt. De nieuwe versie van je app stuurt de aankopen van elke klant ook één keer door, en beide backends blijven bijgewerkt terwijl mensen updaten. Zo verliest niemand zijn toegang.",
-        link: "Zo stap je over (Engels)",
+        link: "Zo stap je over",
       },
       {
         q: "Welke platforms en stores ondersteunt openpurr?",

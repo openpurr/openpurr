@@ -87,6 +87,14 @@ A version with a suffix (`0.2.0-beta.1`) becomes a GitHub pre-release and goes o
 
 Lite deploys itself from `main` (see [lite-deploy.yml](.github/workflows/lite-deploy.yml)); a release doesn't deploy anything.
 
+## Translations
+
+The website and the README are translated into 16 languages. English is the source; you don't need to translate your own changes.
+
+- **README:** `README.<lang>.md` files sit next to `README.md`, with a language bar between `<!-- languages -->` markers. Each starts with a `translated-from` marker holding a hash of the English README. When `README.md` changes, the [README translations](.github/workflows/readme-translations.yml) check warns about the files that are behind (it never blocks a merge). To refresh one, update its text, then set its marker to the hash printed by `node .github/scripts/check-readme-translations.mjs --hash`.
+- **Website:** the home page copy is in `website/src/i18n/` and the migration page's in `website/src/i18n/migrate/`. `en.ts` is the source; the other files are typed against it, so a string added in English fails `astro check` until each language has it.
+- Corrections from native speakers are very welcome: open a pull request against the language's file.
+
 ## Pull requests
 
 - Keep each pull request focused on one change.

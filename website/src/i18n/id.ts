@@ -211,7 +211,7 @@ export const id: Dict = {
       {
         q: "Bagaimana cara memindahkan pelanggan saya yang sudah ada dari RevenueCat?",
         a: "Dengan mengimpornya. Minta ekspor migrasi dari RevenueCat, lalu openpurr import mengambil pembelian setiap pelanggan dari Apple dan Google dan memberikannya ke app user ID yang sama. Versi baru aplikasi Anda juga mengirim pembelian setiap pelanggan satu kali, dan kedua backend tetap sinkron selama pengguna memperbarui aplikasi, sehingga tidak ada yang kehilangan akses.",
-        link: "Cara migrasi (bahasa Inggris)",
+        link: "Cara migrasi",
       },
       {
         q: "Platform dan store apa saja yang didukung openpurr?",

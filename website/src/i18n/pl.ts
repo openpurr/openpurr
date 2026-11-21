@@ -206,7 +206,7 @@ export const pl: Dict = {
       {
         q: "Jak przenieść moich obecnych klientów z RevenueCat?",
         a: "Zaimportuj ich. Poproś RevenueCat o eksport migracyjny, a polecenie openpurr import pobierze zakupy każdego klienta z Apple i Google i przypisze je do tych samych identyfikatorów użytkowników aplikacji. Nowa wersja twojej aplikacji także jednorazowo wysyła zakupy każdego klienta, a oba backendy pozostają aktualne, dopóki ludzie aktualizują aplikację, więc nikt nie traci dostępu.",
-        link: "Jak przeprowadzić migrację (po angielsku)",
+        link: "Jak przeprowadzić migrację",
       },
       {
         q: "Jakie platformy i sklepy obsługuje openpurr?",

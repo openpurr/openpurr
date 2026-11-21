@@ -215,7 +215,7 @@ export const vi: Dict = {
       {
         q: "Làm sao để chuyển khách hàng hiện có từ RevenueCat sang?",
         a: "Bạn import họ vào. Hãy yêu cầu RevenueCat cung cấp bản xuất dữ liệu để chuyển đổi, rồi lệnh openpurr import sẽ lấy giao dịch mua của từng khách hàng từ Apple và Google và gán chúng cho đúng các app user ID cũ. Phiên bản mới của ứng dụng cũng gửi giao dịch mua của từng khách hàng một lần, và cả hai backend đều được cập nhật trong lúc mọi người nâng cấp ứng dụng, nên không ai bị mất quyền truy cập.",
-        link: "Cách chuyển đổi (tiếng Anh)",
+        link: "Cách chuyển đổi",
       },
       {
         q: "openpurr hỗ trợ những nền tảng và store nào?",

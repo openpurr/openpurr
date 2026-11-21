@@ -1,0 +1,27 @@
+name: README translations
+
+# Warns (without failing) when a README.<lang>.md was translated from an older README.md, or the
+# language bar and the files disagree. See .github/scripts/check-readme-translations.mjs.
+
+on:
+  pull_request:
+    paths: ["README*.md", ".github/scripts/check-readme-translations.mjs"]
+  push:
+    branches: [main]
+    paths: ["README*.md", ".github/scripts/check-readme-translations.mjs"]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+      - run: node .github/scripts/check-readme-translations.mjs

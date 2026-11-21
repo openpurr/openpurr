@@ -211,7 +211,7 @@ export const tr: Dict = {
       {
         q: "Mevcut müşterilerimi RevenueCat'ten nasıl taşırım?",
         a: "İçe aktararak. RevenueCat'ten bir geçiş dışa aktarımı isteyin; openpurr import her müşterinin satın almalarını Apple ve Google'dan alır ve aynı uygulama kullanıcı kimliklerine atar. Uygulamanızın yeni sürümü de her müşterinin satın almalarını bir kez gönderir ve kullanıcılar uygulamayı güncellerken iki backend de güncel kalır, böylece kimse erişimini kaybetmez.",
-        link: "Nasıl geçiş yapılır (İngilizce)",
+        link: "Nasıl geçiş yapılır",
       },
       {
         q: "openpurr hangi platformları ve mağazaları destekliyor?",
