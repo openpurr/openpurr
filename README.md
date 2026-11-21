@@ -100,6 +100,16 @@ Using Claude Code? The [openpurr plugin](plugin/) walks through the same steps, 
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Right now the most useful help is feedback in issues: wrong assumptions about the SDKs or the stores, and real-world edge cases.
 
+## Star History
+
+<a href="https://www.star-history.com/?repos=openpurr%2Fopenpurr&type=timeline&legend=bottom-right">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=openpurr/openpurr&type=date&theme=dark&legend=bottom-right" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=openpurr/openpurr&type=date&legend=bottom-right" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=openpurr/openpurr&type=date&legend=bottom-right" />
+ </picture>
+</a>
+
 ## License
 
 [Apache License 2.0](LICENSE). Copyright 2026 openpurr contributors.
