@@ -2,7 +2,7 @@
 // What openpurr is, for search engines and AI assistants: the software (SoftwareApplication) and
 // the project behind it (Organization). The FAQ's FAQPage data lives in Faq.astro.
 import { RELEASE, REPO_URL, LICENSE_URL } from "../consts";
-import { DEFAULT_LOCALE, localePath, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, langTag, localePath, t, type Locale } from "../i18n";
 
 interface Props {
   locale?: Locale;
@@ -28,7 +28,7 @@ const jsonLd = {
       name: "openpurr",
       description: copy.description,
       url: `${site}${localePath(locale, "/")}`,
-      inLanguage: locale,
+      inLanguage: langTag(locale),
       applicationCategory: "DeveloperApplication",
       applicationSubCategory: copy.subCategory,
       operatingSystem: "Cloudflare Workers",
