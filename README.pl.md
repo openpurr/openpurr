@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ To dobry wybór także wtedy, gdy już używasz SDK od RevenueCat i chcesz przy 
 - **Uwierzytelnianie:** klucze SDK i klucze tajne, logowanie operatorów (hasło z opcjonalnymi kodami z aplikacji uwierzytelniającej; Cloudflare Access jest w planach), role i dziennik audytu.
 - **Serwer MCP i skille Claude:** asystent AI może wyszukiwać klientów, wyjaśniać, dlaczego ktoś ma lub nie ma danego entitlementu, i przeprowadzić cię przez konfigurację App Store i Play Console.
 
-**Na razie poza zakresem:** paywalle, zdarzenia reklamowe, Customer Center, waluty wirtualne, płatności webowe, Amazon i integracje z zewnętrzną analityką. Eksperymenty cenowe są na [roadmapie](ROADMAP.md#later-) (po angielsku).
+**Na razie poza zakresem:** paywalle, zdarzenia reklamowe, Customer Center, waluty wirtualne, płatności webowe, Amazon i integracje z zewnętrzną analityką. Eksperymenty cenowe są wbudowane: zobacz [przewodnik](docs/price-experiments.md) (po angielsku).
 
 ## Dwie edycje
 

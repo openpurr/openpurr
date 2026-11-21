@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları 
 - **Kimlik doğrulama:** SDK anahtarları ve gizli anahtarlar, operatör girişi (isteğe bağlı doğrulayıcı kodlarıyla parola; Cloudflare Access planlanıyor), roller ve bir denetim günlüğü.
 - **MCP sunucusu ve Claude becerileri:** bir yapay zekâ asistanı müşterileri arayabilir, birinin neden bir erişim hakkına sahip olduğunu ya da olmadığını açıklayabilir ve App Store ile Play Console kurulumunda size adım adım yol gösterebilir.
 
-**Şimdilik kapsam dışı:** paywall'lar, reklam olayları, Customer Center, sanal para birimleri, web üzerinden ödeme, Amazon ve üçüncü taraf analiz entegrasyonları. Fiyat deneyleri [yol haritasında](ROADMAP.md#later-) (İngilizce).
+**Şimdilik kapsam dışı:** paywall'lar, reklam olayları, Customer Center, sanal para birimleri, web üzerinden ödeme, Amazon ve üçüncü taraf analiz entegrasyonları. Fiyat deneyleri yerleşik olarak var: [kılavuza](docs/price-experiments.md) (İngilizce) bakın.
 
 ## İki sürüm
 

@@ -185,7 +185,7 @@ export async function loadEventCustomer(db: D1Database, customerIds: string[], i
     originalAppUserId: original,
     aliases: aliasList,
     attributes,
-    experiments: experiments!.results as unknown as CustomerExperiment[],
+    experiments: (experiments!.results as unknown as CustomerExperiment[]).map(({ experiment_id, experiment_variant, enrolled_at_ms }) => ({ experiment_id, experiment_variant, enrolled_at_ms })),
   } satisfies EventCustomer;
 }
 

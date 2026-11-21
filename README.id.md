@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr juga cocok jika Anda sudah memakai SDK RevenueCat dan ingin tetap memak
 - **Autentikasi:** SDK key dan secret key, login operator (kata sandi dengan kode autentikator opsional; Cloudflare Access direncanakan), peran, dan log audit.
 - **Server MCP dan skill Claude:** asisten AI bisa mencari pelanggan, menjelaskan mengapa seseorang memiliki atau tidak memiliki entitlement, dan memandu Anda melalui setup App Store dan Play Console.
 
-**Belum termasuk untuk saat ini:** paywall, event iklan, Customer Center, mata uang virtual, penagihan web, Amazon, dan integrasi analitik pihak ketiga. Eksperimen harga ada di [roadmap](ROADMAP.md#later-) (bahasa Inggris).
+**Belum termasuk untuk saat ini:** paywall, event iklan, Customer Center, mata uang virtual, penagihan web, Amazon, dan integrasi analitik pihak ketiga. Eksperimen harga sudah tersedia: lihat [panduannya](docs/price-experiments.md) (bahasa Inggris).
 
 ## Dua edisi
 

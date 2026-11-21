@@ -31,7 +31,8 @@ In order:
 | Customer attributes (`$email`, `$displayName`, your own) | Yes, from an Audience export |
 | Aliases (other app user IDs of the same customer) | If your export has them |
 | Chart history | Partly. openpurr keeps the latest transaction of each subscription, so charts before the switch are incomplete. Download RevenueCat's chart CSVs for your records. |
-| Paywalls, experiments, integrations, Customer Center, web billing | No. openpurr doesn't have them. |
+| Experiments | No. Running ones stay in RevenueCat; start new ones as [price experiments](price-experiments.md), which work the same way: an offering per variant. Keep RevenueCat's results for your records. |
+| Paywalls, integrations, Customer Center, web billing | No. openpurr doesn't have them. |
 | Past webhook events | No |
 
 ## 1. Set up openpurr

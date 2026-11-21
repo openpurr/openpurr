@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提
 - **認証：** SDK キーとシークレットキー、オペレーターのログイン（パスワードと、任意で認証アプリのコード。Cloudflare Access は予定）、ロール、監査ログ。
 - **MCP サーバーと Claude のスキル：** AI アシスタントが顧客を検索し、ある人がエンタイトルメントを持っている理由や持っていない理由を説明し、App Store と Play Console の設定を案内します。
 
-**現時点では対象外：** ペイウォール、広告イベント、Customer Center、アプリ内通貨、Web 決済、Amazon、サードパーティの分析ツール連携。価格の実験は[ロードマップ](ROADMAP.md#later-)（英語）に入っています。
+**現時点では対象外：** ペイウォール、広告イベント、Customer Center、アプリ内通貨、Web 決済、Amazon、サードパーティの分析ツール連携。価格の実験は標準で使えます。[ガイド](docs/price-experiments.md)（英語）をご覧ください。
 
 ## 2 つのエディション
 

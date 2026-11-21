@@ -645,3 +645,12 @@ h1, h2, h3, p { margin: 0; }
 pre, code, .mono { direction: ltr; unicode-bidi: isolate; }
 /* Arabic and Devanagari join letters; letter-spacing breaks the joins. */
 :lang(ar) *, :lang(hi) * { letter-spacing: 0 !important; }
+
+/* Price experiments (pages/experiments.js). */
+.experiment-row { align-items: flex-end; }
+.experiment-variant-name { flex: 0 0 auto; min-width: 84px; padding-bottom: 9px; font-size: 13px; font-weight: 600; color: var(--app-text); }
+.experiment-row .field:has(.experiment-weight) { flex: 0 0 110px; }
+.experiment-verdict { margin-top: 8px; }
+.notice.warning { padding: 10px 12px; border: 1px solid rgba(180,122,18,0.35); border-radius: 8px; background: var(--app-warning-bg); color: var(--app-text); }
+.table td.num .cell-stack { align-items: flex-end; }
+

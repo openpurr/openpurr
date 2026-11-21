@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 - **인증:** SDK 키와 시크릿 키, 운영자 로그인(비밀번호와 선택적 인증 앱 코드, Cloudflare Access는 계획 중), 역할, 감사 로그를 제공합니다.
 - **MCP 서버와 Claude 스킬:** AI 어시스턴트가 고객을 조회하고, 누군가에게 엔타이틀먼트가 있거나 없는 이유를 설명하고, App Store와 Play Console 설정을 안내합니다.
 
-**현재 지원 범위 밖:** 페이월, 광고 이벤트, Customer Center, 가상 화폐, 웹 결제, Amazon, 서드파티 분석 연동. 가격 실험은 [로드맵](ROADMAP.md#later-)(영어)에 있습니다.
+**현재 지원 범위 밖:** 페이월, 광고 이벤트, Customer Center, 가상 화폐, 웹 결제, Amazon, 서드파티 분석 연동. 가격 실험은 기본 제공됩니다. [가이드](docs/price-experiments.md)(영어)를 참고하세요.
 
 ## 두 가지 에디션
 

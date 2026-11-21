@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr 是一个独立项目，与 RevenueCat, Inc. 没有任何关联，也�
 - **认证：** SDK 密钥和秘密密钥、管理员登录（密码，可选验证器动态码；Cloudflare Access 已在计划中）、角色，以及审计日志。
 - **MCP 服务器和 Claude Skills：** AI 助手可以查询客户，解释某人为什么拥有或没有某项权益，并引导你完成 App Store 和 Play Console 的配置。
 
-**暂不支持：** 付费墙、广告事件、Customer Center、虚拟货币、Web 计费、Amazon 和第三方分析集成。价格实验已列入[路线图](ROADMAP.md#later-)（英文）。
+**暂不支持：** 付费墙、广告事件、Customer Center、虚拟货币、Web 计费、Amazon 和第三方分析集成。价格实验已内置，参见[指南](docs/price-experiments.md)（英文）。
 
 ## 两个版本
 

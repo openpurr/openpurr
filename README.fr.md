@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
+<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -47,7 +47,7 @@ openpurr convient aussi si vous utilisez déjà les SDK de RevenueCat et voulez 
 - **Authentification :** clés SDK et clés secrètes, connexion des opérateurs (mot de passe avec codes d'authentification facultatifs ; Cloudflare Access est prévu), rôles et journal d'audit.
 - **Serveur MCP et skills Claude :** un assistant IA peut rechercher des clients, expliquer pourquoi quelqu'un a ou n'a pas un entitlement, et vous guider dans la configuration de l'App Store et de la Play Console.
 
-**Hors périmètre pour l'instant :** paywalls, événements publicitaires, Customer Center, monnaies virtuelles, paiement web, Amazon et intégrations analytiques tierces. Les tests de prix figurent sur la [feuille de route](ROADMAP.md#later-) (en anglais).
+**Hors périmètre pour l'instant :** paywalls, événements publicitaires, Customer Center, monnaies virtuelles, paiement web, Amazon et intégrations analytiques tierces. Les tests de prix sont intégrés : voir le [guide](docs/price-experiments.md) (en anglais).
 
 ## Deux éditions
 

@@ -120,11 +120,11 @@ export async function assignVariant(db: D1Database, projectId: string, appUserId
   return { experimentId: exp.id, variant, write };
 }
 
-/** A customer's experiments, for webhooks and the dashboard: RevenueCat's `experiments` entries. */
+/** A customer's experiments, for webhooks and the dashboard: RevenueCat's `experiments` entries, plus the name. */
 export function customerExperimentsQuery(db: D1Database, customerIdsJson: string, projectCustomerId: string) {
   return db
     .prepare(
-      `SELECT e.experiment_id, e.variant AS experiment_variant, min(e.enrolled_at) AS enrolled_at_ms
+      `SELECT e.experiment_id, e.variant AS experiment_variant, min(e.enrolled_at) AS enrolled_at_ms, x.name AS experiment_name
        FROM experiment_enrollment e JOIN experiment x ON x.id = e.experiment_id
        WHERE e.app_user_id IN (SELECT app_user_id FROM customer_alias WHERE customer_id IN (SELECT value FROM json_each(?1)))
          AND x.project_id = (SELECT project_id FROM customer WHERE id = ?2)
@@ -137,4 +137,6 @@ export interface CustomerExperiment {
   experiment_id: string;
   experiment_variant: string;
   enrolled_at_ms: number;
+  /** For the dashboard; webhooks send only RevenueCat's three fields. */
+  experiment_name?: string;
 }

@@ -270,7 +270,7 @@ describe("results", () => {
     expect(outsider.experiments).toBeUndefined();
 
     const detail = await api("GET", `/customers/${encodeURIComponent(b[0]!)}`, admin);
-    expect(detail.body.experiments).toEqual([{ experiment_id: id, experiment_variant: "b", enrolled_at_ms: expect.any(Number) }]);
+    expect(detail.body.experiments).toEqual([{ experiment_id: id, experiment_name: "Higher monthly price", experiment_variant: "b", enrolled_at_ms: expect.any(Number) }]);
   });
 
   it("are only for operators who see every app", async () => {

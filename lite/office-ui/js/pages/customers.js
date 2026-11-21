@@ -166,7 +166,7 @@ export async function customerPage(ctx, appUserId) {
     return h("div", null, crumbs, pageHeader(t("Customer not found")), h("div", { class: "stack" }, h("div", { class: "card" }, empty({ icon: IconCustomers, title: t("No customer “{id}”", { id: appUserId }), text: t("No customer has this app user ID or alias. IDs are case-sensitive.") }))));
   }
 
-  const { customer, aliases, customer_info: info, attributes, transactions, subscription_states: states, webhook_events: events, grants, entitlement_ids: entitlementIds } = data;
+  const { customer, aliases, customer_info: info, attributes, transactions, subscription_states: states, webhook_events: events, grants, entitlement_ids: entitlementIds, experiments = [] } = data;
   const entitlements = Object.entries(info?.subscriber?.entitlements ?? {});
   const now = Date.now();
   const activeEntitlements = entitlements.filter(([, e]) => !e.expires_date || Date.parse(e.expires_date) > now);
@@ -274,6 +274,25 @@ export async function customerPage(ctx, appUserId) {
       ),
     ),
   );
+
+  if (experiments.length) {
+    sections.push(
+      cardWith(
+        t("Price experiments"),
+        t("Which variant's offering this customer is shown (or was, while the experiment ran)."),
+        h(
+          "div",
+          { class: "card-body" },
+          kv(
+            experiments.map((x) => [
+              h("a", { href: `/admin/experiments/${encodeURIComponent(x.experiment_id)}`, "data-nav": "" }, x.experiment_name ?? x.experiment_id),
+              h("span", null, t("Variant {variant}", { variant: x.experiment_variant.toUpperCase() }), h("span", { class: "muted" }, " · ", t("joined {time}", { time: fmtDate(x.enrolled_at_ms) }))),
+            ]),
+          ),
+        ),
+      ),
+    );
+  }
 
   sections.push(
     cardWith(
