@@ -1,6 +1,8 @@
 export const REPO_URL = "https://github.com/openpurr/openpurr";
 export const ROADMAP_URL = `${REPO_URL}/blob/main/ROADMAP.md`;
-export const MIGRATION_URL = `${REPO_URL}/blob/main/docs/migrating-from-revenuecat.md`;
+/** The step-by-step migration guide (in the repo), and the website's overview page. */
+export const MIGRATION_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-revenuecat.md`;
+export const MIGRATION_PAGE = "/migrate-from-revenuecat/";
 export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
 export const ISSUES_URL = `${REPO_URL}/issues`;
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;

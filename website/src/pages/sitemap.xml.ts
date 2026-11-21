@@ -3,7 +3,7 @@
 import type { APIRoute } from "astro";
 import { allLocales, type Alternates } from "../i18n";
 
-const PAGES: { path: string; alternates?: Alternates }[] = [{ path: "/", alternates: allLocales("/") }, { path: "/privacy/" }];
+const PAGES: { path: string; alternates?: Alternates }[] = [{ path: "/", alternates: allLocales("/") }, { path: "/migrate-from-revenuecat/" }, { path: "/privacy/" }];
 
 export const GET: APIRoute = ({ site }) => {
   const abs = (p: string) => new URL(p, site).href;

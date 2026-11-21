@@ -1,0 +1,509 @@
+---
+// Moving from RevenueCat: the overview for people deciding whether and how to switch. The full,
+// step-by-step guide lives in the repo (docs/migrating-from-revenuecat.md); keep the two in step.
+import Base from "../layouts/Base.astro";
+import { ISSUES_URL, MIGRATION_GUIDE_URL, REPO_URL } from "../consts";
+
+const title = "Migrate from RevenueCat to openpurr, without losing a subscriber";
+const description =
+  "Move your app from RevenueCat to openpurr, the self-hosted, open-source RevenueCat alternative. Keep the Purchases SDK, import existing customers from RevenueCat's export, and keep old app versions working while people update.";
+
+/** Code lines, with comments marked so they can be dimmed. */
+const lines = (code: string) => code.split("\n").map((text, i) => ({ text, comment: /^\s*(\/\/|#)/.test(text), first: i === 0 }));
+
+const appChange = lines(`// Before configure(): the only line most apps add
+Purchases.proxyURL = URL(string: "https://purchases.example.com")!
+Purchases.configure(withAPIKey: "appl_…")
+
+// Once per install: send this customer's purchases to openpurr
+let synced = "openpurr.synced"
+if !UserDefaults.standard.bool(forKey: synced) {
+  Purchases.shared.syncPurchases { _, error in
+    if error == nil { UserDefaults.standard.set(true, forKey: synced) }
+  }
+}`);
+
+const importCommands = lines(`npm install -g @openpurr/cli
+openpurr login --url https://<your back office>
+
+# Check the first rows: asks Apple and Google, writes nothing
+openpurr import revenuecat-export.csv --dry-run --limit 50
+
+# Import everyone. Stop any time; run it again to carry on.
+openpurr import revenuecat-export.csv`);
+
+const ways = [
+  {
+    title: "The import",
+    body: "RevenueCat's export says which app user owns which store purchase. openpurr import asks Apple and Google for each purchase and records the store's answer for that user. It brings everyone over at once, including people who never open the app again.",
+  },
+  {
+    title: "The app update",
+    body: "The new version points the Purchases SDK at openpurr and sends each customer's purchases once with syncPurchases. That catches anyone the export missed, and anyone who bought after it was made.",
+  },
+  {
+    title: "Both backends, for a while",
+    body: "Old app versions keep talking to RevenueCat until people update. RevenueCat forwards Apple's notifications to openpurr, and a second Pub/Sub subscription does the same for Google, so both stay current.",
+  },
+];
+
+const steps = [
+  {
+    title: "Set up openpurr",
+    body: "Deploy openpurr Lite to your Cloudflare account, give it App Store and Google Play API access, and recreate your products, entitlements and offerings with the same identifiers. You can even keep your RevenueCat public SDK keys.",
+  },
+  {
+    title: "Keep both backends informed",
+    body: "Set openpurr as RevenueCat's Apple Server Notification Forwarding URL, and add openpurr's push subscription to your Play notifications topic.",
+  },
+  {
+    title: "Get your export",
+    body: "App Store only: RevenueCat's Scheduled Data Export has what's needed. With Google Play, ask RevenueCat Support for a migration export, since only that one has purchase tokens. The guide has a request you can copy.",
+  },
+  {
+    title: "Import",
+    body: "Run openpurr import, with a dry run first. Problems with single rows go to a report and don't stop the import.",
+  },
+  {
+    title: "Ship the app update",
+    body: "Add the proxy URL and a one-time syncPurchases. Release it once the import has finished.",
+  },
+  {
+    title: "Check",
+    body: "openpurr doctor checks the setup. Look up customers you know, and compare active subscriptions with RevenueCat's charts.",
+  },
+  {
+    title: "Finish the switch",
+    body: "Once most customers have updated, point Apple and Google straight at openpurr, turn on openpurr's webhooks, and turn off RevenueCat's.",
+  },
+];
+
+const moves: [string, string][] = [
+  ["Subscriptions and purchases, with renewals, refunds, grace periods and expiry", "Yes, fetched from Apple and Google"],
+  ["Who owns which purchase", "Yes, from RevenueCat's export"],
+  ["App user IDs, including anonymous ones", "Yes, unchanged"],
+  ["Customer attributes ($email, $displayName and your own)", "Yes, from an Audience export"],
+  ["Products, entitlements and offerings", "You recreate them, with the same identifiers"],
+  ["Chart history before the switch", "Partly: keep RevenueCat's chart CSVs for your records"],
+  ["Paywalls, experiments, integrations, Customer Center", "No: openpurr doesn't have them"],
+];
+
+const safeguards = [
+  ["Nobody loses access", "A purchase the app has already sent for a customer stays theirs; the import never moves it."],
+  ["No duplicate webhooks", "Imported purchases aren't new, so openpurr sends no events for them."],
+  ["Honest charts", "Imported customers are dated from their first purchase, not counted as new on import day."],
+  ["Your app keeps working", "On Cloudflare's free plan, the import stops at 90% of a daily limit and carries on the next day."],
+  ["Stop and resume", "Progress is saved. Importing a row twice changes nothing, so a newer export can be run again."],
+  ["Try it first", "A dry run asks the stores and reports what would happen, writing nothing."],
+];
+
+const faqs = [
+  {
+    q: "Do I have to change my purchase code?",
+    a: "No. openpurr works with the official, unmodified RevenueCat Purchases SDK. The app update adds the proxy URL before configure, and a one-time syncPurchases call. getOfferings, purchase, restorePurchases, logIn and the rest stay as they are.",
+  },
+  {
+    q: "Do I need RevenueCat's help to migrate?",
+    a: "For App Store apps, no: RevenueCat's Scheduled Data Export has the transaction IDs openpurr needs. For Google Play, yes: only a migration export prepared by RevenueCat Support includes the purchase tokens Google requires.",
+  },
+  {
+    q: "What about customers who never update the app?",
+    a: "The import covers them: their purchases are fetched from Apple and Google and assigned to the same app user IDs. While they're still on an old app version, that version talks to RevenueCat, which is why both backends stay informed until most people have updated.",
+  },
+  {
+    q: "How long does an import take?",
+    a: "Each customer takes about 30 database row writes. On Cloudflare's free plan, that's about 2,500 customers a day, and the import pauses itself at the daily limit and resumes the next day. On Workers Paid ($5 a month), a large import takes hours.",
+  },
+  {
+    q: "Is my data copied from RevenueCat?",
+    a: "Only the mapping of app users to store purchases, plus attributes if you import them. The purchases themselves come straight from Apple and Google, so openpurr records the stores' current truth, renewals and refunds included.",
+  },
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+};
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+---
+
+<Base title={`${title} · openpurr`} description={description}>
+  <section class="hero">
+    <div class="wrap narrow">
+      <span class="eyebrow">Migration guide</span>
+      <h1>Move from RevenueCat to openpurr without losing a subscriber</h1>
+      <p class="lede">
+        Keep the Purchases SDK your app already uses. Import your existing customers from RevenueCat's export: openpurr
+        fetches every purchase from Apple and Google itself. Old app versions keep working while people update.
+      </p>
+      <div class="ctas">
+        <a class="btn btn-primary" href={MIGRATION_GUIDE_URL}>Read the step-by-step guide</a>
+        <a class="btn btn-ghost" href="#steps">See the steps</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">How it works</span>
+        <h2>Your customers reach openpurr two ways</h2>
+        <p class="lede">
+          openpurr doesn't copy purchase records out of RevenueCat. It only needs to know who owns which purchase, then
+          asks the stores, exactly as it does when your app posts a purchase.
+        </p>
+      </div>
+      <div class="grid grid-3">
+        {
+          ways.map((w) => (
+            <div class="card">
+              <h3>{w.title}</h3>
+              <p>{w.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">In your app</span>
+        <h2>One line, plus a one-time sync</h2>
+        <p class="lede">
+          Set the proxy URL before configure, and send each customer's purchases once. The same two changes work on
+          Android, Flutter and React Native; the guide has the code for each.
+        </p>
+      </div>
+      <pre class="code" aria-label="Swift"><code>{appChange.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap split">
+      <div>
+        <span class="eyebrow">The import</span>
+        <h2>Every customer, from RevenueCat's export</h2>
+        <p class="lede">
+          The openpurr CLI reads RevenueCat's columns as they are: app user IDs, App Store transaction IDs, Google Play
+          purchase tokens, and attributes such as <code>$email</code>.
+        </p>
+      </div>
+      <pre class="code" aria-label="Terminal"><code>{importCommands.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+    </div>
+    <div class="wrap">
+      <div class="grid grid-3 safeguards">
+        {
+          safeguards.map(([t, b]) => (
+            <div>
+              <h3>{t}</h3>
+              <p>{b}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="steps">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">Step by step</span>
+        <h2>Seven steps, with both backends running until you're ready</h2>
+      </div>
+      <ol class="steps">
+        {
+          steps.map((s) => (
+            <li>
+              <h3>{s.title}</h3>
+              <p>{s.body}</p>
+            </li>
+          ))
+        }
+      </ol>
+      <p class="more"><a href={MIGRATION_GUIDE_URL}>Every command and setting is in the full guide →</a></p>
+    </div>
+  </section>
+
+  <section class="alt">
+    <div class="wrap narrow">
+      <div class="section-head">
+        <span class="eyebrow">What moves</span>
+        <h2>What comes with you, and what doesn't</h2>
+      </div>
+      <table class="moves">
+        <tbody>
+          {
+            moves.map(([what, how]) => (
+              <tr>
+                <th scope="row">{what}</th>
+                <td>{how}</td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap narrow">
+      <div class="section-head">
+        <span class="eyebrow">FAQ</span>
+        <h2>Migrating from RevenueCat</h2>
+      </div>
+      <div class="faq">
+        {
+          faqs.map(({ q, a }) => (
+            <details>
+              <summary>
+                <h3>{q}</h3>
+              </summary>
+              <p>{a}</p>
+            </details>
+          ))
+        }
+      </div>
+    </div>
+    <script is:inline type="application/ld+json" set:html={jsonLdText} />
+  </section>
+
+  <section class="cta-section">
+    <div class="wrap">
+      <div class="cta">
+        <h2>Ready to switch?</h2>
+        <p>The guide walks through every step. If something in your setup doesn't fit, open an issue: migrations shape what gets built next.</p>
+        <div class="ctas">
+          <a class="btn btn-light" href={MIGRATION_GUIDE_URL}>Read the guide</a>
+          <a class="btn btn-outline" href={REPO_URL}>openpurr on GitHub</a>
+          <a class="btn btn-outline" href={ISSUES_URL}>Open an issue</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 88px 0 72px;
+    background:
+      radial-gradient(900px 420px at 85% 0%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 70%),
+      var(--bg);
+  }
+  @media (max-width: 700px) {
+    .hero {
+      padding: 56px 0 48px;
+    }
+  }
+  .narrow {
+    max-width: 880px;
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+  .card p,
+  .safeguards p,
+  .steps p {
+    color: var(--muted);
+  }
+  .card p:last-child {
+    margin-bottom: 0;
+  }
+
+  .split {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr);
+    gap: 44px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .split {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 28px;
+    }
+  }
+  .code {
+    margin: 0;
+    padding: 20px 22px;
+    background: var(--code-bg);
+    color: var(--code-text);
+    border-radius: var(--radius);
+    font-size: 0.8rem;
+    line-height: 1.75;
+    overflow-x: auto;
+  }
+  .code .c {
+    color: var(--code-muted);
+  }
+
+  .safeguards {
+    margin-top: 56px;
+  }
+  .safeguards h3 {
+    font-size: 1.02rem;
+    margin-bottom: 6px;
+  }
+  .safeguards p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 32px 40px;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-top: 52px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--purple);
+    color: #fff;
+    font-weight: 700;
+  }
+  .steps p {
+    margin: 0;
+  }
+  .more {
+    margin-top: 36px;
+    font-weight: 600;
+  }
+  .more a {
+    text-decoration: none;
+  }
+
+  .moves {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.97rem;
+  }
+  .moves th,
+  .moves td {
+    text-align: left;
+    vertical-align: top;
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .moves th {
+    font-weight: 500;
+    color: var(--ink);
+    width: 55%;
+  }
+  .moves td {
+    color: var(--muted);
+  }
+  @media (max-width: 600px) {
+    .moves th,
+    .moves td {
+      display: block;
+      width: auto;
+      padding: 0;
+      border: 0;
+    }
+    .moves th {
+      padding-top: 14px;
+    }
+    .moves td {
+      padding: 2px 0 14px;
+      border-bottom: 1px solid var(--line);
+    }
+  }
+
+  .faq {
+    border-top: 1px solid var(--line);
+  }
+  .faq details {
+    border-bottom: 1px solid var(--line);
+  }
+  .faq summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 20px 0;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary::after {
+    content: "+";
+    flex: none;
+    font-size: 1.4rem;
+    line-height: 1;
+    color: var(--purple);
+    transition: transform 0.2s;
+  }
+  .faq details[open] summary::after {
+    transform: rotate(45deg);
+  }
+  .faq summary h3 {
+    margin: 0;
+    font-size: 1.05rem;
+  }
+  .faq details p {
+    margin: 0 0 22px;
+    color: var(--muted);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .faq summary::after {
+      transition: none;
+    }
+  }
+
+  .cta {
+    background: linear-gradient(135deg, #7050e8, #4a2fc4);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 48px;
+    text-align: center;
+  }
+  @media (max-width: 600px) {
+    .cta {
+      padding: 40px 22px;
+    }
+  }
+  .cta h2 {
+    color: #fff;
+  }
+  .cta p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cta .ctas {
+    justify-content: center;
+  }
+  .btn-light {
+    background: #fff;
+    color: #2a1c7a;
+  }
+  .btn-outline {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .btn-outline:hover {
+    border-color: #fff;
+  }
+</style>
