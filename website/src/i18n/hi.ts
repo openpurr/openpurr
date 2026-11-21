@@ -18,6 +18,7 @@ export const hi: Dict = {
     roadmap: "Roadmap",
     contributing: "योगदान दें",
     sponsor: "Sponsor करें",
+    contact: "संपर्क",
     privacy: "Privacy (अंग्रेज़ी में)",
     disclaimer:
       "openpurr एक स्वतंत्र project है। यह RevenueCat, Inc. से जुड़ा नहीं है और न ही RevenueCat, Inc. इसका समर्थन करती है। App Store, Apple Inc. का trademark है। Google Play, Google LLC का trademark है।",

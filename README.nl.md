@@ -38,7 +38,12 @@ Het past ook goed als je de RevenueCat SDK's al gebruikt en wilt houden. openpur
 - **Aankopen:** valideert StoreKit 2-transacties en Google Play-aankopen, en geeft de `CustomerInfo` en entitlements terug die de SDK verwacht.
 - **Store-meldingen:** ontvangt App Store Server Notifications V2 en Google Play Real-time Developer Notifications.
 - **Webhooks:** stuurt events in het formaat van RevenueCat naar je backend, ondertekend met HMAC-SHA256 en ongeveer 72 uur lang opnieuw verstuurd.
-- **Grafieken:** een klein dashboard met actieve abonnementen, MRR, proefperiodes, conversies en churn.
+- **Grafieken:** 16 grafieken in het dashboard, te filteren op project, app, store, product en omgeving, en te downloaden als CSV:
+  - **Omzet:** omzet, terugbetalingen, terugbetalingspercentage en aankopen zonder abonnement.
+  - **Terugkerende omzet:** MRR, ARR en MRR-verloop.
+  - **Abonnementen:** actieve abonnementen, betaalde abonnementen, abonnementsverloop, abonnementsstatus en churn.
+  - **Proefperiodes:** actieve proefperiodes, nieuwe proefperiodes en proefperiodeverloop.
+  - **Klanten:** nieuwe klanten.
 - **Toegang:** SDK-sleutels en geheime sleutels, aanmelden voor beheerders (wachtwoord met optionele authenticatorcodes; Cloudflare Access is gepland), rollen en een auditlog.
 - **MCP-server en Claude-skills:** een AI-assistent kan klanten opzoeken, uitleggen waarom iemand wel of geen entitlement heeft, en je door de inrichting van de App Store en de Play Console leiden.
 
@@ -104,6 +109,8 @@ Gebruik je Claude Code? De [openpurr-plugin](plugin/) (Engels) loopt dezelfde st
 ## Bijdragen
 
 Zie [CONTRIBUTING.md](CONTRIBUTING.md) (Engels). Waar we nu het meest aan hebben is feedback in issues: verkeerde aannames over de SDK's of de stores, en randgevallen uit de praktijk.
+
+Voor al het andere kun je mailen naar [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Star History
 

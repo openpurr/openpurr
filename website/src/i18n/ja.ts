@@ -18,6 +18,7 @@ export const ja: Dict = {
     roadmap: "ロードマップ",
     contributing: "コントリビュート",
     sponsor: "スポンサー",
+    contact: "お問い合わせ",
     privacy: "プライバシー（英語）",
     disclaimer:
       "openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提携しておらず、同社の承認も受けていません。App Store は Apple Inc. の商標です。Google Play は Google LLC の商標です。",

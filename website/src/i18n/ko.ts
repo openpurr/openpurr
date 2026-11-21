@@ -18,6 +18,7 @@ export const ko: Dict = {
     roadmap: "로드맵",
     contributing: "기여하기",
     sponsor: "후원하기",
+    contact: "문의",
     privacy: "개인정보 처리방침 (영어)",
     disclaimer:
       "openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 보증을 받지 않았습니다. App Store는 Apple Inc.의 상표입니다. Google Play는 Google LLC의 상표입니다.",

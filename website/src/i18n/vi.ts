@@ -18,6 +18,7 @@ export const vi: Dict = {
     roadmap: "Lộ trình",
     contributing: "Đóng góp",
     sponsor: "Tài trợ",
+    contact: "Liên hệ",
     privacy: "Quyền riêng tư (tiếng Anh)",
     disclaimer:
       "openpurr là một dự án độc lập, không liên kết với RevenueCat, Inc. và không được RevenueCat, Inc. bảo trợ. App Store là nhãn hiệu của Apple Inc. Google Play là nhãn hiệu của Google LLC.",

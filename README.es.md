@@ -38,7 +38,12 @@ También encaja si ya usas los SDK de RevenueCat y quieres conservarlos. openpur
 - **Compras:** valida transacciones de StoreKit 2 y compras de Google Play, y devuelve el `CustomerInfo` y los entitlements que espera el SDK.
 - **Notificaciones de las tiendas:** recibe las App Store Server Notifications V2 y las Real-time Developer Notifications de Google Play.
 - **Webhooks:** envía a tu backend eventos con el formato de RevenueCat, firmados con HMAC-SHA256 y reintentados durante unas 72 horas.
-- **Gráficos:** un panel sencillo con suscripciones activas, MRR, pruebas, conversiones y cancelaciones.
+- **Gráficos:** 16 gráficos en el panel, con filtros por proyecto, app, tienda, producto y entorno, y descarga en CSV:
+  - **Ingresos:** ingresos, reembolsos, tasa de reembolso y compras que no son suscripciones.
+  - **Ingresos recurrentes:** MRR, ARR y movimiento del MRR.
+  - **Suscripciones:** suscripciones activas, suscripciones de pago, movimiento de suscripciones, estado de las suscripciones y cancelaciones.
+  - **Pruebas:** pruebas activas, pruebas nuevas y movimiento de pruebas.
+  - **Clientes:** clientes nuevos.
 - **Autenticación:** claves de SDK y claves secretas, inicio de sesión de operadores (contraseña con códigos de autenticación opcionales; Cloudflare Access está previsto), roles y registro de auditoría.
 - **Servidor MCP y skills de Claude:** un asistente de IA puede buscar clientes, explicar por qué alguien tiene o no un entitlement y guiarte en la configuración del App Store y de Play Console.
 
@@ -104,6 +109,8 @@ Puedes volver a ejecutar la configuración sin problemas si se detiene a medias.
 ## Contribuir
 
 Consulta [CONTRIBUTING.md](CONTRIBUTING.md) (en inglés). Ahora mismo, la ayuda más útil son los comentarios en issues: suposiciones erróneas sobre los SDK o las tiendas, y casos límite reales.
+
+Para cualquier otra cosa, escribe a [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Historial de estrellas
 

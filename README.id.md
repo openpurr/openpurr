@@ -38,7 +38,12 @@ openpurr juga cocok jika Anda sudah memakai SDK RevenueCat dan ingin tetap memak
 - **Pembelian:** memvalidasi transaksi StoreKit 2 dan pembelian Google Play, lalu mengembalikan `CustomerInfo` dan entitlement yang diharapkan SDK.
 - **Notifikasi store:** menerima App Store Server Notifications V2 dan Google Play Real-time Developer Notifications.
 - **Webhook:** mengirim event berformat RevenueCat ke backend Anda, ditandatangani dengan HMAC-SHA256 dan dicoba ulang selama sekitar 72 jam.
-- **Grafik:** dashboard sederhana dengan langganan aktif, MRR, uji coba, konversi, dan churn.
+- **Grafik:** 16 grafik di dashboard, bisa difilter menurut proyek, aplikasi, store, produk, dan lingkungan, serta diunduh sebagai CSV:
+  - **Pendapatan:** pendapatan, refund, tingkat refund, dan pembelian non-langganan.
+  - **Pendapatan berulang:** MRR, ARR, dan pergerakan MRR.
+  - **Langganan:** langganan aktif, langganan berbayar, pergerakan langganan, status langganan, dan churn.
+  - **Uji coba:** uji coba aktif, uji coba baru, dan pergerakan uji coba.
+  - **Pelanggan:** pelanggan baru.
 - **Autentikasi:** SDK key dan secret key, login operator (kata sandi dengan kode autentikator opsional; Cloudflare Access direncanakan), peran, dan log audit.
 - **Server MCP dan skill Claude:** asisten AI bisa mencari pelanggan, menjelaskan mengapa seseorang memiliki atau tidak memiliki entitlement, dan memandu Anda melalui setup App Store dan Play Console.
 
@@ -104,6 +109,8 @@ Memakai Claude Code? [Plugin openpurr](plugin/) (bahasa Inggris) memandu langkah
 ## Berkontribusi
 
 Lihat [CONTRIBUTING.md](CONTRIBUTING.md) (bahasa Inggris). Saat ini bantuan yang paling berguna adalah masukan di issue: asumsi yang keliru tentang SDK atau store, dan kasus khusus dari dunia nyata.
+
+Untuk hal lainnya, kirim email ke [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Riwayat Bintang
 

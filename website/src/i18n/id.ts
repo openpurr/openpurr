@@ -18,6 +18,7 @@ export const id: Dict = {
     roadmap: "Roadmap",
     contributing: "Berkontribusi",
     sponsor: "Sponsor",
+    contact: "Kontak",
     privacy: "Privasi (bahasa Inggris)",
     disclaimer:
       "openpurr adalah proyek independen. Proyek ini tidak berafiliasi dengan atau didukung oleh RevenueCat, Inc. App Store adalah merek dagang Apple Inc. Google Play adalah merek dagang Google LLC.",

@@ -37,7 +37,12 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 - **Purchases:** validates StoreKit 2 transactions and Google Play purchases, and returns the `CustomerInfo` and entitlements the SDK expects.
 - **Store notifications:** receives App Store Server Notifications V2 and Google Play Real-time Developer Notifications.
 - **Webhooks:** sends RevenueCat-shaped events to your backend, signed with HMAC-SHA256 and retried for about 72 hours.
-- **Charts:** a small dashboard with active subscriptions, MRR, trials, conversions and churn.
+- **Charts:** 16 charts in the dashboard, which you can filter by project, app, store, product and environment, and downloadable as CSV:
+  - **Revenue:** revenue, refunds, refund rate and non-subscription purchases.
+  - **Recurring revenue:** MRR, ARR and MRR movement.
+  - **Subscriptions:** active subscriptions, paid subscriptions, subscription movement, subscription status and churn.
+  - **Trials:** active trials, new trials and trial movement.
+  - **Customers:** new customers.
 - **Auth:** SDK keys and secret keys, operator login (password with optional authenticator codes; Cloudflare Access is planned), roles, and an audit log.
 - **MCP server and Claude skills:** an AI assistant can look up customers, explain why someone does or doesn't have an entitlement, and walk you through App Store and Play Console setup.
 
@@ -103,6 +108,8 @@ Using Claude Code? The [openpurr plugin](plugin/) walks through the same steps, 
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md). Right now the most useful help is feedback in issues: wrong assumptions about the SDKs or the stores, and real-world edge cases.
+
+For anything else, email [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Star History
 

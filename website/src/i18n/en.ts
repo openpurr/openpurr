@@ -24,6 +24,7 @@ export const en = {
     roadmap: "Roadmap",
     contributing: "Contributing",
     sponsor: "Sponsor",
+    contact: "Contact",
     privacy: "Privacy",
     disclaimer:
       "openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc. App Store is a trademark of Apple Inc. Google Play is a trademark of Google LLC.",

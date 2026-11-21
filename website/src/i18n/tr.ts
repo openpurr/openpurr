@@ -18,6 +18,7 @@ export const tr: Dict = {
     roadmap: "Yol haritası",
     contributing: "Katkıda bulunun",
     sponsor: "Destek olun",
+    contact: "İletişim",
     privacy: "Gizlilik (İngilizce)",
     disclaimer:
       "openpurr bağımsız bir projedir. RevenueCat, Inc. ile bağlantılı değildir ve RevenueCat, Inc. tarafından desteklenmemektedir. App Store, Apple Inc.'in ticari markasıdır. Google Play, Google LLC'nin ticari markasıdır.",

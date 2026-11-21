@@ -18,6 +18,7 @@ export const ar: Dict = {
     roadmap: "خارطة الطريق",
     contributing: "المساهمة",
     sponsor: "الرعاية",
+    contact: "تواصل معنا",
     privacy: "الخصوصية (بالإنجليزية)",
     disclaimer:
       "openpurr مشروع مستقل، وهو غير تابع لشركة RevenueCat, Inc. ولا يحظى بدعمها. App Store علامة تجارية لشركة Apple Inc.، وGoogle Play علامة تجارية لشركة Google LLC.",

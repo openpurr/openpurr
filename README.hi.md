@@ -38,7 +38,12 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 - **Purchases:** StoreKit 2 transactions और Google Play purchases को validate करता है, और वही `CustomerInfo` और entitlements लौटाता है जिनकी SDK को ज़रूरत होती है।
 - **Store notifications:** App Store Server Notifications V2 और Google Play Real-time Developer Notifications receive करता है।
 - **Webhooks:** आपके backend को RevenueCat जैसे format में events भेजता है, जो HMAC-SHA256 से signed होते हैं और लगभग 72 घंटे तक retry किए जाते हैं।
-- **Charts:** एक छोटा dashboard, जिसमें active subscriptions, MRR, trials, conversions और churn दिखते हैं।
+- **Charts:** dashboard में 16 charts, जिन्हें project, app, store, product और environment के हिसाब से filter किया जा सकता है और CSV में download किया जा सकता है:
+  - **Revenue:** revenue, refunds, refund rate और non-subscription purchases।
+  - **Recurring revenue:** MRR, ARR और MRR movement।
+  - **Subscriptions:** active subscriptions, paid subscriptions, subscription movement, subscription status और churn।
+  - **Trials:** active trials, नए trials और trial movement।
+  - **Customers:** नए ग्राहक।
 - **Auth:** SDK keys और secret keys, operator login (password, साथ में optional authenticator codes; Cloudflare Access planned है), roles और एक audit log।
 - **MCP server और Claude skills:** कोई AI assistant ग्राहकों को खोज सकता है, समझा सकता है कि किसी के पास entitlement क्यों है या क्यों नहीं, और App Store और Play Console का setup step by step करवा सकता है।
 
@@ -104,6 +109,8 @@ Claude Code इस्तेमाल करते हैं? [openpurr plugin](p
 ## योगदान
 
 [CONTRIBUTING.md](CONTRIBUTING.md) (अंग्रेज़ी में) देखें। अभी सबसे काम की मदद है issues में feedback: SDKs या stores के बारे में ग़लत धारणाएँ, और असली दुनिया के edge cases।
+
+किसी और बात के लिए [hello@openpurr.org](mailto:hello@openpurr.org) पर ईमेल करें।
 
 ## Star History
 
