@@ -78,6 +78,7 @@ Releases are tagged `vX.Y.Z` for the whole repo, and `cli/package.json`'s `versi
 
 1. Open a pull request that:
    - sets `cli/package.json`'s `version` to `X.Y.Z`;
+   - sets `plugin/.claude-plugin/plugin.json`'s `version` to `X.Y.Z` too, so the Claude Code plugin matches;
    - adds the release notes as `releases/vX.Y.Z.md` (Markdown; it becomes the GitHub release's description, so start with what changed, not a title);
    - updates `RELEASE` in `website/src/consts.ts` (the website, its structured data and `llms.txt` show it), and the roadmap if a milestone moved.
 2. Merge it. The [Release](.github/workflows/release.yml) workflow then runs the CLI's checks and tests, tags the merge commit `vX.Y.Z`, creates the GitHub release with your notes, and publishes `@openpurr/cli` to npm with a provenance attestation.
