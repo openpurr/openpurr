@@ -139,6 +139,7 @@ export const zhTw: Dict = {
       },
     },
     savings: {
+      eyebrow: "成本",
       title: "和 RevenueCat 相比，你能留下多少",
       lede: "RevenueCat 的 Pro 方案在每月追蹤營收低於 2,500 美元時免費，超過後按全部營收的 1% 收費。Lite 在 Cloudflare 免費方案上執行；當 App 超出免費額度後，可改用每月 5 美元起的 Workers Paid。",
       revenue: "月營收",

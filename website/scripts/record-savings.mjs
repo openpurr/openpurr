@@ -37,7 +37,7 @@ async function record(THEME, OUT) {
       const st = document.createElement('style');
       st.textContent = '#savings details{display:none}';
       document.head.append(st);
-      const el = document.getElementById('savings');
+      const el = document.querySelector('#savings .calc');
       el.scrollIntoView({ block: 'center' });
       await new Promise((r) => setTimeout(r, 300));
       const r = el.getBoundingClientRect();

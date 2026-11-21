@@ -162,12 +162,13 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
           </ul>
         </div>
       </div>
-      <SavingsCalculator locale={locale} />
     </div>
   </section>
 
+  <SavingsCalculator locale={locale} />
+
   <!-- Honest fit -->
-  <section class="alt">
+  <section>
     <div class="wrap fit">
       <div>
         <span class="eyebrow">{h.fit.eyebrow}</span>
@@ -184,7 +185,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   </section>
 
   <!-- Roadmap -->
-  <section id="roadmap">
+  <section class="alt" id="roadmap">
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">{h.roadmap.eyebrow}</span>

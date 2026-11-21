@@ -144,6 +144,7 @@ export const hi: Dict = {
       },
     },
     savings: {
+      eyebrow: "लागत",
       title: "RevenueCat की तुलना में आप कितना बचाते हैं",
       lede: "RevenueCat का Pro plan हर महीने $2,500 से कम tracked revenue पर मुफ़्त है, उसके बाद पूरे revenue का 1% लेता है। Lite, Cloudflare के free plan पर चलता है, और जब आपका app उससे आगे बढ़ जाए तो $5 प्रति माह से शुरू होने वाले Workers Paid पर।",
       revenue: "मासिक revenue",

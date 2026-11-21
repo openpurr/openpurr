@@ -140,6 +140,7 @@ export const es: Dict = {
       },
     },
     savings: {
+      eyebrow: "Coste",
       title: "Lo que conservas frente a RevenueCat",
       lede: "El plan Pro de RevenueCat es gratis por debajo de 2500 $ al mes de ingresos registrados y después cobra el 1 % de todos ellos. Lite funciona en el plan gratuito de Cloudflare y, cuando tu app lo supera, en Workers Paid desde 5 $ al mes.",
       revenue: "Ingresos mensuales",

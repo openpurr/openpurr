@@ -140,6 +140,7 @@ export const ptBr: Dict = {
       },
     },
     savings: {
+      eyebrow: "Custo",
       title: "Quanto você guarda em comparação com o RevenueCat",
       lede: "O plano Pro do RevenueCat é gratuito abaixo de US$ 2.500 de receita rastreada por mês e depois cobra 1% de toda ela. O Lite roda no plano gratuito da Cloudflare e, quando seu app passar dele, no Workers Paid, a partir de US$ 5 por mês.",
       revenue: "Receita mensal",

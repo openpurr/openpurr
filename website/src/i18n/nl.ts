@@ -144,6 +144,7 @@ export const nl: Dict = {
       },
     },
     savings: {
+      eyebrow: "Kosten",
       title: "Wat je overhoudt ten opzichte van RevenueCat",
       lede: "Het Pro-abonnement van RevenueCat is gratis onder $ 2.500 bijgehouden omzet per maand en rekent daarna 1% van alles. Lite draait op het gratis abonnement van Cloudflare, en op Workers Paid, vanaf $ 5 per maand, zodra je app daar overheen groeit.",
       revenue: "Maandelijkse omzet",

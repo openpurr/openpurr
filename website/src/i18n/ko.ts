@@ -140,6 +140,7 @@ export const ko: Dict = {
       },
     },
     savings: {
+      eyebrow: "비용",
       title: "RevenueCat와 비교해 남는 금액",
       lede: "RevenueCat의 Pro 요금제는 월 추적 매출이 $2,500 미만이면 무료이고, 그 이상이면 전체 매출의 1%를 받습니다. Lite는 Cloudflare 무료 플랜에서 실행되고, 앱이 무료 플랜을 넘어서면 월 $5부터인 Workers Paid에서 실행됩니다.",
       revenue: "월 매출",

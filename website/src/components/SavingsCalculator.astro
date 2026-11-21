@@ -1,5 +1,5 @@
 ---
-// What a RevenueCat customer would keep with openpurr Lite, at a monthly revenue the visitor picks:
+// The home page's savings section: what a RevenueCat customer would keep with openpurr Lite, at a monthly revenue the visitor picks:
 // a slider, the yearly figure, and a chart of both monthly costs across revenue levels with the gap
 // between them filled in. Drag the slider or the chart. On first view, it draws itself and sweeps
 // up to the initial revenue (not with reduced motion).
@@ -44,9 +44,15 @@ const yTicks = [0, 1_000, 2_000];
 const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
 ---
 
+<section class="alt" id="savings">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{s.eyebrow}</span>
+      <h2>{s.title}</h2>
+      <p class="lede">{s.lede}</p>
+    </div>
 <div
   class="calc card"
-  id="savings"
   data-savings
   data-tag={tag}
   data-strings={JSON.stringify(client)}
@@ -56,9 +62,6 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
 >
   <div class="calc-grid">
     <div class="calc-side">
-      <h3>{s.title}</h3>
-      <p class="calc-lede">{s.lede}</p>
-
       <div class="calc-input">
         <label for="savings-mrr">{s.revenue}</label>
         <output for="savings-mrr" data-out="mrr">{money(SLIDER.initial)}</output>
@@ -174,6 +177,9 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
     </ul>
   </details>
 </div>
+
+  </div>
+</section>
 
 <script>
   import { savings } from "../savings";
@@ -304,7 +310,6 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
 <style>
   .calc {
     --rc: var(--wip);
-    margin-top: 28px;
     padding: 32px;
     position: relative;
     overflow: hidden;
@@ -329,15 +334,6 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
     .calc {
       padding: 20px;
     }
-  }
-  h3 {
-    margin: 0 0 6px;
-    font-size: 1.35rem;
-  }
-  .calc-lede {
-    margin: 0 0 22px;
-    color: var(--muted);
-    font-size: 0.95rem;
   }
   .calc-input {
     display: flex;

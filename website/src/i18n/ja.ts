@@ -140,6 +140,7 @@ export const ja: Dict = {
       },
     },
     savings: {
+      eyebrow: "コスト",
       title: "RevenueCat と比べて手元に残る金額",
       lede: "RevenueCat の Pro プランは、月間の追跡収益が $2,500 未満なら無料で、それ以上になると収益全体の 1% がかかります。Lite は Cloudflare の無料プランで動き、アプリが無料プランを超えたら月 $5 からの Workers Paid で動きます。",
       revenue: "月間収益",

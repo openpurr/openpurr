@@ -149,8 +149,9 @@ export const en = {
         items: ["Go and Postgres in containers", "GCP or AWS", "For larger portfolios of apps"],
       },
     },
-    /** The savings calculator, under the editions. "{amount}" is a price; in method, "{paidFrom}" is a monthly revenue and "{date}" a date. */
+    /** The savings section, after the editions. "{amount}" is a price; in method, "{paidFrom}" is a monthly revenue and "{date}" a date. */
     savings: {
+      eyebrow: "Cost",
       title: "What you'd keep compared with RevenueCat",
       lede: "RevenueCat's Pro plan is free below $2,500 a month in tracked revenue, then charges 1% of all of it. Lite runs on Cloudflare's free plan, and on Workers Paid, from $5 a month, once your app outgrows it.",
       revenue: "Monthly revenue",

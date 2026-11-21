@@ -148,6 +148,7 @@ export const it: Dict = {
       },
     },
     savings: {
+      eyebrow: "Costi",
       title: "Quanto tieni rispetto a RevenueCat",
       lede: "Il piano Pro di RevenueCat è gratuito sotto i 2.500 $ al mese di ricavi tracciati, poi costa l'1% di tutti i ricavi. Lite funziona sul piano gratuito di Cloudflare e, quando la tua app lo supera, su Workers Paid da 5 $ al mese.",
       revenue: "Ricavi mensili",

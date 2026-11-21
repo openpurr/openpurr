@@ -144,6 +144,7 @@ export const id: Dict = {
       },
     },
     savings: {
+      eyebrow: "Biaya",
       title: "Yang Anda simpan dibandingkan RevenueCat",
       lede: "Paket Pro RevenueCat gratis di bawah $2.500 pendapatan terlacak per bulan, lalu mengenakan 1% dari seluruhnya. Lite berjalan di paket gratis Cloudflare, dan di Workers Paid, mulai $5 per bulan, saat aplikasi Anda sudah melampauinya.",
       revenue: "Pendapatan bulanan",

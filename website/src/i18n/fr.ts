@@ -145,6 +145,7 @@ export const fr: Dict = {
       },
     },
     savings: {
+      eyebrow: "Coût",
       title: "Ce que vous gardez par rapport à RevenueCat",
       lede: "L'offre Pro de RevenueCat est gratuite sous 2 500 $ de revenus suivis par mois, puis facture 1 % de la totalité. Lite tourne sur l'offre gratuite de Cloudflare, puis sur Workers Paid, à partir de 5 $ par mois, quand votre app la dépasse.",
       revenue: "Revenus mensuels",

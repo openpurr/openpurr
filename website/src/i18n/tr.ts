@@ -144,6 +144,7 @@ export const tr: Dict = {
       },
     },
     savings: {
+      eyebrow: "Maliyet",
       title: "RevenueCat'e kıyasla cebinizde kalan",
       lede: "RevenueCat'in Pro planı aylık 2.500 $ izlenen gelirin altında ücretsizdir, sonrasında gelirin tamamının %1'ini alır. Lite, Cloudflare'in ücretsiz planında çalışır; uygulamanız bunu aştığında ayda 5 $'dan başlayan Workers Paid ile devam eder.",
       revenue: "Aylık gelir",

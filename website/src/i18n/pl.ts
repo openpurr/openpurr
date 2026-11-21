@@ -144,6 +144,7 @@ export const pl: Dict = {
       },
     },
     savings: {
+      eyebrow: "Koszty",
       title: "Ile zatrzymujesz w porównaniu z RevenueCat",
       lede: "Plan Pro w RevenueCat jest darmowy poniżej 2500 USD śledzonych przychodów miesięcznie, a potem kosztuje 1% całości. Lite działa w darmowym planie Cloudflare, a gdy aplikacja z niego wyrośnie, w planie Workers Paid od 5 USD miesięcznie.",
       revenue: "Przychód miesięczny",

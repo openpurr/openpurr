@@ -148,6 +148,7 @@ export const vi: Dict = {
       },
     },
     savings: {
+      eyebrow: "Chi phí",
       title: "Số tiền bạn giữ lại so với RevenueCat",
       lede: "Gói Pro của RevenueCat miễn phí khi doanh thu được theo dõi dưới 2.500 $ mỗi tháng, sau đó thu 1% trên toàn bộ doanh thu. Lite chạy trên gói miễn phí của Cloudflare, và trên Workers Paid, từ 5 $ mỗi tháng, khi ứng dụng của bạn vượt quá gói đó.",
       revenue: "Doanh thu hằng tháng",

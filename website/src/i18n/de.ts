@@ -144,6 +144,7 @@ export const de: Dict = {
       },
     },
     savings: {
+      eyebrow: "Kosten",
       title: "Was Sie im Vergleich zu RevenueCat behalten",
       lede: "Der Pro-Tarif von RevenueCat ist unter 2.500 $ erfasstem Umsatz im Monat kostenlos und kostet danach 1 % des gesamten Umsatzes. Lite läuft im kostenlosen Cloudflare-Tarif und mit Workers Paid ab 5 $ im Monat, wenn Ihre App darüber hinauswächst.",
       revenue: "Monatlicher Umsatz",
