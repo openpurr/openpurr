@@ -9,6 +9,8 @@ Thanks for your interest. openpurr is at an early stage, so the most useful cont
 
 Open an issue before starting large work, so we can agree on the approach first.
 
+Everyone taking part is expected to follow the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Ground rules
 
 1. **The spec comes first.** Behavior that both editions share is defined in `spec/` (OpenAPI, JSON schemas, fixtures, scenarios). Change the spec, then the code. A pull request that changes `spec/` must keep every edition passing the conformance suite.

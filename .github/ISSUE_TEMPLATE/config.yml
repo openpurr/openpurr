@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Report a security vulnerability
+    url: https://github.com/openpurr/openpurr/security/advisories/new
+    about: Please report security issues privately, not in a public issue.
+  - name: Moving from RevenueCat
+    url: https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-revenuecat.md
+    about: The step-by-step migration guide, including the import.
