@@ -66,9 +66,9 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 
 | SDK | इसे openpurr पर कैसे point करें |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
-| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
-| Flutter, React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
+| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
+| Flutter, React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
 
 `configure` call करने से पहले proxy URL set करें। Entitlement verification को उसके default (disabled) पर ही रहने दें, क्योंकि signed responses, RevenueCat की अपनी key पर निर्भर होते हैं।
 

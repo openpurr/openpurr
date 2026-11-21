@@ -16,13 +16,13 @@ export function parseSdkUrl(input: string): { url: string } | { error: string } 
   try {
     url = new URL(input.trim());
   } catch {
-    return { error: "Enter a full address, e.g. https://openpurr.your-server.dev." };
+    return { error: "Enter a full address, e.g. https://purchases.example.com." };
   }
   if (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1"].includes(url.hostname))) {
     return { error: "The SDK URL must use https (http is allowed only for localhost)." };
   }
   if (url.pathname !== "/" || url.search || url.hash || url.username || url.password) {
-    return { error: "Enter just the address, e.g. https://openpurr.your-server.dev, with no path: the SDK adds /v1 itself." };
+    return { error: "Enter just the address, e.g. https://purchases.example.com, with no path: the SDK adds /v1 itself." };
   }
   return { url: url.origin };
 }

@@ -66,9 +66,9 @@ openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提
 
 | SDK | openpurr に接続する方法 |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
-| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
-| Flutter、React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
+| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
+| Flutter、React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
 
 プロキシ URL は `configure` を呼ぶ前に設定してください。エンタイトルメントの検証はデフォルト（無効）のままにしておきます。署名付きレスポンスは RevenueCat 自身の鍵に依存しているためです。
 

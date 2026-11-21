@@ -29,7 +29,7 @@ const sources: Record<number, { href: string; label: string }> = {
 const lines = (code: string) => code.split("\n").map((text, i) => ({ text, comment: /^\s*(\/\/|#)/.test(text), first: i === 0 }));
 
 const appChange = lines(`// ${m.app.proxyComment}
-Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")!
+Purchases.proxyURL = URL(string: "https://purchases.example.com")!
 Purchases.configure(withAPIKey: "appl_…")
 
 // ${m.app.syncComment}

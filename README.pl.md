@@ -66,9 +66,9 @@ Od pierwszego dnia używasz oficjalnych, niezmodyfikowanych SDK (wszystkie na li
 
 | SDK | Jak skierować je na openpurr |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
-| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
-| Flutter, React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
+| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
+| Flutter, React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
 
 Ustaw URL proxy przed wywołaniem `configure`. Weryfikację entitlementów zostaw w domyślnym ustawieniu (wyłączona), bo podpisane odpowiedzi opierają się na własnym kluczu RevenueCat.
 
