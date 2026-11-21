@@ -4,7 +4,7 @@ A high-level view of where openpurr is going. The order is firm, but there are n
 
 **Status key:** ✅ done · 🚧 in progress · ⏳ planned
 
-**Latest release:** [0.1.0](https://github.com/openpurr/openpurr/releases/tag/v0.1.0), the first release of the Lite edition.
+**Latest release:** [0.2.0](https://github.com/openpurr/openpurr/releases/tag/v0.2.0), which adds importing customers from RevenueCat.
 
 ## Phase 0: Prototype 🚧
 
