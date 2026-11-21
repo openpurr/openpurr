@@ -244,12 +244,39 @@ section {
 :lang(zh-CN) {
   --font: ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
 }
+:lang(zh-TW) {
+  --font: ui-sans-serif, system-ui, -apple-system, "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", sans-serif;
+}
 :lang(ko) {
   --font: ui-sans-serif, system-ui, -apple-system, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
   word-break: keep-all;
 }
 :lang(ja) :is(h1, h2, h3),
 :lang(zh-CN) :is(h1, h2, h3),
+:lang(zh-TW) :is(h1, h2, h3),
 :lang(ko) :is(h1, h2, h3) {
   letter-spacing: 0;
+}
+
+/* Arabic and Devanagari join letters, and any letter-spacing breaks the joins: off everywhere,
+   including component styles that set it. */
+:lang(ar) {
+  --font: ui-sans-serif, system-ui, -apple-system, "SF Arabic", "Geeza Pro", "Segoe UI", "Noto Sans Arabic", Tahoma, sans-serif;
+}
+:lang(hi) {
+  --font: ui-sans-serif, system-ui, -apple-system, "Kohinoor Devanagari", "Devanagari Sangam MN", "Nirmala UI", "Noto Sans Devanagari", sans-serif;
+}
+:lang(ar) *,
+:lang(hi) * {
+  letter-spacing: 0 !important;
+}
+
+/* Code reads left to right in every language, also inside right-to-left text. */
+pre,
+code {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+pre {
+  text-align: left;
 }

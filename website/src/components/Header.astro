@@ -126,7 +126,9 @@ const languages = Object.entries(alternates) as [Locale, string][];
   }
   .lang ul {
     position: absolute;
-    right: 0;
+    inset-inline-end: 0;
+    max-height: min(70vh, 560px);
+    overflow-y: auto;
     top: calc(100% + 10px);
     list-style: none;
     margin: 0;

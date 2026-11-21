@@ -2,7 +2,7 @@
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
 import { MIGRATION_PAGE } from "../consts";
-import { DEFAULT_LOCALE, langTag, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, dirOf, langTag, t, type Locale } from "../i18n";
 
 interface Props {
   locale?: Locale;
@@ -45,7 +45,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
               {link && (
                 <>
                   {" "}
-                  <a href={MIGRATION_PAGE}>{link} →</a>
+                  <a href={MIGRATION_PAGE}>{link} {dirOf(locale) === "rtl" ? "←" : "→"}</a>
                 </>
               )}
             </p>
