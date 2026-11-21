@@ -60,6 +60,29 @@ openpurr juga cocok jika Anda sudah memakai SDK RevenueCat dan ingin tetap memak
 
 Kedua edisi lolos rangkaian uji kesesuaian yang sama di `spec/`. Anda bisa pindah dari Lite ke Standard tanpa merilis update aplikasi, selama aplikasi Anda mengarah ke domain kustom milik Anda.
 
+## Yang Anda simpan dibandingkan RevenueCat
+
+Paket Pro RevenueCat gratis di bawah $2.500 pendapatan terlacak per bulan, lalu mengenakan 1% dari seluruhnya. Lite berjalan di paket gratis Cloudflare, dan di Workers Paid, mulai $5 per bulan, saat aplikasi Anda sudah melampauinya.
+
+<a href="https://openpurr.org/id/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="Kalkulator penghematan: saat pendapatan bulanan naik hingga $250.000, biaya bulanan RevenueCat ikut naik sementara biaya openpurr Lite tetap mendekati nol">
+  </picture>
+</a>
+
+| Pendapatan bulanan | RevenueCat, per bulan | openpurr Lite, per bulan | Hemat per tahun |
+|---|--:|--:|--:|
+| US$2.000 | US$0 | US$0 | **US$0** |
+| US$5.000 | US$50 | US$0 | **US$600** |
+| US$10.000 | US$100 | US$0 | **US$1.200** |
+| US$25.000 | US$250 | US$5 | **US$2.940** |
+| US$50.000 | US$500 | US$5 | **US$5.939** |
+| US$100.000 | US$1.000 | US$9 | **US$11.896** |
+| US$250.000 | US$2.500 | US$20 | **US$29.764** |
+
+Perkiraan, dengan harga yang diperiksa pada 21 November 2026. Asumsinya sekitar $1,50 pendapatan bulanan dan 10 permintaan SDK per hari per pengguna aktif harian, sehingga peralihan ke Workers Paid terjadi di sekitar US$11.250 per bulan. [Coba dengan angka Anda](https://openpurr.org/id/#savings).
+
 ## Kompatibilitas SDK
 
 Sejak hari pertama, openpurr memakai SDK resmi tanpa modifikasi (semuanya berlisensi MIT):

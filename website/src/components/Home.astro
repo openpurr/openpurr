@@ -3,6 +3,7 @@
 import Base from "../layouts/Base.astro";
 import SdkSnippet from "./SdkSnippet.astro";
 import DashboardDemo from "./DashboardDemo.astro";
+import SavingsCalculator from "./SavingsCalculator.astro";
 import Faq from "./Faq.astro";
 import StructuredData from "./StructuredData.astro";
 import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
@@ -161,6 +162,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
           </ul>
         </div>
       </div>
+      <SavingsCalculator locale={locale} />
     </div>
   </section>
 

@@ -59,6 +59,29 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 
 Both editions pass the same conformance suite in `spec/`. You can move from Lite to Standard without shipping an app update, as long as your app points at a custom domain you own.
 
+## What you'd keep compared with RevenueCat
+
+RevenueCat's Pro plan is free below $2,500 a month in tracked revenue, then charges 1% of all of it. Lite runs on Cloudflare's free plan, and on Workers Paid, from $5 a month, once your app outgrows it.
+
+<a href="https://openpurr.org/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="The savings calculator: as monthly revenue rises to $250,000, RevenueCat's monthly cost climbs while openpurr Lite's stays near zero">
+  </picture>
+</a>
+
+| Monthly revenue | RevenueCat, monthly | openpurr Lite, monthly | Saved per year |
+|---|--:|--:|--:|
+| $2,000 | $0 | $0 | **$0** |
+| $5,000 | $50 | $0 | **$600** |
+| $10,000 | $100 | $0 | **$1,200** |
+| $25,000 | $250 | $5 | **$2,940** |
+| $50,000 | $500 | $5 | **$5,939** |
+| $100,000 | $1,000 | $9 | **$11,896** |
+| $250,000 | $2,500 | $20 | **$29,764** |
+
+Estimates, with prices checked on November 21, 2026. They assume about $1.50 of monthly revenue and 10 SDK requests a day per daily active user, which puts the move to Workers Paid at about $11,250 a month. [Try your own numbers](https://openpurr.org/#savings).
+
 ## SDK compatibility
 
 Day one uses the official, unmodified SDKs (all MIT licensed):

@@ -60,6 +60,29 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 
 두 에디션은 `spec/`에 있는 같은 적합성 테스트 스위트를 통과합니다. 앱이 직접 소유한 커스텀 도메인을 가리키고 있다면, 앱 업데이트를 출시하지 않고도 Lite에서 Standard로 옮길 수 있습니다.
 
+## RevenueCat와 비교해 남는 금액
+
+RevenueCat의 Pro 요금제는 월 추적 매출이 $2,500 미만이면 무료이고, 그 이상이면 전체 매출의 1%를 받습니다. Lite는 Cloudflare 무료 플랜에서 실행되고, 앱이 무료 플랜을 넘어서면 월 $5부터인 Workers Paid에서 실행됩니다.
+
+<a href="https://openpurr.org/ko/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="절약 계산기: 월 매출이 $250,000까지 오르면 RevenueCat의 월 비용은 늘어나고 openpurr Lite는 0에 가깝게 유지됩니다">
+  </picture>
+</a>
+
+| 월 매출 | RevenueCat, 월 | openpurr Lite, 월 | 연간 절약액 |
+|---|--:|--:|--:|
+| US$2,000 | US$0 | US$0 | **US$0** |
+| US$5,000 | US$50 | US$0 | **US$600** |
+| US$10,000 | US$100 | US$0 | **US$1,200** |
+| US$25,000 | US$250 | US$5 | **US$2,940** |
+| US$50,000 | US$500 | US$5 | **US$5,939** |
+| US$100,000 | US$1,000 | US$9 | **US$11,896** |
+| US$250,000 | US$2,500 | US$20 | **US$29,764** |
+
+추정치이며, 요금은 2026년 11월 21일에 확인했습니다. 일간 활성 사용자 1명당 월 매출 약 $1.50, 하루 SDK 요청 10회를 가정하므로 Workers Paid로 옮기는 시점은 월 약 US$11,250입니다. [내 숫자로 계산해 보기](https://openpurr.org/ko/#savings).
+
 ## SDK 호환성
 
 처음부터 수정하지 않은 공식 SDK를 사용합니다(모두 MIT 라이선스):

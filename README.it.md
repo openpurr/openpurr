@@ -60,6 +60,29 @@ Fa al caso tuo anche se usi già gli SDK di RevenueCat e vuoi continuare a usarl
 
 Entrambe le edizioni superano la stessa suite di test di conformità, in `spec/`. Puoi passare da Lite a Standard senza pubblicare un aggiornamento dell'app, purché la tua app punti a un dominio personalizzato di tua proprietà.
 
+## Quanto tieni rispetto a RevenueCat
+
+Il piano Pro di RevenueCat è gratuito sotto i 2.500 $ al mese di ricavi tracciati, poi costa l'1% di tutti i ricavi. Lite funziona sul piano gratuito di Cloudflare e, quando la tua app lo supera, su Workers Paid da 5 $ al mese.
+
+<a href="https://openpurr.org/it/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="Il calcolatore del risparmio: mentre i ricavi mensili salgono fino a 250.000 $, il costo mensile di RevenueCat cresce e quello di openpurr Lite resta vicino a zero">
+  </picture>
+</a>
+
+| Ricavi mensili | RevenueCat, al mese | openpurr Lite, al mese | Risparmio all'anno |
+|---|--:|--:|--:|
+| 2000 USD | 0 USD | 0 USD | **0 USD** |
+| 5000 USD | 50 USD | 0 USD | **600 USD** |
+| 10.000 USD | 100 USD | 0 USD | **1200 USD** |
+| 25.000 USD | 250 USD | 5 USD | **2940 USD** |
+| 50.000 USD | 500 USD | 5 USD | **5939 USD** |
+| 100.000 USD | 1000 USD | 9 USD | **11.896 USD** |
+| 250.000 USD | 2500 USD | 20 USD | **29.764 USD** |
+
+Stime, con prezzi verificati il 21 novembre 2026. Ipotizzano circa 1,50 $ di ricavi mensili e 10 richieste SDK al giorno per utente attivo giornaliero, quindi il passaggio a Workers Paid arriva intorno a 11.250 USD al mese. [Prova con i tuoi numeri](https://openpurr.org/it/#savings).
+
 ## Compatibilità con gli SDK
 
 Fin dal primo giorno si usano gli SDK ufficiali, senza modifiche (tutti con licenza MIT):

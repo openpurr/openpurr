@@ -60,6 +60,29 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 
 दोनों editions `spec/` में मौजूद एक ही conformance suite पास करते हैं। अगर आपका app आपके अपने custom domain पर point करता है, तो आप app update ship किए बिना Lite से Standard पर जा सकते हैं।
 
+## RevenueCat की तुलना में आप कितना बचाते हैं
+
+RevenueCat का Pro plan हर महीने $2,500 से कम tracked revenue पर मुफ़्त है, उसके बाद पूरे revenue का 1% लेता है। Lite, Cloudflare के free plan पर चलता है, और जब आपका app उससे आगे बढ़ जाए तो $5 प्रति माह से शुरू होने वाले Workers Paid पर।
+
+<a href="https://openpurr.org/hi/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="Savings calculator: मासिक revenue $250,000 तक बढ़ने पर RevenueCat की मासिक लागत बढ़ती है, जबकि openpurr Lite की लगभग शून्य रहती है">
+  </picture>
+</a>
+
+| मासिक revenue | RevenueCat, मासिक | openpurr Lite, मासिक | हर साल की बचत |
+|---|--:|--:|--:|
+| $2,000 | $0 | $0 | **$0** |
+| $5,000 | $50 | $0 | **$600** |
+| $10,000 | $100 | $0 | **$1,200** |
+| $25,000 | $250 | $5 | **$2,940** |
+| $50,000 | $500 | $5 | **$5,939** |
+| $1,00,000 | $1,000 | $9 | **$11,896** |
+| $2,50,000 | $2,500 | $20 | **$29,764** |
+
+अनुमान; कीमतें 21 नवंबर 2026 को जाँची गईं। हर daily active user पर लगभग $1.50 मासिक revenue और रोज़ 10 SDK requests माने गए हैं, इसलिए Workers Paid पर जाना लगभग $11,250 प्रति माह पर होता है। [अपने आँकड़ों से देखें](https://openpurr.org/hi/#savings).
+
 ## SDK compatibility
 
 पहले दिन से आधिकारिक, बिना बदलाव वाले SDKs इस्तेमाल होते हैं (सभी MIT licensed):
