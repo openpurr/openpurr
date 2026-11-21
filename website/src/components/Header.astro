@@ -106,12 +106,14 @@ const languages = Object.entries(alternates) as [Locale, string][];
   }
   .lang summary {
     list-style: none;
-    display: inline-flex;
+    /* flex, not inline-flex: inline content inside <details> gets a line box whose descender
+       space pushes the label above the other links. */
+    display: flex;
     align-items: center;
     gap: 5px;
     cursor: pointer;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text);
   }
   .lang summary::-webkit-details-marker {
