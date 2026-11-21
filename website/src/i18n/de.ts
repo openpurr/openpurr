@@ -147,7 +147,7 @@ export const de: Dict = {
       title: "Vielleicht ist es noch nichts für dich",
       lede: "Wenn du Paywall-Builder, A/B-Tests, Analytics-Integrationen von Drittanbietern oder einen Supportvertrag brauchst, bieten kommerzielle Plattformen das heute schon.",
       outTitle: "Vorerst nicht vorgesehen",
-      tags: ["Paywalls", "Werbeereignisse", "Customer Center", "Virtuelle Währungen", "Web-Billing", "Amazon", "Experimente", "Analytics-Integrationen"],
+      tags: ["Paywalls", "Werbeereignisse", "Customer Center", "Virtuelle Währungen", "Web-Billing", "Amazon", "Analytics-Integrationen"],
     },
     roadmap: {
       eyebrow: "Roadmap",
@@ -226,7 +226,7 @@ export const de: Dict = {
       },
       {
         q: "Was kann RevenueCat, was openpurr nicht kann?",
-        a: "Paywalls, A/B-Experimente, Analytics-Integrationen von Drittanbietern, Customer Center, virtuelle Währungen, Web-Billing, Amazon, Werbeereignisse und ein kommerzieller Supportvertrag sind vorerst nicht vorgesehen. Wenn du das heute brauchst, passt eine kommerzielle Plattform besser.",
+        a: "Paywalls, Analytics-Integrationen von Drittanbietern, Customer Center, virtuelle Währungen, Web-Billing, Amazon, Werbeereignisse und ein kommerzieller Supportvertrag sind vorerst nicht vorgesehen. Preisexperimente stehen auf der Roadmap. Wenn du das heute brauchst, passt eine kommerzielle Plattform besser.",
       },
       {
         q: "Ist openpurr bereit für den Produktivbetrieb?",

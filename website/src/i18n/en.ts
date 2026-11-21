@@ -153,7 +153,7 @@ export const en = {
       title: "It may not be for you yet",
       lede: "If you need paywall builders, A/B experiments, third-party analytics integrations or a support contract, commercial platforms offer those today.",
       outTitle: "Out of scope for now",
-      tags: ["Paywalls", "Ad events", "Customer Center", "Virtual currencies", "Web billing", "Amazon", "Experiments", "Analytics integrations"],
+      tags: ["Paywalls", "Ad events", "Customer Center", "Virtual currencies", "Web billing", "Amazon", "Analytics integrations"],
     },
     roadmap: {
       eyebrow: "Roadmap",
@@ -233,7 +233,7 @@ export const en = {
       },
       {
         q: "What doesn't openpurr do that RevenueCat does?",
-        a: "Paywalls, A/B experiments, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events and a commercial support contract are out of scope for now. If you need those today, a commercial platform is a better fit.",
+        a: "Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events and a commercial support contract are out of scope for now. Price experiments are on the roadmap. If you need those today, a commercial platform is a better fit.",
       },
       {
         q: "Is openpurr ready for production?",

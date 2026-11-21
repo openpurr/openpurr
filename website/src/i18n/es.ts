@@ -150,7 +150,6 @@ export const es: Dict = {
         "Monedas virtuales",
         "Pagos web",
         "Amazon",
-        "Experimentos",
         "Integraciones de analítica",
       ],
     },
@@ -231,7 +230,7 @@ export const es: Dict = {
       },
       {
         q: "¿Qué hace RevenueCat que openpurr no hace?",
-        a: "Paywalls, experimentos A/B, integraciones de analítica de terceros, Customer Center, monedas virtuales, pagos web, Amazon, eventos publicitarios y un contrato de soporte comercial quedan fuera de alcance por ahora. Si los necesitas hoy, te conviene más una plataforma comercial.",
+        a: "Paywalls, integraciones de analítica de terceros, Customer Center, monedas virtuales, pagos web, Amazon, eventos publicitarios y un contrato de soporte comercial quedan fuera de alcance por ahora. Los experimentos de precios están en la hoja de ruta. Si los necesitas hoy, te conviene más una plataforma comercial.",
       },
       {
         q: "¿Está openpurr listo para producción?",

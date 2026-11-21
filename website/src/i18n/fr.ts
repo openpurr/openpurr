@@ -155,7 +155,6 @@ export const fr: Dict = {
         "Monnaies virtuelles",
         "Paiement web",
         "Amazon",
-        "Expériences",
         "Intégrations analytiques",
       ],
     },
@@ -241,7 +240,7 @@ export const fr: Dict = {
       },
       {
         q: "Que fait RevenueCat qu'openpurr ne fait pas ?",
-        a: "Les paywalls, les tests A/B, les intégrations analytiques tierces, Customer Center, les monnaies virtuelles, le paiement web, Amazon, les événements publicitaires et un contrat de support commercial sont hors périmètre pour l'instant. Si vous en avez besoin dès aujourd'hui, une plateforme commerciale vous conviendra mieux.",
+        a: "Les paywalls, les intégrations analytiques tierces, Customer Center, les monnaies virtuelles, le paiement web, Amazon, les événements publicitaires et un contrat de support commercial sont hors périmètre pour l'instant. Les tests de prix figurent sur la feuille de route. Si vous en avez besoin dès aujourd'hui, une plateforme commerciale vous conviendra mieux.",
       },
       {
         q: "openpurr est-il prêt pour la production ?",
