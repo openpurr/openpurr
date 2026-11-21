@@ -11,7 +11,7 @@ export const fr: Dict = {
   },
   header: {
     home: "Accueil openpurr",
-    nav: { features: "Fonctionnalités", editions: "Éditions", roadmap: "Feuille de route", faq: "FAQ" },
+    nav: { features: "Fonctionnalités", editions: "Éditions", roadmap: "Feuille de route", faq: "FAQ", migrate: "Migrer" },
     language: "Langue",
   },
   footer: {
@@ -221,7 +221,7 @@ export const fr: Dict = {
       {
         q: "Comment transférer mes clients existants depuis RevenueCat ?",
         a: "En les important. Demandez un export de migration à RevenueCat : openpurr import récupère les achats de chaque client auprès d'Apple et de Google et les attribue aux mêmes identifiants d'utilisateur. La nouvelle version de votre application envoie aussi une fois les achats de chaque client, et les deux backends restent à jour pendant que les utilisateurs mettent à jour l'application : personne ne perd son accès.",
-        link: "Lire le guide de migration (en anglais)",
+        link: "Comment migrer (en anglais)",
       },
       {
         q: "Quelles plateformes et quels stores openpurr prend-il en charge ?",

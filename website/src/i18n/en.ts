@@ -1,7 +1,7 @@
 // The site's English copy. It's the source the translations follow: its shape is the `Dict` type, so
 // a translation missing a string (or with an extra one) fails `astro check`.
 //
-// A FAQ item's `link` is the label of a link to the migration guide (MIGRATION_URL in consts.ts).
+// A FAQ item's `link` is the label of a link to the migration page (MIGRATION_PAGE in consts.ts).
 //
 // Strings marked "HTML" are rendered with set:html, for the <span> and <code> inside them. Keep
 // product and API names (openpurr, RevenueCat, Purchases SDK, StoreKit, CustomerInfo, configure,
@@ -16,7 +16,7 @@ export const en = {
   },
   header: {
     home: "openpurr home",
-    nav: { features: "Features", editions: "Editions", roadmap: "Roadmap", faq: "FAQ" },
+    nav: { features: "Features", editions: "Editions", roadmap: "Roadmap", faq: "FAQ", migrate: "Migrate" },
     language: "Language",
   },
   footer: {
@@ -213,7 +213,7 @@ export const en = {
       {
         q: "How do I move my existing customers from RevenueCat?",
         a: "Import them. Ask RevenueCat for a migration export, and openpurr import fetches each customer's purchases from Apple and Google and gives them to the same app user IDs. The new version of your app also sends each customer's purchases once, and both backends stay up to date while people update, so nobody loses access.",
-        link: "Read the migration guide",
+        link: "How to migrate",
       },
       {
         q: "Which platforms and stores does openpurr support?",
