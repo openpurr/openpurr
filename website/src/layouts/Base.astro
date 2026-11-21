@@ -11,14 +11,19 @@ interface Props {
   locale?: Locale;
   /** This page in each language it exists in (see allLocales), for hreflang and the language menu. */
   alternates?: Alternates;
+  /** A page-specific social preview (1200x630, in public/), and its alt text. */
+  ogImage?: string;
+  ogImageAlt?: string;
+  /** "article" for guides; the default is "website". */
+  ogType?: "website" | "article";
 }
 
 const { locale = DEFAULT_LOCALE, alternates = {} } = Astro.props;
 const meta = t(locale).meta;
-const { title = meta.title, description = meta.description } = Astro.props;
+const { title = meta.title, description = meta.description, ogImageAlt = meta.ogImageAlt, ogType = "website" } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = new URL("/og.png", Astro.site);
+const ogImage = new URL(Astro.props.ogImage ?? "/og.png", Astro.site);
 const others = Object.entries(alternates) as [Locale, string][];
 const xDefault = alternates[DEFAULT_LOCALE];
 ---
@@ -38,7 +43,7 @@ const xDefault = alternates[DEFAULT_LOCALE];
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#7050e8" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content={ogType} />
     <meta property="og:site_name" content="openpurr" />
     <meta property="og:locale" content={LOCALE_INFO[locale].og} />
     {others.filter(([l]) => l !== locale).map(([l]) => <meta property="og:locale:alternate" content={LOCALE_INFO[l].og} />)}
@@ -48,7 +53,7 @@ const xDefault = alternates[DEFAULT_LOCALE];
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content={meta.ogImageAlt} />
+    <meta property="og:image:alt" content={ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>

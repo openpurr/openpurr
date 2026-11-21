@@ -1,0 +1,38 @@
+<!doctype html>
+<!-- The migration page's social preview card (public/og-migrate.png, 1200x630). To regenerate,
+     from website/:
+       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars \
+         --force-device-scale-factor=2 --window-size=1200,630 --screenshot=og@2x.png "file://$PWD/og/migrate.html"
+       sips -z 630 1200 og@2x.png --out public/og-migrate.png && rm og@2x.png --><html><head><meta charset="utf-8"><style>
+*{box-sizing:border-box;margin:0}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{font-family:-apple-system,"SF Pro Display","Helvetica Neue",Arial,sans-serif;color:#1e1a33;
+ background:radial-gradient(760px 520px at 100% 0%,rgba(112,80,232,.20),transparent 70%),radial-gradient(600px 400px at 0% 100%,rgba(112,80,232,.08),transparent 70%),#fff;position:relative}
+.copy{position:absolute;left:72px;top:60px;width:540px}
+.logo{height:62px;display:block;margin-bottom:34px}
+.eyebrow{font-size:18px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7050e8;margin-bottom:14px}
+h1{font-size:54px;line-height:1.06;letter-spacing:-.025em;font-weight:800}
+h1 .a{color:#7050e8}
+p{margin-top:22px;font-size:24px;line-height:1.4;color:#625d7a}
+.url{position:absolute;left:72px;bottom:58px;font-size:22px;font-weight:600;color:#7050e8}
+.url span{color:#625d7a;font-weight:500}
+.url span::before{content:'·';margin:0 12px}
+.code{position:absolute;left:660px;top:206px;width:480px;background:#1e1a33;color:#e9e6f7;border-radius:16px;padding:28px 30px;
+ font:17px/1.75 ui-monospace,"SF Mono",Menlo,monospace;box-shadow:0 30px 70px -20px rgba(20,16,40,.45),0 0 0 8px rgba(112,80,232,.08)}
+.c{color:#9a94b8}.s{color:#8ee0b5}.k{color:#b3a2ff}
+.term{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.12)}
+</style></head><body>
+<div class="copy">
+ <img class="logo" src="../public/logo.png" alt="">
+ <div class="eyebrow">Migration guide</div>
+ <h1>Move from RevenueCat <span class="a">without losing a subscriber</span></h1>
+ <p>Keep the Purchases SDK. Import every customer. Old app versions keep working.</p>
+</div>
+<div class="url">openpurr.org<span>Self-hosted, open-source</span></div>
+<div class="code">
+<div><span class="c">// The one line your app adds</span></div>
+<div>Purchases.proxyURL = <span class="k">URL</span>(…)</div>
+<div class="term"><span class="c"># Bring every customer over</span></div>
+<div>openpurr import <span class="s">export.csv</span></div>
+</div>
+</body></html>

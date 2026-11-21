@@ -2,11 +2,26 @@
 // Moving from RevenueCat: the overview for people deciding whether and how to switch. The full,
 // step-by-step guide lives in the repo (docs/migrating-from-revenuecat.md); keep the two in step.
 import Base from "../layouts/Base.astro";
-import { ISSUES_URL, MIGRATION_GUIDE_URL, REPO_URL } from "../consts";
+import { ISSUES_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, MIGRATION_UPDATED, REPO_URL } from "../consts";
 
-const title = "Migrate from RevenueCat to openpurr, without losing a subscriber";
+// Search results show about 60 characters of a title and 155 of a description.
+const title = "How to migrate from RevenueCat to openpurr, step by step";
 const description =
-  "Move your app from RevenueCat to openpurr, the self-hosted, open-source RevenueCat alternative. Keep the Purchases SDK, import existing customers from RevenueCat's export, and keep old app versions working while people update.";
+  "Move your app from RevenueCat to openpurr, the open-source RevenueCat alternative: keep the Purchases SDK, import every subscriber, and keep their access.";
+const headline = "Move from RevenueCat to openpurr without losing a subscriber";
+const updatedLabel = new Date(`${MIGRATION_UPDATED}T00:00:00Z`).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
+const REVENUECAT_EXPORTS = "https://www.revenuecat.com/docs/revenuecat-support/common-tickets/export-data-or-migrate-away";
+const REVENUECAT_APPLE_NOTIFICATIONS = "https://www.revenuecat.com/docs/platform-resources/server-notifications/apple-server-notifications";
+
+/** The answer-first summary: the facts an assistant or a skimming reader needs, in one place. */
+const summary = [
+  "openpurr is a self-hosted, open-source RevenueCat alternative. It works with the official, unmodified RevenueCat Purchases SDK.",
+  "Your app adds one line (the SDK's proxy URL) and a one-time <code>syncPurchases</code> call. The rest of your purchase code stays the same.",
+  "<code>openpurr import</code> brings existing customers over from RevenueCat's export. The purchases themselves are fetched from Apple and Google, not copied.",
+  "App Store apps can use RevenueCat's Scheduled Data Export. Google Play needs a migration export from RevenueCat Support, the only one with purchase tokens.",
+  "Both backends stay up to date until most people have updated the app, so nobody loses access.",
+  "On Cloudflare's free plan, the import handles about 2,500 customers a day. On Workers Paid, a large import takes hours.",
+];
 
 /** Code lines, with comments marked so they can be dimmed. */
 const lines = (code: string) => code.split("\n").map((text, i) => ({ text, comment: /^\s*(\/\/|#)/.test(text), first: i === 0 }));
@@ -35,11 +50,11 @@ openpurr import revenuecat-export.csv`);
 const ways = [
   {
     title: "The import",
-    body: "RevenueCat's export says which app user owns which store purchase. openpurr import asks Apple and Google for each purchase and records the store's answer for that user. It brings everyone over at once, including people who never open the app again.",
+    body: "RevenueCat's export says which app user owns which store purchase. <code>openpurr import</code> asks Apple and Google for each purchase and records the store's answer for that user. It brings everyone over at once, including people who never open the app again.",
   },
   {
     title: "The app update",
-    body: "The new version points the Purchases SDK at openpurr and sends each customer's purchases once with syncPurchases. That catches anyone the export missed, and anyone who bought after it was made.",
+    body: "The new version points the Purchases SDK at openpurr and sends each customer's purchases once with <code>syncPurchases</code>. That catches anyone the export missed, and anyone who bought after it was made.",
   },
   {
     title: "Both backends, for a while",
@@ -47,7 +62,8 @@ const ways = [
   },
 ];
 
-const steps = [
+/** Bodies are HTML (for <code>); they're written here, never from input. */
+const steps: { title: string; body: string; source?: { label: string; href: string } }[] = [
   {
     title: "Set up openpurr",
     body: "Deploy openpurr Lite to your Cloudflare account, give it App Store and Google Play API access, and recreate your products, entitlements and offerings with the same identifiers. You can even keep your RevenueCat public SDK keys.",
@@ -55,22 +71,24 @@ const steps = [
   {
     title: "Keep both backends informed",
     body: "Set openpurr as RevenueCat's Apple Server Notification Forwarding URL, and add openpurr's push subscription to your Play notifications topic.",
+    source: { label: "RevenueCat: Apple server notifications", href: REVENUECAT_APPLE_NOTIFICATIONS },
   },
   {
     title: "Get your export",
     body: "App Store only: RevenueCat's Scheduled Data Export has what's needed. With Google Play, ask RevenueCat Support for a migration export, since only that one has purchase tokens. The guide has a request you can copy.",
+    source: { label: "RevenueCat: exporting data or migrating away", href: REVENUECAT_EXPORTS },
   },
   {
     title: "Import",
-    body: "Run openpurr import, with a dry run first. Problems with single rows go to a report and don't stop the import.",
+    body: "Run <code>openpurr import</code>, with a dry run first. Problems with single rows go to a report and don't stop the import.",
   },
   {
     title: "Ship the app update",
-    body: "Add the proxy URL and a one-time syncPurchases. Release it once the import has finished.",
+    body: "Add the proxy URL and a one-time <code>syncPurchases</code>. Release it once the import has finished.",
   },
   {
     title: "Check",
-    body: "openpurr doctor checks the setup. Look up customers you know, and compare active subscriptions with RevenueCat's charts.",
+    body: "<code>openpurr doctor</code> checks the setup. Look up customers you know, and compare active subscriptions with RevenueCat's charts.",
   },
   {
     title: "Finish the switch",
@@ -104,7 +122,7 @@ const faqs = [
   },
   {
     q: "Do I need RevenueCat's help to migrate?",
-    a: "For App Store apps, no: RevenueCat's Scheduled Data Export has the transaction IDs openpurr needs. For Google Play, yes: only a migration export prepared by RevenueCat Support includes the purchase tokens Google requires.",
+    a: "For App Store apps, no: RevenueCat's Scheduled Data Export has the transaction IDs openpurr needs. For Google Play, yes: according to RevenueCat's documentation, only a migration export prepared by RevenueCat Support includes the purchase tokens Google requires.",
   },
   {
     q: "What about customers who never update the app?",
@@ -120,19 +138,74 @@ const faqs = [
   },
 ];
 
+const site = Astro.site!.href.replace(/\/$/, "");
+const pageUrl = `${site}${MIGRATION_PAGE}`;
+const plain = (html: string) => html.replace(/<[^>]+>/g, "");
 const jsonLd = {
   "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": `${pageUrl}#article`,
+      headline,
+      description,
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      image: `${site}/og-migrate.png`,
+      inLanguage: "en",
+      datePublished: MIGRATION_UPDATED,
+      dateModified: MIGRATION_UPDATED,
+      author: { "@id": `${site}/#organization` },
+      publisher: { "@id": `${site}/#organization` },
+      about: [
+        { "@type": "SoftwareApplication", "@id": `${site}/#software`, name: "openpurr", url: `${site}/` },
+        { "@type": "Organization", name: "RevenueCat", sameAs: "https://www.revenuecat.com" },
+      ],
+      isBasedOn: MIGRATION_GUIDE_URL,
+      citation: [REVENUECAT_EXPORTS, REVENUECAT_APPLE_NOTIFICATIONS],
+    },
+    { "@type": "Organization", "@id": `${site}/#organization`, name: "openpurr", url: `${site}/`, logo: `${site}/icon-192.png`, sameAs: [REPO_URL] },
+    {
+      "@type": "HowTo",
+      "@id": `${pageUrl}#howto`,
+      name: title,
+      description,
+      step: steps.map((s, i) => ({ "@type": "HowToStep", position: i + 1, name: s.title, text: plain(s.body), url: `${pageUrl}#step-${i + 1}` })),
+    },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "openpurr", item: `${site}/` },
+        { "@type": "ListItem", position: 2, name: "Migrate from RevenueCat", item: pageUrl },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      mainEntity: faqs.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+    },
+  ],
 };
 const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 ---
 
-<Base title={`${title} · openpurr`} description={description}>
+<Base
+  title={title}
+  description={description}
+  ogType="article"
+  ogImage="/og-migrate.png"
+  ogImageAlt="Move from RevenueCat to openpurr without losing a subscriber: keep the Purchases SDK, import every customer, and old app versions keep working."
+>
   <section class="hero">
     <div class="wrap narrow">
+      <nav class="crumbs" aria-label="Breadcrumb">
+        <ol>
+          <li><a href="/">openpurr</a></li>
+          <li aria-current="page">Migrate from RevenueCat</li>
+        </ol>
+      </nav>
       <span class="eyebrow">Migration guide</span>
-      <h1>Move from RevenueCat to openpurr without losing a subscriber</h1>
+      <h1>{headline}</h1>
       <p class="lede">
         Keep the Purchases SDK your app already uses. Import your existing customers from RevenueCat's export: openpurr
         fetches every purchase from Apple and Google itself. Old app versions keep working while people update.
@@ -141,6 +214,13 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
         <a class="btn btn-primary" href={MIGRATION_GUIDE_URL}>Read the step-by-step guide</a>
         <a class="btn btn-ghost" href="#steps">See the steps</a>
       </div>
+      <p class="updated">Updated <time datetime={MIGRATION_UPDATED}>{updatedLabel}</time></p>
+      <div class="summary" role="note" aria-labelledby="in-short">
+        <h2 id="in-short">In short</h2>
+        <ul>
+          {summary.map((s) => <li set:html={s} />)}
+        </ul>
+      </div>
     </div>
   </section>
 
@@ -148,7 +228,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">How it works</span>
-        <h2>Your customers reach openpurr two ways</h2>
+        <h2>How a RevenueCat migration works</h2>
         <p class="lede">
           openpurr doesn't copy purchase records out of RevenueCat. It only needs to know who owns which purchase, then
           asks the stores, exactly as it does when your app posts a purchase.
@@ -159,7 +239,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
           ways.map((w) => (
             <div class="card">
               <h3>{w.title}</h3>
-              <p>{w.body}</p>
+              <p set:html={w.body} />
             </div>
           ))
         }
@@ -171,13 +251,13 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap split">
       <div>
         <span class="eyebrow">In your app</span>
-        <h2>One line, plus a one-time sync</h2>
+        <h2>What changes in your app</h2>
         <p class="lede">
           Set the proxy URL before configure, and send each customer's purchases once. The same two changes work on
           Android, Flutter and React Native; the guide has the code for each.
         </p>
       </div>
-      <pre class="code" aria-label="Swift"><code>{appChange.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+      <pre class="code" tabindex="0" role="region" aria-label="Swift example: the proxy URL and a one-time sync"><code>{appChange.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
     </div>
   </section>
 
@@ -185,13 +265,13 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap split">
       <div>
         <span class="eyebrow">The import</span>
-        <h2>Every customer, from RevenueCat's export</h2>
+        <h2>Importing customers from RevenueCat</h2>
         <p class="lede">
           The openpurr CLI reads RevenueCat's columns as they are: app user IDs, App Store transaction IDs, Google Play
           purchase tokens, and attributes such as <code>$email</code>.
         </p>
       </div>
-      <pre class="code" aria-label="Terminal"><code>{importCommands.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
+      <pre class="code" tabindex="0" role="region" aria-label="Terminal: importing RevenueCat's export"><code>{importCommands.map((l) => <>{!l.first && "\n"}{l.comment ? <span class="c">{l.text}</span> : l.text}</>)}</code></pre>
     </div>
     <div class="wrap">
       <div class="grid grid-3 safeguards">
@@ -211,14 +291,20 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">Step by step</span>
-        <h2>Seven steps, with both backends running until you're ready</h2>
+        <h2>How to migrate from RevenueCat in seven steps</h2>
+        <p class="lede">Both backends keep running until you're ready to switch, so customers on older app versions keep their access.</p>
       </div>
       <ol class="steps">
         {
-          steps.map((s) => (
-            <li>
+          steps.map((s, i) => (
+            <li id={`step-${i + 1}`}>
               <h3>{s.title}</h3>
-              <p>{s.body}</p>
+              <p set:html={s.body} />
+              {s.source && (
+                <p class="source">
+                  Source: <a href={s.source.href} rel="noopener">{s.source.label}</a>
+                </p>
+              )}
             </li>
           ))
         }
@@ -231,7 +317,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap narrow">
       <div class="section-head">
         <span class="eyebrow">What moves</span>
-        <h2>What comes with you, and what doesn't</h2>
+        <h2>What moves from RevenueCat, and what doesn't</h2>
       </div>
       <table class="moves">
         <tbody>
@@ -252,7 +338,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     <div class="wrap narrow">
       <div class="section-head">
         <span class="eyebrow">FAQ</span>
-        <h2>Migrating from RevenueCat</h2>
+        <h2>RevenueCat migration FAQ</h2>
       </div>
       <div class="faq">
         {
@@ -300,6 +386,61 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
   .narrow {
     max-width: 880px;
   }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 22px;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .crumbs li + li::before {
+    content: "/";
+    margin-right: 6px;
+    opacity: 0.6;
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .updated {
+    margin: 22px 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .summary {
+    margin-top: 36px;
+    padding: 24px 28px;
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+  .summary h2 {
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+  .summary ul {
+    margin: 0;
+    padding-left: 20px;
+  }
+  .summary li {
+    margin: 6px 0;
+    color: var(--text);
+  }
+  @media (max-width: 600px) {
+    .summary {
+      padding: 20px 18px;
+    }
+  }
+  .source {
+    margin-top: 8px !important;
+    font-size: 0.86rem;
+  }
+  .source a {
+    color: var(--muted);
+  }
   .ctas {
     display: flex;
     flex-wrap: wrap;
@@ -339,6 +480,10 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
   }
   .code .c {
     color: var(--code-muted);
+  }
+  .code:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 3px;
   }
 
   .safeguards {
