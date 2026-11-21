@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@
 openpurr مشروع مستقل، وهو غير تابع لشركة RevenueCat, Inc. ولا يحظى بدعمها.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="لوحة تحكم openpurr Lite، وتعرض حركة MRR على مدى 12 شهرًا، والاشتراكات النشطة، ومعدل الإلغاء، والعملاء الجدد، والفترات التجريبية الجديدة والنشطة">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="مخططات لوحة تحكم openpurr Lite مع تلميحاتها: MRR، حركة MRR، الإيرادات، الاشتراكات النشطة، الإلغاء">
 </picture>
 
 ## لمن هو

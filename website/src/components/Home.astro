@@ -2,6 +2,7 @@
 // The home page, in any of the site's languages. The copy is in src/i18n/; this file is the layout.
 import Base from "../layouts/Base.astro";
 import SdkSnippet from "./SdkSnippet.astro";
+import DashboardDemo from "./DashboardDemo.astro";
 import Faq from "./Faq.astro";
 import StructuredData from "./StructuredData.astro";
 import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
@@ -41,10 +42,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
     </div>
     <div class="wrap">
       <figure class="shot rise" style="--d: 380ms">
-        <picture>
-          <source media="(prefers-color-scheme: dark)" srcset="/dashboard-dark.png" />
-          <img src="/dashboard.png" width="2880" height="2000" alt={h.hero.shotAlt} decoding="async" />
-        </picture>
+        <DashboardDemo locale={locale} alt={h.hero.shotAlt} />
       </figure>
     </div>
   </section>
@@ -317,45 +315,14 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   .shot {
     margin: 72px 0 0;
   }
-  .shot img {
-    display: block;
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--line);
-    border-radius: var(--radius);
-    box-shadow: 0 24px 60px -24px rgb(20 16 40 / 0.35);
-  }
   @media (max-width: 920px) {
     .shot {
       margin-top: 48px;
     }
   }
-  /* The dashboard starts tilted back and settles flat as it scrolls into view. Browsers without
-     scroll-driven animations just show it flat. */
-  @supports (animation-timeline: view()) {
-    .shot picture {
-      display: block;
-      perspective: 1600px;
-    }
-    .shot img {
-      transform-origin: 50% 0;
-      animation: settle linear both;
-      animation-timeline: view();
-      animation-range: entry 0% cover 45%;
-    }
-    @keyframes settle {
-      from {
-        transform: rotateX(14deg) scale(0.94);
-      }
-      to {
-        transform: none;
-      }
-    }
-  }
   @media (prefers-reduced-motion: reduce) {
     .hero::before,
-    .rise,
-    .shot img {
+    .rise {
       animation: none;
     }
   }

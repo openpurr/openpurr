@@ -1,0 +1,730 @@
+---
+// A small, working copy of the dashboard's Charts page for the home page: the real chart renderer
+// (lite/office-ui/js/chart.js) on made-up data, in the page's language. Visitors switch charts and
+// ranges and hover for details; until they do, it steps through the charts on its own (not with
+// reduced motion). The words are the dashboard's own translations, picked from
+// lite/office-ui/locales/ at build time, so the demo always matches the product.
+import type { Locale } from "../i18n";
+
+interface Props {
+  locale: Locale;
+  /** Describes the dashboard for screen readers and the no-JavaScript fallback image. */
+  alt: string;
+}
+const { locale, alt } = Astro.props;
+
+// The strings the demo shows (the chart catalog's names, series labels and a few UI words).
+const KEYS = [
+  "Charts", "Customers", "Apps and products", "Entitlements", "Offerings", "Webhooks", "Settings",
+  "Overview", "Configuration", "Developers", "Admin", "30 days", "90 days", "12 months",
+  "MRR", "MRR movement", "Revenue", "Active subscriptions", "Churn",
+  "New", "Reactivation", "Expansion", "Contraction", "Churned", "Paying", "Trials", "Churn rate",
+  "Gross", "Refunded", "Net change", "Paying at start", "net change, {range}", "total, {range}", "now",
+  "average per day", "average per week", "average per month",
+] as const;
+const files = import.meta.glob<Record<string, unknown>>("../../../lite/office-ui/locales/*.json", { eager: true, import: "default" });
+const all = files[`../../../lite/office-ui/locales/${locale}.json`] ?? {};
+const strings: Record<string, string> = {};
+for (const k of KEYS) if (typeof all[k] === "string" && all[k]) strings[k] = all[k] as string;
+const L = (k: (typeof KEYS)[number]) => strings[k] ?? k;
+
+const NAV: [string, (typeof KEYS)[number][]][] = [
+  ["Overview", ["Charts", "Customers"]],
+  ["Configuration", ["Apps and products", "Entitlements", "Offerings"]],
+  ["Developers", ["Webhooks"]],
+  ["Admin", ["Settings"]],
+];
+const CHARTS = ["mrr", "mrr_movement", "revenue", "active_subscriptions", "churn"] as const;
+const CHART_LABEL = { mrr: "MRR", mrr_movement: "MRR movement", revenue: "Revenue", active_subscriptions: "Active subscriptions", churn: "Churn" } as const;
+const RANGES = [
+  ["30d", "30 days"],
+  ["90d", "90 days"],
+  ["12m", "12 months"],
+] as const;
+---
+
+<div class="demo" data-demo data-locale={locale} data-strings={JSON.stringify(strings)}>
+  <div class="demo-stage">
+    <div class="demo-window" role="group" aria-label={alt}>
+      <aside class="demo-side" aria-hidden="true">
+        <div class="demo-brand">
+          <img src="/mark.png" alt="" width="20" height="20" />
+          <span>openpurr</span>
+          <span class="demo-lite">LITE</span>
+        </div>
+        {
+          NAV.map(([section, items]) => (
+            <div class="demo-section">
+              <span class="demo-section-label">{L(section as (typeof KEYS)[number])}</span>
+              {items.map((item) => (
+                <span class={`demo-nav ${item === "Charts" ? "active" : ""}`}>{L(item)}</span>
+              ))}
+            </div>
+          ))
+        }
+      </aside>
+      <div class="demo-main">
+        <div class="demo-head">
+          <span class="demo-title">{L("Charts")}</span>
+          <div class="demo-seg" role="radiogroup" aria-label={L("Charts")}>
+            {
+              RANGES.map(([value, label]) => (
+                <button type="button" role="radio" data-range={value} aria-checked={value === "12m" ? "true" : "false"}>
+                  {L(label)}
+                </button>
+              ))
+            }
+          </div>
+        </div>
+        <div class="demo-tabs" role="tablist">
+          {
+            CHARTS.map((id, i) => (
+              <button type="button" role="tab" id={`demo-tab-${id}`} data-chart={id} aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1}>
+                <span class="demo-tab-label">{L(CHART_LABEL[id])}</span>
+                <span class="demo-tab-figure" data-figure={id}>&nbsp;</span>
+              </button>
+            ))
+          }
+        </div>
+        <div class="demo-card" role="tabpanel">
+          <div class="demo-figure">
+            <span class="demo-figure-value" data-headline>&nbsp;</span>
+            <span class="demo-figure-sub" data-sub>&nbsp;</span>
+          </div>
+          <div class="chart-legend" data-legend></div>
+          <div class="demo-chart" data-chart-host dir="ltr"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <noscript>
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="/dashboard-dark.png" />
+      <img class="demo-fallback" src="/dashboard.png" width="2880" height="2000" alt={alt} />
+    </picture>
+  </noscript>
+</div>
+
+<script>
+  import { formatValue, renderChart } from "../../../lite/office-ui/js/chart.js";
+  import { t, useStrings } from "../../../lite/office-ui/js/i18n.js";
+
+  type Point = { date: string; values: Record<string, number> };
+  type Range = "30d" | "90d" | "12m";
+  type Chart = "mrr" | "mrr_movement" | "revenue" | "active_subscriptions" | "churn";
+
+  const DAY = 864e5;
+  const RANGE: Record<Range, { days: number; interval: "day" | "week" | "month"; label: string }> = {
+    "30d": { days: 30, interval: "day", label: "30 days" },
+    "90d": { days: 90, interval: "week", label: "90 days" },
+    "12m": { days: 365, interval: "month", label: "12 months" },
+  };
+
+  /** Made-up but plausible days for a growing app, dated up to today. The same every visit. */
+  function simulate() {
+    let seed = 20261121;
+    const rand = () => {
+      seed |= 0;
+      seed = (seed + 0x6d2b79f5) | 0;
+      let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+      return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+    };
+    const around = (mean: number, spread: number) => Math.max(0, Math.round(mean + (rand() * 2 - 1) * spread));
+    const today = Date.UTC(new Date().getUTCFullYear(), new Date().getUTCMonth(), new Date().getUTCDate());
+    const days: { date: number; paying: number; trials: number; mrr: number; mv: Record<string, number>; revenue: number; refunds: number; churned: number; payingStart: number }[] = [];
+    let paying = 1900;
+    for (let i = 400; i >= 0; i--) {
+      const date = today - i * DAY;
+      const growth = 1 + (400 - i) / 900;
+      const price = 6.2 + (400 - i) * 0.0016;
+      const fresh = around(6.5 * growth, 3);
+      const back = around(1.2, 1.2);
+      const lost = around(paying * 0.0021, 2.5);
+      const payingStart = paying;
+      paying += fresh + back - lost;
+      const expansion = around(2.2, 2) * price * 0.7;
+      const contraction = -around(1.4, 1.4) * price * 0.5;
+      const mv = {
+        new: fresh * price,
+        reactivation: back * price,
+        expansion,
+        contraction,
+        churned: -lost * price,
+      };
+      const mrr = paying * price;
+      const revenue = (mrr / 30) * (1.06 + rand() * 0.12) + fresh * price * 0.4;
+      days.push({ date, paying, trials: around(150 + 30 * Math.sin((400 - i) / 19), 12), mrr, mv, revenue, refunds: revenue * (0.012 + rand() * 0.02), churned: lost, payingStart });
+    }
+    return days;
+  }
+  const DAYS = simulate();
+
+  const iso = (ms: number) => new Date(ms).toISOString().slice(0, 10);
+  function periodStart(ms: number, interval: string) {
+    const d = new Date(ms);
+    if (interval === "month") return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), 1);
+    if (interval === "week") return ms - ((d.getUTCDay() + 6) % 7) * DAY;
+    return ms;
+  }
+
+  /** The demo's version of GET /admin/v1/metrics/:chart: points per period over a range. */
+  function series(chart: Chart, range: Range): Point[] {
+    const { days, interval } = RANGE[range];
+    const from = DAYS.at(-1)!.date - (days - 1) * DAY;
+    const groups = new Map<number, typeof DAYS>();
+    for (const d of DAYS) {
+      if (d.date < periodStart(from, interval)) continue;
+      const key = periodStart(d.date, interval);
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(d);
+    }
+    const round = (n: number) => Math.round(n * 100) / 100;
+    return [...groups].map(([start, ds]) => {
+      const last = ds.at(-1)!;
+      const sum = (f: (d: (typeof DAYS)[number]) => number) => ds.reduce((n, d) => n + f(d), 0);
+      let values: Record<string, number>;
+      if (chart === "mrr") values = { mrr: round(last.mrr) };
+      else if (chart === "active_subscriptions") values = { paid: last.paying, trials: last.trials };
+      else if (chart === "revenue") {
+        const gross = sum((d) => d.revenue);
+        const refunds = sum((d) => d.refunds);
+        values = { net: round(gross - refunds), gross: round(gross), refunds: round(refunds) };
+      } else if (chart === "mrr_movement") {
+        values = Object.fromEntries(["new", "reactivation", "expansion", "contraction", "churned"].map((k) => [k, round(sum((d) => d.mv[k]))]));
+        values.net = round(Object.values(values).reduce((a, b) => a + b, 0));
+      } else {
+        const churned = sum((d) => d.churned);
+        const start = ds[0].payingStart;
+        values = { rate: Math.round((churned / start) * 1000) / 10, churned, paying_at_start: start };
+      }
+      return { date: iso(start), values };
+    });
+  }
+
+  const usd = (n: number) => formatValue(n, "usd");
+  const count = (n: number) => formatValue(n, "count");
+  const pct = (n: number) => formatValue(n, "percent");
+  const signed = (n: number, unit: string) => `${n > 0 ? "+" : ""}${formatValue(n, unit, { compact: Math.abs(n) >= 1e5, whole: true })}`;
+  const total = (ps: Point[], k: string) => ps.reduce((n, p) => n + (p.values[k] ?? 0), 0);
+
+  /** Each chart as the dashboard draws it (lite/office-ui/js/pages/charts.js), trimmed down. */
+  const VIEW: Record<Chart, { unit: string; form: string; series: { key: string; label: string }[]; colors?: string[]; extra?: (p: Point) => [string, string][]; headline: (ps: Point[], range: Range) => { text: string; sub: string } }> = {
+    mrr: {
+      unit: "usd",
+      form: "line",
+      series: [{ key: "mrr", label: "MRR" }],
+      headline: (ps) => ({ text: formatValue(ps.at(-1)!.values.mrr, "usd", { compact: true }), sub: t("now") }),
+    },
+    mrr_movement: {
+      unit: "usd",
+      form: "stacked",
+      series: [
+        { key: "new", label: "New" },
+        { key: "reactivation", label: "Reactivation" },
+        { key: "expansion", label: "Expansion" },
+        { key: "contraction", label: "Contraction" },
+        { key: "churned", label: "Churned" },
+      ],
+      colors: ["--chart-1", "--chart-aqua", "--chart-blue", "--chart-yellow", "--chart-magenta"],
+      extra: (p) => [[t("Net change"), usd(p.values.net)]],
+      headline: (ps, r) => ({ text: signed(total(ps, "net"), "usd"), sub: t("net change, {range}", { range: t(RANGE[r].label) }) }),
+    },
+    revenue: {
+      unit: "usd",
+      form: "column",
+      series: [{ key: "net", label: "Revenue" }],
+      extra: (p) => [
+        [t("Gross"), usd(p.values.gross)],
+        [t("Refunded"), usd(p.values.refunds)],
+      ],
+      headline: (ps, r) => ({ text: formatValue(total(ps, "net"), "usd", { compact: true }), sub: t("total, {range}", { range: t(RANGE[r].label) }) }),
+    },
+    active_subscriptions: {
+      unit: "count",
+      form: "line",
+      series: [
+        { key: "paid", label: "Paying" },
+        { key: "trials", label: "Trials" },
+      ],
+      headline: (ps) => ({ text: formatValue(ps.at(-1)!.values.paid, "count", { compact: true }), sub: t("now") }),
+    },
+    churn: {
+      unit: "percent",
+      form: "line",
+      series: [{ key: "rate", label: "Churn rate" }],
+      extra: (p) => [
+        [t("Churned"), count(p.values.churned)],
+        [t("Paying at start"), count(p.values.paying_at_start)],
+      ],
+      headline: (ps, r) => {
+        const avg = ps.reduce((n, p) => n + p.values.rate, 0) / ps.length;
+        const interval = RANGE[r].interval;
+        return { text: pct(Math.round(avg * 10) / 10), sub: interval === "day" ? t("average per day") : interval === "week" ? t("average per week") : t("average per month") };
+      },
+    },
+  };
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-demo]")) {
+    useStrings(root.dataset.locale, JSON.parse(root.dataset.strings || "{}"));
+    const host = root.querySelector<HTMLElement>("[data-chart-host]")!;
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>("[data-chart]")];
+    const ranges = [...root.querySelectorAll<HTMLButtonElement>("[data-range]")];
+    const legend = root.querySelector<HTMLElement>("[data-legend]")!;
+    let chart: Chart = "mrr";
+    let range: Range = "12m";
+
+    const draw = () => {
+      const view = VIEW[chart];
+      const points = series(chart, range);
+      const shown = view.series.map((s) => ({ ...s, label: t(s.label) }));
+      const head = view.headline(points, range);
+      root.querySelector("[data-headline]")!.textContent = head.text;
+      root.querySelector("[data-sub]")!.textContent = head.sub;
+      legend.replaceChildren(
+        ...(shown.length > 1
+          ? shown.map((s, i) => {
+              const item = document.createElement("span");
+              item.className = "chart-legend-item";
+              const swatch = document.createElement("span");
+              swatch.className = "chart-swatch";
+              swatch.style.background = `var(${view.colors?.[i] ?? `--chart-${i + 1}`})`;
+              item.append(swatch, s.label);
+              return item;
+            })
+          : []),
+      );
+      renderChart(host, { points, series: shown, unit: view.unit, interval: RANGE[range].interval, form: view.form, height: 230, label: t(view.series[0].label), extra: view.extra, colors: view.colors });
+      for (const tab of tabs) {
+        const id = tab.dataset.chart as Chart;
+        tab.setAttribute("aria-selected", String(id === chart));
+        tab.tabIndex = id === chart ? 0 : -1;
+        tab.querySelector("[data-figure]")!.textContent = VIEW[id].headline(series(id, range), range).text;
+      }
+      for (const b of ranges) b.setAttribute("aria-checked", String(b.dataset.range === range));
+    };
+
+    // Steps through the charts until someone interacts; pauses while hovered or off screen.
+    let auto = !matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let hovered = false;
+    let visible = false;
+    const stop = () => (auto = false);
+    const CHART_ORDER = tabs.map((t) => t.dataset.chart as Chart);
+    setInterval(() => {
+      if (!auto || hovered || !visible || document.hidden) return;
+      chart = CHART_ORDER[(CHART_ORDER.indexOf(chart) + 1) % CHART_ORDER.length];
+      draw();
+    }, 4500);
+    new IntersectionObserver(([e]) => (visible = e.isIntersecting), { threshold: 0.4 }).observe(root);
+    root.addEventListener("pointerenter", () => (hovered = true));
+    root.addEventListener("pointerleave", () => (hovered = false));
+    root.addEventListener("pointerdown", stop);
+    root.addEventListener("keydown", stop);
+    root.addEventListener("focusin", stop);
+
+    for (const tab of tabs) {
+      tab.addEventListener("click", () => {
+        chart = tab.dataset.chart as Chart;
+        draw();
+      });
+      tab.addEventListener("keydown", (e) => {
+        const i = tabs.indexOf(tab);
+        const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+        if (!step) return;
+        e.preventDefault();
+        const rtl = getComputedStyle(root).direction === "rtl" && (e.key === "ArrowRight" || e.key === "ArrowLeft");
+        const next = tabs[(i + (rtl ? -step : step) + tabs.length) % tabs.length];
+        next.focus();
+        next.click();
+      });
+    }
+    for (const b of ranges) {
+      b.addEventListener("click", () => {
+        range = b.dataset.range as Range;
+        draw();
+      });
+    }
+    draw();
+  }
+</script>
+
+<style>
+  /* The dashboard's tokens (lite/office-ui/app.css), so its chart renderer looks the same here. */
+  .demo {
+    --app-surface: #ffffff;
+    --app-bg: #fafafa;
+    --app-text: rgba(0, 0, 0, 0.88);
+    --app-text-muted: rgba(76, 84, 90, 0.8);
+    --app-text-faint: rgba(0, 0, 0, 0.45);
+    --app-border: #dddddd;
+    --app-border-soft: #f0f0f0;
+    --app-accent: #7050e8;
+    --app-active: rgba(112, 80, 232, 0.08);
+    --shadow-lg: 0 12px 32px -12px rgba(0, 0, 0, 0.25);
+    --chart-1: #7050e8;
+    --chart-2: #eb6834;
+    --chart-blue: #2a78d6;
+    --chart-aqua: #1baf7a;
+    --chart-yellow: #eda100;
+    --chart-magenta: #e87ba4;
+  }
+  @media (prefers-color-scheme: dark) {
+    .demo {
+      --app-surface: #16181b;
+      --app-bg: #0f1113;
+      --app-text: rgba(255, 255, 255, 0.88);
+      --app-text-muted: rgba(255, 255, 255, 0.6);
+      --app-text-faint: rgba(255, 255, 255, 0.4);
+      --app-border: #2a2e33;
+      --app-border-soft: #23262a;
+      --app-accent: #9179ff;
+      --app-active: rgba(145, 121, 255, 0.14);
+      --shadow-lg: 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+      --chart-1: #9179ff;
+      --chart-2: #d95926;
+      --chart-blue: #3987e5;
+      --chart-aqua: #199e70;
+      --chart-yellow: #c98500;
+      --chart-magenta: #d55181;
+    }
+  }
+
+  .demo-stage {
+    perspective: 1600px;
+  }
+  .demo-window {
+    display: flex;
+    min-height: 430px;
+    background: var(--app-bg);
+    color: var(--app-text);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px -24px rgb(20 16 40 / 0.35);
+    overflow: hidden;
+    text-align: start;
+  }
+  /* Starts tilted back and settles flat as it scrolls into view (as the screenshot did). */
+  @supports (animation-timeline: view()) {
+    .demo-window {
+      transform-origin: 50% 0;
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+    @keyframes settle {
+      from {
+        transform: rotateX(14deg) scale(0.94);
+      }
+      to {
+        transform: none;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .demo-window {
+      animation: none;
+    }
+  }
+
+  .demo-side {
+    flex: none;
+    width: 200px;
+    padding: 16px 10px;
+    background: var(--app-surface);
+    border-inline-end: 1px solid var(--app-border);
+    font-size: 13px;
+  }
+  .demo-brand {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 8px 14px;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+  }
+  .demo-lite {
+    margin-inline-start: auto;
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    color: var(--app-text-faint);
+    border: 1px solid var(--app-border);
+    border-radius: 4px;
+    padding: 1px 4px;
+  }
+  .demo-section {
+    display: flex;
+    flex-direction: column;
+    margin-top: 10px;
+  }
+  .demo-section-label {
+    padding: 4px 8px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--app-text-faint);
+  }
+  .demo-nav {
+    padding: 5px 8px;
+    border-radius: 6px;
+    color: var(--app-text-muted);
+  }
+  .demo-nav.active {
+    background: var(--app-active);
+    color: var(--app-text);
+    font-weight: 600;
+  }
+
+  .demo-main {
+    flex: 1;
+    min-width: 0;
+    padding: 18px 20px 14px;
+  }
+  .demo-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .demo-title {
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .demo-seg {
+    display: inline-flex;
+    padding: 2px;
+    background: var(--app-border-soft);
+    border-radius: 8px;
+  }
+  .demo-seg button {
+    font: inherit;
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 6px;
+    background: none;
+    color: var(--app-text-muted);
+    cursor: pointer;
+  }
+  .demo-seg button[aria-checked="true"] {
+    background: var(--app-surface);
+    color: var(--app-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
+  }
+
+  .demo-tabs {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .demo-tabs button {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+    min-width: 0;
+    padding: 8px 10px;
+    font: inherit;
+    text-align: start;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    color: var(--app-text);
+    cursor: pointer;
+    transition: border-color 120ms ease, box-shadow 120ms ease;
+  }
+  .demo-tabs button:hover {
+    border-color: color-mix(in srgb, var(--app-accent) 45%, var(--app-border));
+  }
+  .demo-tabs button[aria-selected="true"] {
+    border-color: var(--app-accent);
+    box-shadow: inset 0 0 0 1px var(--app-accent);
+  }
+  .demo-tabs button:focus-visible,
+  .demo-seg button:focus-visible {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
+  }
+  .demo-tab-label {
+    max-width: 100%;
+    font-size: 11px;
+    color: var(--app-text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .demo-tab-figure {
+    font-size: 15px;
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .demo-card {
+    padding: 14px 14px 6px;
+    background: var(--app-surface);
+    border: 1px solid var(--app-border);
+    border-radius: 10px;
+  }
+  .demo-figure {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .demo-figure-value {
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+  }
+  .demo-figure-sub {
+    font-size: 12px;
+    color: var(--app-text-muted);
+  }
+  .demo-chart {
+    min-height: 230px;
+  }
+  .demo-fallback {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+  }
+
+  /* The chart renderer's own markup (lite/office-ui/app.css). */
+  .demo :global(.chart) {
+    position: relative;
+  }
+  .demo :global(.chart-plot) {
+    width: 100%;
+  }
+  .demo :global(.chart-svg) {
+    display: block;
+    outline: none;
+  }
+  .demo :global(.chart-svg:focus-visible) {
+    outline: 2px solid var(--app-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .demo :global(.chart-gridline) {
+    stroke: var(--app-border-soft);
+    stroke-width: 1;
+  }
+  .demo :global(.chart-baseline) {
+    stroke: var(--app-border);
+    stroke-width: 1;
+  }
+  .demo :global(.chart-axis) {
+    fill: var(--app-text-faint);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+  }
+  .demo :global(.chart-cross) {
+    stroke: var(--app-text-faint);
+    stroke-width: 1;
+  }
+  .demo :global(.chart-column) {
+    transition: opacity 120ms ease;
+  }
+  .demo :global(.chart-column.dim) {
+    opacity: 0.45;
+  }
+  .demo :global(.chart-tooltip) {
+    position: absolute;
+    z-index: 5;
+    pointer-events: none;
+    min-width: 170px;
+    padding: 8px 10px;
+    background: var(--app-surface);
+    color: var(--app-text);
+    border: 1px solid var(--app-border);
+    border-radius: 8px;
+    box-shadow: var(--shadow-lg);
+    font-size: 12px;
+  }
+  :global([dir="rtl"]) .demo :global(.chart-tooltip) {
+    direction: rtl;
+  }
+  .demo :global(.chart-tooltip-title) {
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .demo :global(.chart-tooltip-row) {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.6;
+  }
+  .demo :global(.chart-tooltip-row > :last-child) {
+    margin-inline-start: auto;
+    padding-inline-start: 14px;
+    font-variant-numeric: tabular-nums;
+  }
+  .demo :global(.chart-tooltip-row.muted) {
+    color: var(--app-text-muted);
+  }
+  .demo :global(.chart-swatch) {
+    width: 8px;
+    height: 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  .demo :global(.chart-swatch-blank) {
+    background: transparent;
+  }
+  .demo :global(.chart-legend) {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--app-text-muted);
+  }
+  /* The legend's row is always there (empty for one-series charts), so switching charts never
+     changes the window's height. */
+  .demo :global(.chart-legend) {
+    min-height: 18px;
+  }
+  .demo :global(.chart-legend-item) {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  @media (max-width: 860px) {
+    .demo-side {
+      display: none;
+    }
+  }
+  @media (max-width: 640px) {
+    .demo-window {
+      min-height: 0;
+    }
+    .demo-main {
+      padding: 14px 12px 10px;
+    }
+    /* One line that scrolls, rather than wrapping (which would change the height). */
+    .demo :global(.chart-legend) {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+      white-space: nowrap;
+    }
+    .demo-tabs {
+      grid-template-columns: none;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(112px, 1fr);
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+  }
+</style>

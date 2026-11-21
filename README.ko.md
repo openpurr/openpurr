@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@ RevenueCat의 오픈소스 Purchases SDK를 그대로 사용하면서, 앱의 `P
 openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 보증을 받지 않았습니다.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="openpurr Lite 대시보드. 12개월간의 MRR 변동, 활성 구독, 이탈, 신규 고객, 신규 체험, 활성 체험을 보여 줍니다">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="openpurr Lite 대시보드의 차트를 툴팁과 함께 차례로 보여 줍니다: MRR, MRR 변동, 매출, 활성 구독, 이탈">
 </picture>
 
 ## 누구를 위한 것인가

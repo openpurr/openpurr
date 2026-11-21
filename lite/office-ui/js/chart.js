@@ -17,7 +17,9 @@ const svg = (tag, attrs = {}) => {
 };
 
 // ---- Number and date formats -------------------------------------------------------------------
-// In the dashboard's language (amounts stay in USD). Formatters are cached per language.
+// In the dashboard's language (amounts stay in USD). Formatters are cached per language. Compact
+// figures keep three significant digits: "$23.4K", and "23.400 $" in German, which doesn't
+// shorten thousands.
 
 const cache = new Map();
 function fmt(kind, make) {
@@ -27,9 +29,9 @@ function fmt(kind, make) {
 }
 const usdFull = () => fmt("usdFull", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD" }));
 const usdWhole = () => fmt("usdWhole", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
-const usdCompact = () => fmt("usdCompact", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }));
+const usdCompact = () => fmt("usdCompact", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD", notation: "compact", maximumSignificantDigits: 3 }));
 const countFull = () => fmt("count", (l) => new Intl.NumberFormat(l));
-const countCompact = () => fmt("countCompact", (l) => new Intl.NumberFormat(l, { notation: "compact", maximumFractionDigits: 1 }));
+const countCompact = () => fmt("countCompact", (l) => new Intl.NumberFormat(l, { notation: "compact", maximumSignificantDigits: 3 }));
 const percent = () => fmt("percent", (l) => new Intl.NumberFormat(l, { style: "percent", maximumFractionDigits: 1 }));
 
 function compact(n, unit) {

@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@ Dengan Purchases SDK open source dari RevenueCat, arahkan `Purchases.proxyURL` a
 openpurr adalah proyek independen. Proyek ini tidak berafiliasi dengan atau didukung oleh RevenueCat, Inc.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="Dashboard openpurr Lite yang menampilkan pergerakan MRR selama 12 bulan, langganan aktif, churn, pelanggan baru, uji coba baru, dan uji coba aktif">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="Grafik di dashboard openpurr Lite, diklik satu per satu dengan tooltip: MRR, Pergerakan MRR, Pendapatan, Langganan aktif, Churn">
 </picture>
 
 ## Untuk siapa
