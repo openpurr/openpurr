@@ -25,7 +25,7 @@ const languages = Object.entries(alternates) as [Locale, string][];
       <a href={`${home}#editions`} class="hide-sm">{h.nav.editions}</a>
       <a href={`${home}#roadmap`} class="hide-sm">{h.nav.roadmap}</a>
       <a href={`${home}#faq`} class="hide-sm">{h.nav.faq}</a>
-      <a href={MIGRATION_PAGE} class="hide-sm" hreflang={locale === "en" ? undefined : "en"} aria-current={Astro.url.pathname === MIGRATION_PAGE ? "page" : undefined}>{h.nav.migrate}</a>
+      <a href={localePath(locale, MIGRATION_PAGE)} class="hide-sm" aria-current={Astro.url.pathname === localePath(locale, MIGRATION_PAGE) ? "page" : undefined}>{h.nav.migrate}</a>
       {
         languages.length > 1 && (
           <details class="lang">

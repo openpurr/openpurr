@@ -2,7 +2,7 @@
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
 import { MIGRATION_PAGE } from "../consts";
-import { DEFAULT_LOCALE, dirOf, langTag, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, dirOf, langTag, localePath, t, type Locale } from "../i18n";
 
 interface Props {
   locale?: Locale;
@@ -19,7 +19,7 @@ const jsonLd = {
     "@type": "Question",
     name: q,
     // Google allows links in an answer's text.
-    acceptedAnswer: { "@type": "Answer", text: link ? `${a} <a href="${new URL(MIGRATION_PAGE, Astro.site)}">${link}</a>` : a },
+    acceptedAnswer: { "@type": "Answer", text: link ? `${a} <a href="${new URL(localePath(locale, MIGRATION_PAGE), Astro.site)}">${link}</a>` : a },
   })),
 };
 // Escape "<" so answer text can never close the script element.
@@ -45,7 +45,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
               {link && (
                 <>
                   {" "}
-                  <a href={MIGRATION_PAGE}>{link} {dirOf(locale) === "rtl" ? "←" : "→"}</a>
+                  <a href={localePath(locale, MIGRATION_PAGE)}>{link} {dirOf(locale) === "rtl" ? "←" : "→"}</a>
                 </>
               )}
             </p>

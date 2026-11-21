@@ -1,6 +1,6 @@
 // The site's languages. English lives at /, the others under /<locale>/. Arabic is right-to-left:
 // shared styles use logical properties (inset-inline-start, padding-inline-start), never left/right. Only the home page is
-// translated; the privacy page, the migration page and the 404 page are English only.
+// translated with the migration page (copy in ./migrate/); the privacy page and 404 are English only.
 //
 // To add a language: add a dictionary next to en.ts (typed `Dict`) and add it to LOCALES,
 // LOCALE_INFO and DICTS below. src/pages/[lang]/ builds its pages, and the sitemap picks it up.

@@ -210,7 +210,7 @@ export const ptBr: Dict = {
       {
         q: "Como migro meus clientes atuais do RevenueCat?",
         a: "Importando-os. Peça ao RevenueCat uma exportação de migração, e o openpurr import busca as compras de cada cliente na Apple e no Google e as associa aos mesmos IDs de usuário do app. A nova versão do seu app também envia as compras de cada cliente uma vez, e os dois backends ficam atualizados enquanto as pessoas atualizam o app, então ninguém perde o acesso.",
-        link: "Como migrar (em inglês)",
+        link: "Como migrar",
       },
       {
         q: "Quais plataformas e lojas o openpurr suporta?",

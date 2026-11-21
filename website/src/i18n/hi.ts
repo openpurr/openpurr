@@ -207,7 +207,7 @@ export const hi: Dict = {
       {
         q: "मैं अपने मौजूदा ग्राहकों को RevenueCat से कैसे लाऊँ?",
         a: "उन्हें import करें। RevenueCat से migration export माँगें, फिर openpurr import हर ग्राहक की purchases Apple और Google से लाता है और उन्हें उन्हीं app user IDs को दे देता है। आपके app का नया version भी हर ग्राहक की purchases एक बार भेजता है, और जब तक लोग app update करते हैं, दोनों backends up to date रहते हैं, इसलिए किसी का access नहीं जाता।",
-        link: "माइग्रेट कैसे करें (अंग्रेज़ी में)",
+        link: "माइग्रेट कैसे करें",
       },
       {
         q: "openpurr किन platforms और stores को support करता है?",

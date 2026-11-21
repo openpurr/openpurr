@@ -7,7 +7,7 @@ import { allLocales, langTag, type Alternates, type Locale } from "../i18n";
 /** lastmod only where it's kept accurate (Google ignores it once it's been wrong). */
 const PAGES: { path: string; alternates?: Alternates; lastmod?: string }[] = [
   { path: "/", alternates: allLocales("/") },
-  { path: MIGRATION_PAGE, lastmod: MIGRATION_UPDATED },
+  { path: MIGRATION_PAGE, alternates: allLocales(MIGRATION_PAGE), lastmod: MIGRATION_UPDATED },
   { path: "/privacy/" },
 ];
 
