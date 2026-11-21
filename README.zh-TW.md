@@ -66,9 +66,9 @@ openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲�
 
 | SDK | 如何指向 openpurr |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
-| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
-| Flutter、React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
+| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
+| Flutter、React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
 
 在呼叫 `configure` 之前設定 Proxy URL。權益驗證請維持預設值（停用），因為經過簽章的回應仰賴 RevenueCat 自己的金鑰。
 

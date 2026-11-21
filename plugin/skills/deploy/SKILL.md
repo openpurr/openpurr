@@ -67,7 +67,7 @@ An `openpurr.config.yaml` in `lite/` (see `openpurr.config.example.yaml`) is opt
 
 ## Custom domains (recommended)
 
-The `workers.dev` URLs work, but a custom domain is easier to keep if the account changes. In the Cloudflare dashboard: Workers & Pages → each Worker → Settings → Domains & Routes → add a custom domain (for example `purchases.example.com` for the SDK Worker and `office.example.com` for the back office). Use the custom domains for the app's `proxyURL` and the store notification URLs, and update the SDK URL under Settings.
+The `workers.dev` URLs work, but a custom domain is easier to keep if the account changes. In the Cloudflare dashboard: Workers & Pages → each Worker → Settings → Domains & Routes → add a custom domain (for example `openpurr.your-server.dev` for the SDK Worker and `office.example.com` for the back office). Use the custom domains for the app's `proxyURL` and the store notification URLs, and update the SDK URL under Settings.
 
 ## Check and connect
 

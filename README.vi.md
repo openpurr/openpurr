@@ -66,9 +66,9 @@ Ngay từ đầu, openpurr dùng các SDK chính thức, không chỉnh sửa (t
 
 | SDK | Cách trỏ SDK tới openpurr |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
-| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
-| Flutter, React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
+| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
+| Flutter, React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
 
 Đặt proxy URL trước khi gọi `configure`. Để xác minh entitlement ở giá trị mặc định (tắt), vì các phản hồi có chữ ký dựa vào khóa riêng của RevenueCat.
 

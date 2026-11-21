@@ -66,9 +66,9 @@ Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları 
 
 | SDK | openpurr'a nasıl yönlendirilir |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
-| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
-| Flutter, React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
+| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
+| Flutter, React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
 
 Proxy URL'sini `configure` çağrısından önce ayarlayın. Erişim hakkı doğrulamasını varsayılan ayarında (kapalı) bırakın, çünkü imzalı yanıtlar RevenueCat'in kendi anahtarına dayanır.
 

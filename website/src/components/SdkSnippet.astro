@@ -13,7 +13,7 @@ const tabs = [
     label: "iOS",
     lines: [
       `<span class="c">// Before configure()</span>`,
-      `Purchases.proxyURL = URL(string: <span class="s">"https://purchases.example.com"</span>)`,
+      `Purchases.proxyURL = URL(string: <span class="s">"https://openpurr.your-server.dev"</span>)`,
       `Purchases.configure(withAPIKey: <span class="s">"appl_…"</span>)`,
     ],
   },
@@ -22,7 +22,7 @@ const tabs = [
     label: "Android",
     lines: [
       `<span class="c">// Before configure()</span>`,
-      `Purchases.proxyURL = URL(<span class="s">"https://purchases.example.com"</span>)`,
+      `Purchases.proxyURL = URL(<span class="s">"https://openpurr.your-server.dev"</span>)`,
       `Purchases.configure(PurchasesConfiguration.Builder(<span class="k">this</span>, <span class="s">"goog_…"</span>).build())`,
     ],
   },
@@ -31,7 +31,7 @@ const tabs = [
     label: "Flutter",
     lines: [
       `<span class="c">// Before configure()</span>`,
-      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://purchases.example.com"</span>);`,
+      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://openpurr.your-server.dev"</span>);`,
       `<span class="k">await</span> Purchases.configure(PurchasesConfiguration(<span class="s">"appl_…"</span>));`,
     ],
   },
@@ -40,7 +40,7 @@ const tabs = [
     label: "React Native",
     lines: [
       `<span class="c">// Before configure()</span>`,
-      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://purchases.example.com"</span>);`,
+      `<span class="k">await</span> Purchases.setProxyURL(<span class="s">"https://openpurr.your-server.dev"</span>);`,
       `Purchases.configure({ apiKey: <span class="s">"appl_…"</span> });`,
     ],
   },

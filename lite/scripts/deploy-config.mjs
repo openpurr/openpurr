@@ -6,7 +6,7 @@
 //   OPENPURR_WORKER_NAME        SDK Worker name (default "openpurr"); the back office is "<name>-office"
 //   OPENPURR_D1_DATABASE_NAME   D1 database name (default "openpurr"), looked up by name at deploy time
 //   OPENPURR_D1_DATABASE_ID     pins the database by ID instead
-//   OPENPURR_SDK_DOMAIN         custom domain for the SDK Worker, e.g. purchases.example.com
+//   OPENPURR_SDK_DOMAIN         custom domain for the SDK Worker, e.g. openpurr.your-server.dev
 //   OPENPURR_OFFICE_DOMAIN      custom domain for the back office, e.g. office.example.com
 //
 //   node scripts/deploy-config.mjs
@@ -43,7 +43,7 @@ for (const [name, value] of [
   ["OPENPURR_OFFICE_DOMAIN", officeDomain],
 ]) {
   if (value && !/^(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/i.test(value)) {
-    fail(`${name} must be a hostname such as purchases.example.com (no https://, no path).`);
+    fail(`${name} must be a hostname such as openpurr.your-server.dev (no https://, no path).`);
   }
 }
 if (sdkDomain && sdkDomain === officeDomain) {

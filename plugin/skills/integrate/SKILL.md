@@ -22,25 +22,25 @@ Find where the app configures Purchases and set the proxy URL first.
 
 **iOS (Swift):**
 ```swift
-Purchases.proxyURL = URL(string: "https://purchases.example.com")!
+Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")!
 Purchases.configure(withAPIKey: "appl_…")
 ```
 
 **Android (Kotlin):**
 ```kotlin
-Purchases.proxyURL = URL("https://purchases.example.com")
+Purchases.proxyURL = URL("https://openpurr.your-server.dev")
 Purchases.configure(PurchasesConfiguration.Builder(context, "goog_…").build())
 ```
 
 **Flutter:**
 ```dart
-await Purchases.setProxyURL("https://purchases.example.com");
+await Purchases.setProxyURL("https://openpurr.your-server.dev");
 await Purchases.configure(PurchasesConfiguration("appl_…"));
 ```
 
 **React Native / Expo:**
 ```js
-await Purchases.setProxyURL("https://purchases.example.com");
+await Purchases.setProxyURL("https://openpurr.your-server.dev");
 Purchases.configure({ apiKey: Platform.OS === "ios" ? "appl_…" : "goog_…" });
 ```
 
@@ -63,7 +63,7 @@ Never trust the app's word that a user is subscribed. Ask openpurr from your ser
 1. Create a secret key: dashboard → Developers → Secret keys, or `npx @openpurr/cli keys create "Backend"`. It's shown once. Store it in your backend's secret store, never in the app.
 2. Call the SDK Worker:
    ```sh
-   curl -H "Authorization: Bearer sk_…" https://purchases.example.com/v1/subscribers/<app user ID>
+   curl -H "Authorization: Bearer sk_…" https://openpurr.your-server.dev/v1/subscribers/<app user ID>
    ```
    The response is the same CustomerInfo the SDK gets (RevenueCat's `GET /v1/subscribers` shape). A user has an entitlement when `subscriber.entitlements.<id>` exists and its `expires_date` is null (lifetime) or in the future.
 

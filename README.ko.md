@@ -66,9 +66,9 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 
 | SDK | openpurr에 연결하는 방법 |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
-| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
-| Flutter, React Native | `Purchases.setProxyURL("https://purchases.example.com")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
+| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
+| Flutter, React Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
 
 `configure`를 호출하기 전에 프록시 URL을 설정하세요. 엔타이틀먼트 검증은 기본값(비활성화)으로 두세요. 서명된 응답은 RevenueCat 자체의 키에 의존하기 때문입니다.
 

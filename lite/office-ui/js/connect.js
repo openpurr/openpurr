@@ -55,7 +55,7 @@ export const notificationUrl = (store) => `${location.origin}/notifications/${st
 /** Owners: set or clear the SDK URL. */
 export function editSdkUrl(settings, onSaved) {
   const errors = formError();
-  const value = input({ mono: true, value: settings.sdk_url ?? "", placeholder: settings.sdk_url_guess ?? "https://purchases.example.com", autocomplete: "off", spellcheck: "false" });
+  const value = input({ mono: true, value: settings.sdk_url ?? "", placeholder: settings.sdk_url_guess ?? "https://openpurr.your-server.dev", autocomplete: "off", spellcheck: "false" });
   const submit = button("Save", { type: "submit" });
   const m = modal({
     title: "SDK URL",

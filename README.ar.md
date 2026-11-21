@@ -66,9 +66,9 @@ openpurr مشروع مستقل، وهو غير تابع لشركة RevenueCat, I
 
 | SDK | كيفية توجيهه إلى openpurr |
 |---|---|
-| iOS | `Purchases.proxyURL = URL(string: "https://purchases.example.com")` |
-| Android | `Purchases.proxyURL = URL("https://purchases.example.com")` |
-| Flutter وReact Native | `Purchases.setProxyURL("https://purchases.example.com")` |
+| iOS | `Purchases.proxyURL = URL(string: "https://openpurr.your-server.dev")` |
+| Android | `Purchases.proxyURL = URL("https://openpurr.your-server.dev")` |
+| Flutter وReact Native | `Purchases.setProxyURL("https://openpurr.your-server.dev")` |
 
 اضبط رابط الوكيل (proxy URL) قبل استدعاء `configure`. اترك التحقق من الاستحقاقات على إعداده الافتراضي (معطّل)، لأن الاستجابات الموقّعة تعتمد على مفتاح RevenueCat الخاص.
 
