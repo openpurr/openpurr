@@ -1,4 +1,12 @@
 ---
+import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const copy = t(locale).snippet;
+
 const tabs = [
   {
     id: "swift",
@@ -40,7 +48,7 @@ const tabs = [
 ---
 
 <div class="snippet" data-snippet>
-  <div class="tabs" role="tablist" aria-label="SDK platform">
+  <div class="tabs" role="tablist" aria-label={copy.tabs}>
     {
       tabs.map((t, i) => (
         <button
@@ -60,7 +68,7 @@ const tabs = [
       <pre role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0}><code set:html={t.lines.join("\n")} /></pre>
     ))
   }
-  <p class="note">One line. Same SDK, same purchase code.</p>
+  <p class="note">{copy.note}</p>
 </div>
 
 <script>

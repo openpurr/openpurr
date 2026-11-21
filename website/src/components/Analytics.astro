@@ -5,19 +5,26 @@
 // signals stay denied (the site has no ads). The choice is kept in localStorage; "Cookie
 // settings" in the footer opens the banner again.
 import { googleTag } from "../analytics";
+import { PRIVACY_URL } from "../consts";
+import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const c = t(locale).consent;
 ---
 
 {
   googleTag && (
     <>
-      <div id="consent" class="consent" role="dialog" aria-live="polite" aria-label="Cookie consent" hidden>
+      <div id="consent" class="consent" role="dialog" aria-live="polite" aria-label={c.label} hidden>
         <p>
-          We'd like to use Google Analytics cookies to count visits and see which pages help. Nothing is set unless you
-          accept, and you can change your mind any time under Cookie settings. <a href="/privacy/">Privacy</a>
+          {c.text} <a href={PRIVACY_URL}>{c.privacy}</a>
         </p>
         <div class="consent-actions">
-          <button type="button" class="consent-btn" data-consent="denied">Decline</button>
-          <button type="button" class="consent-btn primary" data-consent="granted">Accept</button>
+          <button type="button" class="consent-btn" data-consent="denied">{c.decline}</button>
+          <button type="button" class="consent-btn primary" data-consent="granted">{c.accept}</button>
         </div>
       </div>
       <script is:inline define:vars={{ id: googleTag }}>

@@ -1,6 +1,13 @@
 ---
 import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL, PRIVACY_URL } from "../consts";
 import { gaId } from "../analytics";
+import { DEFAULT_LOCALE, fill, t, type Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const f = t(locale).footer;
 ---
 
 <footer>
@@ -8,23 +15,20 @@ import { gaId } from "../analytics";
     <div class="top">
       <div>
         <img src="/mark.png" alt="" width="40" height="40" />
-        <p class="tag">Open-source purchase infrastructure you run yourself.</p>
+        <p class="tag">{f.tagline}</p>
       </div>
       <ul>
         <li><a href={REPO_URL}>GitHub</a></li>
-        <li><a href={ROADMAP_URL}>Roadmap</a></li>
-        <li><a href={CONTRIBUTING_URL}>Contributing</a></li>
-        <li><a href={SPONSOR_URL}>Sponsor</a></li>
-        <li><a href={PRIVACY_URL}>Privacy</a></li>
+        <li><a href={ROADMAP_URL}>{f.roadmap}</a></li>
+        <li><a href={CONTRIBUTING_URL}>{f.contributing}</a></li>
+        <li><a href={SPONSOR_URL}>{f.sponsor}</a></li>
+        <li><a href={PRIVACY_URL}>{f.privacy}</a></li>
       </ul>
     </div>
+    <p class="fine">{f.disclaimer}</p>
     <p class="fine">
-      openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc. App Store is a
-      trademark of Apple Inc. Google Play is a trademark of Google LLC.
-    </p>
-    <p class="fine">
-      <a href={LICENSE_URL}>Apache License 2.0</a>. Copyright {new Date().getFullYear()} openpurr contributors.
-      {gaId && <button type="button" class="settings" data-cookie-settings hidden>Cookie settings</button>}
+      <a href={LICENSE_URL}>Apache License 2.0</a>. {fill(f.copyright, { year: String(new Date().getFullYear()) })}
+      {gaId && <button type="button" class="settings" data-cookie-settings hidden>{f.cookieSettings}</button>}
     </p>
   </div>
 </footer>

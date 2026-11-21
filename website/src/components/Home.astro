@@ -1,0 +1,553 @@
+---
+// The home page, in any of the site's languages. The copy is in src/i18n/; this file is the layout.
+import Base from "../layouts/Base.astro";
+import SdkSnippet from "./SdkSnippet.astro";
+import Faq from "./Faq.astro";
+import StructuredData from "./StructuredData.astro";
+import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
+import { allLocales, fill, t, type Locale } from "../i18n";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const h = t(locale).home;
+
+type Status = "done" | "wip" | "planned" | "later";
+// The roadmap phases in the dictionaries are in this order.
+const phaseStatus: Status[] = ["wip", "planned", "later"];
+const roadmap = h.roadmap.phases.map((p, i) => ({
+  ...p,
+  status: phaseStatus[i] ?? "later",
+  items: p.items.map((it) => fill(it, { version: RELEASE.version })),
+}));
+---
+
+<Base locale={locale} alternates={allLocales("/")}>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1 set:html={h.hero.title} />
+        <p class="lede">{h.hero.lede}</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href={REPO_URL}>{h.hero.star}</a>
+          <a class="btn btn-ghost" href="#how">{h.hero.how}</a>
+        </div>
+      </div>
+      <SdkSnippet locale={locale} />
+    </div>
+    <div class="wrap">
+      <figure class="shot">
+        <picture>
+          <source media="(prefers-color-scheme: dark)" srcset="/dashboard-dark.png" />
+          <img src="/dashboard.png" width="2880" height="2000" alt={h.hero.shotAlt} decoding="async" />
+        </picture>
+      </figure>
+    </div>
+  </section>
+
+  <!-- Who it's for -->
+  <section class="alt" id="why">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{h.why.eyebrow}</span>
+        <h2>{h.why.title}</h2>
+        <p class="lede">{h.why.lede}</p>
+      </div>
+      <div class="grid grid-3">
+        {
+          h.why.reasons.map((r) => (
+            <div class="card">
+              <h3>{r.title}</h3>
+              <p>{r.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{h.how.eyebrow}</span>
+        <h2>{h.how.title}</h2>
+        <p class="lede">{h.how.lede}</p>
+      </div>
+      <div class="flow" aria-label={h.how.flowLabel}>
+        <div class="node">
+          <strong>{h.how.app}</strong>
+          <div class="sdk">
+            <strong>Purchases SDK</strong>
+            <span>{h.how.sdkLicense}</span>
+            <span>{h.how.sdkPlatforms}</span>
+          </div>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node core">
+          <img src="/mark.png" alt="" width="36" height="36" />
+          <strong>openpurr</strong>
+          <span>{h.how.coreWhere}</span>
+        </div>
+        <div class="arrow" aria-hidden="true">→</div>
+        <div class="node stack">
+          <div><strong>App Store</strong><span>{h.how.appStoreApi}</span></div>
+          <div><strong>Google Play</strong><span>{h.how.playApi}</span></div>
+          <div><strong>{h.how.backend}</strong><span>{h.how.backendHooks}</span></div>
+        </div>
+      </div>
+      <ol class="steps">
+        {
+          h.how.steps.map((s) => (
+            <li>
+              <h3>{s.title}</h3>
+              <p set:html={s.body} />
+            </li>
+          ))
+        }
+      </ol>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="alt" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{h.features.eyebrow}</span>
+        <h2>{h.features.title}</h2>
+      </div>
+      <div class="grid grid-3">
+        {
+          h.features.items.map((f) => (
+            <div class="card">
+              <h3>{f.title}</h3>
+              <p>{f.body}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- Editions -->
+  <section id="editions">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{h.editions.eyebrow}</span>
+        <h2>{h.editions.title}</h2>
+        <p class="lede">{h.editions.lede}</p>
+      </div>
+      <div class="grid grid-2">
+        <div class="card edition">
+          <div class="edition-head">
+            <h3>Lite</h3>
+            <span class="badge">{h.editions.lite.badge}</span>
+          </div>
+          <p class="price">{h.editions.lite.price} <span>{h.editions.lite.priceNote}</span></p>
+          <ul>
+            {h.editions.lite.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </div>
+        <div class="card edition">
+          <div class="edition-head">
+            <h3>Standard</h3>
+            <span class="badge muted">{h.editions.standard.badge}</span>
+          </div>
+          <p class="price">{h.editions.standard.price} <span>{h.editions.standard.priceNote}</span></p>
+          <ul>
+            {h.editions.standard.items.map((it) => <li>{it}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Honest fit -->
+  <section class="alt">
+    <div class="wrap fit">
+      <div>
+        <span class="eyebrow">{h.fit.eyebrow}</span>
+        <h2>{h.fit.title}</h2>
+        <p class="lede">{h.fit.lede}</p>
+      </div>
+      <div class="card">
+        <h3>{h.fit.outTitle}</h3>
+        <p class="tags">
+          {h.fit.tags.map((tag) => <span>{tag}</span>)}
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Roadmap -->
+  <section id="roadmap">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="eyebrow">{h.roadmap.eyebrow}</span>
+        <h2>{h.roadmap.title}</h2>
+        <p class="lede">{h.roadmap.lede}</p>
+      </div>
+      <div class="grid grid-3">
+        {
+          roadmap.map((r) => (
+            <div class="card phase">
+              <span class={`status ${r.status}`}>{h.roadmap.status[r.status]}</span>
+              <h3>{r.phase}</h3>
+              <ul>
+                {r.items.map((it) => (
+                  <li>{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+      <p class="more"><a href={ROADMAP_URL}>{h.roadmap.more}</a></p>
+    </div>
+  </section>
+
+  <Faq locale={locale} />
+  <StructuredData locale={locale} />
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="wrap">
+      <div class="cta">
+        <h2>{h.cta.title}</h2>
+        <p>{h.cta.body}</p>
+        <div class="ctas">
+          <a class="btn btn-light" href={REPO_URL}>{h.cta.star}</a>
+          <a class="btn btn-outline" href={ISSUES_URL}>{h.cta.issue}</a>
+          <a class="btn btn-outline" href={SPONSOR_URL}>{h.cta.coffee}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 88px 0 96px;
+    background:
+      radial-gradient(900px 420px at 85% 0%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 70%),
+      var(--bg);
+  }
+  .hero-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: center;
+  }
+  @media (max-width: 920px) {
+    .hero-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 40px;
+    }
+    .hero {
+      padding: 56px 0 64px;
+    }
+  }
+  h1 :global(.nowrap) {
+    white-space: nowrap;
+  }
+  h1 :global(.accent) {
+    color: var(--purple);
+  }
+  .shot {
+    margin: 72px 0 0;
+  }
+  .shot img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: 0 24px 60px -24px rgb(20 16 40 / 0.35);
+  }
+  @media (max-width: 920px) {
+    .shot {
+      margin-top: 48px;
+    }
+  }
+  .ctas {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 28px;
+  }
+
+  .card p:last-child {
+    margin-bottom: 0;
+  }
+  .card p {
+    color: var(--muted);
+  }
+
+  /* Flow diagram */
+  .flow {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto 1.2fr;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 56px;
+  }
+  .node {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 22px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
+    min-width: 0;
+  }
+  .node strong {
+    color: var(--ink);
+  }
+  .node span {
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .sdk {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    border: 1px dashed color-mix(in srgb, var(--purple) 55%, var(--line));
+    border-radius: 10px;
+    background: var(--bg-alt);
+  }
+  .sdk strong {
+    font-size: 0.92rem;
+  }
+  .sdk span {
+    font-size: 0.82rem;
+  }
+  .node.core {
+    border: 2px solid var(--purple);
+    background: var(--purple-soft);
+    align-items: flex-start;
+  }
+  .node.core img {
+    margin-bottom: 6px;
+  }
+  .node.stack {
+    gap: 14px;
+  }
+  .node.stack div {
+    display: flex;
+    flex-direction: column;
+  }
+  .node.stack div + div {
+    border-top: 1px solid var(--line);
+    padding-top: 14px;
+  }
+  .arrow {
+    font-size: 1.6rem;
+    color: var(--purple);
+  }
+  @media (max-width: 820px) {
+    .flow {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .arrow {
+      transform: rotate(90deg);
+      justify-self: center;
+    }
+  }
+
+  .steps {
+    list-style: none;
+    counter-reset: step;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 32px;
+  }
+  .steps li {
+    counter-increment: step;
+    position: relative;
+    padding-top: 52px;
+  }
+  .steps li::before {
+    content: counter(step);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--purple);
+    color: #fff;
+    font-weight: 700;
+  }
+  .steps p {
+    color: var(--muted);
+  }
+
+  /* Editions */
+  .edition-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .edition-head h3 {
+    font-size: 1.5rem;
+    margin: 0;
+  }
+  .badge {
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--purple-soft);
+    color: var(--purple);
+  }
+  .badge.muted {
+    background: var(--bg-alt);
+    color: var(--muted);
+    border: 1px solid var(--line);
+  }
+  .price {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--ink) !important;
+    margin: 18px 0;
+    letter-spacing: -0.02em;
+  }
+  .price span {
+    font-size: 0.95rem;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 0;
+  }
+  .edition ul,
+  .phase ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .edition li,
+  .phase li {
+    position: relative;
+    padding-left: 26px;
+    margin-bottom: 8px;
+  }
+  .edition li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--purple);
+    font-weight: 700;
+  }
+
+  /* Fit */
+  .fit {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 48px;
+    align-items: center;
+  }
+  @media (max-width: 820px) {
+    .fit {
+      grid-template-columns: 1fr;
+    }
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .tags span {
+    font-size: 0.85rem;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    color: var(--text);
+  }
+
+  /* Roadmap */
+  .status {
+    display: inline-block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .status.done {
+    color: var(--ok);
+  }
+  .status.wip {
+    color: var(--wip);
+  }
+  .status.planned,
+  .status.later {
+    color: var(--muted);
+  }
+  .phase li {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .phase li::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    top: 0.65em;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--purple);
+    opacity: 0.6;
+  }
+  .more {
+    margin-top: 28px;
+    font-weight: 600;
+  }
+  .more a {
+    text-decoration: none;
+  }
+
+  /* CTA */
+  .cta {
+    background: linear-gradient(135deg, #7050e8, #4a2fc4);
+    color: #fff;
+    border-radius: 20px;
+    padding: 56px 48px;
+    text-align: center;
+  }
+  @media (max-width: 600px) {
+    .cta {
+      padding: 40px 22px;
+    }
+  }
+  .cta h2 {
+    color: #fff;
+  }
+  .cta p {
+    max-width: 620px;
+    margin: 0 auto;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .cta .ctas {
+    justify-content: center;
+  }
+  .btn-light {
+    background: #fff;
+    color: #2a1c7a;
+  }
+  .btn-outline {
+    color: #fff;
+    border-color: rgba(255, 255, 255, 0.4);
+  }
+  .btn-outline:hover {
+    border-color: #fff;
+  }
+</style>
