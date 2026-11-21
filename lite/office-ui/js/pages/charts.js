@@ -235,7 +235,8 @@ async function ensureTotals() {
 
 async function refreshNow(rerender) {
   const r = await post("/metrics/refresh", {});
-  toast(r.refreshed ? "Totals updated" : "Totals were updated less than a minute ago", r.refreshed ? "success" : "info");
+  if (r.deferred) toast("An import is running. Totals update an hour after it finishes.", "info");
+  else toast(r.refreshed ? "Totals updated" : "Totals were updated less than a minute ago", r.refreshed ? "success" : "info");
   rerender();
 }
 

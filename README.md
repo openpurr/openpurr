@@ -24,7 +24,7 @@ App developers who:
 - **Don't want to share a percentage of their revenue.** openpurr has no revenue share and no per-transaction fees. The Lite edition is designed to fit Cloudflare's free plan, so a small app can run it for nothing.
 - **Don't want to depend on a commercial service.** It's open source: you can read the code, change it, and move it between Cloudflare and your own cloud.
 
-It's also a good fit if you already use the RevenueCat SDKs and want to keep them. openpurr works with the official, unmodified SDKs, so switching starts with changing one URL, not rewriting your purchase code.
+It's also a good fit if you already use the RevenueCat SDKs and want to keep them. openpurr works with the official, unmodified SDKs, so switching starts with changing one URL, not rewriting your purchase code. To bring your existing customers over, see [Moving from RevenueCat](docs/migrating-from-revenuecat.md).
 
 **It may not be for you (yet)** if you need paywall builders, A/B experiments, third-party analytics integrations or a support contract. Commercial platforms offer those today. See the [roadmap](ROADMAP.md) for what's coming.
 

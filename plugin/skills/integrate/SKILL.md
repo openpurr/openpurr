@@ -14,7 +14,7 @@ The dashboard's Configuration → Apps and products page has both, plus ready-to
 - **SDK URL:** the `openpurr` SDK Worker's custom domain, or `https://openpurr.<account>.workers.dev`. Owners set it once under Settings → This deployment → SDK URL. Until then the dashboard and `get_config` show a guess, so confirm it if it's marked as one.
 - **SDK key:** in the dashboard, Configuration → Apps and products (`appl_…` for App Store apps, `goog_…` for Google Play apps). Or run the `get_config` MCP tool, or `npx @openpurr/cli config`. With several projects, use the key of the right project's app.
 
-If the user is migrating from RevenueCat, the code that calls `configure` already exists. Change only the key and add the proxy URL.
+If the user is migrating from RevenueCat, the code that calls `configure` already exists. Change only the key and add the proxy URL. To bring existing customers over (the import, keeping both backends informed during the switch, and a one-time `syncPurchases`), follow [docs/migrating-from-revenuecat.md](../../../docs/migrating-from-revenuecat.md).
 
 ## 2. Set the proxy URL before `configure`
 

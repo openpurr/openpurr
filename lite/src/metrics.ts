@@ -93,6 +93,28 @@ export interface RollupResult {
   from: string | null;
   rows: number;
   full: boolean;
+  /** Skipped because an import is running (see IMPORT_QUIET_MS). */
+  deferred?: boolean;
+}
+
+/**
+ * An import (src/office/import.ts) records old purchases, and each run recomputes from the earliest
+ * purchase that changed: during an import, that would be all of history, every hour. So each
+ * imported row marks the import active, and the rollup waits until an hour after the last one,
+ * then recomputes once. A full rebuild asked for by an owner still runs.
+ */
+const IMPORT_KEY = "import_active";
+export const IMPORT_QUIET_MS = 3600_000;
+
+export function markImportActive(db: D1Database, now: number) {
+  return db
+    .prepare("INSERT INTO job_state (key, value, updated_at) VALUES (?, ?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at")
+    .bind(IMPORT_KEY, JSON.stringify({ at: now }), now);
+}
+
+async function importRunning(db: D1Database, now: number) {
+  const row = await db.prepare("SELECT updated_at FROM job_state WHERE key = ?").bind(IMPORT_KEY).first<{ updated_at: number }>();
+  return !!row && now - row.updated_at < IMPORT_QUIET_MS;
 }
 
 async function readState(db: D1Database): Promise<RollupState | null> {
@@ -112,6 +134,8 @@ export async function rollupInfo(db: D1Database) {
 
 /** Updates metric_daily from the ledger. `full` recomputes all history (except new_customers, see migration 0014). */
 export async function rollupMetrics(db: D1Database, now: number, opts: { full?: boolean } = {}): Promise<RollupResult> {
+  // The last run's time stays put, so the run after the import picks up everything it changed.
+  if (!opts.full && (await importRunning(db, now))) return { from: null, rows: 0, full: false, deferred: true };
   const state = await readState(db);
   const full = !!opts.full || !state || !!state.rebuild;
   let from: number | null;
