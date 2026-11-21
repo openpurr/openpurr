@@ -51,6 +51,7 @@ For larger portfolios of apps: Go and Postgres in containers on your own cloud.
 Ideas we expect to pick up based on demand:
 - **Verified end-user identity**, so customer data can't be read with only a guessable app user ID.
 - **Standard extras** for larger teams.
+- **Price experiments:** test prices by showing customers different offerings. openpurr would assign each customer to a variant by app user ID and return that variant's offering as the current one, so `getOfferings()` and your own paywall need no changes. Charts would compare trial conversion, conversion to paid, revenue and churn per variant. Prices stay in the stores, so each price is its own product.
 
 ## Not planned for now
 

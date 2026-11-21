@@ -27,7 +27,7 @@ Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: the Lit
 
 ## Not included (for now)
 
-Paywalls, A/B experiments, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon Appstore, ad events, and a commercial support contract.
+Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon Appstore, ad events, and a commercial support contract. Price experiments are on the roadmap.
 
 ## Links
 
