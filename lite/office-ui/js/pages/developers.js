@@ -1,6 +1,7 @@
 // Developer pages: webhook deliveries, secret keys (server-to-server) and personal access tokens.
 import { del, get, post } from "../api.js";
 import { h, replace } from "../dom.js";
+import { t, tk, tn } from "../i18n.js";
 import { IconBolt, IconKey, IconPlus, IconRefresh, IconTerminal } from "../icons.js";
 import { webhookEndpoints } from "./config.js";
 import { replayButton } from "./customers.js";
@@ -29,40 +30,42 @@ import {
 
 // ---- Webhooks -----------------------------------------------------------------------------------
 
-const DELIVERY = { delivered: ["Delivered", "success"], pending: ["Retrying", "info"], failed: ["Failed", "danger"] };
+const DELIVERY = { delivered: [tk("Delivered"), "success"], pending: [tk("Retrying"), "info"], failed: [tk("Failed"), "danger"] };
+// The empty state for each filter (one whole sentence per status, for translation).
+const NO_DELIVERIES = { delivered: tk("No successful deliveries"), pending: tk("No retrying deliveries"), failed: tk("No failed deliveries") };
 
 export async function webhooksPage(ctx) {
   let status = "";
   const body = h("div");
   const load = async () => {
-    replace(body, h("div", { class: "loading" }, "Loading…"));
+    replace(body, h("div", { class: "loading" }, t("Loading…")));
     const { deliveries } = await get(`/webhooks/deliveries?limit=100${status ? `&status=${status}` : ""}`);
     replace(
       body,
       deliveries.length
         ? table(
-            [{ label: "Event" }, { label: "Endpoint", class: "hide-below-md" }, { label: "Status" }, { label: "Last response", class: "hide-below-md" }, { label: "Created" }, { label: "", class: "actions" }],
+            [{ label: t("Event") }, { label: t("Endpoint"), class: "hide-below-md" }, { label: t("Status") }, { label: t("Last response"), class: "hide-below-md" }, { label: t("Created") }, { label: "", class: "actions" }],
             deliveries.map((d) => {
-              const [label, variant] = DELIVERY[d.status] ?? [d.status, ""];
+              const [label, variant] = DELIVERY[d.status] ? [t(DELIVERY[d.status][0]), DELIVERY[d.status][1]] : [d.status, ""];
               return [
                 h("div", { class: "cell-stack" }, h("span", { class: "cell-strong" }, d.type), h("span", { class: "cell-mono" }, d.event_id), ctx.apps.length > 1 ? h("span", { class: "cell-sub" }, d.app_id) : null),
                 h("span", { class: "cell-mono cell-truncate", title: d.endpoint }, d.endpoint),
-                h("div", { class: "cell-stack" }, badge(label, variant, true), h("span", { class: "cell-sub" }, d.status === "pending" && d.next_attempt_at ? `attempt ${d.attempts + 1} ${when(d.next_attempt_at).textContent}` : `${d.attempts} attempt${d.attempts === 1 ? "" : "s"}`)),
+                h("div", { class: "cell-stack" }, badge(label, variant, true), h("span", { class: "cell-sub" }, d.status === "pending" && d.next_attempt_at ? t("attempt {number} {when}", { number: d.attempts + 1, when: when(d.next_attempt_at).textContent }) : tn(d.attempts, "{n} attempt", "{n} attempts"))),
                 h("span", { class: "small cell-truncate", title: d.last_error ?? "" }, d.last_status ? `HTTP ${d.last_status}` : "", d.last_error ? `${d.last_status ? " · " : ""}${d.last_error}` : d.last_status ? "" : "—"),
                 when(d.created_at),
                 ctx.can("webhooks:replay") ? replayButton(d.event_id) : null,
               ];
             }),
           )
-        : h("div", { class: "card" }, empty({ icon: IconBolt, title: status ? `No ${DELIVERY[status][0].toLowerCase()} deliveries` : "No webhook deliveries yet", text: "Events are sent to the endpoints above when purchases, renewals, cancellations and other changes happen." })),
+        : h("div", { class: "card" }, empty({ icon: IconBolt, title: status ? t(NO_DELIVERIES[status]) : t("No webhook deliveries yet"), text: t("Events are sent to the endpoints above when purchases, renewals, cancellations and other changes happen.") })),
     );
   };
   const filter = seg(
     [
-      { value: "", label: "All" },
-      { value: "failed", label: "Failed" },
-      { value: "pending", label: "Retrying" },
-      { value: "delivered", label: "Delivered" },
+      { value: "", label: t("All") },
+      { value: "failed", label: t("Failed") },
+      { value: "pending", label: t("Retrying") },
+      { value: "delivered", label: t("Delivered") },
     ],
     status,
     (v) => {
@@ -74,20 +77,20 @@ export async function webhooksPage(ctx) {
   return h(
     "div",
     null,
-    pageHeader("Webhooks", "Events sent to your webhook endpoints. Failed deliveries are retried with backoff for about three days. Replay sends the same event again (same ID, so consumers can deduplicate).", [
-      button(null, { variant: "outline", icon: IconRefresh(15), title: "Refresh", onClick: () => load().catch((err) => toast(err.message, "error")) }),
+    pageHeader(t("Webhooks"), t("Events sent to your webhook endpoints. Failed deliveries are retried with backoff for about three days. Replay sends the same event again (same ID, so consumers can deduplicate)."), [
+      button(null, { variant: "outline", icon: IconRefresh(15), title: t("Refresh"), onClick: () => load().catch((err) => toast(err.message, "error")) }),
     ]),
-    h("div", { class: "stack" }, endpoints, h("h2", { class: "section-title" }, "Deliveries"), h("div", null, filter), body),
+    h("div", { class: "stack" }, endpoints, h("h2", { class: "section-title" }, t("Deliveries")), h("div", null, filter), body),
   );
 }
 
 // ---- Shared key helpers -------------------------------------------------------------------------
 
 function keyState(k) {
-  if (k.revoked_at) return badge("Revoked", "danger");
-  if (k.expires_at && k.expires_at <= Date.now()) return badge("Expired");
-  if (k.expires_at) return h("span", { title: fmtDateTime(k.expires_at) }, badge(`Expires ${when(k.expires_at).textContent}`, "warning", true));
-  return badge("Active", "success", true);
+  if (k.revoked_at) return badge(t("Revoked"), "danger");
+  if (k.expires_at && k.expires_at <= Date.now()) return badge(t("Expired"));
+  if (k.expires_at) return h("span", { title: fmtDateTime(k.expires_at) }, badge(t("Expires {when}", { when: when(k.expires_at).textContent }), "warning", true));
+  return badge(t("Active"), "success", true);
 }
 
 const nameCell = (k, prefix) =>
@@ -95,25 +98,27 @@ const nameCell = (k, prefix) =>
 
 // ---- Secret keys --------------------------------------------------------------------------------
 
-const SECRET_KEY_SCOPES = [{ value: "customers:read", label: "customers:read", sub: "Read customers: GET /v1/subscribers/{app_user_id}" }];
+const SECRET_KEY_SCOPES = [{ value: "customers:read", label: "customers:read", sub: tk("Read customers: GET /v1/subscribers/{app_user_id}") }];
+/** Scope options with their descriptions in the current language. */
+const scopeOptions = (list) => list.map((s) => ({ ...s, sub: t(s.sub) }));
 
 export async function secretKeysPage(ctx) {
   const { secret_keys: keys } = await get("/secret-keys");
   const create = () => {
     const errors = formError();
-    const name = input({ required: true, placeholder: "e.g. Production backend", maxlength: 100 });
-    const scopes = checkboxes(SECRET_KEY_SCOPES, ["customers:read"]);
-    const submit = button("Create key", { type: "submit" });
+    const name = input({ required: true, placeholder: t("e.g. Production backend"), maxlength: 100 });
+    const scopes = checkboxes(scopeOptions(SECRET_KEY_SCOPES), ["customers:read"]);
+    const submit = button(t("Create key"), { type: "submit" });
     const m = modal({
-      title: "New secret key",
-      sub: "For your servers to call the openpurr API. Never put a secret key in an app.",
-      body: h("div", { class: "stack" }, errors.el, field("Name", name), h("div", null, h("span", { class: "label" }, "Scopes"), scopes.el)),
-      actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
+      title: t("New secret key"),
+      sub: t("For your servers to call the openpurr API. Never put a secret key in an app."),
+      body: h("div", { class: "stack" }, errors.el, field(t("Name"), name), h("div", null, h("span", { class: "label" }, t("Scopes")), scopes.el)),
+      actions: [button(t("Cancel"), { variant: "outline", onClick: () => m.close() }), submit],
       onSubmit: async () => {
         const created = await busy(submit, () => post("/secret-keys", { name: name.value.trim(), scopes: scopes.values() }), errors);
         if (!created) return false;
         m.close();
-        showSecretOnce({ title: "Copy your secret key", sub: "This is the only time it's shown. Store it in your backend's secrets.", value: created.key, note: "Send it as Authorization: Bearer sk_… on requests to /v1." });
+        showSecretOnce({ title: t("Copy your secret key"), sub: t("This is the only time it's shown. Store it in your backend's secrets."), value: created.key, note: t("Send it as Authorization: Bearer sk_… on requests to /v1.") });
         ctx.rerender();
         return false;
       },
@@ -124,34 +129,34 @@ export async function secretKeysPage(ctx) {
     const errors = formError();
     const when = select(
       [
-        { value: "0", label: "Now" },
-        { value: "1", label: "In 1 hour" },
-        { value: "24", label: "In 24 hours" },
-        { value: "168", label: "In 7 days" },
-        { value: "720", label: "In 30 days" },
+        { value: "0", label: t("Now") },
+        { value: "1", label: t("In 1 hour") },
+        { value: "24", label: t("In 24 hours") },
+        { value: "168", label: t("In 7 days") },
+        { value: "720", label: t("In 30 days") },
       ],
       "24",
     );
-    const submit = button("Set expiry", { type: "submit" });
+    const submit = button(t("Set expiry"), { type: "submit" });
     const m = modal({
-      title: `Expire “${k.name}”`,
-      sub: "To rotate a key without downtime: create a new key, switch your backend to it, then let the old one expire.",
-      body: h("div", { class: "stack" }, errors.el, field("Stop working", when)),
-      actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
+      title: t("Expire “{name}”", { name: k.name }),
+      sub: t("To rotate a key without downtime: create a new key, switch your backend to it, then let the old one expire."),
+      body: h("div", { class: "stack" }, errors.el, field(t("Stop working"), when)),
+      actions: [button(t("Cancel"), { variant: "outline", onClick: () => m.close() }), submit],
       onSubmit: async () => {
         const ok = await busy(submit, () => post(`/secret-keys/${k.id}/expire`, { in_hours: Number(when.value) }), errors);
         if (!ok) return false;
-        toast("Expiry set", "success");
+        toast(t("Expiry set"), "success");
         ctx.rerender();
       },
     });
   };
 
   const revoke = async (k) => {
-    if (!(await confirmDialog({ title: `Revoke “${k.name}”?`, text: "Requests using this key will fail within a minute. This can't be undone.", confirmLabel: "Revoke key", danger: true }))) return;
+    if (!(await confirmDialog({ title: t("Revoke “{name}”?", { name: k.name }), text: t("Requests using this key will fail within a minute. This can't be undone."), confirmLabel: t("Revoke key"), danger: true }))) return;
     try {
       await post(`/secret-keys/${k.id}/revoke`);
-      toast("Key revoked", "success");
+      toast(t("Key revoked"), "success");
       ctx.rerender();
     } catch (err) {
       toast(err.message, "error");
@@ -162,12 +167,12 @@ export async function secretKeysPage(ctx) {
   return h(
     "div",
     null,
-    pageHeader("Secret keys", `Server-to-server keys for your backend to read ${ctx.project ? `${ctx.project.name}'s` : "your"} customers from the openpurr API. Each key reads one project. Your apps use the public SDK keys under Apps and products instead.`, [
-      button("New secret key", { icon: IconPlus(15), onClick: create }),
+    pageHeader(t("Secret keys"), ctx.project ? t("Server-to-server keys for your backend to read {project}'s customers from the openpurr API. Each key reads one project. Your apps use the public SDK keys under Apps and products instead.", { project: ctx.project.name }) : t("Server-to-server keys for your backend to read your customers from the openpurr API. Each key reads one project. Your apps use the public SDK keys under Apps and products instead."), [
+      button(t("New secret key"), { icon: IconPlus(15), onClick: create }),
     ]),
     keys.length
       ? table(
-          [{ label: "Name" }, { label: "Scopes", class: "hide-below-md" }, { label: "Created", class: "hide-below-md" }, { label: "Last used" }, { label: "Status" }, { label: "", class: "actions" }],
+          [{ label: t("Name") }, { label: t("Scopes"), class: "hide-below-md" }, { label: t("Created"), class: "hide-below-md" }, { label: t("Last used") }, { label: t("Status") }, { label: "", class: "actions" }],
           keys
             .slice()
             .reverse()
@@ -177,10 +182,10 @@ export async function secretKeysPage(ctx) {
               when(k.created_at),
               when(k.last_used_at),
               keyState(k),
-              live(k) ? [button("Expire…", { variant: "outline", size: "sm", onClick: () => expire(k) }), button("Revoke", { variant: "outline", size: "sm", onClick: () => revoke(k) })] : null,
+              live(k) ? [button(t("Expire…"), { variant: "outline", size: "sm", onClick: () => expire(k) }), button(t("Revoke"), { variant: "outline", size: "sm", onClick: () => revoke(k) })] : null,
             ]),
         )
-      : h("div", { class: "card" }, empty({ icon: IconKey, title: "No secret keys", text: "Create one when your backend needs to check a customer's entitlements.", action: button("New secret key", { icon: IconPlus(15), onClick: create }) })),
+      : h("div", { class: "card" }, empty({ icon: IconKey, title: t("No secret keys"), text: t("Create one when your backend needs to check a customer's entitlements."), action: button(t("New secret key"), { icon: IconPlus(15), onClick: create }) })),
   );
 }
 
@@ -190,37 +195,37 @@ export async function secretKeysPage(ctx) {
 const mcpCommand = (token) => `claude mcp add --transport http openpurr ${location.origin}/mcp --header "Authorization: Bearer ${token}"`;
 
 const TOKEN_SCOPES = [
-  { value: "read", label: "read", sub: "Read customers, webhook deliveries, the team and the audit log" },
-  { value: "write:webhooks", label: "write:webhooks", sub: "Replay webhook events" },
-  { value: "admin", label: "admin", sub: "Manage secret keys, the team and settings" },
-  { value: "write:grants", label: "write:grants", sub: "Grant and revoke promotional entitlements" },
-  { value: "write:config", label: "write:config", sub: "Change the configuration: apps, products, entitlements, offerings and webhooks" },
+  { value: "read", label: "read", sub: tk("Read customers, webhook deliveries, the team and the audit log") },
+  { value: "write:webhooks", label: "write:webhooks", sub: tk("Replay webhook events") },
+  { value: "admin", label: "admin", sub: tk("Manage secret keys, the team and settings") },
+  { value: "write:grants", label: "write:grants", sub: tk("Grant and revoke promotional entitlements") },
+  { value: "write:config", label: "write:config", sub: tk("Change the configuration: apps, products, entitlements, offerings and webhooks") },
 ];
 
 export async function tokensPage(ctx) {
   const [{ tokens }, { grants: connected }] = await Promise.all([get("/tokens"), get("/oauth/grants")]);
   const create = () => {
     const errors = formError();
-    const name = input({ required: true, placeholder: "e.g. Laptop CLI", maxlength: 100 });
-    const scopes = checkboxes(TOKEN_SCOPES, ["read"]);
+    const name = input({ required: true, placeholder: t("e.g. Laptop CLI"), maxlength: 100 });
+    const scopes = checkboxes(scopeOptions(TOKEN_SCOPES), ["read"]);
     const expiry = select(
       [
-        { value: "30", label: "30 days" },
-        { value: "90", label: "90 days" },
-        { value: "365", label: "1 year" },
-        { value: "", label: "No expiry" },
+        { value: "30", label: t("30 days") },
+        { value: "90", label: t("90 days") },
+        { value: "365", label: t("1 year") },
+        { value: "", label: t("No expiry") },
       ],
       "90",
     );
-    const submit = button("Create token", { type: "submit" });
+    const submit = button(t("Create token"), { type: "submit" });
     const m = modal({
-      title: "New access token",
-      sub: `Acts as you (${ctx.operator.role}), limited to the scopes you pick. Your role still applies: a scope can't grant more than you have.`,
-      body: h("div", { class: "stack" }, errors.el, field("Name", name), h("div", null, h("span", { class: "label" }, "Scopes"), scopes.el), field("Expires", expiry)),
-      actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
+      title: t("New access token"),
+      sub: t("Acts as you ({role}), limited to the scopes you pick. Your role still applies: a scope can't grant more than you have.", { role: ctx.operator.role }),
+      body: h("div", { class: "stack" }, errors.el, field(t("Name"), name), h("div", null, h("span", { class: "label" }, t("Scopes")), scopes.el), field(t("Expires"), expiry)),
+      actions: [button(t("Cancel"), { variant: "outline", onClick: () => m.close() }), submit],
       onSubmit: async () => {
         const chosen = scopes.values();
-        if (!chosen.length) return errors.show(new Error("Pick at least one scope.")), false;
+        if (!chosen.length) return errors.show(new Error(t("Pick at least one scope."))), false;
         const created = await busy(
           submit,
           () => post("/tokens", { name: name.value.trim(), scopes: chosen, ...(expiry.value ? { expires_in_days: Number(expiry.value) } : {}) }),
@@ -229,10 +234,10 @@ export async function tokensPage(ctx) {
         if (!created) return false;
         m.close();
         showSecretOnce({
-          title: "Copy your access token",
-          sub: "This is the only time it's shown.",
+          title: t("Copy your access token"),
+          sub: t("This is the only time it's shown."),
           value: created.token,
-          note: `Use it as Authorization: Bearer pat_… against ${location.origin}/admin/v1, or connect Claude Code to openpurr with: ${mcpCommand(created.token)}`,
+          note: t("Use it as Authorization: Bearer pat_… against {url}, or connect Claude Code to openpurr with: {command}", { url: `${location.origin}/admin/v1`, command: mcpCommand(created.token) }),
         });
         ctx.rerender();
         return false;
@@ -240,33 +245,33 @@ export async function tokensPage(ctx) {
     });
   };
 
-  const revoke = async (t) => {
-    if (!(await confirmDialog({ title: `Revoke “${t.name}”?`, text: "Anything using this token stops working immediately.", confirmLabel: "Revoke token", danger: true }))) return;
+  const revoke = async (tok) => {
+    if (!(await confirmDialog({ title: t("Revoke “{name}”?", { name: tok.name }), text: t("Anything using this token stops working immediately."), confirmLabel: t("Revoke token"), danger: true }))) return;
     try {
-      await del(`/tokens/${t.id}`);
-      toast("Token revoked", "success");
+      await del(`/tokens/${tok.id}`);
+      toast(t("Token revoked"), "success");
       ctx.rerender();
     } catch (err) {
       toast(err.message, "error");
     }
   };
 
-  const live = tokens.filter((t) => !t.revoked_at && !(t.expires_at && t.expires_at <= Date.now()));
-  const old = tokens.filter((t) => !live.includes(t));
+  const live = tokens.filter((tok) => !tok.revoked_at && !(tok.expires_at && tok.expires_at <= Date.now()));
+  const old = tokens.filter((tok) => !live.includes(tok));
   const mcpCard = cardWith(
-    "Connect an AI assistant (MCP)",
-    "Ask Claude why a customer doesn't have an entitlement, look up purchases, read charts and grant access. It acts as you, limited to the token's scopes.",
+    t("Connect an AI assistant (MCP)"),
+    t("Ask Claude why a customer doesn't have an entitlement, look up purchases, read charts and grant access. It acts as you, limited to the token's scopes."),
     h(
       "div",
       { class: "card-body stack-sm" },
-      h("p", { class: "small" }, "MCP server URL:"),
+      h("p", { class: "small" }, t("MCP server URL:")),
       copyField(`${location.origin}/mcp`),
-      h("p", { class: "small" }, "Claude Code (replace pat_… with a token from this page):"),
+      h("p", { class: "small" }, t("Claude Code (replace pat_… with a token from this page):")),
       copyField(mcpCommand("pat_…")),
       h(
         "p",
         { class: "small muted" },
-        "Claude.ai and other apps that sign in: add a custom connector with the MCP server URL, and approve it here when asked. Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access, write:webhooks to replay webhooks and write:config to change the configuration.",
+        t("Claude.ai and other apps that sign in: add a custom connector with the MCP server URL, and approve it here when asked. Other MCP clients: add a Streamable HTTP server with that URL and the header Authorization: Bearer pat_…. Give the token the read scope to look things up, plus write:grants to grant access, write:webhooks to replay webhooks and write:config to change the configuration."),
       ),
     ),
   );
@@ -274,27 +279,27 @@ export async function tokensPage(ctx) {
     list
       .slice()
       .reverse()
-      .map((t) => [
-        nameCell(t, t.token_prefix),
-        h("div", { class: "row wrap", style: { gap: "4px" } }, t.scopes.map((s) => badge(s))),
-        when(t.created_at),
-        when(t.last_used_at),
-        keyState(t),
-        live.includes(t) ? button("Revoke", { variant: "outline", size: "sm", onClick: () => revoke(t) }) : null,
+      .map((tok) => [
+        nameCell(tok, tok.token_prefix),
+        h("div", { class: "row wrap", style: { gap: "4px" } }, tok.scopes.map((s) => badge(s))),
+        when(tok.created_at),
+        when(tok.last_used_at),
+        keyState(tok),
+        live.includes(tok) ? button(t("Revoke"), { variant: "outline", size: "sm", onClick: () => revoke(tok) }) : null,
       ]);
-  const columns = [{ label: "Name" }, { label: "Scopes", class: "hide-below-md" }, { label: "Created", class: "hide-below-md" }, { label: "Last used" }, { label: "Status" }, { label: "", class: "actions" }];
+  const columns = [{ label: t("Name") }, { label: t("Scopes"), class: "hide-below-md" }, { label: t("Created"), class: "hide-below-md" }, { label: t("Last used") }, { label: t("Status") }, { label: "", class: "actions" }];
 
   return h(
     "div",
     null,
-    pageHeader("Access tokens", "Personal tokens for the openpurr CLI, the MCP server and scripts that call the admin API as you.", [button("New token", { icon: IconPlus(15), onClick: create })]),
+    pageHeader(t("Access tokens"), t("Personal tokens for the openpurr CLI, the MCP server and scripts that call the admin API as you."), [button(t("New token"), { icon: IconPlus(15), onClick: create })]),
     h(
       "div",
       { class: "stack" },
       live.length
         ? table(columns, rows(live))
-        : h("div", { class: "card" }, empty({ icon: IconTerminal, title: "No access tokens", text: "Create one to use the admin API from a terminal or an AI assistant.", action: button("New token", { icon: IconPlus(15), onClick: create }) })),
-      old.length ? cardWith("Revoked and expired", null, table(columns, rows(old))) : null,
+        : h("div", { class: "card" }, empty({ icon: IconTerminal, title: t("No access tokens"), text: t("Create one to use the admin API from a terminal or an AI assistant."), action: button(t("New token"), { icon: IconPlus(15), onClick: create }) })),
+      old.length ? cardWith(t("Revoked and expired"), null, table(columns, rows(old))) : null,
       mcpCard,
       connectedApps(ctx, connected),
     ),
@@ -304,29 +309,29 @@ export async function tokensPage(ctx) {
 /** Apps connected through OAuth (Claude.ai connectors and others): what they may do, and revoke. */
 function connectedApps(ctx, grants) {
   const disconnect = async (g) => {
-    if (!(await confirmDialog({ title: `Disconnect ${g.client_name}?`, text: "It loses access right away. You can connect it again later.", confirmLabel: "Disconnect", danger: true }))) return;
+    if (!(await confirmDialog({ title: t("Disconnect {name}?", { name: g.client_name }), text: t("It loses access right away. You can connect it again later."), confirmLabel: t("Disconnect"), danger: true }))) return;
     try {
       await post(`/oauth/grants/${g.id}/revoke`);
-      toast("Disconnected", "success");
+      toast(t("Disconnected"), "success");
       ctx.rerender();
     } catch (err) {
       toast(err.message, "error");
     }
   };
   return cardWith(
-    "Connected apps",
-    "Apps you've allowed to use the MCP server by signing in, such as Claude.ai.",
+    t("Connected apps"),
+    t("Apps you've allowed to use the MCP server by signing in, such as Claude.ai."),
     grants.length
       ? table(
-          [{ label: "App" }, { label: "Can", class: "hide-below-md" }, { label: "Connected", class: "hide-below-md" }, { label: "Last used" }, { label: "", class: "actions" }],
+          [{ label: t("App") }, { label: t("Can"), class: "hide-below-md" }, { label: t("Connected"), class: "hide-below-md" }, { label: t("Last used") }, { label: "", class: "actions" }],
           grants.map((g) => [
             h("div", { class: "cell-stack" }, h("span", { class: "cell-strong" }, g.client_name), g.client_id ? h("span", { class: "cell-sub" }, new URL(g.client_id).host) : g.client_uri ? h("span", { class: "cell-sub" }, new URL(g.client_uri).host) : null),
             h("div", { class: "row wrap", style: { gap: "4px" } }, g.scopes.map((s) => badge(s))),
             when(g.created_at),
             when(g.last_used_at),
-            button("Disconnect", { variant: "outline", size: "sm", onClick: () => disconnect(g) }),
+            button(t("Disconnect"), { variant: "outline", size: "sm", onClick: () => disconnect(g) }),
           ]),
         )
-      : h("div", { class: "card-body muted small" }, "No apps connected."),
+      : h("div", { class: "card-body muted small" }, t("No apps connected.")),
   );
 }

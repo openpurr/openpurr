@@ -5,6 +5,7 @@ import { get, onAuthChange, post, setProject } from "./api.js";
 import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment, renderSetPassword } from "./auth.js";
 import { renderConsent } from "./consent.js";
 import { h, replace } from "./dom.js";
+import { detect, setLocale, t, tk, tx } from "./i18n.js";
 import { IconAlert, IconApps, IconBolt, IconChart, IconCustomers, IconFolder, IconGift, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTag, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
 import { auditPage, settingsPage, teamPage } from "./pages/admin.js";
@@ -19,19 +20,19 @@ const root = document.getElementById("app");
 // Sidebar sections. `perm` hides an item from operators without that permission (the API enforces
 // it either way).
 const ROUTES = [
-  { key: "charts", label: "Charts", icon: IconChart, section: "Overview", perm: "read", page: chartsPage },
-  { key: "customers", label: "Customers", icon: IconCustomers, section: "Overview", perm: "read", page: customersPage },
-  { key: "apps", label: "Apps and products", icon: IconApps, section: "Configuration", perm: "read", page: appsPage },
-  { key: "entitlements", label: "Entitlements", icon: IconTag, section: "Configuration", perm: "read", page: entitlementsPage },
-  { key: "offerings", label: "Offerings", icon: IconGift, section: "Configuration", perm: "read", page: offeringsPage },
-  { key: "projects", label: "Projects", icon: IconFolder, section: "Configuration", perm: "read", page: projectsPage },
-  { key: "webhooks", label: "Webhooks", icon: IconBolt, section: "Developers", perm: "read", page: webhooksPage },
-  { key: "secret-keys", label: "Secret keys", icon: IconKey, section: "Developers", perm: "keys:manage", page: secretKeysPage },
-  { key: "tokens", label: "Access tokens", icon: IconTerminal, section: "Developers", page: tokensPage },
-  { key: "team", label: "Team", icon: IconUsers, section: "Admin", perm: "read", page: teamPage },
-  { key: "audit", label: "Audit log", icon: IconShield, section: "Admin", perm: "audit:read", page: auditPage },
-  { key: "settings", label: "Settings", icon: IconSettings, section: "Admin", perm: "read", page: settingsPage },
-  { key: "account", label: "Your account", icon: IconUser, page: accountPage, hidden: true },
+  { key: "charts", label: tk("Charts"), icon: IconChart, section: tk("Overview"), perm: "read", page: chartsPage },
+  { key: "customers", label: tk("Customers"), icon: IconCustomers, section: tk("Overview"), perm: "read", page: customersPage },
+  { key: "apps", label: tk("Apps and products"), icon: IconApps, section: tk("Configuration"), perm: "read", page: appsPage },
+  { key: "entitlements", label: tk("Entitlements"), icon: IconTag, section: tk("Configuration"), perm: "read", page: entitlementsPage },
+  { key: "offerings", label: tk("Offerings"), icon: IconGift, section: tk("Configuration"), perm: "read", page: offeringsPage },
+  { key: "projects", label: tk("Projects"), icon: IconFolder, section: tk("Configuration"), perm: "read", page: projectsPage },
+  { key: "webhooks", label: tk("Webhooks"), icon: IconBolt, section: tk("Developers"), perm: "read", page: webhooksPage },
+  { key: "secret-keys", label: tk("Secret keys"), icon: IconKey, section: tk("Developers"), perm: "keys:manage", page: secretKeysPage },
+  { key: "tokens", label: tk("Access tokens"), icon: IconTerminal, section: tk("Developers"), page: tokensPage },
+  { key: "team", label: tk("Team"), icon: IconUsers, section: tk("Admin"), perm: "read", page: teamPage },
+  { key: "audit", label: tk("Audit log"), icon: IconShield, section: tk("Admin"), perm: "audit:read", page: auditPage },
+  { key: "settings", label: tk("Settings"), icon: IconSettings, section: tk("Admin"), perm: "read", page: settingsPage },
+  { key: "account", label: tk("Your account"), icon: IconUser, page: accountPage, hidden: true },
 ];
 
 /**
@@ -70,7 +71,7 @@ document.addEventListener("click", (e) => {
 addEventListener("popstate", () => (state && location.pathname.startsWith("/admin") && !["/admin/login", "/admin/link"].includes(location.pathname) ? renderRoute() : boot()));
 
 onAuthChange(
-  () => showLogin("Your session ended. Sign in again to continue."),
+  () => showLogin(t("Your session ended. Sign in again to continue.")),
   () => boot(),
 );
 
@@ -78,6 +79,8 @@ onAuthChange(
 
 async function boot() {
   applyTheme();
+  // Before sign-in: the language last used on this browser, or the browser's own.
+  await setLocale(detect());
   state = null;
   shell = null;
   const path = location.pathname;
@@ -114,6 +117,8 @@ async function boot() {
   } catch (err) {
     return fatal(err);
   }
+  // Signed in: the operator's chosen language, or (null) the browser's.
+  await setLocale(detect(principal.operator.locale ?? null));
   state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), projects, allApps: apps, project: null, apps: [], usage };
   selectProject(new URLSearchParams(location.search).get("project") ?? storedProject(), { quiet: true });
   if (path === "/admin/login") history.replaceState(null, "", returnTo ?? "/admin");
@@ -121,7 +126,7 @@ async function boot() {
   // An app asking to connect (OAuth): its own screen, outside the dashboard shell.
   if (location.pathname === "/admin/oauth/consent") {
     shell = null;
-    document.title = "Connect an app · openpurr";
+    document.title = t("Connect an app · openpurr");
     return renderConsent(root, state.operator);
   }
   renderRoute();
@@ -165,11 +170,11 @@ function projectSwitcher() {
   if (state.projects.length < 2) return null;
   const s = h(
     "select",
-    { class: "select project-select", "aria-label": "Project" },
+    { class: "select project-select", "aria-label": t("Project") },
     state.projects.map((p) => h("option", { value: p.id, selected: p.id === state.project?.id ? true : null }, p.name)),
   );
   s.addEventListener("change", () => selectProject(s.value));
-  return h("div", { class: "project-switcher" }, h("span", { class: "nav-label" }, "Project"), s);
+  return h("div", { class: "project-switcher" }, h("span", { class: "nav-label" }, t("Project")), s);
 }
 
 function showLogin(notice) {
@@ -179,14 +184,14 @@ function showLogin(notice) {
     returnTo = location.pathname.startsWith("/admin") ? location.pathname + location.search : null;
     history.pushState(null, "", "/admin/login");
   }
-  document.title = "Sign in · openpurr";
+  document.title = t("Sign in · openpurr");
   renderLogin(root, { notice, onSignedIn: () => boot() });
 }
 
 async function signOut() {
   await post("/auth/logout").catch(() => {});
   returnTo = null;
-  showLogin("You're signed out.");
+  showLogin(t("You're signed out."));
 }
 
 function fatal(err) {
@@ -201,9 +206,9 @@ function accountMenu() {
     "div",
     { class: "account-menu", role: "menu", hidden: true },
     h("div", { class: "account-menu-head" }, avatar(op, "sm"), h("div", { class: "cell-stack" }, h("span", { class: "cell-strong ellipsis" }, op.name), h("span", { class: "cell-sub ellipsis" }, `${op.email} · ${op.role}`))),
-    h("a", { class: "account-menu-item", role: "menuitem", href: "/admin/account", "data-nav": "" }, IconUser(15), "Your account"),
+    h("a", { class: "account-menu-item", role: "menuitem", href: "/admin/account", "data-nav": "" }, IconUser(15), t("Your account")),
     h("div", { class: "account-menu-divider" }),
-    h("button", { class: "account-menu-item", role: "menuitem", type: "button", onClick: signOut }, IconLogOut(15), "Sign out"),
+    h("button", { class: "account-menu-item", role: "menuitem", type: "button", onClick: signOut }, IconLogOut(15), t("Sign out")),
   );
   const trigger = h("button", { class: "nav-item", type: "button", "aria-haspopup": "menu", "aria-expanded": "false" }, avatar(op, "nav"), h("span", { class: "nav-text" }, op.name));
   const wrap = h("div", { class: "account-menu-wrap" }, menu, trigger);
@@ -220,17 +225,17 @@ function accountMenu() {
 
 function buildShell() {
   shownPage = null;
-  const nav = h("nav", { "aria-label": "Main" });
+  const nav = h("nav", { "aria-label": t("Main") });
   let section = null;
   let group = null;
   for (const r of ROUTES) {
     if (r.hidden || !can(r.perm)) continue;
     if (r.section !== section) {
       section = r.section;
-      nav.append(h("div", { class: "nav-label" }, section));
+      nav.append(h("div", { class: "nav-label" }, t(section)));
       group = nav.appendChild(h("div", { class: "nav-section" }));
     }
-    group.append(h("a", { class: "nav-item", href: `/admin/${r.key}`, "data-nav": "", "data-route": r.key }, h("span", { class: "nav-icon" }, r.icon(16)), h("span", { class: "nav-text" }, r.label)));
+    group.append(h("a", { class: "nav-item", href: `/admin/${r.key}`, "data-nav": "", "data-route": r.key }, h("span", { class: "nav-icon" }, r.icon(16)), h("span", { class: "nav-text" }, t(r.label))));
   }
 
   const closeDrawer = () => {
@@ -241,7 +246,7 @@ function buildShell() {
   const sidebar = h(
     "aside",
     { class: "sidebar" },
-    h("div", { class: "sidebar-brand" }, brand(), h("span", { class: "brand-edition" }, "Lite"), h("button", { class: "sidebar-close", type: "button", "aria-label": "Close menu", onClick: closeDrawer }, IconX(18))),
+    h("div", { class: "sidebar-brand" }, brand(), h("span", { class: "brand-edition" }, "Lite"), h("button", { class: "sidebar-close", type: "button", "aria-label": t("Close menu"), onClick: closeDrawer }, IconX(18))),
     projectSwitcher(),
     nav,
     h("div", { class: "sidebar-footer" }, accountMenu()),
@@ -249,7 +254,7 @@ function buildShell() {
   const topbar = h(
     "div",
     { class: "mobile-topbar" },
-    h("button", { class: "mobile-menu-btn", type: "button", "aria-label": "Open menu", onClick: () => (sidebar.setAttribute("data-open", ""), (backdrop.hidden = false)) }, IconMenu(18)),
+    h("button", { class: "mobile-menu-btn", type: "button", "aria-label": t("Open menu"), onClick: () => (sidebar.setAttribute("data-open", ""), (backdrop.hidden = false)) }, IconMenu(18)),
     brand(),
   );
   const banner = h("div", { hidden: true });
@@ -273,7 +278,13 @@ function renderBanner() {
     replace(
       b,
       h("span", { class: "banner-icon" }, IconAlert(16)),
-      h("span", null, h("strong", null, "Signed in with a recovery link. "), "Set a new password or replace your authenticator on ", h("a", { href: "/admin/account", "data-nav": "" }, "Your account"), ". This session ends after 30 minutes."),
+      h(
+        "span",
+        null,
+        h("strong", null, t("Signed in with a recovery link.")),
+        " ",
+        tx("Set a new password or replace your authenticator on {link}. This session ends after 30 minutes.", { link: h("a", { href: "/admin/account", "data-nav": "" }, t("Your account")) }),
+      ),
     );
   } else if (usageAlert()) {
     const m = usageAlert();
@@ -285,15 +296,16 @@ function renderBanner() {
       h(
         "span",
         null,
-        h("strong", null, `${m.label}: ${Math.round(m.share * 100)}% of today's free-plan limit. `),
-        m.share >= 1 ? "Requests are failing until 00:00 UTC; purchases stay queued on devices." : "Past the limit, requests fail until 00:00 UTC.",
+        h("strong", null, t("{metric}: {percent}% of today's free-plan limit.", { metric: m.label, percent: Math.round(m.share * 100) })),
+        " ",
+        m.share >= 1 ? t("Requests are failing until 00:00 UTC; purchases stay queued on devices.") : t("Past the limit, requests fail until 00:00 UTC."),
       ),
-      h("span", { class: "right" }, h("a", { href: "/admin/settings", "data-nav": "" }, "See usage")),
+      h("span", { class: "right" }, h("a", { href: "/admin/settings", "data-nav": "" }, t("See usage"))),
     );
   } else if (!state.operator.totp_enabled) {
     b.className = "banner";
     b.hidden = false;
-    replace(b, h("span", { class: "banner-icon" }, IconInfo(16)), h("span", null, "Protect your account with two-step sign-in. "), h("span", { class: "right" }, h("a", { href: "/admin/account", "data-nav": "" }, "Set it up")));
+    replace(b, h("span", { class: "banner-icon" }, IconInfo(16)), h("span", null, t("Protect your account with two-step sign-in."), " "), h("span", { class: "right" }, h("a", { href: "/admin/account", "data-nav": "" }, t("Set it up"))));
   } else {
     b.hidden = true;
   }
@@ -309,11 +321,11 @@ async function renderRoute() {
   const seq = ++renderSeq;
   const show = (node) => seq === renderSeq && (replace(shell.inner, node), (shell.content.scrollTop = 0));
   if (!route) {
-    document.title = "Not found · openpurr";
-    return show(h("div", { class: "card" }, empty({ icon: IconAlert, title: "Page not found", text: "That page doesn't exist." })));
+    document.title = t("Not found · openpurr");
+    return show(h("div", { class: "card" }, empty({ icon: IconAlert, title: t("Page not found"), text: t("That page doesn't exist.") })));
   }
-  document.title = `${rest[0] && route.key === "customers" ? rest[0] : route.label} · openpurr`;
-  if (!can(route.perm)) return show(h("div", { class: "card" }, empty({ icon: IconShield, title: "No access", text: `Your role (${state.operator.role}) can't open ${route.label}.` })));
+  document.title = t("{page} · openpurr", { page: rest[0] && route.key === "customers" ? rest[0] : t(route.label) });
+  if (!can(route.perm)) return show(h("div", { class: "card" }, empty({ icon: IconShield, title: t("No access"), text: t("Your role ({role}) can't open {page}.", { role: state.operator.role, page: t(route.label) }) })));
 
   const ctx = {
     ...state,
@@ -322,9 +334,17 @@ async function renderRoute() {
     rerender: () => renderRoute(),
     reload: () => boot(),
     selectProject: (id) => selectProject(id),
+    /** After the operator changes their language (null: follow the browser): redraw everything. */
+    changeLocale: async (choice) => {
+      await setLocale(detect(choice));
+      state.operator = { ...state.operator, locale: choice };
+      shell = null;
+      shownPage = null;
+      return renderRoute();
+    },
   };
   const pageKey = `${route.key}/${rest.join("/")}`;
-  if (pageKey !== shownPage) replace(shell.inner, h("div", { class: "loading" }, "Loading…"));
+  if (pageKey !== shownPage) replace(shell.inner, h("div", { class: "loading" }, t("Loading…")));
   shownPage = pageKey;
   try {
     const node =

@@ -3,6 +3,7 @@
 // edits by two people to different things never overwrite each other, and a real clash (both
 // saving the same moment) gets a clear "reload" error instead of losing work.
 import { get, put } from "./api.js";
+import { t } from "./i18n.js";
 
 export const STORES = { app_store: "App Store", play_store: "Google Play" };
 export const PRODUCT_TYPES = [
@@ -59,7 +60,7 @@ export async function saveConfig(edit, note) {
 export function saveProject(projectId, edit, note) {
   return saveConfig((document) => {
     const project = projectOf(document, projectId);
-    if (!project) throw new Error(`Project ${projectId} no longer exists. Reload the page.`);
+    if (!project) throw new Error(t("Project {id} no longer exists. Reload the page.", { id: projectId }));
     edit(project, document);
   }, note);
 }
@@ -99,7 +100,7 @@ export function newSdkKey(store) {
 /** A product reference as entitlements and packages use it: "pro" or "pro:monthly". */
 export const productRefs = (app) =>
   Object.entries(app.products ?? {}).flatMap(([id, p]) => [
-    { value: id, label: p.base_plans?.length ? `${id} (any base plan)` : id },
+    { value: id, label: p.base_plans?.length ? t("{id} (any base plan)", { id }) : id },
     ...(p.base_plans ?? []).map((b) => ({ value: `${id}:${b}`, label: `${id}:${b}` })),
   ]);
 

@@ -668,7 +668,9 @@ const STATUSES = [
   { key: "grace", label: "Grace period" },
   { key: "billing_retry", label: "Billing retry" },
   { key: "paused", label: "Paused" },
-  { key: "expired", label: `Expired (last ${STATUS_RECENT_DAYS} days)` },
+  // A literal (the dashboard translates these labels by their English text): keep the number in
+  // step with STATUS_RECENT_DAYS.
+  { key: "expired", label: "Expired (last 30 days)" },
 ];
 
 /** Where every subscription stands now: its latest purchase, and the store's renewal state. Live from the ledger. */
