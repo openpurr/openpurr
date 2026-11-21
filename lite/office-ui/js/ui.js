@@ -1,25 +1,39 @@
 // Shared UI pieces: buttons, badges, tables, forms, modals, toasts, the theme switcher.
 import { append, h, replace } from "./dom.js";
+import { localeTag, t } from "./i18n.js";
 import { IconAlert, IconCheck, IconCopy, IconMonitor, IconMoon, IconSun } from "./icons.js";
 
 // ---- Formatting ---------------------------------------------------------------------------------
+// In the dashboard's language (formatters are cached per language).
 
-const dateTime = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
-const dateOnly = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
+const formatters = new Map();
+function formatter(kind) {
+  const key = `${kind}:${localeTag()}`;
+  if (!formatters.has(key)) {
+    formatters.set(
+      key,
+      kind === "dateTime"
+        ? new Intl.DateTimeFormat(localeTag(), { dateStyle: "medium", timeStyle: "short" })
+        : kind === "date"
+          ? new Intl.DateTimeFormat(localeTag(), { dateStyle: "medium" })
+          : new Intl.RelativeTimeFormat(localeTag(), { numeric: "auto", style: "short" }),
+    );
+  }
+  return formatters.get(key);
+}
 
-export const fmtDateTime = (ms) => (ms ? dateTime.format(new Date(ms)) : "—");
-export const fmtDate = (ms) => (ms ? dateOnly.format(new Date(ms)) : "—");
+export const fmtDateTime = (ms) => (ms ? formatter("dateTime").format(new Date(ms)) : "—");
+export const fmtDate = (ms) => (ms ? formatter("date").format(new Date(ms)) : "—");
 
 export function fmtRelative(ms) {
-  if (!ms) return "never";
-  const diff = Date.now() - ms;
+  if (!ms) return t("never");
+  const diff = ms - Date.now();
   const abs = Math.abs(diff);
-  if (abs < 45_000) return "just now";
-  const mins = Math.round(abs / 60_000);
-  const hours = Math.round(abs / 3_600_000);
-  const days = Math.round(abs / 86_400_000);
-  const s = mins < 60 ? `${mins}m` : hours < 24 ? `${hours}h` : `${days}d`;
-  return diff < 0 ? `in ${s}` : `${s} ago`;
+  if (abs < 45_000) return t("just now");
+  const rel = formatter("relative");
+  if (abs < 3_600_000) return rel.format(Math.round(diff / 60_000), "minute");
+  if (abs < 86_400_000) return rel.format(Math.round(diff / 3_600_000), "hour");
+  return rel.format(Math.round(diff / 86_400_000), "day");
 }
 
 /** A timestamp shown relative, with the exact time on hover. */
@@ -57,7 +71,7 @@ export function pageHeader(title, sub, actions = []) {
 }
 
 export function breadcrumb(items) {
-  const nav = h("nav", { class: "breadcrumb", "aria-label": "Breadcrumb" });
+  const nav = h("nav", { class: "breadcrumb", "aria-label": t("Breadcrumb") });
   items.forEach((item, i) => {
     if (i) nav.append(h("span", { class: "crumb-sep" }, "/"));
     nav.append(item.href ? h("a", { href: item.href, "data-nav": "" }, item.label) : h("span", { class: "crumb-current" }, item.label));
@@ -73,7 +87,7 @@ export function errorCard(err, retry) {
   return h(
     "div",
     { class: "card" },
-    empty({ icon: IconAlert, title: "Couldn't load this page", text: err?.message ?? String(err), action: retry ? button("Try again", { variant: "outline", onClick: retry }) : null }),
+    empty({ icon: IconAlert, title: t("Couldn't load this page"), text: err?.message ?? String(err), action: retry ? button(t("Try again"), { variant: "outline", onClick: retry }) : null }),
   );
 }
 
@@ -215,15 +229,15 @@ export function seg(options, value, onChange) {
 export async function copy(text) {
   try {
     await navigator.clipboard.writeText(text);
-    toast("Copied", "success");
+    toast(t("Copied"), "success");
   } catch {
-    toast("Couldn't copy. Select the text and copy it yourself.", "error");
+    toast(t("Couldn't copy. Select the text and copy it yourself."), "error");
   }
 }
 
 /** A value in a mono block with a copy button. */
 export function copyField(value) {
-  return h("div", { class: "copy-field" }, h("code", { class: "code" }, value), button(null, { variant: "outline", icon: IconCopy(15), title: "Copy", onClick: () => copy(value) }));
+  return h("div", { class: "copy-field" }, h("code", { class: "code" }, value), button(null, { variant: "outline", icon: IconCopy(15), title: t("Copy"), onClick: () => copy(value) }));
 }
 
 // ---- Toasts -------------------------------------------------------------------------------------
@@ -270,13 +284,13 @@ export function modal({ title, sub, body, actions, onSubmit, dismissable = true 
 }
 
 /** Resolves true when confirmed. */
-export function confirmDialog({ title, text, confirmLabel = "Confirm", danger = false }) {
+export function confirmDialog({ title, text, confirmLabel = t("Confirm"), danger = false }) {
   return new Promise((resolve) => {
     let done = false;
     const finish = (v) => {
       if (!done) (done = true), resolve(v);
     };
-    const cancel = button("Cancel", { variant: "outline", onClick: () => (finish(false), m.close()) });
+    const cancel = button(t("Cancel"), { variant: "outline", onClick: () => (finish(false), m.close()) });
     const ok = button(confirmLabel, { variant: danger ? "danger" : "primary", type: "submit" });
     const m = modal({ title, sub: text, body: null, actions: [cancel, ok], onSubmit: () => finish(true) });
     const observer = new MutationObserver(() => {
@@ -292,7 +306,7 @@ export function showSecretOnce({ title, sub, value, note }) {
     title,
     sub,
     body: h("div", { class: "stack-sm" }, copyField(value), note ? h("p", { class: "small muted" }, note) : null),
-    actions: [button("Done", { type: "submit" })],
+    actions: [button(t("Done"), { type: "submit" })],
     dismissable: false,
   });
 }
@@ -321,11 +335,11 @@ matchMedia(DARK).addEventListener("change", () => storedTheme() === "auto" && ap
 
 export function themeToggle() {
   const options = [
-    { value: "light", label: "Light", icon: IconSun },
-    { value: "dark", label: "Dark", icon: IconMoon },
-    { value: "auto", label: "Match system", icon: IconMonitor },
+    { value: "light", label: t("Light"), icon: IconSun },
+    { value: "dark", label: t("Dark"), icon: IconMoon },
+    { value: "auto", label: t("Match system"), icon: IconMonitor },
   ];
-  const el = h("div", { class: "seg theme-toggle", role: "group", "aria-label": "Theme" });
+  const el = h("div", { class: "seg theme-toggle", role: "group", "aria-label": t("Theme") });
   const render = () => {
     const current = storedTheme();
     replace(

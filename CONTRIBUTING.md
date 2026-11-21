@@ -93,6 +93,7 @@ The website and the README are translated into 16 languages. English is the sour
 
 - **README:** `README.<lang>.md` files sit next to `README.md`, with a language bar between `<!-- languages -->` markers. Each starts with a `translated-from` marker holding a hash of the English README. When `README.md` changes, the [README translations](.github/workflows/readme-translations.yml) check warns about the files that are behind (it never blocks a merge). To refresh one, update its text, then set its marker to the hash printed by `node .github/scripts/check-readme-translations.mjs --hash`.
 - **Website:** the home page copy is in `website/src/i18n/` and the migration page's in `website/src/i18n/migrate/`. `en.ts` is the source; the other files are typed against it, so a string added in English fails `astro check` until each language has it.
+- **Dashboard:** write English in the code wrapped in `t("…")` (`tn()` for counts, `tx()` for sentences with elements, `tk()` for constants; see `lite/office-ui/js/i18n.js`). Translations are in `lite/office-ui/locales/<lang>.json`, keyed by the English text; anything missing shows in English. `node lite/scripts/office-strings.mjs` (also run in CI) reports missing or outdated strings per language and fails only on broken `{placeholders}`; `--missing <lang>` lists what a language lacks. Text the server writes (setup checks, API errors) is still English.
 - Corrections from native speakers are very welcome: open a pull request against the language's file.
 
 ## Pull requests

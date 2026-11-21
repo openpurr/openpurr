@@ -23,6 +23,7 @@ import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oau
 import { randomToken, sha256Hex } from "./auth-crypto";
 import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, requirePermission, TOKEN_SCOPES, type TokenScope } from "./principal";
 import { chooseProject, visibleProjects } from "./project";
+import { isOfficeLocale, OFFICE_LOCALES } from "./locales";
 import { guessSdkUrl, parseSdkUrl, storedSdkUrl } from "./setup";
 
 export const admin = new Hono<AppEnv>();
@@ -66,6 +67,21 @@ function projectOf(c: Ctx, requested?: unknown): ProjectConfig | Response {
 admin.get("/me", (c) => {
   const principal = p(c);
   return c.json({ operator: publicOperator(principal.operator), via: principal.via, permissions: [...principal.permissions] });
+});
+
+// Your own preferences. Anyone signed in may change them, with any token scope: they only affect
+// how the dashboard looks to you.
+admin.patch("/me", async (c) => {
+  const b = await body<{ locale: string | null }>(c);
+  if (!("locale" in b)) return bad(c, "Nothing to change: send {\"locale\": …}.");
+  const locale = b.locale === null || b.locale === "" ? null : b.locale;
+  if (locale !== null && !isOfficeLocale(locale)) return bad(c, `locale must be null (follow the browser) or one of ${OFFICE_LOCALES.join(", ")}.`);
+  const me = p(c).operator;
+  await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE operator SET locale = ? WHERE id = ?").bind(locale, me.id),
+    auditBy(c, "operator.locale", me.id, { locale }),
+  ]);
+  return c.json({ operator: publicOperator({ ...me, locale }) });
 });
 
 /** An app's products as charts name them: Google Play base plans separately ("pro:monthly"). */

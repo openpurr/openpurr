@@ -1,6 +1,7 @@
 // The admin API client. The dashboard uses exactly the API the CLI and MCP server use
 // (/admin/v1), signed in with the session cookie. The browser adds the Origin header to every
 // change, which the server checks (CSRF protection).
+import { t } from "./i18n.js";
 
 export class ApiError extends Error {
   constructor(status, code, message, problems = null) {
@@ -48,12 +49,12 @@ export async function api(method, path, body) {
       cache: "no-store",
     });
   } catch {
-    throw new ApiError(0, "network", "Couldn't reach openpurr. Check your connection and try again.");
+    throw new ApiError(0, "network", t("Couldn't reach openpurr. Check your connection and try again."));
   }
   const data = await res.json().catch(() => ({}));
   if (res.ok) return data;
 
-  const err = new ApiError(res.status, data.code || "error", data.message || `Request failed (HTTP ${res.status}).`, Array.isArray(data.problems) ? data.problems : null);
+  const err = new ApiError(res.status, data.code || "error", data.message || t("Request failed (HTTP {status}).", { status: res.status }), Array.isArray(data.problems) ? data.problems : null);
   const authCall = path.startsWith("/auth/");
   if (!authCall && err.code === "signed_out") handlers.signedOut?.();
   if (!authCall && err.code === "totp_enrollment_required") handlers.enrollmentRequired?.();

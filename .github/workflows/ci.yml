@@ -44,3 +44,8 @@ jobs:
       # Builds with `wrangler deploy --dry-run`, so no Cloudflare credentials are needed.
       - name: Bundle budget
         run: pnpm check:bundle
+
+      # Fails only if a translation has different {placeholders} than the English; missing and
+      # outdated strings are reported (see lite/scripts/office-strings.mjs).
+      - name: Dashboard translations
+        run: node lite/scripts/office-strings.mjs

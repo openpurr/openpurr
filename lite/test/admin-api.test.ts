@@ -440,3 +440,27 @@ describe("audit log and settings", () => {
     expect((await put(owner.session, "")).body.sdk_url).toBeNull();
   });
 });
+
+describe("dashboard language", () => {
+  it("is null (follow the browser) until set, and any operator can set their own", async () => {
+    const viewer = await operator("viewer");
+    expect((await api("GET", "/me", { session: viewer.session })).body.operator.locale).toBeNull();
+    const set = await api("PATCH", "/me", { session: viewer.session }, { body: { locale: "ja" } });
+    expect(set.status).toBe(200);
+    expect(set.body.operator.locale).toBe("ja");
+    expect((await api("GET", "/me", { session: viewer.session })).body.operator.locale).toBe("ja");
+    // Back to following the browser.
+    expect((await api("PATCH", "/me", { session: viewer.session }, { body: { locale: null } })).body.operator.locale).toBeNull();
+    const row = await env.DB.prepare("SELECT action, target FROM audit_log WHERE action = 'operator.locale' AND target = ? ORDER BY at DESC").bind(viewer.id).first();
+    expect(row).toMatchObject({ action: "operator.locale" });
+  });
+
+  it("accepts only the dashboard's languages, and works with a read-only token", async () => {
+    const dev = await operator("developer");
+    const bad = await api("PATCH", "/me", { session: dev.session }, { body: { locale: "klingon" } });
+    expect(bad.status).toBe(400);
+    expect(bad.body.message).toMatch(/zh-tw/);
+    const pat = await token(dev.id, ["read"]);
+    expect((await api("PATCH", "/me", { token: pat }, { body: { locale: "zh-tw" }, origin: null })).body.operator.locale).toBe("zh-tw");
+  });
+});

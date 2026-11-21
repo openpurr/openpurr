@@ -60,6 +60,8 @@ export interface Operator {
   failed_logins: number;
   locked_until: number | null;
   disabled_at: number | null;
+  /** Dashboard language (src/office/locales.ts); null follows the browser. */
+  locale?: string | null;
 }
 
 export interface SessionInfo {
@@ -80,6 +82,7 @@ export function publicOperator(o: Operator) {
     app_ids: o.app_ids ? (JSON.parse(o.app_ids) as string[]) : null,
     totp_enabled: !!o.totp_enabled,
     has_password: !!o.password_hash,
+    locale: o.locale ?? null,
   };
 }
 

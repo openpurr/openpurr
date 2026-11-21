@@ -7,6 +7,7 @@
 // focus and the arrow keys, show a crosshair and a tooltip with every series' value.
 
 import { h } from "./dom.js";
+import { localeTag, t } from "./i18n.js";
 
 const NS = "http://www.w3.org/2000/svg";
 const svg = (tag, attrs = {}) => {
@@ -15,39 +16,51 @@ const svg = (tag, attrs = {}) => {
   return el;
 };
 
-// ---- Number formats -----------------------------------------------------------------------------
+// ---- Number and date formats -------------------------------------------------------------------
+// In the dashboard's language (amounts stay in USD). Formatters are cached per language.
 
-const usdFull = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
-const usdWhole = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
-const countFull = new Intl.NumberFormat("en-US");
+const cache = new Map();
+function fmt(kind, make) {
+  const key = `${kind}:${localeTag()}`;
+  if (!cache.has(key)) cache.set(key, make(localeTag()));
+  return cache.get(key);
+}
+const usdFull = () => fmt("usdFull", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD" }));
+const usdWhole = () => fmt("usdWhole", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD", maximumFractionDigits: 0 }));
+const usdCompact = () => fmt("usdCompact", (l) => new Intl.NumberFormat(l, { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }));
+const countFull = () => fmt("count", (l) => new Intl.NumberFormat(l));
+const countCompact = () => fmt("countCompact", (l) => new Intl.NumberFormat(l, { notation: "compact", maximumFractionDigits: 1 }));
+const percent = () => fmt("percent", (l) => new Intl.NumberFormat(l, { style: "percent", maximumFractionDigits: 1 }));
 
 function compact(n, unit) {
-  if (unit === "percent") return `${trim(n)}%`;
-  const abs = Math.abs(n);
-  const sign = n < 0 ? "-" : "";
-  const prefix = unit === "usd" ? "$" : "";
-  if (abs >= 1e6) return `${sign}${prefix}${trim(abs / 1e6)}M`;
-  if (abs >= 1e4) return `${sign}${prefix}${trim(abs / 1e3)}K`;
-  return unit === "usd" ? usdWhole.format(n) : countFull.format(n);
+  if (unit === "percent") return percent().format(n / 100);
+  if (Math.abs(n) >= 1e4) return (unit === "usd" ? usdCompact() : countCompact()).format(n);
+  return unit === "usd" ? usdWhole().format(n) : countFull().format(n);
 }
-const trim = (n) => (Math.abs(n) >= 100 ? Math.round(n) : Math.round(n * 10) / 10).toString();
 
 /** A value for display: full precision for money in tooltips, compact for headlines. */
 export function formatValue(n, unit, { compact: short = false, whole = false } = {}) {
   if (n === null || n === undefined || Number.isNaN(n)) return "—";
   if (short) return compact(n, unit);
-  if (unit === "percent") return `${n.toFixed(1)}%`;
-  if (whole && unit === "usd" && Math.abs(n) >= 1000) return usdWhole.format(n);
-  return unit === "usd" ? usdFull.format(n) : countFull.format(n);
+  if (unit === "percent") return percent().format(n / 100);
+  if (whole && unit === "usd" && Math.abs(n) >= 1000) return usdWhole().format(n);
+  return unit === "usd" ? usdFull().format(n) : countFull().format(n);
 }
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const dateFormat = (opts) => fmt(`date:${JSON.stringify(opts)}`, (l) => new Intl.DateTimeFormat(l, { timeZone: "UTC", ...opts }));
+
+/** A period's label on the axis, or (long) in the tooltip: "Mar 4", "Mar 2026", "Week of Mar 4, 2026". */
 export function formatPeriod(date, interval, { long = false } = {}) {
   const [y, m, d] = date.split("-").map(Number);
-  if (interval === "month") return long ? `${MONTHS[m - 1]} ${y}` : `${MONTHS[m - 1]}${m === 1 ? ` ’${String(y).slice(2)}` : ""}`;
-  const label = `${MONTHS[m - 1]} ${d}`;
-  if (!long) return label;
-  return interval === "week" ? `Week of ${label}, ${y}` : `${label}, ${y}`;
+  const at = new Date(Date.UTC(y, m - 1, d));
+  if (interval === "month") {
+    if (long) return dateFormat({ month: "long", year: "numeric" }).format(at);
+    // January carries the year, so the axis shows where a year starts.
+    return dateFormat(m === 1 ? { month: "short", year: "2-digit" } : { month: "short" }).format(at);
+  }
+  if (!long) return dateFormat({ month: "short", day: "numeric" }).format(at);
+  const full = dateFormat({ month: "short", day: "numeric", year: "numeric" }).format(at);
+  return interval === "week" ? t("Week of {date}", { date: full }) : full;
 }
 
 // ---- Scales -------------------------------------------------------------------------------------
@@ -100,7 +113,7 @@ export function renderChart(host, opts) {
     const ticks = niceTicks(Math.min(0, ...values), Math.max(0, ...values));
     const yMin = ticks[0];
     const yMax = ticks.at(-1);
-    const labelWidth = Math.max(...ticks.map((t) => compact(t, unit).length)) * 7 + 10;
+    const labelWidth = Math.max(...ticks.map((tick) => compact(tick, unit).length)) * 7 + 10;
     const m = { top: 10, right: 12, bottom: 26, left: labelWidth };
     const iw = width - m.left - m.right;
     const ih = height - m.top - m.bottom;
@@ -109,12 +122,12 @@ export function renderChart(host, opts) {
     const x = (i) => m.left + band * (i + 0.5);
     const y = (v) => m.top + ih - ((v - yMin) / (yMax - yMin)) * ih;
 
-    const root = svg("svg", { width, height, viewBox: `0 0 ${width} ${height}`, class: "chart-svg", role: "img", tabindex: 0, "aria-label": opts.label ?? "Chart" });
+    const root = svg("svg", { width, height, viewBox: `0 0 ${width} ${height}`, class: "chart-svg", role: "img", tabindex: 0, "aria-label": opts.label ?? t("Chart") });
     // Gridlines and y labels.
-    for (const t of ticks) {
-      root.append(svg("line", { x1: m.left, x2: width - m.right, y1: y(t), y2: y(t), class: t === 0 ? "chart-baseline" : "chart-gridline" }));
-      const label = svg("text", { x: m.left - 8, y: y(t), class: "chart-axis", "text-anchor": "end", "dominant-baseline": "middle" });
-      label.textContent = compact(t, unit);
+    for (const tick of ticks) {
+      root.append(svg("line", { x1: m.left, x2: width - m.right, y1: y(tick), y2: y(tick), class: tick === 0 ? "chart-baseline" : "chart-gridline" }));
+      const label = svg("text", { x: m.left - 8, y: y(tick), class: "chart-axis", "text-anchor": "end", "dominant-baseline": "middle" });
+      label.textContent = compact(tick, unit);
       root.append(label);
     }
     // X labels: about one per 80px, always including the last period.

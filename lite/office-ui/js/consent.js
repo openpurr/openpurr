@@ -3,6 +3,7 @@
 // sees who is asking, where the approval is sent, and which permissions, limited to their role.
 import { get, post } from "./api.js";
 import { h, replace } from "./dom.js";
+import { t, tx } from "./i18n.js";
 import { badge, brand, busy, button, formError } from "./ui.js";
 
 export async function renderConsent(root, operator) {
@@ -15,9 +16,9 @@ export async function renderConsent(root, operator) {
     req = await get(`/oauth/requests/${encodeURIComponent(id)}`);
   } catch (err) {
     card.append(
-      h("h1", { class: "auth-title" }, "This sign-in request isn't valid anymore"),
-      h("p", { class: "auth-sub" }, err.status === 404 ? "It expired or was already used. Start connecting again from the app." : err.message),
-      h("div", null, button("Go to the dashboard", { variant: "outline", onClick: () => location.assign("/admin") })),
+      h("h1", { class: "auth-title" }, t("This sign-in request isn't valid anymore")),
+      h("p", { class: "auth-sub" }, err.status === 404 ? t("It expired or was already used. Start connecting again from the app.") : err.message),
+      h("div", null, button(t("Go to the dashboard"), { variant: "outline", onClick: () => location.assign("/admin") })),
     );
     return;
   }
@@ -30,23 +31,27 @@ export async function renderConsent(root, operator) {
       btn,
       async () => {
         const scopes = boxes.filter((b) => b.box.checked).map((b) => b.s.scope);
-        if (approve && !scopes.length) throw new Error("Pick at least one permission, or deny.");
+        if (approve && !scopes.length) throw new Error(t("Pick at least one permission, or deny."));
         const r = await post(`/oauth/requests/${encodeURIComponent(id)}/${approve ? "approve" : "deny"}`, approve ? { scopes } : {});
         location.assign(r.redirect);
       },
       errors,
     );
-  const allow = button("Allow", {});
-  const deny = button("Deny", { variant: "outline" });
+  const allow = button(t("Allow"), {});
+  const deny = button(t("Deny"), { variant: "outline" });
   allow.addEventListener("click", () => decide(true, allow));
   deny.addEventListener("click", () => decide(false, deny));
 
   card.append(
-    h("h1", { class: "auth-title" }, `Connect ${req.client.name} to openpurr?`),
+    h("h1", { class: "auth-title" }, t("Connect {app} to openpurr?", { app: req.client.name })),
     h(
       "p",
       { class: "auth-sub" },
-      `${req.client.name}${appHost ? ` (${appHost})` : ""} wants to use openpurr's MCP server as you, ${operator.email} (${operator.role}). It can only do what you allow below, and never more than your role.`,
+      t("{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.", {
+        app: appHost ? `${req.client.name} (${appHost})` : req.client.name,
+        email: operator.email,
+        role: operator.role,
+      }),
     ),
     h(
       "div",
@@ -56,22 +61,21 @@ export async function renderConsent(root, operator) {
         "div",
         { class: "checks" },
         boxes.map(({ s, box }) =>
-          h("label", { class: "check" }, box, h("span", null, s.label, s.allowed ? null : h("span", { class: "check-sub" }, "Your role doesn't allow this."))),
+          h("label", { class: "check" }, box, h("span", null, s.label, s.allowed ? null : h("span", { class: "check-sub" }, t("Your role doesn't allow this.")))),
         ),
       ),
       h(
         "p",
         { class: "small muted" },
-        "After you choose, you'll be sent to ",
-        h("strong", null, req.redirect_host),
-        ". You can disconnect it any time under Access tokens.",
+        tx("After you choose, you'll be sent to {host}. You can disconnect it any time under Access tokens.", { host: h("strong", null, req.redirect_host) }),
       ),
       req.localhost
         ? h(
             "p",
             { class: "small" },
-            badge("Check", "warning"),
-            " This sends the approval to a program on this computer (localhost). Only allow it if you just started connecting from an app you trust.",
+            badge(t("Check"), "warning"),
+            " ",
+            t("This sends the approval to a program on this computer (localhost). Only allow it if you just started connecting from an app you trust."),
           )
         : null,
       h("div", { class: "row", style: { justifyContent: "flex-end" } }, deny, allow),

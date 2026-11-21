@@ -3,6 +3,7 @@
 // Apps and products page and the Settings page.
 import { put } from "./api.js";
 import { h } from "./dom.js";
+import { t } from "./i18n.js";
 import { IconCopy } from "./icons.js";
 import { busy, button, cardWith, copy, copyField, field, formError, input, modal, seg, toast } from "./ui.js";
 
@@ -56,16 +57,16 @@ export const notificationUrl = (store) => `${location.origin}/notifications/${st
 export function editSdkUrl(settings, onSaved) {
   const errors = formError();
   const value = input({ mono: true, value: settings.sdk_url ?? "", placeholder: settings.sdk_url_guess ?? "https://purchases.example.com", autocomplete: "off", spellcheck: "false" });
-  const submit = button("Save", { type: "submit" });
+  const submit = button(t("Save"), { type: "submit" });
   const m = modal({
-    title: "SDK URL",
-    sub: "The openpurr SDK Worker's address: what your apps use as Purchases.proxyURL. Use a custom domain if you have one. Leave it empty to go back to the guess.",
-    body: h("div", { class: "stack" }, errors.el, field("Address", value, "Find it in the Cloudflare dashboard: Workers & Pages → openpurr → Settings → Domains & Routes.")),
-    actions: [button("Cancel", { variant: "outline", onClick: () => m.close() }), submit],
+    title: t("SDK URL"),
+    sub: t("The openpurr SDK Worker's address: what your apps use as Purchases.proxyURL. Use a custom domain if you have one. Leave it empty to go back to the guess."),
+    body: h("div", { class: "stack" }, errors.el, field(t("Address"), value, t("Find it in the Cloudflare dashboard: Workers & Pages → openpurr → Settings → Domains & Routes."))),
+    actions: [button(t("Cancel"), { variant: "outline", onClick: () => m.close() }), submit],
     onSubmit: async () => {
       const saved = await busy(submit, () => put("/settings", { sdk_url: value.value.trim() || null }), errors);
       if (!saved) return false;
-      toast(saved.sdk_url ? "SDK URL saved" : "SDK URL cleared", "success");
+      toast(saved.sdk_url ? t("SDK URL saved") : t("SDK URL cleared"), "success");
       await onSaved?.(saved);
       return undefined;
     },
@@ -78,20 +79,20 @@ export function sdkUrlBlock(ctx, settings) {
   const owner = ctx.can("settings:manage");
   const note =
     source === "guess"
-      ? "A guess from this back office's address, right for a default deploy. Set it to be sure, and once you add a custom domain."
+      ? t("A guess from this back office's address, right for a default deploy. Set it to be sure, and once you add a custom domain.")
       : source === "setting"
         ? url.includes(".workers.dev")
-          ? "The proxy URL ships inside your app, so switch to a domain you own before release: changing it later needs an app update."
+          ? t("The proxy URL ships inside your app, so switch to a domain you own before release: changing it later needs an app update.")
           : null
-        : "Not set. It's the openpurr SDK Worker's address (Workers & Pages → openpurr in the Cloudflare dashboard).";
-  const change = owner ? button(url && source === "setting" ? "Change" : "Set SDK URL", { variant: "outline", size: "sm", onClick: () => editSdkUrl(settings, () => ctx.reload()) }) : null;
-  const text = [note, !owner && source !== "setting" ? "An owner can set it under Settings." : null].filter(Boolean).join(" ");
+        : t("Not set. It's the openpurr SDK Worker's address (Workers & Pages → openpurr in the Cloudflare dashboard).");
+  const change = owner ? button(url && source === "setting" ? t("Change") : t("Set SDK URL"), { variant: "outline", size: "sm", onClick: () => editSdkUrl(settings, () => ctx.reload()) }) : null;
+  const text = [note, !owner && source !== "setting" ? t("An owner can set it under Settings.") : null].filter(Boolean).join(" ");
   return h("div", { class: "stack-sm" }, url ? copyField(url) : null, text ? h("p", { class: "small muted" }, text) : null, change ? h("div", null, change) : null);
 }
 
 /** The card at the top of Apps and products. */
 export function sdkUrlCard(ctx, settings) {
-  return cardWith("SDK URL", "Your apps send their requests here (the SDK's proxy URL). It's the openpurr SDK Worker, not this back office, and the same for every project.", h("div", { class: "card-body" }, sdkUrlBlock(ctx, settings)));
+  return cardWith(t("SDK URL"), t("Your apps send their requests here (the SDK's proxy URL). It's the openpurr SDK Worker, not this back office, and the same for every project."), h("div", { class: "card-body" }, sdkUrlBlock(ctx, settings)));
 }
 
 function codeBlock(text) {
@@ -99,7 +100,7 @@ function codeBlock(text) {
     "div",
     { class: "snippet" },
     h("pre", { class: "code snippet-code" }, text),
-    button(null, { variant: "outline", icon: IconCopy(15), title: "Copy code", onClick: () => copy(text) }),
+    button(null, { variant: "outline", icon: IconCopy(15), title: t("Copy code"), onClick: () => copy(text) }),
   );
 }
 
@@ -131,27 +132,27 @@ export function connectSection(app, settings) {
     h(
       "div",
       { class: "stack-sm" },
-      h("h3", { class: "subhead" }, "Setup code"),
+      h("h3", { class: "subhead" }, t("Setup code")),
       setupCode(app.store, url ?? PLACEHOLDER_URL, app.sdk_keys?.[0] ?? "<SDK key>"),
       h(
         "p",
         { class: "small muted" },
         apple
-          ? "Keep entitlement verification at its default (disabled): signed responses rely on RevenueCat's own key."
-          : "Keep entitlement verification at its default (disabled). Don't use RevenueCatUI paywalls or ads: on Android they call RevenueCat's servers directly, even with a proxy URL.",
+          ? t("Keep entitlement verification at its default (disabled): signed responses rely on RevenueCat's own key.")
+          : t("Keep entitlement verification at its default (disabled). Don't use RevenueCatUI paywalls or ads: on Android they call RevenueCat's servers directly, even with a proxy URL."),
       ),
     ),
     h(
       "div",
       { class: "stack-sm" },
-      h("h3", { class: "subhead" }, "Store notifications"),
+      h("h3", { class: "subhead" }, t("Store notifications")),
       copyField(notificationUrl(app.store)),
       h(
         "p",
         { class: "small muted" },
         apple
-          ? "In App Store Connect → your app → App Information → App Store Server Notifications: set this as both the production and the sandbox URL, Version 2."
-          : "The endpoint of a Pub/Sub push subscription with authentication on, on the topic set in Play Console → Monetization setup → Real-time developer notifications.",
+          ? t("In App Store Connect → your app → App Information → App Store Server Notifications: set this as both the production and the sandbox URL, Version 2.")
+          : t("The endpoint of a Pub/Sub push subscription with authentication on, on the topic set in Play Console → Monetization setup → Real-time developer notifications."),
       ),
     ),
   );
