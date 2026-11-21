@@ -3,6 +3,7 @@
 import Base from "../layouts/Base.astro";
 import SdkSnippet from "./SdkSnippet.astro";
 import DashboardDemo from "./DashboardDemo.astro";
+import SavingsCalculator from "./SavingsCalculator.astro";
 import Faq from "./Faq.astro";
 import StructuredData from "./StructuredData.astro";
 import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
@@ -164,8 +165,10 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
     </div>
   </section>
 
+  <SavingsCalculator locale={locale} />
+
   <!-- Honest fit -->
-  <section class="alt">
+  <section>
     <div class="wrap fit">
       <div>
         <span class="eyebrow">{h.fit.eyebrow}</span>
@@ -182,7 +185,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   </section>
 
   <!-- Roadmap -->
-  <section id="roadmap">
+  <section class="alt" id="roadmap">
     <div class="wrap">
       <div class="section-head">
         <span class="eyebrow">{h.roadmap.eyebrow}</span>

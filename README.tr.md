@@ -60,6 +60,29 @@ Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları 
 
 İki sürüm de `spec/` içindeki aynı uyumluluk test paketinden geçer. Uygulamanız size ait özel bir alan adını gösterdiği sürece, uygulama güncellemesi yayınlamadan Lite'tan Standard'a geçebilirsiniz.
 
+## RevenueCat'e kıyasla cebinizde kalan
+
+RevenueCat'in Pro planı aylık 2.500 $ izlenen gelirin altında ücretsizdir, sonrasında gelirin tamamının %1'ini alır. Lite, Cloudflare'in ücretsiz planında çalışır; uygulamanız bunu aştığında ayda 5 $'dan başlayan Workers Paid ile devam eder.
+
+<a href="https://openpurr.org/tr/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="Tasarruf hesaplayıcı: aylık gelir 250.000 $'a çıkarken RevenueCat'in aylık maliyeti artar, openpurr Lite'ınki sıfıra yakın kalır">
+  </picture>
+</a>
+
+| Aylık gelir | RevenueCat, aylık | openpurr Lite, aylık | Yıllık tasarruf |
+|---|--:|--:|--:|
+| $2.000 | $0 | $0 | **$0** |
+| $5.000 | $50 | $0 | **$600** |
+| $10.000 | $100 | $0 | **$1.200** |
+| $25.000 | $250 | $5 | **$2.940** |
+| $50.000 | $500 | $5 | **$5.939** |
+| $100.000 | $1.000 | $9 | **$11.896** |
+| $250.000 | $2.500 | $20 | **$29.764** |
+
+Tahminlerdir; fiyatlar 21 Kasım 2026 tarihinde kontrol edildi. Günlük aktif kullanıcı başına yaklaşık 1,50 $ aylık gelir ve günde 10 SDK isteği varsayılır; buna göre Workers Paid'e geçiş aylık yaklaşık $11.250 civarındadır. [Kendi rakamlarınızla deneyin](https://openpurr.org/tr/#savings).
+
 ## SDK uyumluluğu
 
 İlk günden itibaren resmi ve değiştirilmemiş SDK'lar kullanılır (hepsi MIT lisanslı):

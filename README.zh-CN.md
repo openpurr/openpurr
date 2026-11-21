@@ -60,6 +60,29 @@ openpurr 是一个独立项目，与 RevenueCat, Inc. 没有任何关联，也�
 
 两个版本都通过 `spec/` 中的同一套一致性测试。只要你的 App 指向你自己拥有的自定义域名，从 Lite 迁移到 Standard 就无需发布 App 更新。
 
+## 与 RevenueCat 相比，你能留下多少
+
+RevenueCat 的 Pro 方案在每月跟踪收入低于 2,500 美元时免费，超过后按全部收入的 1% 收费。Lite 运行在 Cloudflare 免费套餐上；当应用超出免费额度后，可使用每月 5 美元起的 Workers Paid。
+
+<a href="https://openpurr.org/zh-cn/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="节省计算器：月收入升至 250,000 美元时，RevenueCat 的每月费用不断上升，而 openpurr Lite 的接近于零">
+  </picture>
+</a>
+
+| 月收入 | RevenueCat（每月） | openpurr Lite（每月） | 每年节省 |
+|---|--:|--:|--:|
+| US$2,000 | US$0 | US$0 | **US$0** |
+| US$5,000 | US$50 | US$0 | **US$600** |
+| US$10,000 | US$100 | US$0 | **US$1,200** |
+| US$25,000 | US$250 | US$5 | **US$2,940** |
+| US$50,000 | US$500 | US$5 | **US$5,939** |
+| US$100,000 | US$1,000 | US$9 | **US$11,896** |
+| US$250,000 | US$2,500 | US$20 | **US$29,764** |
+
+以上为估算，价格核对于 2026年11月21日。假设每位日活跃用户每月带来约 1.50 美元收入、每天 10 个 SDK 请求，因此约在月收入 US$11,250 时改用 Workers Paid。 [用你自己的数字试试](https://openpurr.org/zh-cn/#savings).
+
 ## SDK 兼容性
 
 从第一天起就使用官方、未经修改的 SDK（全部采用 MIT 许可）：

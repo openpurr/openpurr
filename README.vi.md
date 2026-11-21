@@ -60,6 +60,29 @@ openpurr cũng phù hợp nếu bạn đang dùng SDK của RevenueCat và muố
 
 Cả hai phiên bản đều vượt qua cùng một bộ kiểm thử tương thích trong `spec/`. Bạn có thể chuyển từ Lite sang Standard mà không cần phát hành bản cập nhật ứng dụng, miễn là ứng dụng của bạn trỏ tới một tên miền riêng mà bạn sở hữu.
 
+## Số tiền bạn giữ lại so với RevenueCat
+
+Gói Pro của RevenueCat miễn phí khi doanh thu được theo dõi dưới 2.500 $ mỗi tháng, sau đó thu 1% trên toàn bộ doanh thu. Lite chạy trên gói miễn phí của Cloudflare, và trên Workers Paid, từ 5 $ mỗi tháng, khi ứng dụng của bạn vượt quá gói đó.
+
+<a href="https://openpurr.org/vi/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="Công cụ tính tiết kiệm: khi doanh thu hằng tháng tăng lên 250.000 $, chi phí hằng tháng của RevenueCat tăng theo còn của openpurr Lite gần như bằng không">
+  </picture>
+</a>
+
+| Doanh thu hằng tháng | RevenueCat, mỗi tháng | openpurr Lite, mỗi tháng | Tiết kiệm mỗi năm |
+|---|--:|--:|--:|
+| 2.000 US$ | 0 US$ | 0 US$ | **0 US$** |
+| 5.000 US$ | 50 US$ | 0 US$ | **600 US$** |
+| 10.000 US$ | 100 US$ | 0 US$ | **1.200 US$** |
+| 25.000 US$ | 250 US$ | 5 US$ | **2.940 US$** |
+| 50.000 US$ | 500 US$ | 5 US$ | **5.939 US$** |
+| 100.000 US$ | 1.000 US$ | 9 US$ | **11.896 US$** |
+| 250.000 US$ | 2.500 US$ | 20 US$ | **29.764 US$** |
+
+Số liệu ước tính, giá được kiểm tra vào 21 tháng 11, 2026. Giả định khoảng 1,50 $ doanh thu hằng tháng và 10 yêu cầu SDK mỗi ngày cho mỗi người dùng hoạt động hằng ngày, nên mức chuyển sang Workers Paid là khoảng 11.250 US$ mỗi tháng. [Thử với số liệu của bạn](https://openpurr.org/vi/#savings).
+
 ## Tương thích SDK
 
 Ngay từ đầu, openpurr dùng các SDK chính thức, không chỉnh sửa (tất cả đều theo giấy phép MIT):

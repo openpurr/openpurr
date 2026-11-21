@@ -60,6 +60,29 @@ Het past ook goed als je de RevenueCat SDK's al gebruikt en wilt houden. openpur
 
 Beide edities doorstaan dezelfde conformiteitstests in `spec/`. Je kunt zonder app-update overstappen van Lite naar Standard, zolang je app naar een eigen domein wijst dat van jou is.
 
+## Wat je overhoudt ten opzichte van RevenueCat
+
+Het Pro-abonnement van RevenueCat is gratis onder $ 2.500 bijgehouden omzet per maand en rekent daarna 1% van alles. Lite draait op het gratis abonnement van Cloudflare, en op Workers Paid, vanaf $ 5 per maand, zodra je app daar overheen groeit.
+
+<a href="https://openpurr.org/nl/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="De besparingscalculator: als de maandomzet stijgt tot $ 250.000, lopen de maandkosten bij RevenueCat op terwijl die van openpurr Lite bijna nul blijven">
+  </picture>
+</a>
+
+| Maandelijkse omzet | RevenueCat, per maand | openpurr Lite, per maand | Bespaard per jaar |
+|---|--:|--:|--:|
+| US$ 2.000 | US$ 0 | US$ 0 | **US$ 0** |
+| US$ 5.000 | US$ 50 | US$ 0 | **US$ 600** |
+| US$ 10.000 | US$ 100 | US$ 0 | **US$ 1.200** |
+| US$ 25.000 | US$ 250 | US$ 5 | **US$ 2.940** |
+| US$ 50.000 | US$ 500 | US$ 5 | **US$ 5.939** |
+| US$ 100.000 | US$ 1.000 | US$ 9 | **US$ 11.896** |
+| US$ 250.000 | US$ 2.500 | US$ 20 | **US$ 29.764** |
+
+Schattingen, met prijzen gecontroleerd op 21 november 2026. Ze gaan uit van ongeveer $ 1,50 maandomzet en 10 SDK-verzoeken per dag per dagelijks actieve gebruiker, waardoor de overstap naar Workers Paid rond US$ 11.250 per maand ligt. [Reken met je eigen cijfers](https://openpurr.org/nl/#savings).
+
 ## SDK-compatibiliteit
 
 Vanaf dag één worden de officiële, ongewijzigde SDK's gebruikt (allemaal met MIT-licentie):

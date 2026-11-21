@@ -1,0 +1,663 @@
+---
+// The home page's savings section: what a RevenueCat customer would keep with openpurr Lite, at a monthly revenue the visitor picks:
+// a slider, the yearly figure, and a chart of both monthly costs across revenue levels with the gap
+// between them filled in. Drag the slider or the chart. On first view, it draws itself and sweeps
+// up to the initial revenue (not with reduced motion).
+//
+// The cost model is ../savings.ts, shared with the READMEs' table. Without JavaScript, the figures
+// for the initial revenue, the chart and the table still show; only the slider needs it.
+import { fill, langTag, t, type Locale } from "../i18n";
+import { LEVELS, PRICES_CHECKED, SLIDER, paidPlanFrom, savings } from "../savings";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const s = t(locale).home.savings;
+const tag = langTag(locale);
+const usd = new Intl.NumberFormat(tag, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const compact = new Intl.NumberFormat(tag, { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 0 });
+const date = new Intl.DateTimeFormat(tag, { dateStyle: "long", timeZone: "UTC" }).format(new Date(PRICES_CHECKED));
+const money = (n: number) => usd.format(Math.round(n));
+const start = savings(SLIDER.initial);
+
+// The slider runs 0 to 1000 on a log scale of revenue.
+const pos = (v: number) => Math.log(v / SLIDER.min) / Math.log(SLIDER.max / SLIDER.min);
+const toSlider = (v: number) => Math.round(1000 * pos(v));
+
+// Chart geometry, in viewBox units. The client script repeats W, H and PAD to place the marker.
+const W = 640, H = 300;
+const PAD = { l: 52, r: 18, t: 18, b: 34 };
+const YMAX = 2_750;
+const x = (v: number) => PAD.l + pos(v) * (W - PAD.l - PAD.r);
+const y = (c: number) => PAD.t + (1 - c / YMAX) * (H - PAD.t - PAD.b);
+const pt = (v: number, c: number) => `${x(v).toFixed(1)},${y(c).toFixed(1)}`;
+
+// Sample along the log axis, plus the points either side of RevenueCat's $2,500 threshold so its step is sharp.
+const samples = [...Array.from({ length: 160 }, (_, i) => SLIDER.min * Math.pow(SLIDER.max / SLIDER.min, i / 159)), 2_499.99, 2_500]
+  .sort((a, b) => a - b);
+const rcLine = "M" + samples.map((v) => pt(v, savings(v).rc)).join(" L");
+const opLine = "M" + samples.map((v) => pt(v, savings(v).op)).join(" L");
+const gap = `${rcLine} L${[...samples].reverse().map((v) => pt(v, savings(v).op)).join(" L")} Z`;
+const xTicks = [1_000, 10_000, 100_000];
+const yTicks = [0, 1_000, 2_000];
+const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
+---
+
+<section class="alt" id="savings">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="eyebrow">{s.eyebrow}</span>
+      <h2>{s.title}</h2>
+      <p class="lede">{s.lede}</p>
+    </div>
+<div
+  class="calc card"
+  data-savings
+  data-tag={tag}
+  data-strings={JSON.stringify(client)}
+  data-initial={toSlider(SLIDER.initial)}
+  data-from={toSlider(LEVELS[0])}
+  style={`--fill: ${toSlider(SLIDER.initial) / 10}%`}
+>
+  <div class="calc-grid">
+    <div class="calc-side">
+      <div class="calc-input">
+        <label for="savings-mrr">{s.revenue}</label>
+        <output for="savings-mrr" data-out="mrr">{money(SLIDER.initial)}</output>
+      </div>
+      <input
+        id="savings-mrr"
+        type="range"
+        min="0"
+        max="1000"
+        step="1"
+        value={toSlider(SLIDER.initial)}
+        aria-valuetext={money(SLIDER.initial)}
+        data-min={SLIDER.min}
+        data-max={SLIDER.max}
+      />
+      <div class="calc-scale" aria-hidden="true"><span>{money(SLIDER.min)}</span><span>{money(SLIDER.max)}</span></div>
+
+      <div class="calc-keep" aria-live="polite">
+        <span class="calc-label">{s.saved}</span>
+        <strong data-out="year">{money(start.perYear)}</strong>
+      </div>
+      <dl class="calc-pair">
+        <div>
+          <dt><i class="sw rc"></i>{s.rc}</dt>
+          <dd data-out="rc">{fill(s.perMonth, { amount: money(start.rc) })}</dd>
+        </div>
+        <div>
+          <dt><i class="sw op"></i>{s.op}</dt>
+          <dd data-out="op">{fill(s.perMonth, { amount: money(start.op) })}</dd>
+          <dd class="calc-plan" data-out="plan">{start.plan === "free" ? s.free : s.paid}</dd>
+        </div>
+      </dl>
+    </div>
+
+    <div class="calc-chart" dir="ltr">
+      <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={s.chartLabel} data-chart>
+        <defs>
+          <linearGradient id="savings-gap" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="var(--purple)" stop-opacity="0.42"></stop>
+            <stop offset="1" stop-color="var(--purple)" stop-opacity="0.06"></stop>
+          </linearGradient>
+        </defs>
+        <g class="axis">
+          {
+            yTicks.map((c) => (
+              <g>
+                <line x1={PAD.l} x2={W - PAD.r} y1={y(c)} y2={y(c)} />
+                <text x={PAD.l - 8} y={y(c) + 4} text-anchor="end">{compact.format(c)}</text>
+              </g>
+            ))
+          }
+          {
+            xTicks.map((v) => (
+              <text x={x(v)} y={H - 10} text-anchor="middle">{compact.format(v)}</text>
+            ))
+          }
+        </g>
+        <path class="gap" d={gap} fill="url(#savings-gap)"></path>
+        <path class="line rc" d={rcLine} pathLength="1"></path>
+        <path class="line op" d={opLine}></path>
+        <g class="marker" data-marker>
+          <line class="marker-line" y1={PAD.t} y2={H - PAD.b} x1={x(SLIDER.initial)} x2={x(SLIDER.initial)} data-m="line"></line>
+          <line class="marker-gap" x1={x(SLIDER.initial)} x2={x(SLIDER.initial)} y1={y(start.rc)} y2={y(start.op)} data-m="gap"></line>
+          <circle class="dot rc" r="6" cx={x(SLIDER.initial)} cy={y(start.rc)} data-m="rc"></circle>
+          <circle class="dot op" r="6" cx={x(SLIDER.initial)} cy={y(start.op)} data-m="op"></circle>
+          <text class="marker-tag" x={x(SLIDER.initial) - 12} y={y(start.rc) - 14} text-anchor="end" data-m="tag">
+            {fill(s.perMonth, { amount: money(start.perMonth) })}
+          </text>
+        </g>
+      </svg>
+      <p class="calc-legend" aria-hidden="true">
+        <span><i class="sw rc"></i>{s.rc}</span>
+        <span><i class="sw op"></i>{s.op}</span>
+        <span><i class="sw gap"></i>{s.gapLegend}</span>
+      </p>
+    </div>
+  </div>
+
+  <details>
+    <summary>{s.tableSummary}</summary>
+    <div class="calc-table">
+      <table>
+        <thead>
+          <tr>
+            <th scope="col">{s.colRevenue}</th>
+            <th scope="col">{s.colRc}</th>
+            <th scope="col">{s.colOp}</th>
+            <th scope="col">{s.colSaved}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            LEVELS.map((level) => {
+              const r = savings(level);
+              return (
+                <tr>
+                  <th scope="row">{money(level)}</th>
+                  <td>{money(r.rc)}</td>
+                  <td>{money(r.op)}</td>
+                  <td>{money(r.perYear)}</td>
+                </tr>
+              );
+            })
+          }
+        </tbody>
+      </table>
+    </div>
+  </details>
+  <details>
+    <summary>{s.methodSummary}</summary>
+    <ul class="calc-method">
+      {s.method.map((m) => <li>{fill(m, { paidFrom: money(paidPlanFrom()), date })}</li>)}
+    </ul>
+  </details>
+</div>
+
+  </div>
+</section>
+
+<script>
+  import { savings } from "../savings";
+
+  // Must match the frontmatter's chart geometry.
+  const W = 640, H = 300;
+  const PAD = { l: 52, r: 18, t: 18, b: 34 };
+  const YMAX = 2_750;
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  for (const root of document.querySelectorAll<HTMLElement>("[data-savings]")) {
+    const input = root.querySelector<HTMLInputElement>('input[type="range"]')!;
+    const svg = root.querySelector<SVGSVGElement>("[data-chart]")!;
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-out="${k}"]`)!;
+    const mark = (k: string) => root.querySelector<SVGElement>(`[data-m="${k}"]`)!;
+    const strings = JSON.parse(root.dataset.strings!) as { perMonth: string; free: string; paid: string };
+    const usd = new Intl.NumberFormat(root.dataset.tag, { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+    const money = (n: number) => usd.format(Math.round(n));
+    const min = Number(input.dataset.min);
+    const max = Number(input.dataset.max);
+
+    const xOf = (p: number) => PAD.l + (p / 1000) * (W - PAD.l - PAD.r);
+    const yOf = (c: number) => PAD.t + (1 - c / YMAX) * (H - PAD.t - PAD.b);
+
+    // Log scale, rounded to two significant figures so the slider lands on readable amounts.
+    const value = () => {
+      const raw = min * Math.pow(max / min, Number(input.value) / 1000);
+      const unit = Math.pow(10, Math.floor(Math.log10(raw)) - 1);
+      return Math.round(raw / unit) * unit;
+    };
+
+    // The yearly figure counts to its new value rather than jumping.
+    let shown = savings(value()).perYear;
+    let target = shown;
+    let raf = 0;
+    const count = () => {
+      const step = target - shown;
+      shown = Math.abs(step) < 1 ? target : shown + step * 0.18;
+      out("year").textContent = money(shown);
+      raf = shown === target ? 0 : requestAnimationFrame(count);
+    };
+
+    const render = () => {
+      const mrr = value();
+      const r = savings(mrr);
+      out("mrr").textContent = money(mrr);
+      input.setAttribute("aria-valuetext", money(mrr));
+      out("rc").textContent = strings.perMonth.replace("{amount}", money(r.rc));
+      out("op").textContent = strings.perMonth.replace("{amount}", money(r.op));
+      out("plan").textContent = r.plan === "free" ? strings.free : strings.paid;
+      root.style.setProperty("--fill", `${Number(input.value) / 10}%`);
+
+      const x = String(xOf(Number(input.value)));
+      for (const k of ["line", "gap"]) mark(k).setAttribute("x1", x), mark(k).setAttribute("x2", x);
+      mark("gap").setAttribute("y1", String(yOf(r.rc)));
+      mark("gap").setAttribute("y2", String(yOf(r.op)));
+      mark("rc").setAttribute("cx", x);
+      mark("rc").setAttribute("cy", String(yOf(r.rc)));
+      mark("op").setAttribute("cx", x);
+      mark("op").setAttribute("cy", String(yOf(r.op)));
+      // The monthly gap, beside the RevenueCat dot: to its left, above the line (which climbs to the right).
+      const tag = mark("tag");
+      tag.textContent = strings.perMonth.replace("{amount}", money(r.perMonth));
+      tag.setAttribute("x", String(Number(x) - 12));
+      tag.setAttribute("y", String(Math.max(PAD.t + 12, yOf(r.rc) - 14)));
+      tag.style.visibility = r.perMonth > 0 ? "visible" : "hidden";
+
+      target = r.perYear;
+      if (still) out("year").textContent = money(target), (shown = target);
+      else if (!raf) raf = requestAnimationFrame(count);
+    };
+
+    // Dragging on the chart moves the slider.
+    let touched = false;
+    const fromPointer = (e: PointerEvent) => {
+      const box = svg.getBoundingClientRect();
+      const px = ((e.clientX - box.left) / box.width) * W;
+      input.value = String(Math.round(Math.min(1, Math.max(0, (px - PAD.l) / (W - PAD.l - PAD.r))) * 1000));
+      render();
+    };
+    svg.addEventListener("pointerdown", (e) => {
+      touched = true;
+      svg.setPointerCapture(e.pointerId);
+      fromPointer(e);
+    });
+    svg.addEventListener("pointermove", (e) => {
+      if (svg.hasPointerCapture(e.pointerId)) fromPointer(e);
+    });
+    input.addEventListener("input", () => {
+      touched = true;
+      render();
+    });
+
+    if (still) {
+      root.classList.add("seen");
+      render();
+      continue;
+    }
+
+    // First view: draw the RevenueCat line, then sweep the revenue up to the initial value.
+    const from = Number(root.dataset.from);
+    const to = Number(root.dataset.initial);
+    input.value = String(from);
+    shown = target = savings(value()).perYear;
+    root.classList.add("armed");
+    render();
+    new IntersectionObserver(
+      ([e], io) => {
+        if (!e.isIntersecting) return;
+        io.disconnect();
+        root.classList.add("seen");
+        const t0 = performance.now() + 500;
+        const sweep = (now: number) => {
+          if (touched) return;
+          const k = Math.min(1, Math.max(0, (now - t0) / 1600));
+          const eased = 1 - Math.pow(1 - k, 3);
+          input.value = String(Math.round(from + (to - from) * eased));
+          render();
+          if (k < 1) requestAnimationFrame(sweep);
+        };
+        requestAnimationFrame(sweep);
+      },
+      { threshold: 0.35 },
+    ).observe(root);
+  }
+</script>
+
+<style>
+  .calc {
+    --rc: var(--wip);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    border-color: color-mix(in srgb, var(--purple) 35%, var(--line));
+    background:
+      radial-gradient(60% 80% at 100% 0%, color-mix(in srgb, var(--purple) 12%, transparent), transparent 70%),
+      var(--card);
+  }
+  .calc-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 36px;
+    align-items: center;
+  }
+  @media (max-width: 900px) {
+    .calc-grid {
+      grid-template-columns: minmax(0, 1fr);
+      gap: 24px;
+    }
+  }
+  @media (max-width: 640px) {
+    .calc {
+      padding: 20px;
+    }
+  }
+  .calc-input {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .calc-input label {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .calc-input output {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The slider: a purple fill up to the thumb. --fill is set on .calc. */
+  input[type="range"] {
+    width: 100%;
+    height: 28px;
+    margin: 0;
+    background: transparent;
+    appearance: none;
+    cursor: pointer;
+  }
+  input[type="range"]:focus-visible {
+    outline: 2px solid var(--purple);
+    outline-offset: 4px;
+    border-radius: 6px;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right, var(--purple) var(--fill), var(--line) var(--fill));
+  }
+  :global([dir="rtl"]) input[type="range"]::-webkit-slider-runnable-track {
+    background: linear-gradient(to left, var(--purple) var(--fill), var(--line) var(--fill));
+  }
+  input[type="range"]::-moz-range-track {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--line);
+  }
+  input[type="range"]::-moz-range-progress {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--purple);
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    margin-top: -9px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 3px solid var(--purple);
+    box-shadow: 0 2px 8px rgba(64, 40, 160, 0.35);
+  }
+  input[type="range"]::-moz-range-thumb {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 3px solid var(--purple);
+    box-shadow: 0 2px 8px rgba(64, 40, 160, 0.35);
+  }
+  .calc-scale {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .calc-keep {
+    margin: 22px 0 14px;
+    display: flex;
+    flex-direction: column;
+  }
+  .calc-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+  .calc-keep strong {
+    font-size: clamp(2.4rem, 5vw, 3.4rem);
+    line-height: 1.1;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    background: linear-gradient(100deg, var(--purple-strong), var(--purple) 60%, #c06cf0);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .calc-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 0;
+  }
+  .calc-pair div {
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg-alt);
+  }
+  .calc-pair dt {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+  .calc-pair dd {
+    margin: 2px 0 0;
+    font-weight: 700;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .calc-pair dd.calc-plan {
+    font-weight: 400;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  /* Legend swatches */
+  .sw {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 3px;
+    flex: none;
+  }
+  .sw.rc {
+    background: var(--rc);
+  }
+  .sw.op {
+    background: var(--purple-strong);
+  }
+  .sw.gap {
+    background: color-mix(in srgb, var(--purple) 35%, transparent);
+  }
+
+  /* Chart */
+  .calc-chart {
+    min-width: 0;
+  }
+  svg {
+    display: block;
+    width: 100%;
+    height: auto;
+    touch-action: pan-y;
+    cursor: ew-resize;
+    user-select: none;
+    overflow: visible;
+  }
+  .axis line {
+    stroke: var(--line);
+    stroke-dasharray: 3 4;
+  }
+  .axis text {
+    fill: var(--muted);
+    font-size: 13px;
+    font-family: var(--font);
+  }
+  .line {
+    fill: none;
+    stroke-width: 3;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+  }
+  .line.rc {
+    stroke: var(--rc);
+  }
+  .line.op {
+    stroke: var(--purple-strong);
+  }
+  .marker-line {
+    stroke: var(--muted);
+    stroke-width: 1;
+    stroke-dasharray: 2 4;
+  }
+  .marker-gap {
+    stroke: var(--purple);
+    stroke-width: 3;
+    stroke-linecap: round;
+    opacity: 0.55;
+  }
+  .marker-tag {
+    fill: var(--purple-strong);
+    font-family: var(--font);
+    font-size: 15px;
+    font-weight: 700;
+    paint-order: stroke;
+    stroke: var(--card);
+    stroke-width: 5px;
+    stroke-linejoin: round;
+  }
+  .dot {
+    stroke: var(--card);
+    stroke-width: 3;
+  }
+  .dot.rc {
+    fill: var(--rc);
+  }
+  .dot.op {
+    fill: var(--purple-strong);
+  }
+  /* The chart scales down on phones, so its text scales up to stay readable. */
+  @media (max-width: 640px) {
+    .axis text {
+      font-size: 22px;
+    }
+    .marker-tag {
+      font-size: 24px;
+    }
+  }
+  .calc-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 6px 18px;
+    margin: 10px 0 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .calc-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* First view: the RevenueCat line draws, the gap fades in, the marker follows. The script adds
+     .armed when it can animate (so without JS the chart simply shows) and .seen once it's in view. */
+  @media (prefers-reduced-motion: no-preference) {
+    .calc.armed:not(.seen) .line.rc {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+    .calc.armed:not(.seen) .gap,
+    .calc.armed:not(.seen) .marker {
+      opacity: 0;
+    }
+    .calc.seen .line.rc {
+      stroke-dasharray: 1;
+      animation: draw 1.4s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+    .calc.seen .gap {
+      animation: fade 1.2s ease-out 0.5s both;
+    }
+    .calc.seen .marker {
+      animation: fade 0.6s ease-out 0.3s both;
+    }
+  }
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes fade {
+    from {
+      opacity: 0;
+    }
+  }
+
+  details {
+    border-top: 1px solid var(--line);
+    padding: 12px 0 0;
+    margin-top: 14px;
+  }
+  .calc-grid + details {
+    margin-top: 26px;
+  }
+  summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .calc-table {
+    overflow-x: auto;
+    margin-top: 12px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+  }
+  th,
+  td {
+    padding: 8px 10px;
+    text-align: end;
+    border-bottom: 1px solid var(--line);
+    white-space: nowrap;
+  }
+  thead th {
+    color: var(--muted);
+    font-weight: 600;
+  }
+  th:first-child {
+    text-align: start;
+  }
+  tbody th {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  td:last-child {
+    color: var(--purple-strong);
+    font-weight: 600;
+  }
+  .calc-method {
+    margin: 12px 0 0;
+    padding-inline-start: 20px;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .calc-method li + li {
+    margin-top: 6px;
+  }
+</style>

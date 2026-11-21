@@ -60,6 +60,29 @@ openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲�
 
 兩個版本都通過 `spec/` 中的同一套一致性測試。只要你的 App 指向你自己擁有的自訂網域，從 Lite 搬移到 Standard 就不必發布 App 更新。
 
+## 和 RevenueCat 相比，你能留下多少
+
+RevenueCat 的 Pro 方案在每月追蹤營收低於 2,500 美元時免費，超過後按全部營收的 1% 收費。Lite 在 Cloudflare 免費方案上執行；當 App 超出免費額度後，可改用每月 5 美元起的 Workers Paid。
+
+<a href="https://openpurr.org/zh-tw/#savings">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-savings-dark.webp">
+    <img src=".github/assets/openpurr-savings.webp" alt="節省計算器：月營收升至 250,000 美元時，RevenueCat 的每月費用不斷上升，而 openpurr Lite 的接近於零">
+  </picture>
+</a>
+
+| 月營收 | RevenueCat（每月） | openpurr Lite（每月） | 每年省下 |
+|---|--:|--:|--:|
+| US$2,000 | US$0 | US$0 | **US$0** |
+| US$5,000 | US$50 | US$0 | **US$600** |
+| US$10,000 | US$100 | US$0 | **US$1,200** |
+| US$25,000 | US$250 | US$5 | **US$2,940** |
+| US$50,000 | US$500 | US$5 | **US$5,939** |
+| US$100,000 | US$1,000 | US$9 | **US$11,896** |
+| US$250,000 | US$2,500 | US$20 | **US$29,764** |
+
+以上為估算，價格查核於 2026年11月21日。假設每位每日活躍使用者每月帶來約 1.50 美元營收、每天 10 個 SDK 請求，因此約在月營收 US$11,250 時改用 Workers Paid。 [用你自己的數字試試](https://openpurr.org/zh-tw/#savings).
+
 ## SDK 相容性
 
 從第一天起就使用官方、未經修改的 SDK（全部採用 MIT 授權）：
