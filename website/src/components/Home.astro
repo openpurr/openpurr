@@ -28,17 +28,19 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   <section class="hero">
     <div class="wrap hero-grid">
       <div>
-        <h1 set:html={h.hero.title} />
-        <p class="lede">{h.hero.lede}</p>
-        <div class="ctas">
+        <h1 class="rise" set:html={h.hero.title} />
+        <p class="lede rise" style="--d: 90ms">{h.hero.lede}</p>
+        <div class="ctas rise" style="--d: 180ms">
           <a class="btn btn-primary" href={REPO_URL}>{h.hero.star}</a>
           <a class="btn btn-ghost" href="#how">{h.hero.how}</a>
         </div>
       </div>
-      <SdkSnippet locale={locale} />
+      <div class="rise snippet-wrap" style="--d: 260ms">
+        <SdkSnippet locale={locale} />
+      </div>
     </div>
     <div class="wrap">
-      <figure class="shot">
+      <figure class="shot rise" style="--d: 380ms">
         <picture>
           <source media="(prefers-color-scheme: dark)" srcset="/dashboard-dark.png" />
           <img src="/dashboard.png" width="2880" height="2000" alt={h.hero.shotAlt} decoding="async" />
@@ -229,10 +231,67 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
 
 <style>
   .hero {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     padding: 88px 0 96px;
+    background: var(--bg);
+  }
+  /* Two soft glows that drift slowly behind the hero. Transform only, so it stays on the GPU. */
+  .hero::before {
+    content: "";
+    position: absolute;
+    z-index: -2;
+    inset: -30% -15% auto -15%;
+    height: 1100px;
     background:
-      radial-gradient(900px 420px at 85% 0%, color-mix(in srgb, var(--purple) 16%, transparent), transparent 70%),
-      var(--bg);
+      radial-gradient(closest-side at 78% 32%, color-mix(in srgb, var(--purple) 24%, transparent), transparent),
+      radial-gradient(closest-side at 30% 12%, color-mix(in srgb, #c56cf0 13%, transparent), transparent),
+      radial-gradient(closest-side at 92% 70%, color-mix(in srgb, var(--purple-strong) 12%, transparent), transparent);
+    pointer-events: none;
+    animation: drift 22s ease-in-out infinite alternate;
+  }
+  /* A faint dot grid, fading out from behind the code card. */
+  .hero::after {
+    content: "";
+    position: absolute;
+    z-index: -1;
+    inset: 0;
+    background-image: radial-gradient(color-mix(in srgb, var(--ink) 16%, transparent) 1px, transparent 1.5px);
+    background-size: 22px 22px;
+    -webkit-mask-image: radial-gradient(ellipse 55% 50% at 72% 28%, #000 10%, transparent 72%);
+    mask-image: radial-gradient(ellipse 55% 50% at 72% 28%, #000 10%, transparent 72%);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+  :global([dir="rtl"]) .hero::after {
+    -webkit-mask-image: radial-gradient(ellipse 55% 50% at 28% 28%, #000 10%, transparent 72%);
+    mask-image: radial-gradient(ellipse 55% 50% at 28% 28%, #000 10%, transparent 72%);
+  }
+  @keyframes drift {
+    0% {
+      transform: translate3d(0, 0, 0) scale(1);
+    }
+    50% {
+      transform: translate3d(-5%, 3%, 0) scale(1.06);
+    }
+    100% {
+      transform: translate3d(4%, -2%, 0) scale(0.97);
+    }
+  }
+  /* Entrance: each part of the hero fades up in turn (--d is its delay). */
+  .rise {
+    animation: rise 0.75s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+  }
+  .snippet-wrap {
+    min-width: 0;
   }
   .hero-grid {
     display: grid;
@@ -269,6 +328,35 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   @media (max-width: 920px) {
     .shot {
       margin-top: 48px;
+    }
+  }
+  /* The dashboard starts tilted back and settles flat as it scrolls into view. Browsers without
+     scroll-driven animations just show it flat. */
+  @supports (animation-timeline: view()) {
+    .shot picture {
+      display: block;
+      perspective: 1600px;
+    }
+    .shot img {
+      transform-origin: 50% 0;
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 45%;
+    }
+    @keyframes settle {
+      from {
+        transform: rotateX(14deg) scale(0.94);
+      }
+      to {
+        transform: none;
+      }
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .hero::before,
+    .rise,
+    .shot img {
+      animation: none;
     }
   }
   .ctas {
