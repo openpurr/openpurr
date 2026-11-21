@@ -1,51 +1,19 @@
 ---
-// One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift.
-const faqs: { q: string; a: string }[] = [
-  {
-    q: "What is openpurr?",
-    a: "openpurr is an open-source, self-hosted alternative to RevenueCat. It's a backend for in-app purchases and subscriptions that works with the official RevenueCat Purchases SDK. It validates App Store and Google Play purchases, tracks entitlements, receives store notifications, sends webhooks to your backend, and charts your core subscription metrics, all on infrastructure you control.",
-  },
-  {
-    q: "How is openpurr different from RevenueCat?",
-    a: "RevenueCat is a hosted commercial service that charges a share of revenue above a free tier. openpurr is software you run yourself: your purchase records, entitlements and store credentials live in your own database, and there's no revenue share or per-transaction fee. RevenueCat offers more features today, such as paywalls, experiments and analytics integrations. openpurr focuses on the core subscription backend.",
-  },
-  {
-    q: "Do I have to rewrite my purchase code to switch from RevenueCat?",
-    a: "No. openpurr works with the official, unmodified Purchases SDK. You set the SDK's proxy URL to your openpurr server before calling configure, and the rest of your purchase code stays the same. Point it at a custom domain you own so you can move servers later without an app update.",
-  },
-  {
-    q: "Which platforms and stores does openpurr support?",
-    a: "The Purchases SDK for iOS, Android, Flutter and React Native, with purchases from the App Store and Google Play. Amazon and web billing are out of scope for now.",
-  },
-  {
-    q: "How much does openpurr cost?",
-    a: "openpurr is free and open source under the Apache 2.0 license. You pay only for the infrastructure it runs on. The Lite edition is designed to run on Cloudflare's free plan, so a small app can run it for nothing. The Standard edition runs in containers on your own cloud, so its cost is your cloud bill.",
-  },
-  {
-    q: "Where is my data stored?",
-    a: "In your own database. The Lite edition uses Cloudflare D1 in your Cloudflare account. The Standard edition uses Postgres on GCP or AWS. You can query, back up and export it, and no outside service sits between your app and your customers.",
-  },
-  {
-    q: "Does openpurr send webhooks like RevenueCat does?",
-    a: "Yes. openpurr sends RevenueCat-shaped events to your backend, signed with HMAC-SHA256 and retried for about 72 hours, so existing webhook handlers need few or no changes.",
-  },
-  {
-    q: "What doesn't openpurr do that RevenueCat does?",
-    a: "Paywalls, A/B experiments, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events and a commercial support contract are out of scope for now. If you need those today, a commercial platform is a better fit.",
-  },
-  {
-    q: "Is openpurr ready for production?",
-    a: "Not yet. openpurr is early: the Lite edition is in progress and the Standard edition is coming later. Follow the roadmap on GitHub, and open an issue if something matters to you.",
-  },
-  {
-    q: "Is openpurr affiliated with RevenueCat?",
-    a: "No. openpurr is an independent open-source project, not affiliated with or endorsed by RevenueCat, Inc. It works with RevenueCat's official Purchases SDK, which is MIT licensed.",
-  },
-];
+// One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
+// questions are in src/i18n/.
+import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
+
+interface Props {
+  locale?: Locale;
+}
+const { locale = DEFAULT_LOCALE } = Astro.props;
+const copy = t(locale).faq;
+const faqs = copy.items;
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
+  inLanguage: locale,
   mainEntity: faqs.map(({ q, a }) => ({
     "@type": "Question",
     name: q,
@@ -59,9 +27,9 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 <section class="alt" id="faq">
   <div class="wrap faq-grid">
     <div class="section-head">
-      <span class="eyebrow">FAQ</span>
-      <h2>openpurr as a RevenueCat alternative</h2>
-      <p class="lede">What changes when you run your own subscription backend, and what doesn't.</p>
+      <span class="eyebrow">{copy.eyebrow}</span>
+      <h2>{copy.title}</h2>
+      <p class="lede">{copy.lede}</p>
     </div>
     <div class="list">
       {

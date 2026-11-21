@@ -3,29 +3,36 @@ import "../styles/global.css";
 import Header from "../components/Header.astro";
 import Footer from "../components/Footer.astro";
 import Analytics from "../components/Analytics.astro";
+import { DEFAULT_LOCALE, LOCALE_INFO, t, type Alternates, type Locale } from "../i18n";
 
 interface Props {
   title?: string;
   description?: string;
+  locale?: Locale;
+  /** This page in each language it exists in (see allLocales), for hreflang and the language menu. */
+  alternates?: Alternates;
 }
 
-const {
-  title = "openpurr: a self-hosted, open-source RevenueCat alternative",
-  description = "openpurr is a self-hosted, open-source RevenueCat alternative. Keep the Purchases SDK you already use, point it at your own server, and pay no revenue share.",
-} = Astro.props;
+const { locale = DEFAULT_LOCALE, alternates = {} } = Astro.props;
+const meta = t(locale).meta;
+const { title = meta.title, description = meta.description } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL("/og.png", Astro.site);
+const others = Object.entries(alternates) as [Locale, string][];
+const xDefault = alternates[DEFAULT_LOCALE];
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={locale}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
+    {others.length > 1 && others.map(([l, path]) => <link rel="alternate" hreflang={l} href={new URL(path, Astro.site)} />)}
+    {others.length > 1 && xDefault && <link rel="alternate" hreflang="x-default" href={new URL(xDefault, Astro.site)} />}
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="icon" type="image/png" href="/icon-192.png" sizes="192x192" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -33,21 +40,23 @@ const ogImage = new URL("/og.png", Astro.site);
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="openpurr" />
+    <meta property="og:locale" content={LOCALE_INFO[locale].og} />
+    {others.filter(([l]) => l !== locale).map(([l]) => <meta property="og:locale:alternate" content={LOCALE_INFO[l].og} />)}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="openpurr: a self-hosted, open-source RevenueCat alternative, next to its subscription charts dashboard" />
+    <meta property="og:image:alt" content={meta.ogImageAlt} />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body>
-    <Header />
+    <Header locale={locale} alternates={alternates} />
     <main>
       <slot />
     </main>
-    <Footer />
-    <Analytics />
+    <Footer locale={locale} />
+    <Analytics locale={locale} />
   </body>
 </html>
