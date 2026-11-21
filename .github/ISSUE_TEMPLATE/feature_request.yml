@@ -1,0 +1,34 @@
+name: Feature request
+description: Suggest something openpurr should do.
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [roadmap](https://github.com/openpurr/openpurr/blob/main/ROADMAP.md) first: it may already be planned. Paywalls, ad events and the rest of the README's "Out of scope for now" list are out of scope for now, but say so if one of them matters to you.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: The problem or the use case, not only the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would help?
+      description: How you'd like it to work. If RevenueCat has the same feature, a link helps.
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Edition
+      options:
+        - Lite (Cloudflare)
+        - Standard (Go and Postgres)
+        - Both, or not sure
+  - type: checkboxes
+    id: contribute
+    attributes:
+      label: Contributing
+      options:
+        - label: I'd like to work on this. (Please agree the approach here before starting large work.)

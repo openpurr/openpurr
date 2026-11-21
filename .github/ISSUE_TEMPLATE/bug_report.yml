@@ -1,0 +1,74 @@
+name: Bug report
+description: Something in openpurr doesn't work as documented, or an SDK gets a response it doesn't expect.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Security issues don't go here:** report them privately, as [SECURITY.md](https://github.com/openpurr/openpurr/blob/main/SECURITY.md) describes.
+
+        Please use test data. Don't paste real customer data, receipts, store credentials or API keys.
+  - type: dropdown
+    id: component
+    attributes:
+      label: Where is the problem?
+      options:
+        - Lite SDK Worker (/v1, what the SDKs call)
+        - Lite back office (store notifications, webhooks, scheduled jobs)
+        - Dashboard
+        - MCP server
+        - CLI
+        - RevenueCat import
+        - Claude Code plugin
+        - Docs
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected, and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: How to reproduce it
+      description: Steps, and the requests and responses if you have them. For store issues, say whether you used sandbox, TestFlight, a replayed notification or the simulator.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: openpurr version or commit
+      description: The release (for example 0.2.0) or the commit your deployment runs. For the CLI, `openpurr --version`.
+    validations:
+      required: true
+  - type: input
+    id: sdk
+    attributes:
+      label: RevenueCat SDK and version
+      description: For example purchases-ios 5.x, purchases-android 8.x, purchases-flutter, react-native-purchases. Leave empty if no SDK is involved.
+  - type: dropdown
+    id: store
+    attributes:
+      label: Store
+      options:
+        - Not store-specific
+        - App Store
+        - Google Play
+  - type: dropdown
+    id: plan
+    attributes:
+      label: Cloudflare plan
+      options:
+        - Free
+        - Workers Paid
+        - Running locally
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or `openpurr doctor` output
+      description: Remove any keys, tokens and personal data first.
+      render: text

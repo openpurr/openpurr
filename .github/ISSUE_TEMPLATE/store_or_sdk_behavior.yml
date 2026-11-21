@@ -1,0 +1,39 @@
+name: Store or SDK behavior
+description: Share a real-world case, or point out a wrong assumption about the RevenueCat SDKs, the App Store, Google Play or the Cloudflare free plan.
+labels: [question]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is one of the most useful things you can send right now: notification sequences, renewal, refund, grace-period or family-sharing edge cases, or SDK versions that behave differently.
+
+        Please use sandbox or scrubbed data. Don't paste real customer data, receipts, store credentials or API keys.
+  - type: dropdown
+    id: area
+    attributes:
+      label: What is it about?
+      options:
+        - A RevenueCat SDK
+        - The App Store
+        - Google Play
+        - The Cloudflare free plan
+        - Something else
+    validations:
+      required: true
+  - type: textarea
+    id: case
+    attributes:
+      label: What happens
+      description: What the SDK, store or platform actually does, and where openpurr assumes something different, if you know.
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Evidence
+      description: Notification payloads (decoded), requests and responses, SDK logs, or a link to documentation.
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: SDK and OS versions, and the openpurr version, where they matter.
