@@ -38,7 +38,12 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 - **구매:** StoreKit 2 거래와 Google Play 구매를 검증하고, SDK가 기대하는 `CustomerInfo`와 엔타이틀먼트를 반환합니다.
 - **스토어 알림:** App Store Server Notifications V2와 Google Play Real-time Developer Notifications를 수신합니다.
 - **웹훅:** RevenueCat 형식의 이벤트를 백엔드로 보냅니다. HMAC-SHA256으로 서명하고 약 72시간 동안 재시도합니다.
-- **차트:** 활성 구독, MRR, 체험, 전환, 이탈을 보여 주는 작은 대시보드입니다.
+- **차트:** 대시보드에 차트 16개가 있으며, 프로젝트, 앱, 스토어, 상품, 환경별로 필터링하고 CSV로 내려받을 수 있습니다.
+  - **매출:** 매출, 환불, 환불률, 구독 외 구매.
+  - **반복 매출:** MRR, ARR, MRR 변동.
+  - **구독:** 활성 구독, 유료 구독, 구독 변동, 구독 상태, 이탈.
+  - **체험:** 활성 체험, 신규 체험, 체험 변동.
+  - **고객:** 신규 고객.
 - **인증:** SDK 키와 시크릿 키, 운영자 로그인(비밀번호와 선택적 인증 앱 코드, Cloudflare Access는 계획 중), 역할, 감사 로그를 제공합니다.
 - **MCP 서버와 Claude 스킬:** AI 어시스턴트가 고객을 조회하고, 누군가에게 엔타이틀먼트가 있거나 없는 이유를 설명하고, App Store와 Play Console 설정을 안내합니다.
 
@@ -104,6 +109,8 @@ Claude Code를 사용하시나요? [openpurr 플러그인](plugin/)(영어)이 �
 ## 기여하기
 
 [CONTRIBUTING.md](CONTRIBUTING.md)(영어)를 참고하세요. 지금 가장 도움이 되는 것은 이슈로 남겨 주시는 피드백입니다. SDK나 스토어에 대한 잘못된 가정, 그리고 실제로 겪은 예외 상황을 알려 주세요.
+
+그 밖의 문의는 [hello@openpurr.org](mailto:hello@openpurr.org)로 이메일을 보내 주세요.
 
 ## Star History
 

@@ -38,7 +38,12 @@ openpurr cũng phù hợp nếu bạn đang dùng SDK của RevenueCat và muố
 - **Mua hàng:** xác thực giao dịch StoreKit 2 và giao dịch mua trên Google Play, đồng thời trả về `CustomerInfo` và entitlement mà SDK cần.
 - **Thông báo từ store:** nhận App Store Server Notifications V2 và Google Play Real-time Developer Notifications.
 - **Webhook:** gửi sự kiện theo định dạng của RevenueCat tới backend của bạn, ký bằng HMAC-SHA256 và tự gửi lại trong khoảng 72 giờ.
-- **Biểu đồ:** một dashboard nhỏ gọn với số gói đăng ký đang hoạt động, MRR, dùng thử, tỷ lệ chuyển đổi và churn.
+- **Biểu đồ:** 16 biểu đồ trong dashboard, lọc được theo dự án, ứng dụng, store, sản phẩm và môi trường, và tải về dạng CSV:
+  - **Doanh thu:** doanh thu, hoàn tiền, tỷ lệ hoàn tiền và giao dịch mua không phải gói đăng ký.
+  - **Doanh thu định kỳ:** MRR, ARR và biến động MRR.
+  - **Gói đăng ký:** gói đăng ký đang hoạt động, gói đăng ký trả phí, biến động gói đăng ký, trạng thái gói đăng ký và churn.
+  - **Dùng thử:** lượt dùng thử đang diễn ra, lượt dùng thử mới và biến động dùng thử.
+  - **Khách hàng:** khách hàng mới.
 - **Xác thực:** SDK key và secret key, đăng nhập cho người vận hành (mật khẩu kèm mã xác thực hai bước tùy chọn; Cloudflare Access đang được lên kế hoạch), vai trò và nhật ký kiểm tra (audit log).
 - **MCP server và Claude skill:** trợ lý AI có thể tra cứu khách hàng, giải thích vì sao một người có hoặc không có entitlement, và hướng dẫn bạn từng bước thiết lập App Store và Play Console.
 
@@ -104,6 +109,8 @@ Bạn dùng Claude Code? [Plugin openpurr](plugin/) (tiếng Anh) hướng dẫn
 ## Đóng góp
 
 Xem [CONTRIBUTING.md](CONTRIBUTING.md) (tiếng Anh). Hiện tại, điều giúp ích nhất là phản hồi trong các issue: những giả định sai về SDK hoặc về các store, và các trường hợp đặc biệt trong thực tế.
+
+Với mọi vấn đề khác, hãy gửi email đến [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Lịch sử gắn sao
 

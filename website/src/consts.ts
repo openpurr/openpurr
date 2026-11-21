@@ -9,6 +9,8 @@ export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
 export const ISSUES_URL = `${REPO_URL}/issues`;
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 export const SPONSOR_URL = "https://buymeacoffee.com/openpurr";
+/** The footer's Contact link opens a mail to this address. The READMEs list it too. */
+export const CONTACT_EMAIL = "hello@openpurr.org";
 export const PRIVACY_URL = "/privacy/";
 /** Where privacy requests go. Empty: the privacy page points to GitHub instead. */
 export const PRIVACY_EMAIL = "";

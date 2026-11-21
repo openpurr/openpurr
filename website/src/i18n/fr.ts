@@ -19,6 +19,7 @@ export const fr: Dict = {
     roadmap: "Feuille de route",
     contributing: "Contribuer",
     sponsor: "Soutenir",
+    contact: "Contact",
     privacy: "Confidentialité (en anglais)",
     disclaimer:
       "openpurr est un projet indépendant, sans lien avec RevenueCat, Inc. et non soutenu par cette société. App Store est une marque d'Apple Inc. Google Play est une marque de Google LLC.",

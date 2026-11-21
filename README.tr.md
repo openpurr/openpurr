@@ -38,7 +38,12 @@ Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları 
 - **Satın almalar:** StoreKit 2 işlemlerini ve Google Play satın almalarını doğrular, SDK'nın beklediği `CustomerInfo`'yu ve erişim haklarını döndürür.
 - **Mağaza bildirimleri:** App Store Server Notifications V2 ve Google Play Real-time Developer Notifications'ı alır.
 - **Webhook'lar:** RevenueCat biçimindeki olayları backend'inize gönderir; olaylar HMAC-SHA256 ile imzalanır ve yaklaşık 72 saat boyunca yeniden denenir.
-- **Grafikler:** aktif abonelikler, MRR, deneme süreleri, dönüşümler ve churn içeren küçük bir panel.
+- **Grafikler:** panelde 16 grafik; proje, uygulama, mağaza, ürün ve ortama göre filtrelenebilir ve CSV olarak indirilebilir:
+  - **Gelir:** gelir, iadeler, iade oranı ve abonelik dışı satın almalar.
+  - **Yinelenen gelir:** MRR, ARR ve MRR hareketi.
+  - **Abonelikler:** aktif abonelikler, ücretli abonelikler, abonelik hareketi, abonelik durumu ve churn.
+  - **Deneme süreleri:** aktif deneme süreleri, yeni deneme süreleri ve deneme süresi hareketi.
+  - **Müşteriler:** yeni müşteriler.
 - **Kimlik doğrulama:** SDK anahtarları ve gizli anahtarlar, operatör girişi (isteğe bağlı doğrulayıcı kodlarıyla parola; Cloudflare Access planlanıyor), roller ve bir denetim günlüğü.
 - **MCP sunucusu ve Claude becerileri:** bir yapay zekâ asistanı müşterileri arayabilir, birinin neden bir erişim hakkına sahip olduğunu ya da olmadığını açıklayabilir ve App Store ile Play Console kurulumunda size adım adım yol gösterebilir.
 
@@ -104,6 +109,8 @@ Claude Code mu kullanıyorsunuz? [openpurr eklentisi](plugin/) (İngilizce) ayn�
 ## Katkıda bulunma
 
 [CONTRIBUTING.md](CONTRIBUTING.md) (İngilizce) dosyasına bakın. Şu anda en faydalı yardım, issue'larda geri bildirimdir: SDK'lar veya mağazalar hakkındaki yanlış varsayımlar ve gerçek hayattan uç durumlar.
+
+Diğer her konu için [hello@openpurr.org](mailto:hello@openpurr.org) adresine e-posta gönderin.
 
 ## Yıldız geçmişi
 

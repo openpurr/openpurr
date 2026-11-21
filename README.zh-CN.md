@@ -38,7 +38,12 @@ openpurr 是一个独立项目，与 RevenueCat, Inc. 没有任何关联，也�
 - **购买：** 验证 StoreKit 2 交易和 Google Play 购买，并返回 SDK 所需的 `CustomerInfo` 和权益。
 - **商店通知：** 接收 App Store Server Notifications V2 和 Google Play Real-time Developer Notifications。
 - **Webhook：** 向你的后端发送与 RevenueCat 格式相同的事件，使用 HMAC-SHA256 签名，失败时会在约 72 小时内重试。
-- **图表：** 一个小型仪表盘，展示活跃订阅、MRR、试用、转化和流失。
+- **图表：** 仪表盘提供 16 张图表，可按项目、应用、商店、商品和环境筛选，并可导出为 CSV：
+  - **收入：** 收入、退款、退款率和非订阅购买。
+  - **经常性收入：** MRR、ARR 和 MRR 变动。
+  - **订阅：** 活跃订阅、付费订阅、订阅变动、订阅状态和流失。
+  - **试用：** 活跃试用、新增试用和试用变动。
+  - **客户：** 新客户。
 - **认证：** SDK 密钥和秘密密钥、管理员登录（密码，可选验证器动态码；Cloudflare Access 已在计划中）、角色，以及审计日志。
 - **MCP 服务器和 Claude Skills：** AI 助手可以查询客户，解释某人为什么拥有或没有某项权益，并引导你完成 App Store 和 Play Console 的配置。
 
@@ -104,6 +109,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 ## 参与贡献
 
 请参阅 [CONTRIBUTING.md](CONTRIBUTING.md)（英文）。目前最有用的帮助是在 Issue 中提供反馈：指出我们对 SDK 或商店的错误理解，以及真实场景中的边界情况。
+
+其他事宜请发邮件至 [hello@openpurr.org](mailto:hello@openpurr.org)。
 
 ## Star 历史
 

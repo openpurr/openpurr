@@ -38,7 +38,12 @@ Es passt auch gut, wenn du die RevenueCat SDKs schon nutzt und behalten willst. 
 - **Käufe:** validiert StoreKit-2-Transaktionen und Google-Play-Käufe und liefert die `CustomerInfo` und Entitlements, die das SDK erwartet.
 - **Store-Benachrichtigungen:** empfängt App Store Server Notifications V2 und Google Play Real-time Developer Notifications.
 - **Webhooks:** sendet Ereignisse im Format von RevenueCat an dein Backend, signiert mit HMAC-SHA256 und etwa 72 Stunden lang erneut zugestellt.
-- **Diagramme:** ein kleines Dashboard mit aktiven Abos, MRR, Testphasen, Conversions und Churn.
+- **Diagramme:** 16 Diagramme im Dashboard, filterbar nach Projekt, App, Store, Produkt und Umgebung und als CSV herunterladbar:
+  - **Umsatz:** Umsatz, Erstattungen, Erstattungsquote und Käufe ohne Abo.
+  - **Wiederkehrender Umsatz:** MRR, ARR und MRR-Bewegung.
+  - **Abos:** aktive Abos, bezahlte Abos, Abo-Bewegung, Abo-Status und Churn.
+  - **Testphasen:** aktive Testphasen, neue Testphasen und Testphasen-Bewegung.
+  - **Kunden:** Neukunden.
 - **Anmeldung:** SDK-Keys und Secret Keys, Anmeldung für Betreiber (Passwort mit optionalen Authenticator-Codes; Cloudflare Access ist geplant), Rollen und ein Audit-Log.
 - **MCP-Server und Claude-Skills:** Ein KI-Assistent kann Kunden nachschlagen, erklären, warum jemand ein Entitlement hat oder nicht, und dich durch die Einrichtung in App Store und Play Console führen.
 
@@ -104,6 +109,8 @@ Du nutzt Claude Code? Das [openpurr-Plugin](plugin/) (Englisch) führt durch die
 ## Mitmachen
 
 Siehe [CONTRIBUTING.md](CONTRIBUTING.md) (Englisch). Am meisten hilft gerade Feedback in Issues: falsche Annahmen über die SDKs oder die Stores und echte Sonderfälle aus der Praxis.
+
+Für alles andere schreib an [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Star History
 

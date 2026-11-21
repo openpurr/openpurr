@@ -38,7 +38,12 @@ openpurr convient aussi si vous utilisez déjà les SDK de RevenueCat et voulez 
 - **Achats :** valide les transactions StoreKit 2 et les achats Google Play, et renvoie le `CustomerInfo` et les entitlements attendus par le SDK.
 - **Notifications des stores :** reçoit les App Store Server Notifications V2 et les Real-time Developer Notifications de Google Play.
 - **Webhooks :** envoie à votre backend des événements au format RevenueCat, signés en HMAC-SHA256 et renvoyés pendant environ 72 heures.
-- **Graphiques :** un petit tableau de bord avec les abonnements actifs, le MRR, les essais, les conversions et le churn.
+- **Graphiques :** 16 graphiques dans le tableau de bord, filtrables par projet, app, store, produit et environnement, et exportables en CSV :
+  - **Revenus :** revenus, remboursements, taux de remboursement et achats hors abonnement.
+  - **Revenus récurrents :** MRR, ARR et évolution du MRR.
+  - **Abonnements :** abonnements actifs, abonnements payants, évolution des abonnements, statut des abonnements et churn.
+  - **Essais :** essais en cours, nouveaux essais et évolution des essais.
+  - **Clients :** nouveaux clients.
 - **Authentification :** clés SDK et clés secrètes, connexion des opérateurs (mot de passe avec codes d'authentification facultatifs ; Cloudflare Access est prévu), rôles et journal d'audit.
 - **Serveur MCP et skills Claude :** un assistant IA peut rechercher des clients, expliquer pourquoi quelqu'un a ou n'a pas un entitlement, et vous guider dans la configuration de l'App Store et de la Play Console.
 
@@ -104,6 +109,8 @@ Vous utilisez Claude Code ? Le [plugin openpurr](plugin/) (en anglais) vous gui
 ## Contribuer
 
 Consultez [CONTRIBUTING.md](CONTRIBUTING.md) (en anglais). En ce moment, l'aide la plus utile, ce sont vos retours dans les issues : hypothèses erronées sur les SDK ou les stores, et cas limites rencontrés en conditions réelles.
+
+Pour toute autre question, écrivez à [hello@openpurr.org](mailto:hello@openpurr.org).
 
 ## Historique des étoiles
 

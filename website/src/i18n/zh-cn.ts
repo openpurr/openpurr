@@ -18,6 +18,7 @@ export const zhCn: Dict = {
     roadmap: "路线图",
     contributing: "参与贡献",
     sponsor: "赞助",
+    contact: "联系我们",
     privacy: "隐私政策（英文）",
     disclaimer:
       "openpurr 是一个独立项目，与 RevenueCat, Inc. 没有任何关联，也未获得其认可。App Store 是 Apple Inc. 的商标。Google Play 是 Google LLC 的商标。",

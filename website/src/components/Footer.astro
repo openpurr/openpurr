@@ -1,5 +1,5 @@
 ---
-import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL, PRIVACY_URL } from "../consts";
+import { REPO_URL, ROADMAP_URL, CONTRIBUTING_URL, LICENSE_URL, SPONSOR_URL, PRIVACY_URL, CONTACT_EMAIL } from "../consts";
 import { gaId } from "../analytics";
 import { DEFAULT_LOCALE, fill, t, type Locale } from "../i18n";
 
@@ -22,6 +22,7 @@ const f = t(locale).footer;
         <li><a href={ROADMAP_URL}>{f.roadmap}</a></li>
         <li><a href={CONTRIBUTING_URL}>{f.contributing}</a></li>
         <li><a href={SPONSOR_URL}>{f.sponsor}</a></li>
+        <li><a href={`mailto:${CONTACT_EMAIL}`}>{f.contact}</a></li>
         <li><a href={PRIVACY_URL}>{f.privacy}</a></li>
       </ul>
     </div>
