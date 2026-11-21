@@ -2,7 +2,7 @@
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
 import { MIGRATION_PAGE } from "../consts";
-import { DEFAULT_LOCALE, t, type Locale } from "../i18n";
+import { DEFAULT_LOCALE, langTag, t, type Locale } from "../i18n";
 
 interface Props {
   locale?: Locale;
@@ -14,7 +14,7 @@ const faqs = copy.items;
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
-  inLanguage: locale,
+  inLanguage: langTag(locale),
   mainEntity: faqs.map(({ q, a, link }) => ({
     "@type": "Question",
     name: q,
