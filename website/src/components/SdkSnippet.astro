@@ -45,6 +45,21 @@ const tabs = [
     ],
   },
 ];
+
+// The hero's event feed: RevenueCat-shaped webhook events, as openpurr sends them. Decorative, so
+// the event names stay as they are in every language. Without JavaScript, or with reduced motion,
+// the first ROWS show and nothing moves.
+const ROWS = 3;
+const events: [string, string, string][] = [
+  ["INITIAL_PURCHASE", "pro_monthly", "App Store"],
+  ["RENEWAL", "pro_yearly", "Google Play"],
+  ["NON_RENEWING_PURCHASE", "coins_500", "App Store"],
+  ["PRODUCT_CHANGE", "pro_yearly", "App Store"],
+  ["RENEWAL", "pro_monthly", "Google Play"],
+  ["UNCANCELLATION", "pro_monthly", "App Store"],
+  ["INITIAL_PURCHASE", "pro_yearly", "Google Play"],
+  ["RENEWAL", "pro_yearly", "App Store"],
+];
 ---
 
 <div class="snippet" data-snippet>
@@ -68,8 +83,86 @@ const tabs = [
       <pre role="tabpanel" id={`panel-${t.id}`} aria-labelledby={`tab-${t.id}`} hidden={i !== 0}><code set:html={t.lines.join("\n")} /></pre>
     ))
   }
+  <div class="events" dir="ltr" aria-hidden="true" data-events>
+    <div class="events-head"><span class="live"></span>POST https://api.your-app.com/webhooks</div>
+    <ol>
+      {
+        events.slice(0, ROWS).map((e) => (
+          <li>
+            <span class="ev">{e[0]}</span>
+            <span class="pr">{e[1]}</span>
+            <span class="st">{e[2]}</span>
+            <span class="ok">200</span>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
   <p class="note">{copy.note}</p>
 </div>
+
+<script define:vars={{ events, ROWS }} is:inline>
+  // Hero motion: type the proxy URL, then stream events into the feed. Skipped with reduced motion.
+  (() => {
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const root = document.querySelector("[data-snippet]");
+    if (!root) return;
+
+    // 1. Type the one URL you change.
+    const url = root.querySelector('[role="tabpanel"]:not([hidden]) .s');
+    if (url) {
+      const full = url.textContent;
+      url.textContent = '"';
+      url.classList.add("typing");
+      let i = 1;
+      setTimeout(function type() {
+        url.textContent = full.slice(0, ++i);
+        if (i < full.length) return setTimeout(type, 26 + Math.random() * 34);
+        url.classList.remove("typing");
+        url.classList.add("lit");
+      }, 750);
+    }
+
+    // 2. Stream events: a new row slides in at the bottom, the oldest leaves at the top.
+    const list = root.querySelector("[data-events] ol");
+    if (!list || !list.animate) return;
+    let next = ROWS;
+    let visible = !document.hidden;
+    let onScreen = true;
+    new IntersectionObserver(([e]) => (onScreen = e.isIntersecting)).observe(root);
+    document.addEventListener("visibilitychange", () => (visible = !document.hidden));
+
+    const row = ([ev, product, store]) => {
+      const li = document.createElement("li");
+      li.className = "new";
+      for (const [cls, text] of [["ev", ev], ["pr", product], ["st", store], ["ok", "200"]]) {
+        const s = document.createElement("span");
+        s.className = cls;
+        s.textContent = text;
+        li.append(s);
+      }
+      return li;
+    };
+
+    const tick = () => {
+      if (!visible || !onScreen) return;
+      const first = list.firstElementChild;
+      list.append(row(events[next++ % events.length]));
+      const step = first.getBoundingClientRect().height;
+      first.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 450, fill: "forwards" });
+      const slide = list.animate([{ transform: "translateY(0)" }, { transform: `translateY(-${step}px)` }], {
+        duration: 550,
+        easing: "cubic-bezier(0.2, 0.7, 0.2, 1)",
+        fill: "forwards",
+      });
+      slide.finished.then(() => {
+        first.remove();
+        slide.cancel();
+      });
+    };
+    setTimeout(() => setInterval(tick, 2400), 2600);
+  })();
+</script>
 
 <script>
   for (const root of document.querySelectorAll<HTMLElement>("[data-snippet]")) {
@@ -145,6 +238,136 @@ const tabs = [
   pre :global(.k) {
     color: var(--code-accent);
   }
+  pre :global(.s.typing)::after {
+    content: "";
+    display: inline-block;
+    width: 0.55em;
+    height: 1.15em;
+    margin-inline-start: 1px;
+    vertical-align: -0.2em;
+    background: #8ee0b5;
+    animation: caret 0.9s steps(1) infinite;
+  }
+  @keyframes caret {
+    50% {
+      opacity: 0;
+    }
+  }
+  /* Once typed, the URL glows briefly: it's the one line you change. */
+  pre :global(.s.lit) {
+    border-radius: 4px;
+    animation: lit 1.6s ease-out;
+  }
+  @keyframes lit {
+    0% {
+      background: rgba(142, 224, 181, 0.28);
+      box-shadow: 0 0 0 3px rgba(142, 224, 181, 0.28);
+    }
+    100% {
+      background: transparent;
+      box-shadow: 0 0 0 3px transparent;
+    }
+  }
+
+  /* Event feed */
+  .events {
+    margin: 4px 8px 0;
+    padding: 10px 12px 8px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    font-family: var(--mono);
+    font-size: 0.74rem;
+  }
+  .events-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--code-muted);
+    margin-bottom: 6px;
+  }
+  .live {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #3ccf8e;
+    box-shadow: 0 0 0 0 rgba(60, 207, 142, 0.6);
+    animation: pulse 2.4s ease-out infinite;
+  }
+  @keyframes pulse {
+    70% {
+      box-shadow: 0 0 0 7px rgba(60, 207, 142, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(60, 207, 142, 0);
+    }
+  }
+  /* Rows added by the script don't carry Astro's scoping attribute, hence :global. */
+  .events ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    /* Exactly three rows, so the card never changes height. */
+    height: calc(3 * 1.9em);
+    overflow: hidden;
+    contain: paint;
+  }
+  .events :global(li) {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+    gap: 12px;
+    align-items: center;
+    height: 1.9em;
+    white-space: nowrap;
+  }
+  .events :global(li > span) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .events :global(.ev) {
+    color: var(--code-accent);
+  }
+  .events :global(.pr) {
+    color: var(--code-text);
+  }
+  .events :global(.st) {
+    color: var(--code-muted);
+  }
+  .events :global(.ok) {
+    color: #3ccf8e;
+    padding: 0 6px;
+    border-radius: 4px;
+    background: rgba(60, 207, 142, 0.12);
+  }
+  .events :global(li.new) {
+    animation: arrive 0.9s ease-out;
+  }
+  .events :global(li.new .ok) {
+    animation: flash 1.2s ease-out 0.3s;
+  }
+  @keyframes arrive {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes flash {
+    0% {
+      background: rgba(60, 207, 142, 0.45);
+    }
+  }
+  @media (max-width: 460px) {
+    .events :global(li) {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) auto;
+    }
+    .events :global(.pr) {
+      display: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .live {
+      animation: none;
+    }
+  }
+
   .note {
     margin: 0;
     padding: 8px 16px 12px;
