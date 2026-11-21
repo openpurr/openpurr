@@ -163,3 +163,23 @@ const languages = Object.entries(alternates) as [Locale, string][];
     }
   }
 </style>
+
+<script>
+  // <details> only closes from its own summary. Close the language menu like any other menu too:
+  // on a click or tap outside it, on Escape (focus goes back to the button), and when keyboard
+  // focus moves out of it.
+  for (const menu of document.querySelectorAll<HTMLDetailsElement>("details.lang")) {
+    const close = () => menu.removeAttribute("open");
+    document.addEventListener("pointerdown", (e) => {
+      if (menu.open && !menu.contains(e.target as Node)) close();
+    });
+    menu.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape" || !menu.open) return;
+      close();
+      menu.querySelector("summary")?.focus();
+    });
+    menu.addEventListener("focusout", (e) => {
+      if (menu.open && e.relatedTarget && !menu.contains(e.relatedTarget as Node)) close();
+    });
+  }
+</script>
