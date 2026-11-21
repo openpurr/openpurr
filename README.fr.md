@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@ Avec les SDK Purchases open source de RevenueCat, faites pointer le `Purchases.p
 openpurr est un projet indépendant, sans lien avec RevenueCat, Inc. et non soutenu par cette société.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="Le tableau de bord d'openpurr Lite, avec 12 mois d'évolution du MRR, les abonnements actifs, le churn, les nouveaux clients, les nouveaux essais et les essais en cours">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="Les graphiques du tableau de bord d'openpurr Lite, parcourus avec leurs infobulles : MRR, Évolution du MRR, Revenus, Abonnements actifs, Churn">
 </picture>
 
 ## Pour qui

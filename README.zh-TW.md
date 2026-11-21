@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@
 openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲得其認可。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="openpurr Lite 儀表板，顯示 12 個月的 MRR 變動、有效訂閱、流失、新客戶、新增試用和進行中的試用">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="openpurr Lite 儀表板中的圖表，逐一展示並顯示提示：MRR、MRR 變動、營收、有效訂閱、流失">
 </picture>
 
 ## 適合誰

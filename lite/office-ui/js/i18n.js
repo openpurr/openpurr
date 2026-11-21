@@ -125,6 +125,16 @@ export function detect(chosen) {
   return browserLocale();
 }
 
+/**
+ * Uses strings already at hand instead of fetching them, and leaves <html> alone. The website's
+ * dashboard demo builds in the few strings it needs (website/src/components/DashboardDemo.astro).
+ */
+export function useStrings(code, dict) {
+  current = isLocale(code) ? code : "en";
+  strings = dict ?? {};
+  loaded.set(current, strings);
+}
+
 /** Loads a language's strings and switches to it (lang and dir on <html> too). */
 export async function setLocale(code) {
   if (!isLocale(code)) code = "en";

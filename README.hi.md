@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@ RevenueCat के open-source Purchases SDKs इस्तेमाल करत�
 openpurr एक स्वतंत्र project है। यह RevenueCat, Inc. से जुड़ा नहीं है और न ही RevenueCat, Inc. इसका समर्थन करती है।
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="openpurr Lite का dashboard, जिसमें 12 महीनों का MRR movement, active subscriptions, churn, नए ग्राहक, नए trials और active trials दिख रहे हैं">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="openpurr Lite डैशबोर्ड के charts, tooltips के साथ: MRR, MRR में बदलाव, रेवेन्यू, सक्रिय subscriptions, चर्न">
 </picture>
 
 ## यह किसके लिए है

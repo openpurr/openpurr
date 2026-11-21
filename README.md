@@ -16,8 +16,8 @@ Using RevenueCat's open source Purchases SDKs, point your app's `Purchases.proxy
 openpurr is an independent project. It is not affiliated with or endorsed by RevenueCat, Inc.
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="The openpurr Lite dashboard, showing 12 months of MRR movement, active subscriptions, churn, new customers, new trials and active trials">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="The openpurr Lite dashboard's charts, clicked through with tooltips: MRR, MRR movement, Revenue, Active subscriptions, Churn">
 </picture>
 
 ## Who it's for

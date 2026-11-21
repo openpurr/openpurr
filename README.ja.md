@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:2f5fb4fb0a81c338 -->
+<!-- translated-from: README.md sha256:7fe66f74f9217d9d -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -17,8 +17,8 @@ RevenueCat のオープンソースの Purchases SDK を使い、アプリの `P
 openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提携しておらず、同社の承認も受けていません。
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-dark.png">
-  <img src=".github/assets/openpurr-dashboard.png" alt="openpurr Lite のダッシュボード。12 か月分の MRR の推移、アクティブなサブスクリプション、解約率、新規顧客、新規トライアル、アクティブなトライアルを表示しています">
+  <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-dashboard-demo-dark.webp">
+  <img src=".github/assets/openpurr-dashboard-demo.webp" alt="openpurr Lite のダッシュボードのグラフをツールチップとともに順に表示：MRR、MRR の推移、売上、アクティブなサブスクリプション、解約">
 </picture>
 
 ## こんな方に
