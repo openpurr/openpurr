@@ -11,7 +11,7 @@ import { assessUsage, cloudflarePlan, describe as describeUsage, readUsage, usag
 import { guessSdkUrl, storedSdkUrl } from "./setup";
 
 /** The newest migration this code expects. A test keeps it in step with migrations/. */
-export const EXPECTED_MIGRATION = "0019_operator_locale.sql";
+export const EXPECTED_MIGRATION = "0020_experiments.sql";
 
 export type CheckStatus = "ok" | "warn" | "fail" | "info";
 export interface Check {
@@ -37,7 +37,7 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
   const checks: Check[] = [];
   const add = (check: Check) => checks.push(check);
 
-  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp, dbBytes, plan, usage] = await Promise.all([
+  const [migration, notifications, rollup, fx, failedDeliveries, owners, requireTotp, dbBytes, plan, usage, experiments] = await Promise.all([
     db.prepare("SELECT name FROM d1_migrations ORDER BY id DESC LIMIT 1").first<{ name: string }>().catch(() => null),
     db
       .prepare("SELECT app_id, store, max(received_at) AS last FROM store_notification WHERE received_at > ? AND app_id IS NOT NULL GROUP BY app_id, store")
@@ -56,6 +56,8 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
       .catch(() => null),
     cloudflarePlan(db),
     readUsage(db),
+    // Before 0020 the table doesn't exist: the database check reports that.
+    db.prepare("SELECT id, project_id, name, variants FROM experiment WHERE status = 'running'").all<{ id: string; project_id: string; name: string; variants: string }>().catch(() => ({ results: [] })),
   ]);
 
   // Database schema.
@@ -166,6 +168,12 @@ export async function runChecks(c: Ctx, principal: Principal, now = Date.now()):
       }
     }
     if (!project.entitlements.length) add({ id: id("entitlements"), title: title("Entitlements"), status: "warn", message: "No entitlements are configured, so purchases unlock nothing.", fix: "Add entitlements to the config." });
+    for (const exp of experiments.results.filter((x) => x.project_id === project.id)) {
+      const missing = (JSON.parse(exp.variants) as { offering_id: string }[]).filter((v) => !project.offerings.some((o) => o.id === v.offering_id));
+      if (missing.length) {
+        add({ id: id("experiment"), title: title("Price experiment"), status: "warn", message: `"${exp.name}" is running, but its variant offerings ${missing.map((v) => v.offering_id).join(", ")} are no longer in the config: their customers see the current offering instead.`, fix: "Put the offerings back in the config, or stop the experiment (Experiments page)." });
+      } else add({ id: id("experiment"), title: title("Price experiment"), status: "info", message: `"${exp.name}" is running: new customers see one of its offerings as the current one.` });
+    }
     if (!project.currentOffering) add({ id: id("offerings"), title: title("Offerings"), status: "info", message: "No current offering: Purchases.getOfferings() returns none.", fix: "Mark one offering current in the config if your paywall uses offerings." });
   }
 

@@ -26,6 +26,8 @@
 // Money is converted to USD at the purchase date's ECB rate (src/fx.ts); prices in currencies
 // with no rate are counted as "unconverted" and left out of USD totals. Days are UTC.
 
+import { usdSql } from "./fx";
+
 const DAY = 864e5;
 const GRACE_LOOKBACK = 62 * DAY; // grace periods last at most a few weeks past expiry
 const STATE_KEY = "metrics_rollup";
@@ -58,17 +60,7 @@ const SEGMENT_METRICS: readonly string[] = [...RUNNING_METRICS, ...MOVEMENT_METR
 const LEDGER_METRICS: readonly string[] = [...SEGMENT_METRICS, ...DAILY_METRICS];
 export type Metric = (typeof RUNNING_METRICS)[number] | (typeof MOVEMENT_METRICS)[number] | (typeof DAILY_METRICS)[number] | "new_customers";
 
-/** A transaction's price in USD at its purchase date: the rate for that day or the closest earlier one (else the closest later one). */
-function usd(t: string) {
-  const day = `date(${t}.purchased_at / 1000, 'unixepoch')`;
-  return `CASE
-    WHEN ${t}.price_micros IS NULL OR ${t}.currency IS NULL THEN NULL
-    WHEN ${t}.currency = 'USD' THEN ${t}.price_micros / 1e6
-    ELSE ${t}.price_micros / 1e6 / coalesce(
-      (SELECT f.per_usd FROM fx_rate f WHERE f.currency = ${t}.currency AND f.date <= ${day} ORDER BY f.date DESC LIMIT 1),
-      (SELECT f.per_usd FROM fx_rate f WHERE f.currency = ${t}.currency AND f.date > ${day} ORDER BY f.date LIMIT 1))
-  END`;
-}
+const usd = usdSql;
 
 /** Days in a billing period, from a segment's length (weekly, monthly, quarterly, half-yearly, yearly). */
 const periodDays = (ms: string) => `CASE

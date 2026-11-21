@@ -25,7 +25,9 @@ import { computeSnapshot, promotionalProductId } from "../customer-info";
 import type { AppEnv } from "../env";
 import { type GrantRow, loadCustomer, type SubscriptionStateRow, type TransactionRow } from "../ledger";
 import { cloudflareRateLimiters } from "../lib/rate-limit";
+import type { ExperimentRow } from "../experiments";
 import { CHARTS, dayOf, type Interval, readChart } from "../metrics";
+import { experimentResults, publicExperiment } from "./experiments";
 import { deliverNow } from "../webhooks";
 import { audit } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
@@ -452,6 +454,47 @@ const TOOLS: Tool[] = [
         text: `${result.label}, ${from} to ${result.to}, by ${interval} (${environment}${chosen ? `, project ${chosen.id}` : ""}${app ? `, app ${app}` : ""}${store ? `, ${STORE[store]}` : ""}${product ? `, product ${product}` : ""}). ${result.description} ${unit}\n\n${table.join("\n")}${result.notes.length ? `\n\n${result.notes.join(" ")}` : ""}${result.updated_at ? `\n\nTotals last updated ${when(result.updated_at)} (hourly).` : ""}`,
         structured: result as unknown as Record<string, unknown>,
       };
+    },
+  },
+  {
+    name: "get_experiments",
+    title: "Get price experiments",
+    description:
+      "A project's price experiments (each variant shows customers new to the app a different offering as the current one) and, for operators who see every app, each started experiment's results per variant: customers enrolled, trials, trial conversions, paying customers, revenue and revenue per customer (USD, net of refunds), active subscriptions, MRR, churned subscribers, products bought, and versus the control (variant a) the lift and the chance (0 to 1) that the variant's true conversion rate and revenue per customer are higher. enough_data false means it's too early to call. Results are up to 5 minutes old.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project: { type: "string", description: "Project ID; only needed when you can see several (get_config lists them)." },
+        environment: { type: "string", enum: ["production", "sandbox"], description: "Which purchases count (default production)." },
+      },
+      additionalProperties: false,
+    },
+    annotations: { readOnlyHint: true, openWorldHint: false },
+    permission: "read",
+    async run(c, principal, args) {
+      const config = projectArg(c, principal, args);
+      const environment = str(args, "environment", { required: false, max: 20 }) === "sandbox" ? "sandbox" : "production";
+      const { results: rows } = await c.env.DB.prepare("SELECT * FROM experiment WHERE project_id = ? ORDER BY created_at DESC LIMIT 20").bind(config.id).all<ExperimentRow>();
+      if (!rows.length) return { text: `No price experiments in project ${config.id}. Create one on the dashboard's Experiments page.`, structured: { experiments: [] } };
+      const allApps = principal.apps === null;
+      const pct = (v: number | null) => (v === null ? "—" : `${v >= 0 ? "+" : ""}${(v * 100).toFixed(1)}%`);
+      const chance = (v: number | null) => (v === null ? "—" : `${Math.round(v * 100)}%`);
+      const out = [];
+      const lines: string[] = [];
+      for (const row of rows) {
+        const exp = publicExperiment(row, config);
+        const results = allApps ? await experimentResults(c.env.DB, row, environment) : null;
+        out.push({ ...exp, results });
+        lines.push(`${exp.name} (${exp.id}): ${exp.status}${exp.started_at ? `, started ${when(exp.started_at)}` : ""}${exp.stopped_at ? `, stopped ${when(exp.stopped_at)}` : ""}. Variants: ${exp.variants.map((v) => `${v.id} = offering ${v.offering_id} (${v.weight}%)`).join(", ")}.`);
+        for (const v of results?.variants ?? []) {
+          lines.push(
+            `  ${v.id}: ${v.customers} customers, ${v.trials} trials (${v.trial_conversions} converted), ${v.paying} paying, revenue $${v.revenue} ($${v.revenue_per_customer} per customer), ${v.active_subscriptions} active, MRR $${v.mrr}, ${v.churned} churned` +
+              (v.vs_control ? `; vs a: conversion ${pct(v.vs_control.conversion_lift)} (chance higher ${chance(v.vs_control.conversion_chance)}), revenue per customer ${pct(v.vs_control.revenue_lift)} (chance higher ${chance(v.vs_control.revenue_chance)})${v.vs_control.enough_data ? "" : ", too early to call"}` : " (control)"),
+          );
+        }
+      }
+      if (!allApps) lines.push("Results aren't shown because your access is limited to some apps.");
+      return { text: `Price experiments in project ${config.id} (${environment} purchases):\n${lines.join("\n")}`, structured: { experiments: out } };
     },
   },
   {

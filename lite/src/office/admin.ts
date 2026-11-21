@@ -12,6 +12,8 @@ import { findCustomer, loadCustomer } from "../ledger";
 import { hashKey, SCOPES as SECRET_KEY_SCOPES } from "../secret-keys";
 import { CHARTS, chartCsv, dayOf, type Interval, lastRollupAt, readChart, rollupInfo, rollupMetrics } from "../metrics";
 import { readCustomerInfo } from "../snapshot";
+import { type CustomerExperiment, customerExperimentsQuery, type ExperimentRow, forgetRunning, MAX_VARIANTS, type Variant, VARIANT_IDS, variantsOf } from "../experiments";
+import { experimentResults, publicExperiment } from "./experiments";
 import { deliverNow } from "../webhooks";
 import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./auth";
 import { BadInput, searchCustomers } from "./customers";
@@ -379,12 +381,13 @@ admin.get("/customers/:app_user_id", requirePermission("read"), async (c) => {
   const appUserId = c.req.param("app_user_id");
   const customer = await findCustomer(db, project.id, appUserId);
   if (!customer) return notFound(c, "Customer");
-  const [{ body: customerInfo }, { transactions, states, grants }, attributes, aliases, events] = await Promise.all([
+  const [{ body: customerInfo }, { transactions, states, grants }, attributes, aliases, events, experiments] = await Promise.all([
     readCustomerInfo(db, project, appUserId),
     loadCustomer(db, project.id, appUserId),
     readAttributes(db, customer.id),
     db.prepare("SELECT app_user_id, created_at FROM customer_alias WHERE customer_id = ? ORDER BY created_at").bind(customer.id).all(),
     db.prepare("SELECT id, type, app_id, environment, created_at FROM webhook_event WHERE customer_id = ? ORDER BY created_at DESC LIMIT 50").bind(customer.id).all<{ app_id: string }>(),
+    customerExperimentsQuery(db, JSON.stringify([customer.id]), customer.id).all<CustomerExperiment>(),
   ]);
   const visible = transactions.filter((t) => canSeeApp(principal, t.app_id));
   return c.json({
@@ -398,6 +401,7 @@ admin.get("/customers/:app_user_id", requirePermission("read"), async (c) => {
     // Grants span every app (entitlements aren't per app), so only all-apps operators see them.
     grants: principal.apps === null ? grants : undefined,
     entitlement_ids: project.entitlements.map((e) => e.id),
+    experiments: experiments.results,
   });
 });
 
@@ -484,6 +488,197 @@ admin.post("/import", requirePermission("customers:import"), async (c) => {
     }
     throw err;
   }
+});
+
+// --- price experiments (src/experiments.ts) ------------------------------------------------------
+// Experiments change what customers are offered, so changing them takes config:manage. Results add
+// up purchases across every app, so only operators who see every app get them.
+
+const EXPERIMENT_NAME_MAX = 100;
+const EXPERIMENT_NOTES_MAX = 2000;
+
+async function experimentOf(c: Ctx): Promise<{ row: ExperimentRow; project: ProjectConfig } | Response> {
+  const row = await c.env.DB.prepare("SELECT * FROM experiment WHERE id = ?").bind(c.req.param("id")).first<ExperimentRow>();
+  if (!row) return notFound(c, "Experiment");
+  const project = c.get("config").projects.get(row.project_id);
+  if (!project) return notFound(c, "Experiment"); // its project was removed from the config
+  const choice = chooseProject(c.get("config"), p(c), row.project_id);
+  if (!("project" in choice)) return notFound(c, "Experiment");
+  return { row, project };
+}
+
+/** Validates variants from a request: 2 to 4 offerings from the project, weights adding up to 100. */
+function parseVariants(project: ProjectConfig, raw: unknown): Variant[] | string {
+  if (!Array.isArray(raw) || raw.length < 2 || raw.length > MAX_VARIANTS) return `variants must list 2 to ${MAX_VARIANTS} offerings; the first is the control.`;
+  const variants: Variant[] = [];
+  for (const [i, v] of raw.entries()) {
+    const offering = (v as { offering_id?: unknown })?.offering_id;
+    const weight = (v as { weight?: unknown })?.weight;
+    if (typeof offering !== "string" || !project.offerings.some((o) => o.id === offering)) return `variants[${i}].offering_id must be one of the project's offerings: ${project.offerings.map((o) => o.id).join(", ") || "(none yet)"}.`;
+    if (variants.some((x) => x.offering_id === offering)) return `Offering ${offering} is in two variants; each variant needs its own offering.`;
+    if (!Number.isInteger(weight) || (weight as number) < 1 || (weight as number) > 99) return `variants[${i}].weight must be a whole percent from 1 to 99.`;
+    variants.push({ id: VARIANT_IDS[i]!, offering_id: offering, weight: weight as number });
+  }
+  const total = variants.reduce((a, v) => a + v.weight, 0);
+  if (total !== 100) return `The weights add up to ${total}; they must add up to 100.`;
+  return variants;
+}
+
+function parseText(raw: unknown, field: string, max: number, required: boolean): string | { error: string } {
+  if (raw === undefined || raw === null) return required ? { error: `${field} is required.` } : "";
+  if (typeof raw !== "string") return { error: `${field} must be a string.` };
+  const text = raw.trim();
+  if (required && !text) return { error: `${field} is required.` };
+  if (text.length > max) return { error: `${field} is at most ${max} characters.` };
+  return text;
+}
+
+admin.get("/experiments", requirePermission("read"), async (c) => {
+  const project = projectOf(c);
+  if (project instanceof Response) return project;
+  const { results } = await c.env.DB.prepare(
+    `SELECT x.*, (SELECT count(*) FROM experiment_enrollment e WHERE e.experiment_id = x.id) AS enrolled
+     FROM experiment x WHERE x.project_id = ? ORDER BY x.created_at DESC`,
+  )
+    .bind(project.id)
+    .all<ExperimentRow & { enrolled: number }>();
+  return c.json({ experiments: results.map((r) => ({ ...publicExperiment(r, project), enrolled: r.enrolled })) });
+});
+
+admin.post("/experiments", requirePermission("config:manage"), async (c) => {
+  const b = await body<{ project: string; name: string; notes: string; variants: unknown }>(c);
+  const project = projectOf(c, b.project);
+  if (project instanceof Response) return project;
+  const name = parseText(b.name, "name", EXPERIMENT_NAME_MAX, true);
+  if (typeof name !== "string") return bad(c, name.error);
+  const notes = parseText(b.notes, "notes", EXPERIMENT_NOTES_MAX, false);
+  if (typeof notes !== "string") return bad(c, notes.error);
+  const variants = parseVariants(project, b.variants);
+  if (typeof variants === "string") return bad(c, variants);
+  const row: ExperimentRow = {
+    id: `exp_${randomToken().slice(0, 16)}`,
+    project_id: project.id,
+    name,
+    notes,
+    variants: JSON.stringify(variants),
+    status: "draft",
+    created_at: Date.now(),
+    created_by: p(c).operator.email,
+    started_at: null,
+    stopped_at: null,
+    results: null,
+    results_at: null,
+  };
+  await c.env.DB.batch([
+    c.env.DB.prepare("INSERT INTO experiment (id, project_id, name, notes, variants, status, created_at, created_by) VALUES (?, ?, ?, ?, ?, 'draft', ?, ?)").bind(
+      row.id,
+      row.project_id,
+      row.name,
+      row.notes,
+      row.variants,
+      row.created_at,
+      row.created_by,
+    ),
+    auditBy(c, "experiment.create", row.id, { project: project.id, name, variants }),
+  ]);
+  return c.json({ experiment: publicExperiment(row, project) }, 201);
+});
+
+admin.get("/experiments/:id", requirePermission("read"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  return c.json({ experiment: publicExperiment(found.row, found.project) });
+});
+
+// Name and notes can change at any time; variants only before the experiment starts.
+admin.patch("/experiments/:id", requirePermission("config:manage"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  const { row, project } = found;
+  const b = await body<{ name: string; notes: string; variants: unknown }>(c);
+  const next = { ...row };
+  if ("name" in b) {
+    const name = parseText(b.name, "name", EXPERIMENT_NAME_MAX, true);
+    if (typeof name !== "string") return bad(c, name.error);
+    next.name = name;
+  }
+  if ("notes" in b) {
+    const notes = parseText(b.notes ?? "", "notes", EXPERIMENT_NOTES_MAX, false);
+    if (typeof notes !== "string") return bad(c, notes.error);
+    next.notes = notes;
+  }
+  if ("variants" in b) {
+    if (row.status !== "draft") return c.json({ code: "conflict", message: "Variants can't change once an experiment has started: customers are already split. Stop it and create a new one." }, 409);
+    const variants = parseVariants(project, b.variants);
+    if (typeof variants === "string") return bad(c, variants);
+    next.variants = JSON.stringify(variants);
+  }
+  await c.env.DB.batch([
+    c.env.DB.prepare("UPDATE experiment SET name = ?, notes = ?, variants = ? WHERE id = ?").bind(next.name, next.notes, next.variants, row.id),
+    auditBy(c, "experiment.update", row.id, { name: next.name, ...("variants" in b ? { variants: JSON.parse(next.variants) } : {}) }),
+  ]);
+  return c.json({ experiment: publicExperiment(next, project) });
+});
+
+admin.post("/experiments/:id/start", requirePermission("config:manage"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  const { row, project } = found;
+  if (row.status !== "draft") return c.json({ code: "conflict", message: `This experiment is ${row.status}; only a draft can start.` }, 409);
+  const missing = variantsOf(row).filter((v) => !project.offerings.some((o) => o.id === v.offering_id));
+  if (missing.length) return bad(c, `These offerings are no longer in the config: ${missing.map((v) => v.offering_id).join(", ")}. Edit the variants first.`);
+  const other = await c.env.DB.prepare("SELECT id, name FROM experiment WHERE project_id = ? AND status = 'running'").bind(project.id).first<{ id: string; name: string }>();
+  if (other) return c.json({ code: "conflict", message: `"${other.name}" is already running in this project; stop it first. One experiment runs at a time, so each customer is in at most one.` }, 409);
+  const now = Date.now();
+  try {
+    await c.env.DB.batch([
+      c.env.DB.prepare("UPDATE experiment SET status = 'running', started_at = ? WHERE id = ? AND status = 'draft'").bind(now, row.id),
+      auditBy(c, "experiment.start", row.id, { project: project.id }),
+    ]);
+  } catch {
+    // The unique index: another experiment started at the same moment.
+    return c.json({ code: "conflict", message: "Another experiment is already running in this project; stop it first." }, 409);
+  }
+  forgetRunning();
+  return c.json({ experiment: publicExperiment({ ...row, status: "running", started_at: now }, project) });
+});
+
+admin.post("/experiments/:id/stop", requirePermission("config:manage"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  const { row, project } = found;
+  if (row.status !== "running") return c.json({ code: "conflict", message: `This experiment is ${row.status}; only a running one can stop.` }, 409);
+  const now = Date.now();
+  await c.env.DB.batch([
+    // Results are recomputed with the end date.
+    c.env.DB.prepare("UPDATE experiment SET status = 'stopped', stopped_at = ?, results = NULL, results_at = NULL WHERE id = ?").bind(now, row.id),
+    auditBy(c, "experiment.stop", row.id, { project: project.id }),
+  ]);
+  forgetRunning();
+  return c.json({ experiment: publicExperiment({ ...row, status: "stopped", stopped_at: now }, project) });
+});
+
+admin.delete("/experiments/:id", requirePermission("config:manage"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  const { row } = found;
+  if (row.status === "running") return c.json({ code: "conflict", message: "Stop the experiment before deleting it." }, 409);
+  await c.env.DB.batch([
+    c.env.DB.prepare("DELETE FROM experiment_enrollment WHERE experiment_id = ?").bind(row.id),
+    c.env.DB.prepare("DELETE FROM experiment WHERE id = ?").bind(row.id),
+    auditBy(c, "experiment.delete", row.id, { name: row.name }),
+  ]);
+  return c.json({ deleted: true });
+});
+
+// Computed from the ledger: a row or two per enrolled customer and their purchases (see
+// experimentResults for how long they're kept).
+admin.get("/experiments/:id/results", requirePermission("read"), async (c) => {
+  const found = await experimentOf(c);
+  if (found instanceof Response) return found;
+  if (p(c).apps !== null) return forbidden(c, "Experiment results add up purchases in every app, so they're for operators who can see every app.");
+  const environment = c.req.query("environment") === "sandbox" ? "sandbox" : "production";
+  return c.json({ results: await experimentResults(c.env.DB, found.row, environment, c.req.query("refresh") === "1") });
 });
 
 // --- charts --------------------------------------------------------------------------------------
