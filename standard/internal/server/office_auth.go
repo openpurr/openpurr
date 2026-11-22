@@ -378,7 +378,16 @@ func (s *server) authMe(q *adminReq) error {
 		return err
 	}
 	if sess == nil {
-		q.fail(http.StatusUnauthorized, "signed_out", "Not signed in.")
+		// Signed in by Identity-Aware Proxy: the dashboard treats "iap" like a full session.
+		o, err := s.iapOperator(q.ctx, q.r, q.now)
+		if err != nil {
+			return err
+		}
+		if o == nil {
+			q.fail(http.StatusUnauthorized, "signed_out", "Not signed in.")
+			return nil
+		}
+		q.json(http.StatusOK, jsobj.New("operator", publicOperator(o), "session", "iap", "totp_enrollment_required", false))
 		return nil
 	}
 	required, err := s.totpEnrollmentRequired(q.ctx, sess.op)

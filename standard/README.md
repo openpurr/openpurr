@@ -5,10 +5,12 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S7 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+This is milestones S1 to S8 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
 App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
 with the background jobs, the back office (operator sign-in, the admin API and the dashboard),
-charts, and the MCP server with its OAuth authorization server.
+charts, the MCP server with its OAuth authorization server, and packaging for Google Cloud
+(Cloud Run, Cloud SQL, Secret Manager, sign-in through Identity-Aware Proxy; see
+[`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md)).
 It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
@@ -30,6 +32,9 @@ docker build -f standard/Dockerfile -t openpurr-standard .
 docker run -e DATABASE_URL=... -e OPERATOR_SECRET=... -p 8080:8080 openpurr-standard
 ```
 
+Releases publish the image as `ghcr.io/openpurr/openpurr-standard:<version>` (linux/amd64 and
+linux/arm64; `.github/workflows/standard-image.yml`).
+
 The server applies its migrations at startup (several replicas can start at once; they take
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
 database has none, and serves the SDK API on `/v1`, App Store Server Notifications V2 on
@@ -39,7 +44,8 @@ server on `/mcp` with its OAuth endpoints (`/.well-known/oauth-*`, `/oauth/*`) a
 on `GET /healthz`, and runs the background jobs
 (see "Webhooks and background jobs"). Logs are JSON on stdout. SIGTERM stops taking requests, lets
 those in progress, the job in progress and deferred work (first webhook attempts, snapshot
-rebuilds) finish, and stops, within 25 seconds.
+rebuilds) finish, and stops, within 25 seconds (8 on Cloud Run, which stops a container 10 seconds
+after SIGTERM; work cut short is picked up by the next server's jobs).
 
 | Variable | |
 |---|---|
@@ -50,11 +56,26 @@ rebuilds) finish, and stops, within 25 seconds.
 | `PUBLIC_URL` | The server's public origin (`https://purchases.example.com`). Optional: setup links, the dashboard's same-origin check, the MCP server's Origin check and the OAuth issuer and resource (`<PUBLIC_URL>/mcp`) use it, else each request's host and scheme (`X-Forwarded-Proto` behind a proxy that ends TLS). Set it behind a proxy, so OAuth tokens are issued for the address clients use. |
 | `RATE_LIMIT_IP_PER_MINUTE` | SDK requests per client IP per minute (default 300, 0 = off). |
 | `RATE_LIMIT_USER_PER_MINUTE` | SDK requests per app user per minute (default 60, 0 = off). |
-| `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `X-Forwarded-For` or `CF-Connecting-IP`). Without it, the connection's address is used. Only set it behind a proxy that overwrites the header. |
+| `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `CF-Connecting-IP`, `X-Client-IP` or `X-Forwarded-For`). Without it, the connection's address is used. Only set it behind a proxy that sets the header, so clients can't choose their own address. |
+| `CLIENT_IP_HOPS` | For a header proxies append to (`X-Forwarded-For`): the client is this many entries from the end, one per trusted proxy that appends (default 0: the first entry, for a header the proxy overwrites). A request with fewer entries counts as the connection's address. |
 | `LOG_LEVEL` | `debug`, `info` (default), `warn` or `error`. |
+| `LOG_FORMAT` | `json` (slog's `level` and `msg`) or `gcp` (Cloud Logging's `severity` and `message`). Default `gcp` on Cloud Run (when `K_SERVICE` is set), else `json`. |
+| `SHUTDOWN_TIMEOUT_SECONDS` | How long SIGTERM waits for work in progress (default 25; 8 on Cloud Run). |
+| `IAP_AUDIENCE` | Sign operators in through Google's Identity-Aware Proxy (see below): the audience IAP signs for, `/projects/<project number>/global/backendServices/<id>` behind a load balancer (several separated by commas). Off when unset. |
 
 Secrets the config names (`APPLE_IAP_KEY`, `GOOGLE_SERVICE_ACCOUNT`, webhook secrets) are
 environment variables of that name, as they're Worker secrets of that name on Lite.
+
+`DATABASE_URL` can name a Unix socket with the `host` parameter, which is how Cloud Run reaches
+Cloud SQL through its built-in connection (no connector library or sidecar):
+`postgres://openpurr:<password>@/openpurr?host=/cloudsql/<project>:<region>:<instance>`. pgx's
+`pool_max_conns` parameter caps each replica's connections (the default is the larger of 4 and
+the number of CPUs); keep replicas times that under the database's `max_connections`.
+
+To run it on Google Cloud (Cloud Run, Cloud SQL, Secret Manager, a load balancer on your own
+domain and optionally IAP), see [`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md) and the
+OpenTofu module in [`infra/gcp`](../infra/gcp). `openpurr setup gcp [--config <file>]` asks a few
+questions and writes the module's variables file (it doesn't touch Google Cloud).
 
 ## App Store
 
@@ -177,6 +198,40 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   `POST /admin/v1/usage/refresh` answers 400. The dashboard doesn't read the edition yet; until it
   does, it shows "Lite" and the usage card's Cloudflare text.
 
+### Identity-Aware Proxy
+
+Standard's counterpart to Lite's planned Cloudflare Access sign-in (project plan section 8.2), in
+`internal/iap` and `internal/server/iap.go`. With `IAP_AUDIENCE` set, an operator whose request
+reaches the dashboard through Google Cloud's Identity-Aware Proxy is signed in as the active
+operator with the same email:
+
+- **Every request is checked.** The `x-goog-iap-jwt-assertion` JWT is verified each time: ES256
+  against IAP's keys (`https://www.gstatic.com/iap/verify/public_key-jwk`, cached as long as
+  Google's `Cache-Control` says, fetched again for an unknown key at most once a minute), issuer
+  `https://cloud.google.com/iap`, the configured audience, expiry and issue time (30 seconds of
+  skew, read from the server's clock), and a plain email (Identity Platform identities are
+  refused). The header's presence is never trusted. There's no session: removing someone from IAP,
+  or disabling the operator, takes effect on their next request.
+- **An additional way in, not a replacement.** Personal access tokens and session cookies come
+  first and work as before; a missing, invalid or unknown assertion is no IAP identity at all, so
+  password sign-in and `openpurr admin login-link` still work and the owner can't be locked out.
+- **The dashboard's API only** (`/admin/v1`, including `/admin/v1/auth/me`, which answers
+  `"session": "iap"`). The SDK API, store notifications, `/mcp`, `/oauth` and `/.well-known` never
+  read the header. Writes still need the dashboard's `Origin`. The role and app limits apply as
+  for any sign-in.
+- **Two-step sign-in** is the Google account's: openpurr's authenticator codes belong to password
+  sign-in, so "require two-step sign-in" doesn't block an IAP sign-in. Enforce 2-Step Verification
+  for the accounts IAP admits (Google Workspace or Cloud Identity admin console).
+- **Audited** as `auth.login` with `{"via":"iap"}` when an operator is first seen through IAP and
+  then at most once an hour; an email with no operator as `auth.login_failed`
+  (`{"reason":"unknown","via":"iap"}`) at most once an hour. Invalid assertions are logged.
+- **The setup checks** (`/admin/v1/doctor`) say whether this request's assertion passed, and why
+  not (usually the audience), and notice requests that come through IAP while `IAP_AUDIENCE` isn't
+  set. They also warn when the SDK URL is a `*.run.app` address: apps should use a domain you own.
+
+`infra/gcp` puts IAP in front of `/admin` on a load balancer and sets `IAP_AUDIENCE`; see
+`../docs/standard-on-gcp.md`.
+
 ## Charts
 
 As on Lite (`lite/src/metrics.ts`), in `internal/metrics`:
@@ -276,7 +331,8 @@ so packages run in parallel against one database. The HTTP tests mirror Lite's `
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
 `apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
 snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor` (with `check_setup`),
-`setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, and `metrics` (in
+`setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, IAP sign-in (Standard only,
+with a fake IAP key server, `internal/testutil/iap.go`), and `metrics` (in
 `internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
 crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
@@ -317,7 +373,7 @@ set too) turns on:
 - `POST /__conformance/reset`, `/jobs` and `/clock`, guarded by `Authorization: Bearer
   $CONFORMANCE_TOKEN` (404 otherwise), as specified in `../spec/conformance/README.md`;
 - a clock the suite can move, read by everything that uses the time;
-- outbound requests to the store, Google, ECB and Cloudflare hosts sent to
+- outbound requests to the store, Google (including IAP's keys on www.gstatic.com), ECB and Cloudflare hosts sent to
   `CONFORMANCE_STORE_BASE` instead;
 - `CONFORMANCE_APPLE_ROOT_B64` trusted instead of Apple Root CA G3;
 - no rate limits, no background job loop (`/__conformance/jobs` runs every job at once, slot or
@@ -329,7 +385,7 @@ set too) turns on:
 
 - Cohort charts (project plan section 7, phase 3: subscription retention, trial conversion,
   initial conversion, realized LTV, trial cancellation rate), which Lite leaves to Standard.
-- GCP packaging and IAP sign-in (S8), moving from Lite (S9).
+- Moving from Lite (S9).
 - Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
 

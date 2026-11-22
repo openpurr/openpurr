@@ -28,6 +28,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/db"
 	"github.com/openpurr/openpurr/standard/internal/fx"
+	"github.com/openpurr/openpurr/standard/internal/iap"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
@@ -99,6 +100,8 @@ type Env struct {
 	Loader *config.Loader
 	// Counts per limiter key, when rate limits are on.
 	Counts map[string]int
+	// The fake IAP key server, when Options.IAP is set.
+	IAP *FakeIAP
 }
 
 // Options change the test server.
@@ -111,8 +114,9 @@ type Options struct {
 	ConformanceToken string
 	// Conformance store base.
 	StoreBase string
-	// The client IP header (default CF-Connecting-IP, as in Lite's tests).
+	// The client IP header (default CF-Connecting-IP, as in Lite's tests), and CLIENT_IP_HOPS.
 	ClientIPHeader string
+	ClientIPHops   int
 	// Secrets by name (APPLE_IAP_KEY...), instead of the environment.
 	Secrets map[string]string
 	// Trusted Apple roots; the test chain's root when nil.
@@ -123,6 +127,8 @@ type Options struct {
 	OperatorSecret string
 	// The dashboard's files (Deps.Dashboard); the embedded copy when nil.
 	Dashboard fs.FS
+	// IAP sign-in on, for IAPAudience, with a fake key server (Env.IAP).
+	IAP bool
 }
 
 // OperatorSecret is the tests' OPERATOR_SECRET.
@@ -222,12 +228,17 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		Deferred:       jobs.NewDeferred(Quiet),
 		HTTPClient:     outbound.NewClient(opts.StoreBase),
 		ClientIPHeader: header,
+		ClientIPHops:   opts.ClientIPHops,
 		Secret:         secret,
 		AppleRoots:     roots,
 		Conformance:    conf,
 		FX:             rates,
 		OperatorSecret: operatorSecret,
 		Dashboard:      opts.Dashboard,
+	}
+	if opts.IAP {
+		env.IAP = NewFakeIAP(t)
+		env.Deps.IAP = iap.New([]string{IAPAudience}, serverClock.Now, outbound.NewClient(env.IAP.Server.URL))
 	}
 	env.Server = httptest.NewServer(server.New(env.Deps))
 	t.Cleanup(env.Server.Close)

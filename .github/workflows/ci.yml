@@ -92,6 +92,51 @@ jobs:
       - name: Build
         run: CGO_ENABLED=0 go build -o /dev/null ./cmd/openpurr
 
+  standard-image:
+    name: Standard (container image builds)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Builds standard/Dockerfile from the repository root, as releases do, without pushing.
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: standard/Dockerfile
+          push: false
+
+  infra:
+    name: Infra (OpenTofu fmt, validate, offline tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra/gcp
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Format
+        run: tofu fmt -recursive -check
+
+      # No backend and no credentials: providers are downloaded, nothing in Google Cloud is touched.
+      - name: Validate
+        run: tofu init -backend=false -input=false && tofu validate
+
+      # The Google provider is mocked (tests/plan.tftest.hcl).
+      - name: Test
+        run: tofu test
+
   conformance-lite:
     name: Conformance suite against Lite
     runs-on: ubuntu-latest

@@ -30,6 +30,8 @@ type Auth struct {
 	// Origin overrides the Origin header ("-" for none); the server's own by default.
 	Origin string
 	IP     string
+	// An Identity-Aware Proxy assertion (x-goog-iap-jwt-assertion).
+	IAP string
 }
 
 // Admin calls /admin/v1{path} (or path itself when it doesn't start with "/"... it always does).
@@ -60,6 +62,9 @@ func (e *Env) Admin(method, path string, auth Auth, body any) *Response {
 	case "-":
 	default:
 		req.Header.Set("Origin", auth.Origin)
+	}
+	if auth.IAP != "" {
+		req.Header.Set("X-Goog-Iap-Jwt-Assertion", auth.IAP)
 	}
 	if auth.IP != "" {
 		req.Header.Set("CF-Connecting-IP", auth.IP)

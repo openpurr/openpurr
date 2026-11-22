@@ -18,6 +18,7 @@ import (
 
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/db"
+	"github.com/openpurr/openpurr/standard/internal/iap"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 )
 
@@ -268,6 +269,12 @@ func (q *adminReq) runChecks() ([]check, error) {
 		add(check{id: "sdk-url", title: "SDK URL", status: "info",
 			message: "Not set, so the dashboard's setup code guesses " + q.s.sdkURLGuess(q.r) + " for Purchases.proxyURL.",
 			fix:     "Set it on the dashboard's Settings page: the address your apps reach openpurr at, ideally a domain you own."})
+	} else if u, err := url.Parse(*sdkURL); err == nil && strings.HasSuffix(strings.ToLower(u.Hostname()), ".run.app") {
+		// The custom domain is the contract (project plan section 14.3): apps in the field keep
+		// whatever address they were built with.
+		add(check{id: "sdk-url", title: "SDK URL", status: "warn",
+			message: "Apps use " + *sdkURL + ", a Cloud Run address. Moving the server later would then need an app update.",
+			fix:     "Put openpurr on a domain you own (see docs/standard-on-gcp.md) and set it as the SDK URL before you ship an app."})
 	} else {
 		add(check{id: "sdk-url", title: "SDK URL", status: "ok", message: "Apps use " + *sdkURL + "."})
 	}
@@ -513,6 +520,11 @@ func (q *adminReq) runChecks() ([]check, error) {
 		}
 	}
 
+	// Identity-Aware Proxy, when it's on or requests come through it.
+	if c, ok := q.iapCheck(); ok {
+		add(c)
+	}
+
 	// Operator security.
 	required, err := requireTOTPForEveryone(ctx, pool)
 	if err != nil {
@@ -586,4 +598,42 @@ func adminDoctor(q *adminReq) {
 		list[i] = c.json()
 	}
 	q.json(http.StatusOK, jsobj.New("summary", summarizeChecks(checks), "checks", list))
+}
+
+// iapCheck reports on sign-in through Identity-Aware Proxy, judged from this request's assertion.
+// Nothing (false) when IAP is off and the request didn't come through it.
+func (q *adminReq) iapCheck() (check, bool) {
+	s := q.s
+	token := iapAssertion(q.r)
+	const id, title = "iap", "Identity-Aware Proxy"
+	if s.IAP == nil {
+		if token == "" {
+			return check{}, false
+		}
+		return check{id: id, title: title, status: "info",
+			message: "Requests come through Identity-Aware Proxy, but IAP_AUDIENCE isn't set, so its sign-in isn't used.",
+			fix:     "To sign operators in with IAP, set IAP_AUDIENCE to the audience IAP signs for (see docs/standard-on-gcp.md)."}, true
+	}
+	if token == "" {
+		return check{id: id, title: title, status: "info",
+			message: "On, for " + strings.Join(s.IAP.Audiences(), ", ") + ". This request didn't come through IAP (an access token, or the service's own address), so it couldn't be checked."}, true
+	}
+	identity, err := s.IAP.Verify(q.ctx, token)
+	switch {
+	case err != nil && iap.IsInvalid(err):
+		return check{id: id, title: title, status: "fail",
+			message: "This request's IAP assertion was refused: " + err.Error() + ".",
+			fix:     "Set IAP_AUDIENCE to the audience IAP signs for: /projects/<project number>/global/backendServices/<backend service id> behind a load balancer."}, true
+	case err != nil:
+		return check{id: id, title: title, status: "warn",
+			message: "Couldn't check this request's IAP assertion: " + err.Error() + ".",
+			fix:     "The server must reach https://www.gstatic.com to fetch IAP's keys."}, true
+	}
+	var exists bool
+	if err := s.Pool.QueryRow(q.ctx, "SELECT EXISTS (SELECT 1 FROM operator WHERE lower(email) = lower($1) AND disabled_at IS NULL)", identity.Email).Scan(&exists); err != nil || !exists {
+		return check{id: id, title: title, status: "warn",
+			message: "IAP signed this request in as " + identity.Email + ", who isn't an active operator, so IAP alone doesn't sign them in.",
+			fix:     "Invite " + identity.Email + " as an operator, or sign in with the operator's own email in Google."}, true
+	}
+	return check{id: id, title: title, status: "ok", message: "On: IAP signed this request in as " + identity.Email + "."}, true
 }
