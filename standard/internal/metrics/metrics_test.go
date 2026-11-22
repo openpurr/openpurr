@@ -589,15 +589,16 @@ func TestHandCheckedLedger(t *testing.T) {
 	})
 }
 
-func TestParseDateIsV8s(t *testing.T) {
+func TestParseDateIsLites(t *testing.T) {
 	for in, want := range map[string]int64{
-		"2026-02-29": at("2026-03-01", 0), "2026-02-31": at("2026-03-03", 0), "2026-04-31": at("2026-05-01", 0), "0000-01-01": -62167219200000,
+		"2026-03-03": at("2026-03-03", 0), "2024-02-29": at("2024-02-29", 0), "2026-12-31": at("2026-12-31", 0), "0000-01-01": -62167219200000,
 	} {
 		if got, ok := metrics.ParseDate(in); !ok || got != want {
 			t.Errorf("%s: %d %v", in, got, ok)
 		}
 	}
-	for _, in := range []string{"2026-02-32", "2026-00-10", "2026-01-00", "2026-1-01", "+026-01-01", "2026-13-01", ""} {
+	// Days that don't exist, which V8's Date.parse rolls over (Feb 31 is Mar 3), aren't dates.
+	for _, in := range []string{"2026-02-29", "2026-02-31", "2026-04-31", "2100-02-29", "2026-02-32", "2026-00-10", "2026-01-00", "2026-1-01", "+026-01-01", "2026-13-01", ""} {
 		if _, ok := metrics.ParseDate(in); ok {
 			t.Errorf("%s parsed", in)
 		}

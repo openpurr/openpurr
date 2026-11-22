@@ -226,7 +226,7 @@ func ChartList() []any {
 
 // Query is what a chart covers.
 type Query struct {
-	// YYYY-MM-DD, as given (Date.parse reads them; V8 accepts day 31 of any month).
+	// YYYY-MM-DD (ParseDate reads them).
 	From, To string
 	// day, week or month.
 	Interval string
@@ -338,8 +338,8 @@ func (r *ChartResult) CSV() string {
 	return b.String()
 }
 
-// ParseDate is V8's Date.parse for "YYYY-MM-DD" (UTC midnight; day 31 of any month rolls over),
-// or false.
+// ParseDate is Lite's parseDay: a "YYYY-MM-DD" date as epoch ms (UTC midnight), or false, also for
+// days that don't exist (which V8's Date.parse rolls over: Feb 31 is Mar 3).
 func ParseDate(s string) (int64, bool) {
 	if len(s) != 10 || s[4] != '-' || s[7] != '-' {
 		return 0, false
@@ -350,10 +350,11 @@ func ParseDate(s string) (int64, bool) {
 	if err1 != nil || err2 != nil || err3 != nil || s[0] == '+' || s[0] == '-' || s[5] == '+' || s[5] == '-' || s[8] == '+' || s[8] == '-' {
 		return 0, false
 	}
-	if m < 1 || m > 12 || d < 1 || d > 31 {
+	t := time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC)
+	if m < 1 || m > 12 || d < 1 || t.Day() != d {
 		return 0, false
 	}
-	return time.Date(y, time.Month(m), d, 0, 0, 0, 0, time.UTC).UnixMilli(), true
+	return t.UnixMilli(), true
 }
 
 // PeriodStart is the first day of the period containing date (weeks start on Monday).

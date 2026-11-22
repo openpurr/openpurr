@@ -55,7 +55,9 @@ func TestChartsAPI(t *testing.T) {
 		}
 
 		for _, bad := range []string{"from=2026-02-01&to=2026-01-01", "from=yesterday", "interval=hour", "environment=staging", "store=amazon",
-			"from=2000-01-01&to=2026-01-01", "to=", "to=bad", "interval=", "from=2026-02-32", "country=USA", "country=1"} {
+			"from=2000-01-01&to=2026-01-01", "to=", "to=bad", "interval=", "from=2026-02-32", "country=USA", "country=1",
+			// Days that don't exist (V8 would roll them over into the next month).
+			"from=2026-02-31&to=2026-03-04", "from=2026-02-29&to=2026-03-04", "from=2026-01-01&to=2026-04-31", "to=2026-06-31"} {
 			expectStatus(t, env.Admin("GET", "/metrics/revenue?"+bad, as, nil), 400)
 		}
 		expectStatus(t, env.Admin("GET", "/metrics/ltv", as, nil), 404)
@@ -70,11 +72,6 @@ func TestChartsAPI(t *testing.T) {
 		res = expectStatus(t, env.Admin("GET", "/metrics/revenue?to=2026-03-31", as, nil), 200)
 		if res.Get(t, "from") != "2026-01-01" || len(res.Get(t, "points").([]any)) != 90 {
 			t.Errorf("%s %d", res.Get(t, "from"), len(res.Get(t, "points").([]any)))
-		}
-		// V8 reads day 31 of any month (Feb 31 is Mar 3).
-		res = expectStatus(t, env.Admin("GET", "/metrics/revenue?from=2026-02-31&to=2026-03-04", as, nil), 200)
-		if res.Get(t, "from") != "2026-02-31" || jsobj.Stringify(prop(res.Get(t, "points").([]any)[0], "date")) != `"2026-03-03"` {
-			t.Errorf("%s", res.Body)
 		}
 	})
 

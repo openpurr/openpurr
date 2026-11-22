@@ -368,9 +368,8 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
 - **Imports** don't stop near a daily limit (Standard has none).
 - **The inactive-customer cleanup** locks its candidates (`FOR UPDATE SKIP LOCKED`), so a customer
   a request is writing to at that moment is left for the next run.
-- **Chart requests Lite fails on:** `/metrics/{chart}?to=<not a date>` without `from` is a 400
-  (Lite's default `from` throws on the invalid date: a 500), and a chart named after an
-  `Object.prototype` member (`/metrics/constructor`) is a 404 (Lite finds the member and fails).
+- **Chart requests Lite fails on:** a chart named after an `Object.prototype` member
+  (`/metrics/constructor`) is a 404 (Lite finds the member and fails).
 - **Chart totals are written as a difference:** a rollup deletes, updates and inserts only the
   rows that changed, where Lite deletes the range and inserts it again; the stored rows and the
   run's `rows` count are the same. Rollups take turns under an advisory lock.
