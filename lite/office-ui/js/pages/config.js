@@ -1,7 +1,8 @@
 // Configuration pages: the current project's apps and products, entitlements and offerings; the
 // projects themselves and the config's history; and webhook endpoints (shown on the Webhooks
 // page). Every change saves a new version of the config (js/config.js), which the back office uses
-// at once and the SDK Worker within a minute.
+// at once and (on Lite) the SDK Worker within a minute. Where secrets live depends on the edition:
+// Worker secrets on Lite, the server's environment on Standard.
 import { get, post } from "../api.js";
 import {
   appIdFor,
@@ -21,6 +22,7 @@ import {
 } from "../config.js";
 import { connectSection, sdkUrlCard } from "../connect.js";
 import { h, replace } from "../dom.js";
+import { isLite } from "../edition.js";
 import { t, tk, tn, tx } from "../i18n.js";
 import { IconBolt, IconKey, IconPlus } from "../icons.js";
 import {
@@ -159,7 +161,13 @@ function addAppsForm(ctx, { newProject, onDone }) {
         "div",
         { class: "stack-sm" },
         result.keys.map((k) => h("div", { class: "stack-xs" }, h("span", { class: "label" }, `${k.appId} (${STORES[k.store]})`), copyField(k.key))),
-        h("p", { class: "small muted" }, t("Next: add your products, then an entitlement that they unlock, and an offering if your paywall uses one. Point the SDK at your openpurr SDK Worker with Purchases.proxyURL.")),
+        h(
+          "p",
+          { class: "small muted" },
+          isLite()
+            ? t("Next: add your products, then an entitlement that they unlock, and an offering if your paywall uses one. Point the SDK at your openpurr SDK Worker with Purchases.proxyURL.")
+            : t("Next: add your products, then an entitlement that they unlock, and an offering if your paywall uses one. Point the SDK at your openpurr server with Purchases.proxyURL."),
+        ),
       ),
       actions: [button(t("Add products"), { type: "submit" })],
       onSubmit: () => ctx.navigate("/admin/apps"),
@@ -217,7 +225,12 @@ export async function appsPage(ctx) {
   return h(
     "div",
     null,
-    pageHeader(t("Apps and products"), t("{project}'s apps, their SDK keys and the products they sell. Store keys and service accounts are Worker secrets; this names them.", { project: ctx.project.name }), edit ? [button(t("Add app"), { icon: IconPlus(15), onClick: addApp })] : []),
+    pageHeader(
+      t("Apps and products"),
+      isLite()
+        ? t("{project}'s apps, their SDK keys and the products they sell. Store keys and service accounts are Worker secrets; this names them.", { project: ctx.project.name })
+        : t("{project}'s apps, their SDK keys and the products they sell. Store keys and service accounts are environment variables on the server; this names them.", { project: ctx.project.name }),
+      edit ? [button(t("Add app"), { icon: IconPlus(15), onClick: addApp })] : []),
     h("div", { class: "stack" }, readOnlyNote(ctx), sdkUrlCard(ctx, settings), Object.entries(project.apps).map(([appId, app]) => appCard(ctx, project, appId, app, settings)), configFooter(config)),
   );
 }
@@ -364,6 +377,9 @@ function productsTable(ctx, project, appId, app) {
   );
 }
 
+/** What holds a store key: a Worker secret on Lite, an environment variable on Standard. */
+const secretLabel = () => (isLite() ? t("Worker secret") : t("Environment variable"));
+
 function storeAccess(ctx, appId, app) {
   const pid = ctx.project.id;
   const edit = canEdit(ctx);
@@ -376,7 +392,9 @@ function storeAccess(ctx, appId, app) {
       formModal({
         title: t("App Store Server API for {app}", { app: appId }),
         sub: t("From App Store Connect → Users and Access → Integrations → In-App Purchase. Used for StoreKit 1 receipts, restores and setup checks."),
-        fields: [field(t("Issuer ID"), issuer), field(t("Key ID"), keyId), field(t("Worker secret with the key"), secret, t("The .p8 file's contents never go here: set them with wrangler secret put on both Workers."))],
+        fields: [field(t("Issuer ID"), issuer), field(t("Key ID"), keyId), isLite()
+            ? field(t("Worker secret with the key"), secret, t("The .p8 file's contents never go here: set them with wrangler secret put on both Workers."))
+            : field(t("Environment variable with the key"), secret, t("The .p8 file's contents never go here: set them in the server's environment (on every replica)."))],
         save: async () => {
           const clear = !issuer.value.trim() && !keyId.value.trim();
           need(clear || /^[0-9a-f-]{36}$/i.test(issuer.value.trim()), t("The issuer ID is a UUID."));
@@ -397,7 +415,7 @@ function storeAccess(ctx, appId, app) {
     return h(
       "div",
       { class: "stack-sm" },
-      api ? kv([[t("Issuer ID"), h("span", { class: "mono small" }, api.issuer_id)], [t("Key ID"), h("span", { class: "mono small" }, api.key_id)], [t("Worker secret"), h("span", { class: "mono small" }, api.private_key_secret ?? "APPLE_IAP_KEY")]]) : h("p", { class: "small muted" }, t("Not set up: StoreKit 1 receipts (older SDKs, restores of old purchases) can't be resolved.")),
+      api ? kv([[t("Issuer ID"), h("span", { class: "mono small" }, api.issuer_id)], [t("Key ID"), h("span", { class: "mono small" }, api.key_id)], [secretLabel(), h("span", { class: "mono small" }, api.private_key_secret ?? "APPLE_IAP_KEY")]]) : h("p", { class: "small muted" }, t("Not set up: StoreKit 1 receipts (older SDKs, restores of old purchases) can't be resolved.")),
       edit ? h("div", null, button(api ? t("Edit") : t("Set up"), { variant: "outline", size: "sm", onClick: open })) : null,
     );
   }
@@ -410,7 +428,14 @@ function storeAccess(ctx, appId, app) {
     formModal({
       title: t("Google Play Developer API for {app}", { app: appId }),
       sub: t("A service account invited in Play Console with View financial data and Manage orders and subscriptions."),
-      fields: [on.el, field(t("Worker secret with the JSON key"), secret, t("Set it with wrangler secret put on both Workers.")), field(t("Pub/Sub push account"), push, t("The service account Pub/Sub signs notifications with (Real-time developer notifications).")), field(t("Pub/Sub audience"), audience)],
+      fields: [
+        on.el,
+        isLite()
+          ? field(t("Worker secret with the JSON key"), secret, t("Set it with wrangler secret put on both Workers."))
+          : field(t("Environment variable with the JSON key"), secret, t("Set it in the server's environment (on every replica).")),
+        field(t("Pub/Sub push account"), push, t("The service account Pub/Sub signs notifications with (Real-time developer notifications).")),
+        field(t("Pub/Sub audience"), audience),
+      ],
       save: async () => {
         const enabled = on.values().includes("on");
         need(!enabled || SECRET_NAME.test(secret.value.trim()), t("The secret name is capitals, digits and underscores, like GOOGLE_SERVICE_ACCOUNT."));
@@ -432,7 +457,7 @@ function storeAccess(ctx, appId, app) {
     "div",
     { class: "stack-sm" },
     api
-      ? kv([[t("Worker secret"), h("span", { class: "mono small" }, api.service_account_secret)], [t("Pub/Sub push account"), api.pubsub_push_account ? h("span", { class: "mono small" }, api.pubsub_push_account) : t("not set (no notifications)")]])
+      ? kv([[secretLabel(), h("span", { class: "mono small" }, api.service_account_secret)], [t("Pub/Sub push account"), api.pubsub_push_account ? h("span", { class: "mono small" }, api.pubsub_push_account) : t("not set (no notifications)")]])
       : h("p", { class: "small muted" }, app.allow_unverified_purchases ? t("Not set up: purchases are accepted without verification (development only).") : t("Not set up: Google Play purchases are refused until it is.")),
     !api && edit
       ? toggle({
@@ -807,12 +832,18 @@ export async function webhookEndpoints(ctx) {
     );
     formModal({
       title: w ? t("Edit {name}", { name: w.id }) : t("Add a webhook endpoint"),
-      sub: t("RevenueCat-shaped events, POSTed to your backend and retried for about three days. Secrets are Worker secrets, named here."),
+      sub: isLite()
+        ? t("RevenueCat-shaped events, POSTed to your backend and retried for about three days. Secrets are Worker secrets, named here.")
+        : t("RevenueCat-shaped events, POSTed to your backend and retried for about three days. Secrets are environment variables on the server, named here."),
       fields: [
         field(t("ID"), id),
         field(t("URL"), url),
-        field(t("Authorization secret (optional)"), auth, t("A Worker secret holding the exact Authorization header to send.")),
-        field(t("Signing secret (optional)"), signing, t("A Worker secret holding the HMAC key. Requests then carry X-RevenueCat-Webhook-Signature.")),
+        field(t("Authorization secret (optional)"), auth, isLite() ? t("A Worker secret holding the exact Authorization header to send.") : t("An environment variable holding the exact Authorization header to send.")),
+        field(
+          t("Signing secret (optional)"),
+          signing,
+          isLite() ? t("A Worker secret holding the HMAC key. Requests then carry X-RevenueCat-Webhook-Signature.") : t("An environment variable holding the HMAC key. Requests then carry X-RevenueCat-Webhook-Signature."),
+        ),
         h("div", null, h("span", { class: "label" }, t("Environments")), envs.el),
         h("div", { class: "stack-sm" }, h("span", { class: "label" }, t("Events")), chooser, eventsWrap),
       ],

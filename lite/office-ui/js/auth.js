@@ -3,6 +3,7 @@
 import qrcode from "../vendor/qrcode.js";
 import { post } from "./api.js";
 import { h, replace } from "./dom.js";
+import { isLite, setEdition } from "./edition.js";
 import { t, tx } from "./i18n.js";
 import { brand, button, busy, copy, copyField, field, formError, input } from "./ui.js";
 
@@ -34,7 +35,7 @@ export function renderLogin(root, { onSignedIn, notice }) {
       h(
         "p",
         { class: "auth-foot" },
-        tx("Forgot your password? Whoever runs this deployment can send you a one-time link: {cmd}", { cmd: h("code", null, "pnpm admin login-link --email …") }),
+        tx("Forgot your password? Whoever runs this deployment can send you a one-time link: {cmd}", { cmd: h("code", null, `${isLite() ? "pnpm" : "openpurr"} admin login-link --email …`) }),
       ),
     );
     form.addEventListener("submit", (e) => {
@@ -260,15 +261,24 @@ export function renderRequiredEnrollment(root, { operator, onDone, onSignOut }) 
 
 // ---- Not configured -----------------------------------------------------------------------------
 
+// Lite's message names "the Worker secret OPERATOR_SECRET"; Standard's, the server's own.
 export function renderNotConfigured(root, message) {
+  setEdition(/\bWorker\b/.test(message ?? "Worker") ? "lite" : "standard");
   screen(
     root,
     h(
       "div",
       { class: "auth-card wide" },
       cardHead(t("Finish setting up the back office"), message),
-      h("p", { class: "small muted" }, t("Set the secret on the back-office Worker, then create the first owner:")),
-      h("pre", { class: "code mt" }, "openssl rand -base64 48 | npx wrangler secret put OPERATOR_SECRET --env office\npnpm admin create --email you@example.com --url " + location.origin),
+      isLite()
+        ? [
+            h("p", { class: "small muted" }, t("Set the secret on the back-office Worker, then create the first owner:")),
+            h("pre", { class: "code mt" }, "openssl rand -base64 48 | npx wrangler secret put OPERATOR_SECRET --env office\npnpm admin create --email you@example.com --url " + location.origin),
+          ]
+        : [
+            h("p", { class: "small muted" }, t("Set the secret in the server's environment and restart it, then create the first owner:")),
+            h("pre", { class: "code mt" }, "openpurr admin create --email you@example.com --url " + location.origin),
+          ],
     ),
   );
 }

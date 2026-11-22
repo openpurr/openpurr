@@ -1,10 +1,11 @@
 // The openpurr dashboard: sign-in, then a sidebar shell whose pages call the admin API.
-// Plain ES modules, no build step. Pages live under /admin/…; the Worker answers every unknown
-// page path with index.html, and this file routes it.
+// Plain ES modules, no build step. Pages live under /admin/…; the server (Lite's back-office
+// Worker or Standard) answers every unknown page path with index.html, and this file routes it.
 import { get, onAuthChange, post, setProject } from "./api.js";
 import { renderLink, renderLogin, renderNotConfigured, renderRequiredEnrollment, renderSetPassword } from "./auth.js";
 import { renderConsent } from "./consent.js";
 import { h, replace } from "./dom.js";
+import { isLite, setEdition } from "./edition.js";
 import { detect, setLocale, t, tk, tx } from "./i18n.js";
 import { IconAlert, IconApps, IconBolt, IconChart, IconCustomers, IconFlask, IconFolder, IconGift, IconInfo, IconKey, IconLogOut, IconMenu, IconSettings, IconShield, IconTag, IconTerminal, IconUser, IconUsers, IconX } from "./icons.js";
 import { accountPage } from "./pages/account.js";
@@ -121,6 +122,8 @@ async function boot() {
   }
   // Signed in: the operator's chosen language, or (null) the browser's.
   await setLocale(detect(principal.operator.locale ?? null));
+  // The usage report names the edition (Lite or Standard); without it, this is Lite.
+  setEdition(usage?.edition);
   state = { session: me.session, operator: principal.operator, permissions: new Set(principal.permissions), projects, allApps: apps, project: null, apps: [], usage };
   selectProject(new URLSearchParams(location.search).get("project") ?? storedProject(), { quiet: true });
   if (path === "/admin/login") history.replaceState(null, "", returnTo ?? "/admin");
@@ -248,7 +251,7 @@ function buildShell() {
   const sidebar = h(
     "aside",
     { class: "sidebar" },
-    h("div", { class: "sidebar-brand" }, brand(), h("span", { class: "brand-edition" }, "Lite"), h("button", { class: "sidebar-close", type: "button", "aria-label": t("Close menu"), onClick: closeDrawer }, IconX(18))),
+    h("div", { class: "sidebar-brand" }, brand(), h("span", { class: "brand-edition" }, isLite() ? t("Lite") : t("Standard")), h("button", { class: "sidebar-close", type: "button", "aria-label": t("Close menu"), onClick: closeDrawer }, IconX(18))),
     projectSwitcher(),
     nav,
     h("div", { class: "sidebar-footer" }, accountMenu()),
@@ -266,9 +269,9 @@ function buildShell() {
   return { nav, inner, content, banner, closeDrawer };
 }
 
-/** The free-plan metric closest to its daily limit, if it's at the warning level. */
+/** The free-plan metric closest to its daily limit, if it's at the warning level (Lite only). */
 function usageAlert() {
-  const metrics = state.usage?.metrics ?? [];
+  const metrics = (isLite() && state.usage?.metrics) || [];
   return metrics.filter((m) => m.status === "fail" || m.status === "warn").sort((a, b) => b.share - a.share)[0] ?? null;
 }
 

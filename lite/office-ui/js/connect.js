@@ -3,11 +3,12 @@
 // Apps and products page and the Settings page.
 import { put } from "./api.js";
 import { h } from "./dom.js";
+import { isLite } from "./edition.js";
 import { t } from "./i18n.js";
 import { IconCopy } from "./icons.js";
 import { busy, button, cardWith, copy, copyField, field, formError, input, modal, seg, toast } from "./ui.js";
 
-const PLACEHOLDER_URL = "https://<your SDK Worker>";
+const placeholderUrl = () => (isLite() ? "https://<your SDK Worker>" : "https://<your openpurr server>");
 
 const SNIPPETS = {
   swift: {
@@ -44,7 +45,7 @@ Purchases.configure({ apiKey: "${key}" });`,
   },
 };
 
-/** The SDK URL to show: the setting, else the workers.dev guess. source: "setting" | "guess" | null. */
+/** The SDK URL to show: the setting, else the guess (Lite: the workers.dev address; Standard: this server). source: "setting" | "guess" | null. */
 export function sdkUrlOf(settings) {
   if (settings.sdk_url) return { url: settings.sdk_url, source: "setting" };
   if (settings.sdk_url_guess) return { url: settings.sdk_url_guess, source: "guess" };
@@ -60,8 +61,10 @@ export function editSdkUrl(settings, onSaved) {
   const submit = button(t("Save"), { type: "submit" });
   const m = modal({
     title: t("SDK URL"),
-    sub: t("The openpurr SDK Worker's address: what your apps use as Purchases.proxyURL. Use a custom domain if you have one. Leave it empty to go back to the guess."),
-    body: h("div", { class: "stack" }, errors.el, field(t("Address"), value, t("Find it in the Cloudflare dashboard: Workers & Pages → openpurr → Settings → Domains & Routes."))),
+    sub: isLite()
+      ? t("The openpurr SDK Worker's address: what your apps use as Purchases.proxyURL. Use a custom domain if you have one. Leave it empty to go back to the guess.")
+      : t("The address your apps reach this openpurr server at: what they use as Purchases.proxyURL. Use a domain you own. Leave it empty to go back to the guess."),
+    body: h("div", { class: "stack" }, errors.el, field(t("Address"), value, isLite() ? t("Find it in the Cloudflare dashboard: Workers & Pages → openpurr → Settings → Domains & Routes.") : null)),
     actions: [button(t("Cancel"), { variant: "outline", onClick: () => m.close() }), submit],
     onSubmit: async () => {
       const saved = await busy(submit, () => put("/settings", { sdk_url: value.value.trim() || null }), errors);
@@ -79,12 +82,16 @@ export function sdkUrlBlock(ctx, settings) {
   const owner = ctx.can("settings:manage");
   const note =
     source === "guess"
-      ? t("A guess from this back office's address, right for a default deploy. Set it to be sure, and once you add a custom domain.")
+      ? isLite()
+        ? t("A guess from this back office's address, right for a default deploy. Set it to be sure, and once you add a custom domain.")
+        : t("This server's address as your browser sees it. Set it if your apps reach openpurr at another address, such as a domain you own.")
       : source === "setting"
         ? url.includes(".workers.dev")
           ? t("The proxy URL ships inside your app, so switch to a domain you own before release: changing it later needs an app update.")
           : null
-        : t("Not set. It's the openpurr SDK Worker's address (Workers & Pages → openpurr in the Cloudflare dashboard).");
+        : isLite()
+          ? t("Not set. It's the openpurr SDK Worker's address (Workers & Pages → openpurr in the Cloudflare dashboard).")
+          : t("Not set. It's the address your apps reach this openpurr server at.");
   const change = owner ? button(url && source === "setting" ? t("Change") : t("Set SDK URL"), { variant: "outline", size: "sm", onClick: () => editSdkUrl(settings, () => ctx.reload()) }) : null;
   const text = [note, !owner && source !== "setting" ? t("An owner can set it under Settings.") : null].filter(Boolean).join(" ");
   return h("div", { class: "stack-sm" }, url ? copyField(url) : null, text ? h("p", { class: "small muted" }, text) : null, change ? h("div", null, change) : null);
@@ -92,7 +99,10 @@ export function sdkUrlBlock(ctx, settings) {
 
 /** The card at the top of Apps and products. */
 export function sdkUrlCard(ctx, settings) {
-  return cardWith(t("SDK URL"), t("Your apps send their requests here (the SDK's proxy URL). It's the openpurr SDK Worker, not this back office, and the same for every project."), h("div", { class: "card-body" }, sdkUrlBlock(ctx, settings)));
+  const sub = isLite()
+    ? t("Your apps send their requests here (the SDK's proxy URL). It's the openpurr SDK Worker, not this back office, and the same for every project.")
+    : t("Your apps send their requests here (the SDK's proxy URL). It's the same for every project.");
+  return cardWith(t("SDK URL"), sub, h("div", { class: "card-body" }, sdkUrlBlock(ctx, settings)));
 }
 
 function codeBlock(text) {
@@ -133,7 +143,7 @@ export function connectSection(app, settings) {
       "div",
       { class: "stack-sm" },
       h("h3", { class: "subhead" }, t("Setup code")),
-      setupCode(app.store, url ?? PLACEHOLDER_URL, app.sdk_keys?.[0] ?? "<SDK key>"),
+      setupCode(app.store, url ?? placeholderUrl(), app.sdk_keys?.[0] ?? "<SDK key>"),
       h(
         "p",
         { class: "small muted" },

@@ -2,6 +2,7 @@
 import { get, patch, post, put } from "../api.js";
 import { sdkUrlBlock } from "../connect.js";
 import { h, replace } from "../dom.js";
+import { isLite } from "../edition.js";
 import { t, tk, tx } from "../i18n.js";
 import { IconPlus, IconRefresh, IconShield } from "../icons.js";
 import {
@@ -230,6 +231,7 @@ export async function auditPage() {
 const STORE = { app_store: "App Store", play_store: "Google Play" };
 
 // Free-plan usage: today's requests and D1 rows against the daily limits (src/office/usage.ts).
+// Lite only: Standard has no such limits.
 const fmtCount = (n) => n.toLocaleString();
 const USAGE_TONE = { ok: "", info: "", warn: "warning", fail: "danger" };
 
@@ -292,7 +294,7 @@ export function usageCard(ctx, initial) {
 }
 
 export async function settingsPage(ctx) {
-  const [settings, usage] = await Promise.all([get("/settings"), get("/usage")]);
+  const [settings, usage] = await Promise.all([get("/settings"), isLite() ? get("/usage") : null]);
   const owner = ctx.can("settings:manage");
   const requireTotp = toggle({
     checked: settings.require_totp,
@@ -317,7 +319,7 @@ export async function settingsPage(ctx) {
     h(
       "div",
       { class: "stack" },
-      usageCard(ctx, usage),
+      isLite() ? usageCard(ctx, usage) : null,
       cardWith(
         t("Security"),
         owner ? null : t("Only owners can change these."),
@@ -336,7 +338,7 @@ export async function settingsPage(ctx) {
       cardWith(
         t("This deployment"),
         null,
-        h("div", { class: "card-body" }, kv([[t("Back office"), h("span", { class: "mono small" }, location.origin)], [t("SDK URL"), sdkUrlBlock(ctx, settings)], [t("Edition"), t("Lite (Cloudflare Workers + D1)")]])),
+        h("div", { class: "card-body" }, kv([[t("Back office"), h("span", { class: "mono small" }, location.origin)], [t("SDK URL"), sdkUrlBlock(ctx, settings)], [t("Edition"), isLite() ? t("Lite (Cloudflare Workers + D1)") : t("Standard (Go + Postgres)")]])),
       ),
     ),
   );
