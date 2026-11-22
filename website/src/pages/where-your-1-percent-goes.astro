@@ -13,6 +13,9 @@ import {
   engineerDayCost,
   FUNDING_USD,
   HEADCOUNT,
+  INVESTOR_OWNERSHIP,
+  REVENUE_2025,
+  VALUATION_2025,
   LOADED,
   shareOf,
   SOURCES,
@@ -35,6 +38,7 @@ const checked = new Intl.DateTimeFormat("en-US", { dateStyle: "long", timeZone: 
 const model = {
   teams: TEAMS.map((t) => ({ key: t.key, share: shareOf(t) })),
   engineerDay: engineerDayCost(),
+  investors: INVESTOR_OWNERSHIP,
   slider: SLIDER,
 };
 const maxShare = Math.max(...TEAMS.map(shareOf));
@@ -107,6 +111,20 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
             }
           </ul>
 
+          <div class="owners">
+            <h3>And who owns what it builds</h3>
+            <div class="own-bar" role="img" aria-label={`Venture investors own about ${Math.round(INVESTOR_OWNERSHIP * 100)}% of RevenueCat, our estimate`}>
+              <i class="vc" data-own style={`transform:scaleX(${INVESTOR_OWNERSHIP})`}></i>
+              <span class="own-l">Venture investors · about {Math.round(INVESTOR_OWNERSHIP * 100)}%</span>
+              <span class="own-r">Founders and employees</span>
+            </div>
+            <p>
+              Investors put in about ${FUNDING_USD / 1e6} million. They don't take a cut of each payment; they own an estimated half of
+              the company, so half of what your fees build is theirs: today's profit and tomorrow's sale. In ownership terms, that's
+              about <b data-out="vc">{money(fee * INVESTOR_OWNERSHIP)}</b> of what you pay each year.
+            </p>
+          </div>
+
           <p class="punch">
             Your 1% buys about <b data-out="days">{Math.round(rest / engineerDayCost())}</b> engineer-days a year at RevenueCat.
             Running it yourself costs <b data-out="infra2">{money(infra)}</b>.
@@ -129,10 +147,6 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
           the part of the job openpurr does, validating purchases and keeping subscriptions current, needs servers that cost
           a few dollars a month, not a share of everything you'll ever earn.
         </p>
-        <p>
-          RevenueCat has raised about ${FUNDING_USD / 1e6} million from venture investors. Investors expect that money back, with a return,
-          and a revenue share is how a company like this grows with its customers.
-        </p>
 
         <h2>How we estimate this</h2>
         <ul class="method">
@@ -150,6 +164,12 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
             to {HEADCOUNT.high}) and split them across functions ourselves. Salaries come from RevenueCat's public job postings,
             which list pay; each team's cost is people × salary × {LOADED} for taxes, benefits and equipment, without equity.
             The part of your fee that isn't servers is split in proportion to those costs.
+          </li>
+          <li>
+            <b>Investors:</b> about ${FUNDING_USD / 1e6} million raised across four rounds. The 2025 round was reported at a
+            ${VALUATION_2025 / 1e6} million valuation with about ${REVENUE_2025 / 1e6} million in yearly revenue, close to break-even.
+            Ownership isn't public; {Math.round(INVESTOR_OWNERSHIP * 100)}% is our estimate for a company four rounds in. Their share
+            is of what the company is worth, not a line in its costs, which is why it's shown separately.
           </li>
           <li><b>Not affiliated:</b> openpurr isn't affiliated with RevenueCat. These are our estimates, not RevenueCat's figures.</li>
         </ul>
@@ -341,6 +361,56 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
   .c5 { background: var(--c5); }
   .c6 { background: var(--c6); }
   .c7 { background: var(--c7); }
+  .owners {
+    margin-top: 28px;
+    padding-top: 22px;
+    border-top: 1px solid var(--line);
+  }
+  .owners h3 {
+    font-size: 1.1rem;
+    margin-bottom: 12px;
+  }
+  .owners p {
+    color: var(--text);
+    margin-top: 12px;
+  }
+  .owners b {
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .own-bar {
+    position: relative;
+    height: 40px;
+    border-radius: 10px;
+    background: var(--purple-soft);
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .own-bar .vc {
+    position: absolute;
+    inset: 0;
+    background: var(--ink);
+    transform-origin: left;
+    transition: transform 0.9s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  :global([dir="rtl"]) .own-bar .vc {
+    transform-origin: right;
+  }
+  .own-l,
+  .own-r {
+    position: relative;
+    padding: 0 12px;
+  }
+  .own-l {
+    color: var(--bg);
+  }
+  .own-r {
+    color: var(--muted);
+  }
   .punch {
     margin-top: 24px;
     padding: 16px 18px;
@@ -430,6 +500,7 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
     const model = JSON.parse(root.dataset.model!) as {
       teams: { key: string; share: number }[];
       engineerDay: number;
+      investors: number;
       slider: { min: number; max: number; initial: number };
     };
     const { min, max } = model.slider;
@@ -471,6 +542,7 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
       tween("infra", infra, (n) => usd.format(Math.round(n)));
       tween("infra2", infra, (n) => usd.format(Math.round(n)));
       tween("days", rest / model.engineerDay, (n) => String(Math.round(n)));
+      tween("vc", fee * model.investors, (n) => usd.format(Math.round(n)));
       out("infraPct").textContent = `${((infra / fee) * 100).toFixed(1)}%`;
       out("restPct").textContent = `${((rest / fee) * 100).toFixed(1)}%`;
       root.querySelector<HTMLElement>('[data-seg="infra"]')!.style.flexGrow = String(Math.max(infra / fee, 0.004));
@@ -488,6 +560,8 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
     const target = Number(input.value);
     if (!reduced) {
       for (const b of bars) b.style.transform = "scaleX(0)";
+      const own = root.querySelector<HTMLElement>("[data-own]")!;
+      own.style.transform = "scaleX(0)";
       const seen = new IntersectionObserver((entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         seen.disconnect();
@@ -495,6 +569,7 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
           const b = root.querySelector<HTMLElement>(`[data-bar="${t.key}"]`)!;
           b.style.transform = `scaleX(${t.share / maxShare})`;
         }
+        own.style.transform = `scaleX(${model.investors})`;
         const start = performance.now();
         const sweep = (now: number) => {
           const p = Math.max(0, Math.min(1, (now - start) / 1400));

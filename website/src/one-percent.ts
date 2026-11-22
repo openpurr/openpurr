@@ -16,6 +16,18 @@ export const HEADCOUNT = { low: 130, high: 185, used: 150 };
 export const FUNDING_USD = 100_000_000;
 
 /**
+ * The share of RevenueCat its venture investors own: our estimate, not a public figure. About $100M
+ * went in over seed, Series A, B and C; the 2025 round alone was $50M at a reported $500M valuation
+ * (about 10%), and earlier rounds at lower valuations typically add up to much more. Investors don't
+ * take a cut of each fee; they own this share of what the fees build: profits now, a sale later.
+ */
+export const INVESTOR_OWNERSHIP = 0.5;
+
+/** Reported revenue and valuation at the 2025 round (Multiples.vc estimate, not company figures). */
+export const REVENUE_2025 = 30_000_000;
+export const VALUATION_2025 = 500_000_000;
+
+/**
  * Salary to cost: payroll taxes, benefits, equipment and software per person. Equity isn't
  * included, though every posting offers it.
  */
@@ -59,6 +71,7 @@ export const SOURCES = [
   { label: "RevenueCat's job board, with pay ranges (Ashby)", url: "https://jobs.ashbyhq.com/revenuecat" },
   { label: "Earlier RevenueCat postings with pay (Greenhouse)", url: "https://job-boards.greenhouse.io/revenuecat" },
   { label: "TechCrunch: RevenueCat raises $50M, bringing its total to $100M (May 2025)", url: "https://techcrunch.com/2025/05/22/revenuecat-raises-50m-as-it-expands-beyond-mobile-app-monetization" },
+  { label: "Multiples.vc: about $30M revenue and a $500M valuation at the 2025 round (estimates)", url: "https://multiples.vc/private-comps/revenuecat" },
   { label: "Headcount estimates: TipRanks (185)", url: "https://www.tipranks.com/private-companies/revenuecat" },
   { label: "Headcount estimates: TrueUp (130)", url: "https://trueup.io/co/revenuecat" },
 ];
