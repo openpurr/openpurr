@@ -34,3 +34,11 @@ standard/openpurr
 # The dashboard, copied from lite/office-ui at build time (go generate ./internal/officeui)
 standard/internal/officeui/files/*
 !standard/internal/officeui/files/.gitkeep
+
+# OpenTofu / Terraform working files and per-deployment variables (infra/gcp/examples has the template)
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+!infra/**/examples/*.tfvars
+.terraform.lock.hcl
