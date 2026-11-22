@@ -316,6 +316,13 @@ func TestAdminGrants(t *testing.T) {
 	if got := jsobj.Stringify(grant); got != want {
 		t.Errorf("\n got %s\nwant %s", got, want)
 	}
+	// A note that isn't text is refused, as other bad input is.
+	for _, note := range []any{float64(5), true, jsobj.New("text", "hi"), []any{"hi"}} {
+		res := expectStatus(t, env.Admin("POST", path, tu.Auth{Session: dev.Session}, jsobj.New("entitlement_id", "pro", "duration", "weekly", "note", note)), 400)
+		if got := string(res.Body); got != `{"code":"bad_request","message":"note must be text."}` {
+			t.Errorf("note %v: %s", note, got)
+		}
+	}
 	custom := expectStatus(t, env.Admin("POST", path, tu.Auth{Session: dev.Session}, jsobj.New("entitlement_id", "annual_perks", "expires_at", iso(float64(env.Clock.Now()+40*tu.Day)))), 201)
 	if custom.Get(t, "grant", "duration") != "custom" || custom.Get(t, "grant", "expires_at") != float64(env.Clock.Now()+40*tu.Day) {
 		t.Errorf("%s", custom.Body)

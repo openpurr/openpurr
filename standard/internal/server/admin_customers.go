@@ -550,7 +550,7 @@ type grantError struct {
 func (e *grantError) Error() string { return e.msg }
 
 // grantEntitlement gives a customer an entitlement for duration, or until expiresAt (a custom end).
-func grantEntitlement(ctx context.Context, db ledger.TxDB, project *config.Project, appUserID, entitlementID string, duration any, expiresAt *float64, note *string, actor grantActor, now int64) (*jsobj.Object, string, error) {
+func grantEntitlement(ctx context.Context, db ledger.TxDB, project *config.Project, appUserID, entitlementID string, duration any, expiresAt *float64, note any, actor grantActor, now int64) (*jsobj.Object, string, error) {
 	var entitlement *config.Entitlement
 	ids := []string{}
 	for _, e := range project.Entitlements {
@@ -588,7 +588,11 @@ func grantEntitlement(ctx context.Context, db ledger.TxDB, project *config.Proje
 	}
 	var trimmed *string
 	if note != nil {
-		if t := jsobj.Trim(*note); t != "" {
+		text, ok := note.(string)
+		if !ok {
+			return nil, "", &grantError{400, "note must be text."}
+		}
+		if t := jsobj.Trim(text); t != "" {
 			trimmed = &t
 		}
 	}
@@ -719,11 +723,7 @@ func adminGrant(q *adminReq) {
 		entitlement = jsobj.String(entRaw, true)
 	}
 	duration, _ := q.prop("duration")
-	var note *string
-	if v, ok := q.prop("note"); ok && v != nil {
-		s := jsobj.String(v, true)
-		note = &s
-	}
+	note, _ := q.prop("note") // nil when missing or null
 	grant, customerID, err := grantEntitlement(q.ctx, q.s.Pool, project, q.params["app_user_id"], entitlement, duration, expiresAt, note, q.actor(), q.now)
 	if q.s.grantAnswer(q, err) {
 		return

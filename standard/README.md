@@ -150,8 +150,8 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   one-time recovery code. Sessions are an HttpOnly, Secure, SameSite=Strict cookie (7 days; 30
   minutes for setup and recovery links), and every cookie-authenticated write must carry this
   server's `Origin`. Unknown emails cost the same as wrong passwords and get the same answer; 10
-  failures in a row lock the account for 15 minutes; sign-in counts against the per-IP and
-  per-user rate limits.
+  failures in a row (wrong passwords, authenticator codes and recovery codes alike) lock the
+  account for 15 minutes; sign-in counts against the per-IP and per-user rate limits.
 - **Bootstrap and recovery:** `openpurr admin create` makes the owner and prints a 24-hour setup
   link; `openpurr admin login-link` prints a 15-minute recovery link (to replace a lost password
   or authenticator); `list` and `require-totp on|off` as Lite's `scripts/admin.mjs`. They use
@@ -299,10 +299,6 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   put`. Lite's Cloudflare checks (D1 migrations and size, free-plan usage, the workers.dev domain)
   are replaced by a check of Standard's own migrations; the scheduled-job check reads the job
   loop's slots.
-- **One-time credentials are claimed atomically.** A TOTP code, a setup or recovery link and the
-  last-owner check are each decided inside one Postgres statement or a locked transaction, so two
-  requests at the same moment can't both use one code or link, or both demote the last two
-  owners (on Lite, D1 reads then writes).
 - **The SDK URL guess** is this server's own origin (it serves the SDK API too); Lite guesses the
   SDK Worker's workers.dev address.
 - **Unknown pages:** only `/`, `/admin` and pages under it fall back to the dashboard; any other
@@ -312,8 +308,7 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   ECMAScript date format (`2026-01-31`, `2026-01-31T12:00:00Z`, with an offset); V8's looser forms
   ("Jan 31 2026") aren't accepted.
 - **Customer search:** the email lookup is case-insensitive for all of Unicode (D1's `NOCASE` folds
-  ASCII only), a customer's `stores` are listed in alphabetical order, and a negative `limit` on the
-  audit log, deliveries or config history means the maximum (SQLite reads it as no limit).
+  ASCII only), and a customer's `stores` are listed in alphabetical order.
 - **Imports** don't stop near a daily limit (Standard has none).
 - **The inactive-customer cleanup** locks its candidates (`FOR UPDATE SKIP LOCKED`), so a customer
   a request is writing to at that moment is left for the next run.

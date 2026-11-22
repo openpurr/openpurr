@@ -8,7 +8,8 @@ package server
 //
 // Sign-in rules (plan section 8.2):
 //   - the same answer, with the same CPU cost, for an unknown email and a wrong password;
-//   - rate limits per IP and per email, plus a 15-minute lockout after 10 failures in a row;
+//   - rate limits per IP and per email, plus a 15-minute lockout after 10 failures in a row
+//     (wrong passwords, authenticator codes and recovery codes alike);
 //   - TOTP when the operator has enabled it (or a one-time recovery code instead);
 //   - setup links (24 h) let a new operator set a password; recovery links (15 min) sign in once.
 //
@@ -216,26 +217,12 @@ func (s *server) authLogin(q *adminReq) error {
 		q.fail(http.StatusTooManyRequests, "locked", "Too many failed sign-ins. Try again in 15 minutes, or use a recovery link.")
 		return nil
 	}
-	ok, rehash, err := authcrypto.VerifyPassword(secret, password, *o.PasswordHash)
+	ok, rehash, err := s.verifyOperatorPassword(o, password)
 	if err != nil {
 		return err
 	}
 	if !ok {
-		failures := o.FailedLogins + 1
-		lockedUntil := o.LockedUntil
-		if failures >= lockoutAfter {
-			lockedUntil = new(int64)
-			*lockedUntil = q.now + lockoutMs
-		}
-		err := q.tx(func(tx pgx.Tx) error {
-			if _, err := tx.Exec(ctx, "UPDATE operator SET failed_logins = $1, locked_until = $2 WHERE id = $3", failures, lockedUntil, o.ID); err != nil {
-				return err
-			}
-			e := operatorAudit(o, "auth.login_failed", ip)
-			e.details = jsobj.New("reason", "password", "failures", float64(failures))
-			return writeAudit(ctx, tx, q.now, e)
-		})
-		if err != nil {
+		if err := signInFailed(q, o, "password", ip); err != nil {
 			return err
 		}
 		invalid()
@@ -275,15 +262,7 @@ func (s *server) authLogin(q *adminReq) error {
 				matched = tag.RowsAffected() > 0
 			}
 			if !matched {
-				err := q.tx(func(tx pgx.Tx) error {
-					if _, err := tx.Exec(ctx, "UPDATE operator SET failed_logins = failed_logins + 1 WHERE id = $1", o.ID); err != nil {
-						return err
-					}
-					e := operatorAudit(o, "auth.login_failed", ip)
-					e.details = jsobj.New("reason", "totp")
-					return writeAudit(ctx, tx, q.now, e)
-				})
-				if err != nil {
+				if err := signInFailed(q, o, "totp", ip); err != nil {
 					return err
 				}
 				q.fail(http.StatusUnauthorized, "invalid_code", "That code didn't work. Check your authenticator app's time and try again.")
@@ -296,9 +275,7 @@ func (s *server) authLogin(q *adminReq) error {
 				return err
 			}
 			if tag.RowsAffected() == 0 {
-				e := operatorAudit(o, "auth.login_failed", ip)
-				e.details = jsobj.New("reason", "recovery_code")
-				if err := writeAudit(ctx, s.Pool, q.now, e); err != nil {
+				if err := signInFailed(q, o, "recovery_code", ip); err != nil {
 					return err
 				}
 				q.fail(http.StatusUnauthorized, "invalid_code", "That recovery code isn't valid or was already used.")
@@ -344,6 +321,34 @@ func (s *server) authLogin(q *adminReq) error {
 	}
 	q.json(http.StatusOK, jsobj.New("operator", publicOperator(o), "totp_enrollment_required", required))
 	return nil
+}
+
+// verifyOperatorPassword checks o's password. A stored hash that can't be read (a damaged row) is a
+// wrong password, logged so the operator can be reset.
+func (s *server) verifyOperatorPassword(o *operator, password string) (ok, rehash bool, err error) {
+	ok, rehash, err = authcrypto.VerifyPassword(s.OperatorSecret, password, *o.PasswordHash)
+	if err == nil && !authcrypto.Readable(*o.PasswordHash) {
+		s.Log.Warn("A stored operator password hash can't be read; treating it as a wrong password. Reset the operator to set a new one.", "operator", o.ID)
+	}
+	return ok, rehash, err
+}
+
+// signInFailed counts a failed sign-in and audits it. Wrong passwords, codes and recovery codes
+// count together, and the 10th in a row locks the account for 15 minutes. One UPDATE, so failures
+// at the same moment all count.
+func signInFailed(q *adminReq, o *operator, reason string, ip *string) error {
+	return q.tx(func(tx pgx.Tx) error {
+		var failures int64
+		err := tx.QueryRow(q.ctx, `UPDATE operator SET failed_logins = failed_logins + 1,
+			  locked_until = CASE WHEN failed_logins + 1 >= $1 THEN $2::bigint ELSE locked_until END
+			WHERE id = $3 RETURNING failed_logins`, lockoutAfter, q.now+lockoutMs, o.ID).Scan(&failures)
+		if err != nil {
+			return err
+		}
+		e := operatorAudit(o, "auth.login_failed", ip)
+		e.details = jsobj.New("reason", reason, "failures", float64(failures))
+		return writeAudit(q.ctx, tx, q.now, e)
+	})
 }
 
 func (s *server) authLogout(q *adminReq) error {
@@ -452,7 +457,7 @@ func (s *server) authPassword(q *adminReq) error {
 	// recovery sessions came from a one-time link, which is the proof.)
 	if sess.kind == "full" && o.PasswordHash != nil && *o.PasswordHash != "" {
 		current, _ := q.propString("current_password")
-		ok, _, err := authcrypto.VerifyPassword(s.OperatorSecret, current, *o.PasswordHash)
+		ok, _, err := s.verifyOperatorPassword(o, current)
 		if err != nil {
 			return err
 		}
@@ -610,7 +615,7 @@ func (s *server) authTOTPDisable(q *adminReq) error {
 		}
 		ok := false
 		if o.PasswordHash != nil && *o.PasswordHash != "" {
-			if ok, _, err = authcrypto.VerifyPassword(s.OperatorSecret, password, *o.PasswordHash); err != nil {
+			if ok, _, err = s.verifyOperatorPassword(o, password); err != nil {
 				return err
 			}
 		}
