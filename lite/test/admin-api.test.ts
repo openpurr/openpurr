@@ -164,6 +164,24 @@ describe("operators", () => {
     expect((await api("PATCH", `/operators/${owner.id}`, { session: owner.session }, { body: { disabled: true } })).status).toBe(403);
   });
 
+  it("keeps an owner when two owners demote or disable each other at the same moment", async () => {
+    for (const change of [{ role: "admin" }, { disabled: true }]) {
+      await env.DB.prepare("UPDATE operator SET disabled_at = ? WHERE role = 'owner' AND disabled_at IS NULL").bind(Date.now()).run();
+      const a = await operator("owner");
+      const b = await operator("owner");
+      const both = await Promise.all([
+        api("PATCH", `/operators/${b.id}`, { session: a.session }, { body: change }),
+        api("PATCH", `/operators/${a.id}`, { session: b.session }, { body: change }),
+      ]);
+      expect(both.map((r) => r.status).sort()).toEqual([200, 403]);
+      const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM operator WHERE role = 'owner' AND disabled_at IS NULL").first<{ n: number }>())!;
+      expect(n).toBe(1);
+      // The refused change wrote nothing, not even its audit row.
+      const refused = both[0]!.status === 403 ? b : a;
+      expect(await env.DB.prepare("SELECT 1 FROM audit_log WHERE action = 'operator.updated' AND target = ?").bind(refused.email).first()).toBeNull();
+    }
+  });
+
   it("disabling ends sessions and revokes tokens; reset issues a new setup link", async () => {
     const owner = await operator("owner");
     const dev = await operator("developer");

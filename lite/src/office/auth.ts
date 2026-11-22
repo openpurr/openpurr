@@ -220,7 +220,15 @@ auth.post("/login", async (c) => {
     const recovery = typeof body?.recovery_code === "string" ? normalizeRecoveryCode(body.recovery_code) : "";
     if (!code && !recovery) return fail(c, 401, "totp_required", "Enter the code from your authenticator app.");
     if (code) {
-      const step = await verifyTotp(await decryptTotpSecret(secret, operator.totp_secret!), code, Date.now(), operator.totp_last_step);
+      let step = await verifyTotp(await decryptTotpSecret(secret, operator.totp_secret!), code, Date.now(), operator.totp_last_step);
+      if (step !== null) {
+        // Claimed in one conditional UPDATE, so one code can't sign in twice even at the same moment.
+        const claimed = await db
+          .prepare("UPDATE operator SET totp_last_step = ? WHERE id = ? AND (totp_last_step IS NULL OR totp_last_step < ?)")
+          .bind(step, operator.id, step)
+          .run();
+        if (!claimed.meta.changes) step = null;
+      }
       if (step === null) {
         await db.batch([
           db.prepare("UPDATE operator SET failed_logins = failed_logins + 1 WHERE id = ?").bind(operator.id),
@@ -228,7 +236,6 @@ auth.post("/login", async (c) => {
         ]);
         return fail(c, 401, "invalid_code", "That code didn't work. Check your authenticator app's time and try again.");
       }
-      writes.push(db.prepare("UPDATE operator SET totp_last_step = ? WHERE id = ?").bind(step, operator.id));
     } else {
       const used = await db
         .prepare("UPDATE recovery_code SET used_at = ? WHERE operator_id = ? AND code_hash = ? AND used_at IS NULL")
@@ -280,21 +287,27 @@ auth.post("/link", async (c) => {
   if (typeof body?.token !== "string") return fail(c, 400, "bad_request", "token is required.");
   const db = c.env.DB;
   const tokenHash = await sha256Hex(body.token);
+  const now = Date.now();
+  // Used up in the same statement that checks it, so a link works exactly once even when it's
+  // redeemed twice at the same moment (D1 has no transaction to lock it between a read and a write).
   const link = await db
-    .prepare("SELECT l.purpose, o.* FROM login_link l JOIN operator o ON o.id = l.operator_id WHERE l.token_hash = ? AND l.used_at IS NULL AND l.expires_at > ? AND o.disabled_at IS NULL")
-    .bind(tokenHash, Date.now())
-    .first<Operator & { purpose: "setup" | "recovery" }>();
-  if (!link) return fail(c, 401, "invalid_link", "This link is invalid, expired or already used. Ask for a new one.");
-  const { purpose, ...operator } = link;
+    .prepare(
+      `UPDATE login_link SET used_at = ? WHERE token_hash = ? AND used_at IS NULL AND expires_at > ?
+       AND operator_id IN (SELECT id FROM operator WHERE disabled_at IS NULL) RETURNING operator_id, purpose`,
+    )
+    .bind(now, tokenHash, now)
+    .first<{ operator_id: string; purpose: "setup" | "recovery" }>();
+  const operator = link && (await db.prepare("SELECT * FROM operator WHERE id = ?").bind(link.operator_id).first<Operator>());
+  if (!link || !operator) return fail(c, 401, "invalid_link", "This link is invalid, expired or already used. Ask for a new one.");
+  const { purpose } = link;
   await db.batch([
-    db.prepare("UPDATE login_link SET used_at = ? WHERE token_hash = ?").bind(Date.now(), tokenHash),
     db.prepare("UPDATE operator SET failed_logins = 0, locked_until = NULL WHERE id = ?").bind(operator.id),
     audit(db, { operator, action: `auth.${purpose}_link_used`, ip: ip(c) }),
   ]);
   // A recovery link signs in (briefly) with leave to replace a lost password or authenticator.
   const kind = purpose === "setup" ? "setup" : "recovery";
   await startSession(c, operator.id, kind);
-  return c.json({ operator: publicOperator(operator as Operator), session: kind });
+  return c.json({ operator: publicOperator(operator), session: kind });
 });
 
 auth.post("/password", async (c) => {

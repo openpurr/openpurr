@@ -122,6 +122,15 @@ describe("setup links and passwords", () => {
     await env.DB.prepare("UPDATE login_link SET expires_at = ? WHERE operator_id = ?").bind(Date.now() - 1, expired.id).run();
     expect((await req("/link", { body: { token: expired.token } })).body.code).toBe("invalid_link");
   });
+
+  it("a link works once even when redeemed twice at the same moment", async () => {
+    const op = await newOperator();
+    const both = await Promise.all([req("/link", { body: { token: op.token } }), req("/link", { body: { token: op.token } })]);
+    expect(both.map((r) => r.res.status).sort()).toEqual([200, 401]);
+    expect(both.find((r) => r.res.status === 401)!.body.code).toBe("invalid_link");
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM session WHERE operator_id = ?").bind(op.id).first<{ n: number }>())!;
+    expect(n).toBe(1);
+  });
 });
 
 describe("sign-in", () => {
@@ -201,6 +210,16 @@ describe("two-step sign-in (TOTP)", () => {
     const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
     expect((await req("/login", { body: { email: op.email, password: op.password, code: next } })).res.status).toBe(200);
     expect((await req("/login", { body: { email: op.email, password: op.password, code: next } })).body.code).toBe("invalid_code");
+  });
+
+  it("lets one code sign in once, even from two sign-ins at the same moment", async () => {
+    const op = await enrolled();
+    const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
+    const login = () => req("/login", { body: { email: op.email, password: op.password, code: next } });
+    const both = await Promise.all([login(), login()]);
+    expect(both.map((r) => r.res.status).sort()).toEqual([200, 401]);
+    expect(both.find((r) => r.res.status === 401)!.body.code).toBe("invalid_code");
+    expect(both.filter((r) => r.session)).toHaveLength(1);
   });
 
   it("accepts each recovery code once instead of a TOTP code", async () => {
