@@ -237,6 +237,12 @@ export const de: Dict = {
         link: "So funktioniert der Umstieg",
       },
       {
+        q: "Kann ich von Adapty umsteigen?",
+        a: "Ja, mit einem App-Update. Das SDK von Adapty lässt sich nicht auf einen anderen Server umstellen, deshalb ersetzt das Update es durch das Purchases SDK, mit dem openpurr funktioniert. Deine Produkte in den Stores bleiben unverändert. openpurr importiert deine App-Store-Kunden aus dem Event-Export von Adapty, die neue Version deiner App holt alle anderen beim ersten Start herüber, und beide Backends bleiben auf dem neuesten Stand, während die Leute aktualisieren.",
+        link: "Zur Adapty-Anleitung",
+        linkTo: "adapty",
+      },
+      {
         q: "Welche Plattformen und Stores unterstützt openpurr?",
         a: "Das Purchases SDK für iOS, Android, Flutter und React Native, mit Käufen aus dem App Store und von Google Play. Amazon und Web-Billing sind vorerst nicht vorgesehen.",
       },

@@ -1,7 +1,8 @@
 // The site's English copy. It's the source the translations follow: its shape is the `Dict` type, so
 // a translation missing a string (or with an extra one) fails `astro check`.
 //
-// A FAQ item's `link` is the label of a link to the migration page (MIGRATION_PAGE in consts.ts).
+// A FAQ item's `link` is the label of a link to the migration page (MIGRATION_PAGE in consts.ts), or
+// with `linkTo: "adapty"`, to the guide for moving from Adapty (ADAPTY_GUIDE_URL).
 //
 // Strings marked "HTML" are rendered with set:html, for the <span> and <code> inside them. Keep
 // product and API names (openpurr, RevenueCat, Purchases SDK, StoreKit, CustomerInfo, configure,
@@ -243,6 +244,12 @@ export const en = {
         q: "How do I move my existing customers from RevenueCat?",
         a: "Import them. Ask RevenueCat for a migration export, and openpurr import fetches each customer's purchases from Apple and Google and gives them to the same app user IDs. The new version of your app also sends each customer's purchases once, and both backends stay up to date while people update, so nobody loses access.",
         link: "How to migrate",
+      },
+      {
+        q: "Can I move from Adapty?",
+        a: "Yes, with an app update. Adapty's SDK can't be pointed at another server, so the update replaces it with the Purchases SDK, which openpurr works with. Your products stay the same in the stores. openpurr imports your App Store customers from Adapty's event export, the new version of your app brings everyone else over the first time it runs, and both backends stay up to date while people update.",
+        link: "Read the Adapty guide",
+        linkTo: "adapty",
       },
       {
         q: "Which platforms and stores does openpurr support?",

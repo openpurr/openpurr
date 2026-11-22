@@ -237,6 +237,12 @@ export const nl: Dict = {
         link: "Zo stap je over",
       },
       {
+        q: "Kan ik overstappen van Adapty?",
+        a: "Ja, met een app-update. De SDK van Adapty kan niet naar een andere server wijzen, dus de update vervangt hem door de Purchases SDK, waarmee openpurr werkt. Je producten blijven in de stores hetzelfde. openpurr importeert je App Store-klanten uit de event-export van Adapty, de nieuwe versie van je app haalt alle anderen over zodra die voor het eerst draait, en beide backends blijven bijgewerkt terwijl mensen updaten.",
+        link: "Lees de Adapty-gids",
+        linkTo: "adapty",
+      },
+      {
         q: "Welke platforms en stores ondersteunt openpurr?",
         a: "openpurr ondersteunt de Purchases SDK voor iOS, Android, Flutter en React Native, met aankopen uit de App Store en Google Play. Amazon en webbetalingen vallen voorlopig buiten scope.",
       },

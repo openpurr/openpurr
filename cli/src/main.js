@@ -33,7 +33,7 @@ Customers
         or --until YYYY-MM-DD, and optionally --note "why"
   revoke-grant APP_USER_ID GRANT_ID   End a grant now
 
-Moving from RevenueCat
+Moving from RevenueCat or Adapty
   import FILE.csv [--dry-run]         Bring existing customers over: each row's purchase is fetched from
                                       Apple or Google and given to its app user. Columns: app_user_id, and
                                       original_transaction_id (App Store) or purchase_token and product_id

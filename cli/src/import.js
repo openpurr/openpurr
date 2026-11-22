@@ -1,5 +1,5 @@
 // openpurr import: moves existing customers to openpurr from a CSV file, typically RevenueCat
-// Support's migration export. Each row says which app user owns which store purchase; the back
+// Support's migration export or an Adapty event export. Each row says which app user owns which store purchase; the back
 // office asks Apple or Google for the purchase itself (POST /admin/v1/import, one row per request).
 //
 // It's safe to stop and run again: progress is saved next to the file, and importing a row twice
@@ -11,7 +11,7 @@ import { json } from "./output.js";
 
 /** Header names we recognize (lowercased, spaces and dashes as underscores), by field. */
 const COLUMNS = {
-  app_user_id: ["app_user_id", "appuserid", "rc_app_user_id", "customer_id", "user_id"],
+  app_user_id: ["app_user_id", "appuserid", "rc_app_user_id", "customer_user_id", "customer_id", "user_id"],
   store: ["store", "platform"],
   app: ["app", "app_id", "openpurr_app"],
   transaction_id: ["original_transaction_id", "original_store_transaction_id", "transaction_id", "store_transaction_id"],
@@ -20,6 +20,7 @@ const COLUMNS = {
   aliases: ["aliases", "alias"],
   first_seen: ["first_seen", "first_seen_at", "first_seen_time"],
 };
+const GOOGLE_STORES = new Set(["play_store", "playstore", "google", "google_play", "android"]);
 const MAX_RETRIES = 5;
 const STATUS_STOP = new Set([403, 404, 409, 429]);
 
@@ -70,6 +71,20 @@ export function mapHeader(header) {
   return { columns: Object.fromEntries(Object.entries(map).map(([k, v]) => [k, v.i])), attributes };
 }
 
+/**
+ * Why a row can't be imported, decided here so it doesn't cost a request: a row with no app user
+ * ID (an anonymous user in Adapty's export), or a Google Play row with only an order ID. The app
+ * update's syncPurchases brings both over. Null when the row can go to the API.
+ */
+export function skipReason(row) {
+  if (!row.app_user_id) return "No app user ID (an anonymous user). The app update's syncPurchases brings them over.";
+  const store = String(row.store ?? "").toLowerCase().replace(/[\s-]/g, "_");
+  if (row.transaction_id && !row.purchase_token && GOOGLE_STORES.has(store)) {
+    return "A Google Play row without a purchase token: an order ID can't be looked up. The app update's syncPurchases brings it over.";
+  }
+  return null;
+}
+
 /** A CSV line as an import row for the API. */
 export function toRow(cells, { columns, attributes }, defaults) {
   const get = (field) => (columns[field] === undefined ? "" : (cells[columns[field]] ?? "").trim());
@@ -110,7 +125,7 @@ export async function runImport(c, opts, out, s) {
   const wait = opts.sleep ?? sleep;
 
   // Resume where the last run stopped (not for dry runs, which change nothing).
-  let state = { next: 0, imported: 0, created: 0, problems: 0, covered: 0 };
+  let state = { next: 0, imported: 0, created: 0, problems: 0, covered: 0, skipped: 0 };
   if (!opts.dryRun && !opts.restart && existsSync(progressPath)) {
     state = { ...state, ...JSON.parse(readFileSync(progressPath, "utf8")) };
     if (state.next >= lines.length) {
@@ -144,6 +159,12 @@ export async function runImport(c, opts, out, s) {
     const id = row.transaction_id ?? row.purchase_token;
     if (id && covered.has(id)) {
       state.covered++;
+      return null;
+    }
+    const skip = skipReason(row);
+    if (skip) {
+      state.skipped++;
+      note(i, row, "skipped", skip);
       return null;
     }
     for (let attempt = 0; ; attempt++) {
@@ -205,6 +226,7 @@ export async function runImport(c, opts, out, s) {
     imported: state.imported,
     new_customers: opts.dryRun ? wouldCreate.n : state.created,
     already_covered: state.covered,
+    skipped: state.skipped,
     problems: state.problems,
     report: reportPath,
     stopped: stop ? stop.message : null,
@@ -215,7 +237,8 @@ export async function runImport(c, opts, out, s) {
     const verb = opts.dryRun ? "would import" : "imported";
     out(
       `${opts.dryRun ? s.bold("Dry run: ") : ""}${n(i)} of ${n(lines.length)} rows: ${verb} ${n(state.imported)}` +
-        ` (${n(summary.new_customers)} new customers), ${n(state.covered)} already covered by another row, ${n(state.problems)} problems.`,
+        ` (${n(summary.new_customers)} new customers), ${n(state.covered)} already covered by another row,` +
+        `${state.skipped ? ` ${n(state.skipped)} skipped,` : ""} ${n(state.problems)} problems.`,
     );
     if (state.problems || reportText.split("\n").length > 2) out(`Details: ${reportPath}`);
     if (stop) {

@@ -242,6 +242,12 @@ export const tr: Dict = {
         link: "Nasıl geçiş yapılır",
       },
       {
+        q: "Adapty'den geçebilir miyim?",
+        a: "Evet, bir uygulama güncellemesiyle. Adapty'nin SDK'sı başka bir sunucuya yönlendirilemez, bu yüzden güncelleme onu openpurr'ün birlikte çalıştığı Purchases SDK ile değiştirir. Ürünleriniz mağazalarda aynı kalır. openpurr, App Store müşterilerinizi Adapty'nin olay dışa aktarımından içe aktarır, uygulamanızın yeni sürümü diğer herkesi ilk çalıştığında taşır ve kullanıcılar uygulamayı güncellerken iki backend de güncel kalır.",
+        link: "Adapty rehberini okuyun",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr hangi platformları ve mağazaları destekliyor?",
         a: "openpurr, iOS, Android, Flutter ve React Native için Purchases SDK'yı, App Store ve Google Play'deki satın almalarla birlikte destekler. Amazon ve web üzerinden ödeme şimdilik kapsam dışıdır.",
       },

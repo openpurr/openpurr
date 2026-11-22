@@ -233,6 +233,12 @@ export const ko: Dict = {
         link: "마이그레이션 방법",
       },
       {
+        q: "Adapty에서 옮겨 올 수 있나요?",
+        a: "네, 앱 업데이트가 필요합니다. Adapty의 SDK는 다른 서버를 가리키도록 설정할 수 없으므로, 업데이트를 통해 openpurr와 함께 작동하는 Purchases SDK로 교체합니다. 스토어의 상품은 그대로 유지됩니다. openpurr는 Adapty의 이벤트 내보내기에서 App Store 고객을 가져오고, 나머지 고객은 새 버전의 앱이 처음 실행될 때 옮겨집니다. 사용자들이 앱을 업데이트하는 동안 두 백엔드가 모두 최신 상태로 유지됩니다.",
+        link: "Adapty 가이드 읽기",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr는 어떤 플랫폼과 스토어를 지원하나요?",
         a: "iOS, Android, Flutter, React Native용 Purchases SDK를 지원하며, App Store와 Google Play 구매를 처리합니다. Amazon과 웹 결제는 현재 지원 범위에 포함되지 않습니다.",
       },
