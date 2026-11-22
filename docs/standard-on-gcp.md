@@ -56,6 +56,11 @@ for the Play Developer API key, webhook secrets). `variables.tf` describes every
 a config file on the first start, set `config_file`; otherwise you write the config on the
 dashboard.
 
+Or let the server's binary ask the questions and write the file: `openpurr setup gcp --config
+openpurr.config.yaml` (or, with Docker, `docker run --rm -it --user "$(id -u):$(id -g)" -v "$PWD:/work" -w /work
+ghcr.io/openpurr/openpurr-standard:0.3.0 setup gcp`). With `--config` it checks the config and
+fills in the secrets it names. It only writes `openpurr.tfvars`; it doesn't touch Google Cloud.
+
 Generated passwords never enter the state: the database password and `OPERATOR_SECRET` come from
 ephemeral resources and reach Google through write-only attributes.
 

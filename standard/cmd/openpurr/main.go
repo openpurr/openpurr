@@ -17,7 +17,7 @@
 //	SHUTDOWN_TIMEOUT_SECONDS     how long SIGTERM waits for work in progress (default 25; 8 on Cloud Run)
 //
 // `openpurr admin ...` manages operators straight in the database (create, login-link, list,
-// require-totp); see admin.go.
+// require-totp); see admin.go. `openpurr setup gcp` writes the variables for infra/gcp; see setup.go.
 //
 // Conformance mode, for the test suite in spec/ only:
 //
@@ -75,6 +75,9 @@ func shutdownTimeout(onCloudRun bool) (time.Duration, error) {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "admin" {
 		os.Exit(runAdmin(os.Args[2:], os.Stdout, os.Stderr))
+	}
+	if len(os.Args) > 1 && os.Args[1] == "setup" {
+		os.Exit(runSetup(os.Args[2:], os.Stdin, os.Stdout, os.Stderr))
 	}
 	log, err := newLogger(os.Stdout, os.Getenv("LOG_FORMAT"), os.Getenv("LOG_LEVEL"), os.Getenv("K_SERVICE") != "")
 	if err != nil {

@@ -74,7 +74,8 @@ the number of CPUs); keep replicas times that under the database's `max_connecti
 
 To run it on Google Cloud (Cloud Run, Cloud SQL, Secret Manager, a load balancer on your own
 domain and optionally IAP), see [`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md) and the
-OpenTofu module in [`infra/gcp`](../infra/gcp).
+OpenTofu module in [`infra/gcp`](../infra/gcp). `openpurr setup gcp [--config <file>]` asks a few
+questions and writes the module's variables file (it doesn't touch Google Cloud).
 
 ## App Store
 
