@@ -1,6 +1,7 @@
 // Package testdata holds golden.json, golden-apple.json, golden-google.json, golden-webhooks.json,
-// golden-auth.json and golden-metrics.json.gz, generated from Lite's own code by the .ts files of
-// the same names, so tests can check that Standard produces the same output byte for byte.
+// golden-auth.json, golden-metrics.json.gz and golden-mcp.json, generated from Lite's own code by
+// the .ts files of the same names, so tests can check that Standard produces the same output byte
+// for byte.
 package testdata
 
 import (
@@ -58,6 +59,13 @@ func GoldenMetrics() []byte {
 
 //go:embed golden-metrics.json.gz
 var goldenMetricsGz []byte
+
+// GoldenMCP is golden-mcp.json: Lite's answers from the MCP server, the OAuth authorization server
+// and the dashboard's consent and connected-apps routes to a list of requests, from a seeded
+// database, and the audit log they wrote (golden-mcp.ts says how to regenerate it).
+//
+//go:embed golden-mcp.json
+var GoldenMCP []byte
 
 // Golden is golden.json.
 type Golden struct {
