@@ -1,5 +1,6 @@
-// Package testdata holds golden.json, generated from Lite's own code by golden.ts, so tests can
-// check that Standard produces the same output byte for byte.
+// Package testdata holds golden.json and golden-apple.json, generated from Lite's own code by
+// golden.ts and golden-apple.ts, so tests can check that Standard produces the same output byte
+// for byte.
 package testdata
 
 import (
@@ -11,6 +12,12 @@ import (
 
 //go:embed golden.json
 var goldenJSON []byte
+
+// GoldenApple is golden-apple.json: Lite's App Store mapping, events and event bodies
+// (golden-apple.ts says how to regenerate it).
+//
+//go:embed golden-apple.json
+var GoldenApple []byte
 
 // Golden is golden.json.
 type Golden struct {
