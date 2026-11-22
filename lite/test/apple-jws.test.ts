@@ -53,6 +53,11 @@ describe("verifyAppleJws", () => {
     await expect(verifyAppleJws(forged, { trustedRoots })).rejects.toThrow("JWS signature invalid");
   });
 
+  it("rejects a signature that isn't base64url as an invalid JWS", async () => {
+    const [h, p] = TEST_SIGNED_TRANSACTION.split(".");
+    await expect(verifyAppleJws(`${h}.${p}.%%%`, { trustedRoots, noCache: true })).rejects.toThrow(AppleJwsError);
+  });
+
   it("rejects an untrusted root, even when the chain is cached", async () => {
     await verifyAppleJws(TEST_SIGNED_TRANSACTION, { trustedRoots });
     await expect(

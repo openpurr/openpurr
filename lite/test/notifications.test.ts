@@ -34,6 +34,9 @@ describe("delivery", () => {
     const [h, p] = signedPayload.split(".");
     expect((await postNotification(`${h}.${p}.AAAA`)).status).toBe(400);
     expect((await postNotification("not-a-jws")).status).toBe(400);
+    // Not base64url at all: still an invalid signature, not a server error Apple would retry.
+    expect((await postNotification(`${h}.${p}.%%%`)).status).toBe(400);
+    expect((await postNotification(`%%%.${p}.AAAA`)).status).toBe(400);
   });
 
   it("rejects a forged transaction inside a validly signed notification", async () => {

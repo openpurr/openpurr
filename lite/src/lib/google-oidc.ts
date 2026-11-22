@@ -75,21 +75,18 @@ export async function verifyGoogleIdToken(
   if (parts.length !== 3) throw new GoogleIdTokenError("Not a JWT");
   let header: { alg?: string; kid?: string };
   let claims: GoogleIdClaims;
+  let signature: Uint8Array;
   try {
     header = json(parts[0]!);
     claims = json(parts[1]!);
+    signature = base64UrlToBytes(parts[2]!);
   } catch {
     throw new GoogleIdTokenError("Malformed JWT");
   }
   if (header.alg !== "RS256" || !header.kid) throw new GoogleIdTokenError(`Unexpected token algorithm ${header.alg}`);
 
   const key = await keyFor(header.kid, opts.fetch ?? fetch);
-  const ok = await crypto.subtle.verify(
-    "RSASSA-PKCS1-v1_5",
-    key,
-    base64UrlToBytes(parts[2]!),
-    new TextEncoder().encode(`${parts[0]}.${parts[1]}`),
-  );
+  const ok = await crypto.subtle.verify("RSASSA-PKCS1-v1_5", key, signature, new TextEncoder().encode(`${parts[0]}.${parts[1]}`));
   if (!ok) throw new GoogleIdTokenError("Bad token signature");
 
   const now = Math.floor((opts.now ?? Date.now()) / 1000);

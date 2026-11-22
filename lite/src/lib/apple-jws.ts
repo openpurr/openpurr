@@ -91,18 +91,21 @@ export async function verifyAppleJws<T = unknown>(jws: string, opts: VerifyOptio
     throw new AppleJwsError("x5c must have 3 certificates");
   }
 
+  // atob throws on bad input; a signature that isn't base64url is just an invalid JWS.
+  let signature: Uint8Array;
+  try {
+    signature = base64UrlToBytes(s);
+  } catch {
+    throw new AppleJwsError("malformed JWS signature");
+  }
+
   const at = (opts.at ?? new Date()).getTime();
   const chain = await resolveChain(x5c as [string, string, string], at, opts);
   if (at < chain.notBefore || at > chain.notAfter) {
     throw new AppleJwsError("certificate not valid at the requested time");
   }
 
-  const ok = await crypto.subtle.verify(
-    { name: "ECDSA", hash: "SHA-256" },
-    chain.key,
-    base64UrlToBytes(s),
-    new TextEncoder().encode(`${h}.${p}`),
-  );
+  const ok = await crypto.subtle.verify({ name: "ECDSA", hash: "SHA-256" }, chain.key, signature, new TextEncoder().encode(`${h}.${p}`));
   if (!ok) throw new AppleJwsError("JWS signature invalid");
   try {
     return JSON.parse(new TextDecoder().decode(base64UrlToBytes(p))) as T;
