@@ -95,6 +95,24 @@ func (l *Loader) Get(ctx context.Context) (*Config, error) {
 	return cfg, nil
 }
 
+// GetFresh returns the current config, checking the database whatever the cache's age (one small
+// read when nothing changed). The back office uses it, so the dashboard always shows what was just
+// saved, as Lite's back-office Worker reads the config on every request.
+func (l *Loader) GetFresh(ctx context.Context) (*Config, error) {
+	now := l.clock.Now()
+	l.mu.Lock()
+	c := l.cached
+	l.mu.Unlock()
+	cfg, id, err := l.load(ctx, c, true)
+	if err != nil {
+		return nil, err
+	}
+	l.mu.Lock()
+	l.cached = &cachedConfig{config: cfg, id: id, checkedAt: now}
+	l.mu.Unlock()
+	return cfg, nil
+}
+
 // Invalidate makes the next Get read the database (after a save or a conformance reset).
 func (l *Loader) Invalidate() {
 	l.mu.Lock()

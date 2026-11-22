@@ -6,6 +6,7 @@ package server
 import (
 	"context"
 	"errors"
+	"io/fs"
 	"log/slog"
 	"net"
 	"net/http"
@@ -25,6 +26,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
+	"github.com/openpurr/openpurr/standard/internal/officeui"
 	"github.com/openpurr/openpurr/standard/internal/ratelimit"
 	"github.com/openpurr/openpurr/standard/internal/secretkeys"
 	"github.com/openpurr/openpurr/standard/internal/webhooks"
@@ -58,8 +60,11 @@ type Deps struct {
 	Webhooks *webhooks.Deliverer
 	// Exchange rates; the European Central Bank when nil.
 	FX fx.Provider
-	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
+	// Back-office secret (operator passwords, TOTP).
 	OperatorSecret string
+	// The back office's public origin (https://purchases.example.com), for setup links and the
+	// dashboard's same-origin check; empty means the request's own scheme and host.
+	PublicURL string
 	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
 	// an environment variable of that name, as Lite reads Worker secrets by name.
 	Secret func(name string) (string, bool)
@@ -67,6 +72,9 @@ type Deps struct {
 	// The header holding the client IP set by a trusted proxy (for example CF-Connecting-IP or
 	// X-Forwarded-For); empty means the connection's address.
 	ClientIPHeader string
+
+	// The dashboard's files; the embedded copy of lite/office-ui when nil.
+	Dashboard fs.FS
 
 	// Set only in conformance mode.
 	Conformance *Conformance
@@ -98,7 +106,10 @@ func New(d *Deps) http.Handler {
 	if d.FX == nil {
 		d.FX = fx.ECB
 	}
-	s := &server{Deps: d}
+	if d.Dashboard == nil {
+		d.Dashboard = officeui.FS()
+	}
+	s := &server{Deps: d, dash: loadDashboard(d.Dashboard)}
 	if d.Jobs != nil {
 		s.registerJobs()
 	}
@@ -107,6 +118,7 @@ func New(d *Deps) http.Handler {
 
 type server struct {
 	*Deps
+	dash       *dashboard
 	sdkMuxOnce sync.Once
 	sdkMux     *http.ServeMux
 }
@@ -134,6 +146,13 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		s.settleInConformance()
 	case s.Conformance != nil && strings.HasPrefix(path, "/__conformance/"):
 		s.conformance(w, r)
+	case strings.HasPrefix(path, "/admin/v1/auth/"):
+		s.officeAuth(w, r)
+		s.settleInConformance()
+	case path == "/admin/v1" || strings.HasPrefix(path, "/admin/v1/"):
+		s.admin(w, r)
+		s.settleInConformance()
+	case (r.Method == http.MethodGet || r.Method == http.MethodHead) && s.serveDashboard(w, r):
 	default:
 		writeJSON(w, http.StatusNotFound, jsobj.New("code", 0.0, "message", "Not found"))
 	}
@@ -157,6 +176,11 @@ func (s *server) deliverLater(cfg *config.Config, events []*webhooks.Prepared) {
 			ids = append(ids, e.ID)
 		}
 	}
+	s.deliverIDsLater(cfg, ids)
+}
+
+// deliverIDsLater is deliverLater for event IDs (a replay).
+func (s *server) deliverIDsLater(cfg *config.Config, ids []string) {
 	if len(ids) == 0 {
 		return
 	}
