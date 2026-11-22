@@ -161,17 +161,22 @@ func Acknowledge(ctx context.Context, db ledger.DB, client *Client, appID string
 		_, err := db.Exec(ctx, "DELETE FROM play_ack_pending WHERE purchase_token = $1", ack.PurchaseToken)
 		return err == nil, err
 	}
-	// String(err), as Lite stores it, cut to 500 characters.
-	message := []rune("Error: " + err.Error())
-	if len(message) > 500 {
-		message = message[:500]
-	}
 	_, dbErr := db.Exec(ctx,
 		`INSERT INTO play_ack_pending (purchase_token, app_id, product_id, kind, attempts, last_error, created_at)
 		 VALUES ($1, $2, $3, $4, 1, $5, $6)
 		 ON CONFLICT (purchase_token) DO UPDATE SET attempts = play_ack_pending.attempts + 1, last_error = excluded.last_error`,
-		ack.PurchaseToken, appID, ack.ProductID, ack.Kind, string(message), now)
+		ack.PurchaseToken, appID, ack.ProductID, ack.Kind, lastError(err), now)
 	return false, dbErr
+}
+
+// lastError is String(err), as Lite stores it in play_ack_pending.last_error, cut to 500
+// characters.
+func lastError(err error) string {
+	message := []rune("Error: " + err.Error())
+	if len(message) > 500 {
+		message = message[:500]
+	}
+	return string(message)
 }
 
 // MarkReplaced marks the chain a new purchase replaces as upgraded, so it stops granting

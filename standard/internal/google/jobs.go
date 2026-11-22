@@ -5,6 +5,8 @@ package google
 //   - poll the voided purchases API, a backstop for refunds and chargebacks whose notification was
 //     missed. Bounded per run; a per-app checkpoint in job_state means a backlog clears over
 //     several runs.
+// Each app is handled on its own: one whose key is missing or whose API calls fail is logged and
+// skipped, and the other apps' work goes ahead.
 
 import (
 	"context"
@@ -62,7 +64,12 @@ func RetryAcknowledgements(ctx context.Context, pool *pgxpool.Pool, cfg *config.
 		}
 		client, err := ClientFor(app, env)
 		if err != nil {
-			return done, err
+			// Kept for a later run, once the key is fixed.
+			env.Log.Error("Can't retry Play acknowledgements", "app", app.ID, "error", err.Error())
+			if _, err := pool.Exec(ctx, "UPDATE play_ack_pending SET last_error = $1 WHERE purchase_token = $2", lastError(err), p.token); err != nil {
+				return done, err
+			}
+			continue
 		}
 		ok, err := Acknowledge(ctx, pool, client, app.ID, Ack{Kind: p.kind, ProductID: p.productID, PurchaseToken: p.token}, env.Now())
 		if err != nil {
@@ -85,127 +92,139 @@ func PollVoided(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, app
 		if app == nil || app.Store != config.PlayStore || app.GooglePlayAPI == nil {
 			continue
 		}
-		project := cfg.Projects[app.ProjectID]
-		key := "play_voided_checkpoint:" + app.ID
-		checkpoint := 0.0
-		var value string
-		err := pool.QueryRow(ctx, "SELECT value FROM job_state WHERE key = $1", key).Scan(&value)
-		switch {
-		case err == nil:
-			checkpoint = toNumber(value, true)
-		case err != pgx.ErrNoRows:
-			return processed, err
-		}
-		// The API looks back at most 30 days.
-		since := math.Max(checkpoint, float64(now-30*day))
-		client, err := ClientFor(app, env)
+		n, err := pollApp(ctx, pool, cfg, app, env, now)
 		if err != nil {
-			return processed, err
+			// The checkpoint stays where it was, so the next run tries this app again.
+			env.Log.Error("Polling voided purchases failed", "app", app.ID, "error", err.Error())
 		}
-		res, err := client.Voided(ctx, since)
-		if err != nil {
-			return processed, err
-		}
-		listV, _ := jsobj.Prop(res, "voidedPurchases")
-		all, _ := listV.([]any)
-		type voided struct {
-			orderID string
-			at      float64
-		}
-		batch := make([]voided, len(all))
-		for i, v := range all {
-			at := float64(now)
-			if t, ok := jsobj.Prop(v, "voidedTimeMillis"); ok && t != nil {
-				at = toNumber(t, true)
-			}
-			order, hasOrder := jsobj.Prop(v, "orderId")
-			batch[i] = voided{orderID: jsobj.String(order, hasOrder), at: at}
-		}
-		sort.SliceStable(batch, func(i, j int) bool { return batch[i].at < batch[j].at })
-		if len(batch) > VoidedPerRun {
-			batch = batch[:VoidedPerRun]
-		}
+		processed += n
+	}
+	return processed, nil
+}
 
-		// Read everything first, then write in one transaction (Lite's D1 batch).
-		type refund struct {
-			orderID string
-			at      int64
-			event   *webhooks.Prepared
+// pollApp handles one app's voided purchases and returns how many orders it marked refunded.
+func pollApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, app *config.App, env Env, now int64) (int, error) {
+	processed := 0
+	project := cfg.Projects[app.ProjectID]
+	key := "play_voided_checkpoint:" + app.ID
+	checkpoint := 0.0
+	var value string
+	err := pool.QueryRow(ctx, "SELECT value FROM job_state WHERE key = $1", key).Scan(&value)
+	switch {
+	case err == nil:
+		checkpoint = toNumber(value, true)
+	case err != pgx.ErrNoRows:
+		return 0, err
+	}
+	// The API looks back at most 30 days.
+	since := math.Max(checkpoint, float64(now-30*day))
+	client, err := ClientFor(app, env)
+	if err != nil {
+		return 0, err
+	}
+	res, err := client.Voided(ctx, since)
+	if err != nil {
+		return 0, err
+	}
+	listV, _ := jsobj.Prop(res, "voidedPurchases")
+	all, _ := listV.([]any)
+	type voided struct {
+		orderID string
+		at      float64
+	}
+	batch := make([]voided, len(all))
+	for i, v := range all {
+		at := float64(now)
+		if t, ok := jsobj.Prop(v, "voidedTimeMillis"); ok && t != nil {
+			at = toNumber(t, true)
 		}
-		var refunds []refund
-		var owners []string
-		for _, v := range batch {
-			tx, owner, err := ledger.PlayOrder(ctx, pool, v.orderID, true)
-			if err != nil {
-				return processed, err
-			}
-			if tx == nil {
-				continue // unknown order, or already marked refunded (for example by its notification)
-			}
-			r := refund{orderID: v.orderID, at: int64(v.at)}
-			if owner != "" {
-				if !containsString(owners, owner) {
-					owners = append(owners, owner)
-				}
-				refunded := *tx
-				refunded.RevokedAt = &r.at
-				e := RefundEvent(&refunded)
-				if len(webhooks.For(project, e.Type, tx.Environment)) > 0 {
-					customer, err := webhooks.LoadCustomer(ctx, pool, []string{owner}, owner, "")
-					if err != nil {
-						return processed, err
-					}
-					r.event, err = webhooks.Prepare(ctx, pool, project, webhooks.Input{
-						Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: tx.Environment, Store: "play_store",
-						Customer: customer, Transaction: &refunded, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,
-					})
-					if err != nil {
-						return processed, err
-					}
-				}
-			}
-			refunds = append(refunds, r)
-			processed++
-		}
-		// Advance past what this run handled; the rest waits for the next run.
-		reached := float64(now)
-		if len(batch) != len(all) {
-			reached = since
-			if len(batch) > 0 {
-				reached = batch[len(batch)-1].at
-			}
-		}
-		err = pgx.BeginFunc(ctx, pool, func(dbtx pgx.Tx) error {
-			for _, r := range refunds {
-				if _, err := dbtx.Exec(ctx,
-					"UPDATE store_transaction SET revoked_at = $1, revocation_reason = 'voided', updated_at = $2 WHERE store = 'play_store' AND transaction_id = $3",
-					r.at, now, r.orderID); err != nil {
-					return err
-				}
-				if r.event != nil {
-					if err := r.event.Write(ctx, dbtx); err != nil {
-						return err
-					}
-				}
-			}
-			for _, id := range owners {
-				if err := customerinfo.Invalidate(ctx, dbtx, id); err != nil {
-					return err
-				}
-			}
-			_, err := dbtx.Exec(ctx,
-				`INSERT INTO job_state (key, value, updated_at) VALUES ($1, $2, $3)
-				 ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
-				key, jsobj.FormatNumber(reached), now)
-			return err
-		})
+		order, hasOrder := jsobj.Prop(v, "orderId")
+		batch[i] = voided{orderID: jsobj.String(order, hasOrder), at: at}
+	}
+	sort.SliceStable(batch, func(i, j int) bool { return batch[i].at < batch[j].at })
+	if len(batch) > VoidedPerRun {
+		batch = batch[:VoidedPerRun]
+	}
+
+	// Read everything first, then write in one transaction (Lite's D1 batch).
+	type refund struct {
+		orderID string
+		at      int64
+		event   *webhooks.Prepared
+	}
+	var refunds []refund
+	var owners []string
+	for _, v := range batch {
+		tx, owner, err := ledger.PlayOrder(ctx, pool, v.orderID, true)
 		if err != nil {
-			return processed, err
+			return 0, err
+		}
+		if tx == nil {
+			continue // unknown order, or already marked refunded (for example by its notification)
+		}
+		r := refund{orderID: v.orderID, at: int64(v.at)}
+		if owner != "" {
+			if !containsString(owners, owner) {
+				owners = append(owners, owner)
+			}
+			refunded := *tx
+			refunded.RevokedAt = &r.at
+			e := RefundEvent(&refunded)
+			if len(webhooks.For(project, e.Type, tx.Environment)) > 0 {
+				customer, err := webhooks.LoadCustomer(ctx, pool, []string{owner}, owner, "")
+				if err != nil {
+					return 0, err
+				}
+				r.event, err = webhooks.Prepare(ctx, pool, project, webhooks.Input{
+					Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: tx.Environment, Store: "play_store",
+					Customer: customer, Transaction: &refunded, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,
+				})
+				if err != nil {
+					return 0, err
+				}
+			}
+		}
+		refunds = append(refunds, r)
+		processed++
+	}
+	// Advance past what this run handled; the rest waits for the next run.
+	reached := float64(now)
+	if len(batch) != len(all) {
+		reached = since
+		if len(batch) > 0 {
+			reached = batch[len(batch)-1].at
+		}
+	}
+	err = pgx.BeginFunc(ctx, pool, func(dbtx pgx.Tx) error {
+		for _, r := range refunds {
+			if _, err := dbtx.Exec(ctx,
+				"UPDATE store_transaction SET revoked_at = $1, revocation_reason = 'voided', updated_at = $2 WHERE store = 'play_store' AND transaction_id = $3",
+				r.at, now, r.orderID); err != nil {
+				return err
+			}
+			if r.event != nil {
+				if err := r.event.Write(ctx, dbtx); err != nil {
+					return err
+				}
+			}
 		}
 		for _, id := range owners {
-			if _, err := customerinfo.Refresh(ctx, pool, cfg, id, env.Now()); err != nil {
-				return processed, err
+			if err := customerinfo.Invalidate(ctx, dbtx, id); err != nil {
+				return err
 			}
+		}
+		_, err := dbtx.Exec(ctx,
+			`INSERT INTO job_state (key, value, updated_at) VALUES ($1, $2, $3)
+			 ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+			key, jsobj.FormatNumber(reached), now)
+		return err
+	})
+	if err != nil {
+		return 0, err
+	}
+	for _, id := range owners {
+		if _, err := customerinfo.Refresh(ctx, pool, cfg, id, env.Now()); err != nil {
+			return 0, err
 		}
 	}
 	return processed, nil
