@@ -30,7 +30,7 @@ App developers who:
 
 It's also a good fit if you already use the RevenueCat SDKs and want to keep them. openpurr works with the official, unmodified SDKs, so switching starts with changing one URL, not rewriting your purchase code. To bring your existing customers over, see [Moving from RevenueCat](docs/migrating-from-revenuecat.md).
 
-**It may not be for you (yet)** if you need paywall builders, A/B experiments, third-party analytics integrations or a support contract. Commercial platforms offer those today. See the [roadmap](ROADMAP.md) for what's coming.
+**It may not be for you (yet)** if you need paywall builders, third-party analytics integrations or a support contract. Commercial platforms offer those today. See the [roadmap](ROADMAP.md) for what's coming.
 
 ## What it does
 

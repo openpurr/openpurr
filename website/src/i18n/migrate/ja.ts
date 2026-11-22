@@ -115,7 +115,8 @@ export const migrateJa: MigrateDict = {
       ["顧客の属性（$email、$displayName、独自の属性）", "はい。Audience export から移行します"],
       ["商品、エンタイトルメント、オファリング", "同じ識別子で作り直します"],
       ["切り替え前のグラフの履歴", "一部のみ。記録用に RevenueCat のグラフの CSV を保存しておいてください"],
-      ["ペイウォール、実験、連携機能、Customer Center", "いいえ。openpurr にはありません"],
+      ["実験", "作り直します。openpurr はオファリングを使った価格の実験に対応しています"],
+      ["ペイウォール、連携機能、Customer Center", "いいえ。openpurr にはありません"],
     ] as [string, string][],
   },
   faq: {

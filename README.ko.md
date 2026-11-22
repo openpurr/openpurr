@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 
 이미 RevenueCat SDK를 쓰고 있고 계속 쓰고 싶은 경우에도 잘 맞습니다. openpurr는 수정하지 않은 공식 SDK와 함께 작동하므로, 전환은 결제 코드를 다시 짜는 것이 아니라 URL 하나를 바꾸는 것에서 시작합니다. 기존 고객을 옮기려면 [RevenueCat에서 마이그레이션하기](https://openpurr.org/ko/migrate-from-revenuecat/)를 참고하세요.
 
-**(아직은) 맞지 않을 수도 있습니다.** 페이월 빌더, A/B 실험, 서드파티 분석 연동, 지원 계약이 필요한 경우입니다. 지금은 상용 플랫폼이 이를 제공합니다. 앞으로의 계획은 [로드맵](ROADMAP.md)(영어)을 참고하세요.
+**(아직은) 맞지 않을 수도 있습니다.** 페이월 빌더, 서드파티 분석 연동, 지원 계약이 필요한 경우입니다. 지금은 상용 플랫폼이 이를 제공합니다. 앞으로의 계획은 [로드맵](ROADMAP.md)(영어)을 참고하세요.
 
 ## 주요 기능
 

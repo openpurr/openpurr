@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ Desarrolladores de apps que:
 
 También encaja si ya usas los SDK de RevenueCat y quieres conservarlos. openpurr funciona con los SDK oficiales, sin modificar, así que para cambiarte empiezas cambiando una URL, no reescribiendo tu código de compras. Para traer a tus clientes actuales, consulta [Cómo migrar desde RevenueCat](https://openpurr.org/es/migrate-from-revenuecat/).
 
-**Puede que (todavía) no sea para ti** si necesitas creadores de paywalls, experimentos A/B, integraciones de analítica de terceros o un contrato de soporte. Las plataformas comerciales ya los ofrecen hoy. Consulta la [hoja de ruta](ROADMAP.md) (en inglés) para ver lo que viene.
+**Puede que (todavía) no sea para ti** si necesitas creadores de paywalls, integraciones de analítica de terceros o un contrato de soporte. Las plataformas comerciales ya los ofrecen hoy. Consulta la [hoja de ruta](ROADMAP.md) (en inglés) para ver lo que viene.
 
 ## Qué hace
 

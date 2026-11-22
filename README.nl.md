@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ App-ontwikkelaars die:
 
 Het past ook goed als je de RevenueCat SDK's al gebruikt en wilt houden. openpurr werkt met de officiële, ongewijzigde SDK's, dus overstappen begint met het wijzigen van één URL, niet met het herschrijven van je aankoopcode. Hoe je je bestaande klanten meeneemt, lees je in [Overstappen van RevenueCat](https://openpurr.org/nl/migrate-from-revenuecat/).
 
-**Misschien is het (nog) niets voor jou** als je paywall-builders, A/B-experimenten, analytics-integraties van derden of een supportcontract nodig hebt. Commerciële platforms bieden dat vandaag al. Wat eraan komt, staat in de [roadmap](ROADMAP.md) (Engels).
+**Misschien is het (nog) niets voor jou** als je paywall-builders, analytics-integraties van derden of een supportcontract nodig hebt. Commerciële platforms bieden dat vandaag al. Wat eraan komt, staat in de [roadmap](ROADMAP.md) (Engels).
 
 ## Wat het doet
 

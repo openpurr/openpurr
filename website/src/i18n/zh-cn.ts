@@ -96,12 +96,8 @@ export const zhCn: Dict = {
       title: "订阅后端，不带你用不上的附加功能",
       items: [
         {
-          title: "购买",
-          body: "验证 StoreKit 2 交易和 Google Play 购买，并返回 SDK 所需的 CustomerInfo 和权益。",
-        },
-        {
-          title: "商店通知",
-          body: "接收 App Store Server Notifications V2 和 Google Play Real-time Developer Notifications，让续订、退款和宽限期状态保持最新。",
+          title: "购买与商店通知",
+          body: "验证 StoreKit 2 交易和 Google Play 购买，返回 SDK 所需的 CustomerInfo 和权益，并根据 App Store 和 Google Play 的通知让续订、退款和宽限期状态保持最新。",
         },
         {
           title: "Webhook",
@@ -110,6 +106,10 @@ export const zhCn: Dict = {
         {
           title: "图表",
           body: "16 张图表：收入、MRR 和 ARR、MRR 与订阅变动、活跃订阅和付费订阅、订阅状态、流失、试用与试用转化、新客户、退款与退款率，以及一次性购买。可按 App、商店、产品和环境筛选，收入统一换算为美元。",
+        },
+        {
+          title: "价格实验",
+          body: "向首次使用你 App 的客户展示不同的 Offering，再比较转化率和每位客户的收入，并给出每个变体优于对照组的概率。无需更新 App。",
         },
         {
           title: "认证与审计",
@@ -167,7 +167,7 @@ export const zhCn: Dict = {
     fit: {
       eyebrow: "坦白说",
       title: "它现在可能还不适合你",
-      lede: "如果你需要付费墙构建器、A/B 实验、第三方分析集成或支持合同，目前商业平台已经能提供这些。",
+      lede: "如果你需要付费墙构建器、第三方分析集成或支持合同，目前商业平台已经能提供这些。",
       outTitle: "暂不支持",
       tags: ["付费墙", "广告事件", "Customer Center", "虚拟货币", "Web 计费", "Amazon", "分析集成"],
     },
@@ -185,6 +185,7 @@ export const zhCn: Dict = {
             "App Store 和 Google Play",
             "Webhook、仪表盘和管理后台",
             "一次部署支持多个 App",
+            "价格实验",
             "MCP 服务器、CLI 和 Claude Skills",
             "下一步：真机测试，然后发布 1.0",
           ],
@@ -219,7 +220,7 @@ export const zhCn: Dict = {
       },
       {
         q: "openpurr 和 RevenueCat 有什么不同？",
-        a: "RevenueCat 是一项托管的商业服务，超出免费额度后按收入比例收费。openpurr 是你自己运行的软件：你的购买记录、权益和商店凭据都存放在你自己的数据库中，没有收入分成，也没有按交易收取的费用。RevenueCat 目前提供更多功能，例如付费墙、实验和分析集成。openpurr 专注于核心的订阅后端。",
+        a: "RevenueCat 是一项托管的商业服务，超出免费额度后按收入比例收费。openpurr 是你自己运行的软件：你的购买记录、权益和商店凭据都存放在你自己的数据库中，没有收入分成，也没有按交易收取的费用。RevenueCat 目前提供更多功能，例如付费墙和分析集成。openpurr 专注于核心的订阅后端。",
       },
       {
         q: "从 RevenueCat 切换过来，需要重写购买代码吗？",
@@ -248,7 +249,7 @@ export const zhCn: Dict = {
       },
       {
         q: "RevenueCat 有哪些功能是 openpurr 没有的？",
-        a: "付费墙、第三方分析集成、Customer Center、虚拟货币、Web 计费、Amazon、广告事件和商业支持合同目前暂不支持。价格实验已列入路线图。如果你现在就需要这些功能，商业平台会更适合你。",
+        a: "付费墙、第三方分析集成、Customer Center、虚拟货币、Web 计费、Amazon、广告事件和商业支持合同目前暂不支持。价格实验已内置。如果你现在就需要其他功能，商业平台会更适合你。",
       },
       {
         q: "openpurr 可以用于生产环境了吗？",
@@ -270,6 +271,7 @@ export const zhCn: Dict = {
       "App Store Server Notifications V2 和 Google Play Real-time Developer Notifications",
       "与 RevenueCat 格式相同的 Webhook，使用 HMAC-SHA256 签名",
       "16 张订阅图表，包括 MRR、流失和试用转化",
+      "基于 Offering 的价格实验，按变体查看结果",
       "MCP 服务器、CLI 和 Claude Skills",
     ],
   },

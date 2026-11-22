@@ -101,12 +101,8 @@ export const it: Dict = {
       title: "Il backend per gli abbonamenti, senza gli extra che non usi",
       items: [
         {
-          title: "Acquisti",
-          body: "Convalida le transazioni StoreKit 2 e gli acquisti Google Play, e restituisce il CustomerInfo e gli entitlement che l'SDK si aspetta.",
-        },
-        {
-          title: "Notifiche degli store",
-          body: "Riceve le App Store Server Notifications V2 e le Real-time Developer Notifications di Google Play, così rinnovi, rimborsi e periodi di tolleranza restano aggiornati.",
+          title: "Acquisti e notifiche degli store",
+          body: "Convalida le transazioni StoreKit 2 e gli acquisti Google Play, restituisce il CustomerInfo e gli entitlement che l'SDK si aspetta, e mantiene aggiornati rinnovi, rimborsi e periodi di tolleranza grazie alle notifiche di App Store e Google Play.",
         },
         {
           title: "Webhook",
@@ -115,6 +111,10 @@ export const it: Dict = {
         {
           title: "Grafici",
           body: "16 grafici: ricavi, MRR e ARR, andamento dell'MRR e degli abbonamenti, abbonamenti attivi e a pagamento, stato degli abbonamenti, churn, prove e conversione delle prove, nuovi clienti, rimborsi e tasso di rimborso, acquisti singoli. Filtra per app, store, prodotto e ambiente, con i ricavi convertiti in USD.",
+        },
+        {
+          title: "Esperimenti sui prezzi",
+          body: "Mostra offering diversi ai clienti nuovi della tua app, poi confronta conversione e ricavi per cliente, con la probabilità che ogni variante batta il controllo. Senza aggiornare l'app.",
         },
         {
           title: "Autenticazione e audit",
@@ -176,7 +176,7 @@ export const it: Dict = {
     fit: {
       eyebrow: "In tutta onestà",
       title: "Potrebbe non fare ancora per te",
-      lede: "Se ti servono editor di paywall, esperimenti A/B, integrazioni con strumenti di analytics di terze parti o un contratto di assistenza, le piattaforme commerciali li offrono già oggi.",
+      lede: "Se ti servono editor di paywall, integrazioni con strumenti di analytics di terze parti o un contratto di assistenza, le piattaforme commerciali li offrono già oggi.",
       outTitle: "Per ora fuori ambito",
       tags: [
         "Paywall",
@@ -203,6 +203,7 @@ export const it: Dict = {
             "App Store e Google Play",
             "Webhook, dashboard e amministrazione",
             "Più app in un solo deployment",
+            "Esperimenti sui prezzi",
             "Server MCP, CLI e skill per Claude",
             "Prossimo passo: test sui dispositivi, poi la 1.0",
           ],
@@ -242,7 +243,7 @@ export const it: Dict = {
       },
       {
         q: "In cosa openpurr è diverso da RevenueCat?",
-        a: "RevenueCat è un servizio commerciale in hosting che trattiene una quota dei ricavi oltre una soglia gratuita. openpurr è un software che esegui tu: acquisti, entitlement e credenziali degli store stanno nel tuo database, e non ci sono quote dei ricavi né commissioni per transazione. Oggi RevenueCat offre più funzionalità, come paywall, esperimenti e integrazioni di analytics. openpurr si concentra sul backend essenziale per gli abbonamenti.",
+        a: "RevenueCat è un servizio commerciale in hosting che trattiene una quota dei ricavi oltre una soglia gratuita. openpurr è un software che esegui tu: acquisti, entitlement e credenziali degli store stanno nel tuo database, e non ci sono quote dei ricavi né commissioni per transazione. Oggi RevenueCat offre più funzionalità, come paywall e integrazioni di analytics. openpurr si concentra sul backend essenziale per gli abbonamenti.",
       },
       {
         q: "Devo riscrivere il mio codice di acquisto per passare da RevenueCat a openpurr?",
@@ -271,7 +272,7 @@ export const it: Dict = {
       },
       {
         q: "Cosa fa RevenueCat che openpurr non fa?",
-        a: "Paywall, integrazioni di analytics di terze parti, Customer Center, valute virtuali, pagamenti web, Amazon, eventi pubblicitari e un contratto di assistenza commerciale sono per ora fuori ambito. Gli esperimenti sui prezzi sono nella roadmap. Se ti servono già oggi, una piattaforma commerciale fa più al caso tuo.",
+        a: "Paywall, integrazioni di analytics di terze parti, Customer Center, valute virtuali, pagamenti web, Amazon, eventi pubblicitari e un contratto di assistenza commerciale sono per ora fuori ambito. Gli esperimenti sui prezzi sono già inclusi. Se ti serve il resto già oggi, una piattaforma commerciale fa più al caso tuo.",
       },
       {
         q: "openpurr è pronto per la produzione?",
@@ -294,6 +295,7 @@ export const it: Dict = {
       "App Store Server Notifications V2 e Real-time Developer Notifications di Google Play",
       "Webhook nel formato di RevenueCat, firmati con HMAC-SHA256",
       "16 grafici sugli abbonamenti, tra cui MRR, churn e conversione delle prove",
+      "Esperimenti sui prezzi sugli offering, con risultati per variante",
       "Server MCP, CLI e skill per Claude",
     ],
   },

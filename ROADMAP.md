@@ -4,7 +4,7 @@ A high-level view of where openpurr is going. The order is firm, but there are n
 
 **Status key:** ✅ done · 🚧 in progress · ⏳ planned
 
-**Latest release:** [0.2.0](https://github.com/openpurr/openpurr/releases/tag/v0.2.0), which adds importing customers from RevenueCat.
+**Latest release:** [0.3.0](https://github.com/openpurr/openpurr/releases/tag/v0.3.0), which adds price experiments and the dashboard in 17 languages.
 
 ## Phase 0: Prototype 🚧
 

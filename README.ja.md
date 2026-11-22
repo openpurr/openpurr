@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提
 
 すでに RevenueCat の SDK を使っていて、それを使い続けたい場合にも向いています。openpurr は公式の SDK を改変せずにそのまま使えるので、乗り換えは購入処理のコードを書き直すことではなく、URL を 1 つ変えることから始まります。既存の顧客を移行するには、[RevenueCat からの移行](https://openpurr.org/ja/migrate-from-revenuecat/)を参照してください。
 
-**（まだ）合わない場合もあります。** ペイウォールビルダー、A/B テスト、サードパーティの分析ツール連携、サポート契約が必要な場合です。それらは今のところ商用プラットフォームが提供しています。今後の予定は[ロードマップ](ROADMAP.md)（英語）を参照してください。
+**（まだ）合わない場合もあります。** ペイウォールビルダー、サードパーティの分析ツール連携、サポート契約が必要な場合です。それらは今のところ商用プラットフォームが提供しています。今後の予定は[ロードマップ](ROADMAP.md)（英語）を参照してください。
 
 ## できること
 

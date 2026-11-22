@@ -107,12 +107,8 @@ export const en = {
       title: "The subscription backend, without the extras you don't use",
       items: [
         {
-          title: "Purchases",
-          body: "Validates StoreKit 2 transactions and Google Play purchases, and returns the CustomerInfo and entitlements the SDK expects.",
-        },
-        {
-          title: "Store notifications",
-          body: "Receives App Store Server Notifications V2 and Google Play Real-time Developer Notifications, so renewals, refunds and grace periods stay current.",
+          title: "Purchases and store notifications",
+          body: "Validates StoreKit 2 transactions and Google Play purchases, returns the CustomerInfo and entitlements the SDK expects, and keeps renewals, refunds and grace periods current from App Store and Google Play notifications.",
         },
         {
           title: "Webhooks",
@@ -121,6 +117,10 @@ export const en = {
         {
           title: "Charts",
           body: "16 charts: revenue, MRR and ARR, MRR and subscription movement, active and paid subscriptions, subscription status, churn, trials and trial conversion, new customers, refunds and refund rate, and one-time purchases. Filter by app, store, product and environment, with revenue converted to USD.",
+        },
+        {
+          title: "Price experiments",
+          body: "Show customers new to your app different offerings, then compare conversion and revenue per customer, with the chance that each variant beats the control. No app update.",
         },
         {
           title: "Auth and audit",
@@ -179,7 +179,7 @@ export const en = {
     fit: {
       eyebrow: "Being upfront",
       title: "It may not be for you yet",
-      lede: "If you need paywall builders, A/B experiments, third-party analytics integrations or a support contract, commercial platforms offer those today.",
+      lede: "If you need paywall builders, third-party analytics integrations or a support contract, commercial platforms offer those today.",
       outTitle: "Out of scope for now",
       tags: ["Paywalls", "Ad events", "Customer Center", "Virtual currencies", "Web billing", "Amazon", "Analytics integrations"],
     },
@@ -198,6 +198,7 @@ export const en = {
             "App Store and Google Play",
             "Webhooks, dashboard and admin",
             "Several apps in one deployment",
+            "Price experiments",
             "MCP server, CLI and Claude skills",
             "Next: device testing, then 1.0",
           ],
@@ -232,7 +233,7 @@ export const en = {
       },
       {
         q: "How is openpurr different from RevenueCat?",
-        a: "RevenueCat is a hosted commercial service that charges a share of revenue above a free tier. openpurr is software you run yourself: your purchase records, entitlements and store credentials live in your own database, and there's no revenue share or per-transaction fee. RevenueCat offers more features today, such as paywalls, experiments and analytics integrations. openpurr focuses on the core subscription backend.",
+        a: "RevenueCat is a hosted commercial service that charges a share of revenue above a free tier. openpurr is software you run yourself: your purchase records, entitlements and store credentials live in your own database, and there's no revenue share or per-transaction fee. RevenueCat offers more features today, such as paywalls and analytics integrations. openpurr focuses on the core subscription backend.",
       },
       {
         q: "Do I have to rewrite my purchase code to switch from RevenueCat?",
@@ -261,7 +262,7 @@ export const en = {
       },
       {
         q: "What doesn't openpurr do that RevenueCat does?",
-        a: "Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events and a commercial support contract are out of scope for now. Price experiments are on the roadmap. If you need those today, a commercial platform is a better fit.",
+        a: "Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events and a commercial support contract are out of scope for now. Price experiments are built in. If you need the others today, a commercial platform is a better fit.",
       },
       {
         q: "Is openpurr ready for production?",
@@ -284,6 +285,7 @@ export const en = {
       "App Store Server Notifications V2 and Google Play Real-time Developer Notifications",
       "RevenueCat-shaped webhooks signed with HMAC-SHA256",
       "16 subscription charts, including MRR, churn and trial conversion",
+      "Price experiments on offerings, with results by variant",
       "MCP server, CLI and Claude skills",
     ],
   },

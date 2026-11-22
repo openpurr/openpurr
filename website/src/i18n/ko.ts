@@ -97,12 +97,8 @@ export const ko: Dict = {
       title: "쓰지 않는 부가 기능 없이, 구독 백엔드만",
       items: [
         {
-          title: "구매",
-          body: "StoreKit 2 거래와 Google Play 구매를 검증하고, SDK가 기대하는 CustomerInfo와 엔타이틀먼트를 반환합니다.",
-        },
-        {
-          title: "스토어 알림",
-          body: "App Store Server Notifications V2와 Google Play Real-time Developer Notifications를 수신해 갱신, 환불, 유예 기간을 항상 최신 상태로 유지합니다.",
+          title: "구매와 스토어 알림",
+          body: "StoreKit 2 거래와 Google Play 구매를 검증하고, SDK가 기대하는 CustomerInfo와 엔타이틀먼트를 반환하며, App Store와 Google Play 알림으로 갱신, 환불, 유예 기간을 항상 최신 상태로 유지합니다.",
         },
         {
           title: "웹훅",
@@ -111,6 +107,10 @@ export const ko: Dict = {
         {
           title: "차트",
           body: "16가지 차트: 매출, MRR과 ARR, MRR 및 구독 변동, 활성 구독과 유료 구독, 구독 상태, 이탈, 체험과 체험 전환, 신규 고객, 환불과 환불률, 일회성 구매. 앱, 스토어, 상품, 환경별로 필터링할 수 있으며 매출은 USD로 환산됩니다.",
+        },
+        {
+          title: "가격 실험",
+          body: "앱을 처음 쓰는 고객에게 서로 다른 오퍼링을 보여 주고, 전환율과 고객당 매출을 비교하세요. 각 변형이 대조군보다 나을 확률도 함께 확인할 수 있습니다. 앱 업데이트는 필요 없습니다.",
         },
         {
           title: "인증과 감사",
@@ -168,7 +168,7 @@ export const ko: Dict = {
     fit: {
       eyebrow: "솔직하게 말씀드리면",
       title: "아직은 맞지 않을 수도 있습니다",
-      lede: "페이월 빌더, A/B 실험, 서드파티 분석 연동, 지원 계약이 필요하다면 지금은 상용 플랫폼이 이를 제공합니다.",
+      lede: "페이월 빌더, 서드파티 분석 연동, 지원 계약이 필요하다면 지금은 상용 플랫폼이 이를 제공합니다.",
       outTitle: "현재 지원 범위 밖",
       tags: ["페이월", "광고 이벤트", "Customer Center", "가상 화폐", "웹 결제", "Amazon", "분석 연동"],
     },
@@ -186,6 +186,7 @@ export const ko: Dict = {
             "App Store와 Google Play",
             "웹훅, 대시보드, 관리 기능",
             "하나의 배포에서 여러 앱 운영",
+            "가격 실험",
             "MCP 서버, CLI, Claude 스킬",
             "다음 단계: 실기기 테스트, 그다음 1.0",
           ],
@@ -220,7 +221,7 @@ export const ko: Dict = {
       },
       {
         q: "openpurr는 RevenueCat과 무엇이 다른가요?",
-        a: "RevenueCat은 무료 구간을 넘으면 수익의 일부를 받는 호스팅형 상용 서비스입니다. openpurr는 직접 운영하는 소프트웨어입니다. 구매 기록, 엔타이틀먼트, 스토어 자격 증명은 내 데이터베이스에 저장되며, 수익 배분이나 거래당 수수료가 없습니다. 현재 기능은 페이월, 실험, 분석 연동 등 RevenueCat이 더 많습니다. openpurr는 핵심 구독 백엔드에 집중합니다.",
+        a: "RevenueCat은 무료 구간을 넘으면 수익의 일부를 받는 호스팅형 상용 서비스입니다. openpurr는 직접 운영하는 소프트웨어입니다. 구매 기록, 엔타이틀먼트, 스토어 자격 증명은 내 데이터베이스에 저장되며, 수익 배분이나 거래당 수수료가 없습니다. 현재 기능은 페이월, 분석 연동 등 RevenueCat이 더 많습니다. openpurr는 핵심 구독 백엔드에 집중합니다.",
       },
       {
         q: "RevenueCat에서 전환하려면 결제 코드를 다시 작성해야 하나요?",
@@ -249,7 +250,7 @@ export const ko: Dict = {
       },
       {
         q: "RevenueCat에는 있고 openpurr에는 없는 기능은 무엇인가요?",
-        a: "페이월, 서드파티 분석 연동, Customer Center, 가상 화폐, 웹 결제, Amazon, 광고 이벤트, 상용 지원 계약은 현재 지원 범위에 포함되지 않습니다. 가격 실험은 로드맵에 있습니다. 이런 기능이 지금 필요하다면 상용 플랫폼이 더 적합합니다.",
+        a: "페이월, 서드파티 분석 연동, Customer Center, 가상 화폐, 웹 결제, Amazon, 광고 이벤트, 상용 지원 계약은 현재 지원 범위에 포함되지 않습니다. 가격 실험은 기본으로 제공됩니다. 다른 기능이 지금 필요하다면 상용 플랫폼이 더 적합합니다.",
       },
       {
         q: "openpurr를 프로덕션에서 사용할 수 있나요?",
@@ -271,6 +272,7 @@ export const ko: Dict = {
       "App Store Server Notifications V2 및 Google Play Real-time Developer Notifications",
       "HMAC-SHA256으로 서명된 RevenueCat 형식의 웹훅",
       "MRR, 이탈, 체험 전환을 포함한 16가지 구독 차트",
+      "오퍼링 대상 가격 실험과 변형별 결과",
       "MCP 서버, CLI, Claude 스킬",
     ],
   },

@@ -115,7 +115,8 @@ export const migratePtBr: MigrateDict = {
       ["Atributos de clientes ($email, $displayName e os seus próprios)", "Sim, a partir de um Audience export"],
       ["Produtos, entitlements e offerings", "Você os recria, com os mesmos identificadores"],
       ["Histórico de gráficos anterior à troca", "Em parte: guarde os CSVs de gráficos do RevenueCat para os seus registros"],
-      ["Paywalls, experimentos, integrações, Customer Center", "Não: o openpurr não tem esses recursos"],
+      ["Experimentos", "Você os recria: o openpurr roda experimentos de preço nos seus offerings"],
+      ["Paywalls, integrações, Customer Center", "Não: o openpurr não tem esses recursos"],
     ] as [string, string][],
   },
   faq: {

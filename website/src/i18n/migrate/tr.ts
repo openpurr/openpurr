@@ -115,7 +115,8 @@ export const migrateTr: MigrateDict = {
       ["Müşteri öznitelikleri ($email, $displayName ve kendi öznitelikleriniz)", "Evet, bir Audience export'tan"],
       ["Ürünler, erişim hakları ve teklifler (offerings)", "Aynı tanımlayıcılarla siz yeniden oluşturursunuz"],
       ["Geçişten önceki grafik geçmişi", "Kısmen: kayıtlarınız için RevenueCat'in grafik CSV'lerini saklayın"],
-      ["Paywall'lar, deneyler, entegrasyonlar, Customer Center", "Hayır: openpurr'da bunlar yok"],
+      ["Deneyler", "Siz yeniden oluşturursunuz: openpurr tekliflerinizde (offerings) fiyat deneyleri çalıştırır"],
+      ["Paywall'lar, entegrasyonlar, Customer Center", "Hayır: openpurr'da bunlar yok"],
     ] as [string, string][],
   },
   faq: {
