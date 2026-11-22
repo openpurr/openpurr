@@ -137,6 +137,33 @@ jobs:
       - name: Test
         run: tofu test
 
+  infra-aws:
+    name: Infra AWS (OpenTofu fmt, validate, offline tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra/aws
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Format
+        run: tofu fmt -recursive -check
+
+      # No backend and no credentials: providers are downloaded, nothing in AWS is touched.
+      - name: Validate
+        run: tofu init -backend=false -input=false && tofu validate
+
+      # The AWS provider is mocked (tests/plan.tftest.hcl).
+      - name: Test
+        run: tofu test
+
   conformance-lite:
     name: Conformance suite against Lite
     runs-on: ubuntu-latest
