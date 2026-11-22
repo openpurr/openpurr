@@ -3,7 +3,7 @@
 import { get, post, withProject } from "../api.js";
 import { formatPeriod, formatValue, renderChart } from "../chart.js";
 import { h, replace } from "../dom.js";
-import { formatNumber, t, tk, tx } from "../i18n.js";
+import { formatNumber, localeTag, t, tk, tx } from "../i18n.js";
 import { IconRefresh } from "../icons.js";
 import { breadcrumb, busy, button, empty, errorCard, fmtDateTime, pageHeader, seg, select, table, toast, when } from "../ui.js";
 
@@ -119,6 +119,7 @@ function readFilters() {
     app: p.get("app") ?? "",
     store: p.get("store") ?? "",
     product: p.get("product") ?? "",
+    country: /^[a-z]{2}$/i.test(p.get("country") ?? "") ? p.get("country").toUpperCase() : "",
   };
 }
 
@@ -131,6 +132,7 @@ function filterQuery(f) {
   if (f.app) p.set("app", f.app);
   if (f.store) p.set("store", f.store);
   if (f.product) p.set("product", f.product);
+  if (f.country) p.set("country", f.country);
   return p.size ? `?${p}` : "";
 }
 
@@ -162,6 +164,7 @@ function apiQuery(f, from, to, interval = f.interval) {
   if (f.app) p.set("app", f.app);
   if (f.store) p.set("store", f.store);
   if (f.product) p.set("product", f.product);
+  if (f.country) p.set("country", f.country);
   return p;
 }
 
@@ -199,6 +202,14 @@ function filterBar(ctx, f, onChange, info, onRefresh) {
     s.addEventListener("change", () => set({ store: s.value }));
     controls.push(s);
   }
+  const countries = countryOptions(info);
+  if (countries.length) {
+    const s = select([{ value: "", label: t("All countries") }, ...countries], f.country);
+    s.classList.add("select-auto");
+    s.setAttribute("aria-label", t("Country"));
+    s.addEventListener("change", () => set({ country: s.value }));
+    controls.push(s);
+  }
   const env = select([{ value: "production", label: t("Production") }, { value: "sandbox", label: t("Sandbox") }], f.environment);
   env.classList.add("select-auto");
   env.setAttribute("aria-label", t("Environment"));
@@ -224,6 +235,30 @@ function filterBar(ctx, f, onChange, info, onRefresh) {
 function productsFor(ctx, app) {
   return [...new Set(ctx.apps.filter((a) => !app || a.id === app).flatMap((a) => a.products ?? []))].sort();
 }
+
+/**
+ * The country filter's choices, named in the current language: only Standard keeps totals per
+ * country and lists them (`countries`), so Lite has none and no filter.
+ */
+function countryOptions(info) {
+  const names = new Intl.DisplayNames([localeTag()], { type: "region" });
+  const name = (code) => {
+    try {
+      return names.of(code) ?? code;
+    } catch {
+      return code; // not a code Intl knows
+    }
+  };
+  return (info.countries ?? []).map((code) => ({ value: code, label: name(code) })).sort((a, b) => a.label.localeCompare(b.label, localeTag()));
+}
+
+/** The URL's country, if it's one with data here (never on Lite). */
+function keepCountry(f, info) {
+  if (!(info.countries ?? []).includes(f.country)) f.country = "";
+}
+
+// Notes only Standard's server sends (Lite's are in its chart catalog), listed for translation.
+tk("New customers aren't tied to an app, store, product or country, so this chart ignores those filters.");
 
 /** Makes sure the totals exist: the first view after setup (or demo data) builds them. */
 async function ensureTotals() {
@@ -319,6 +354,7 @@ function plotted(result) {
 export async function chartsPage(ctx) {
   const f = readFilters();
   const info = await ensureTotals();
+  keepCountry(f, info);
   const body = h("div", { class: "stack" });
   const page = h("div", null);
 
@@ -435,6 +471,7 @@ function labelOf(r, key) {
 export async function chartPage(ctx, id) {
   const f = readFilters();
   const info = await ensureTotals();
+  keepCountry(f, info);
   const known = info.charts.find((c) => c.id === id);
   if (!known) return h("div", { class: "card" }, empty({ title: t("No such chart"), text: t("Pick one from Charts.") }));
   const body = h("div", { class: "stack" });
