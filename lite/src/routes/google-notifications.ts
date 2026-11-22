@@ -149,7 +149,7 @@ googleNotifications.post("/", async (c) => {
       if (type === PLAY_SUB.REVOKED) row = { ...row, revoked_at: eventTime, revocation_reason: "revoked" };
       writes.push(upsertTransaction(db, row), upsertSubscriptionState(db, googleSubscriptionState(sub, token, eventTime)));
       replaces = sub.linkedPurchaseToken ?? null;
-      if (replaces) writes.push(markReplaced(db, replaces));
+      if (replaces) writes.push(...markReplaced(db, replaces));
       if (type === PLAY_SUB.PURCHASED && sub.acknowledgementState === "ACKNOWLEDGEMENT_STATE_PENDING") {
         ack = { kind: "subscription", productId: product.id, purchaseToken: token };
       }

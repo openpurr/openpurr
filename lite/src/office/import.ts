@@ -358,7 +358,7 @@ async function write(
   const firstOfChain = new Map(w.transactions.map((t) => [t.original_transaction_id, t]));
   for (const chain of w.assign ?? []) writes.push(assignOwner(db, firstOfChain.get(chain)!, customerId, w.now));
   for (const s of w.states) writes.push(upsertSubscriptionState(db, s, w.now));
-  if (w.replaces) writes.push(markReplaced(db, w.replaces));
+  if (w.replaces) writes.push(...markReplaced(db, w.replaces));
 
   for (const alias of w.aliases) {
     const holder = await findCustomer(db, project.id, alias);

@@ -196,7 +196,7 @@ sdk.post("/receipts", async (c) => {
   // Unsynced attributes ride along with receipts. Invalid ones are skipped: they must never
   // fail a purchase.
   const { updates } = parseAttributes(body.attributes);
-  const extra = result.replaces ? [markReplaced(c.env.DB, result.replaces)] : [];
+  const extra = result.replaces ? markReplaced(c.env.DB, result.replaces) : [];
   const customerId = await recordForCustomer(c, body.app_user_id, result.transactions, result.states, updates, extra);
   // Google Play: acknowledge after recording, so a failure here never loses the purchase.
   if (result.ack) {
