@@ -12,12 +12,14 @@
 //	CLIENT_IP_HEADER             header with the client IP set by your proxy (default: the connection)
 //	CLIENT_IP_HOPS               with X-Forwarded-For: the client is this many entries from the end (default 0: the first)
 //	IAP_AUDIENCE                 sign operators in through Google's Identity-Aware Proxy (optional)
+//	FORWARD_SECRET               trust requests a Lite deployment forwards while moving here (optional)
 //	LOG_LEVEL                    debug, info (default), warn or error
 //	LOG_FORMAT                   json, or gcp (Cloud Logging's severity and message; the default on Cloud Run)
 //	SHUTDOWN_TIMEOUT_SECONDS     how long SIGTERM waits for work in progress (default 25; 8 on Cloud Run)
 //
 // `openpurr admin ...` manages operators straight in the database (create, login-link, list,
 // require-totp); see admin.go. `openpurr setup gcp` writes the variables for infra/gcp; see setup.go.
+// `openpurr migrate import` loads an export bundle (moving from Lite); see migrate.go.
 //
 // Conformance mode, for the test suite in spec/ only:
 //
@@ -75,6 +77,9 @@ func shutdownTimeout(onCloudRun bool) (time.Duration, error) {
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "admin" {
 		os.Exit(runAdmin(os.Args[2:], os.Stdout, os.Stderr))
+	}
+	if len(os.Args) > 1 && os.Args[1] == "migrate" {
+		os.Exit(runMigrate(os.Args[2:], os.Stdout, os.Stderr))
 	}
 	if len(os.Args) > 1 && os.Args[1] == "setup" {
 		os.Exit(runSetup(os.Args[2:], os.Stdin, os.Stdout, os.Stderr))
@@ -188,6 +193,9 @@ func run(log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	if v := os.Getenv("FORWARD_SECRET"); v != "" && len(v) < 32 {
+		return errors.New("FORWARD_SECRET must be at least 32 random characters")
+	}
 	operatorSecret := os.Getenv("OPERATOR_SECRET")
 	if operatorSecret != "" && len(operatorSecret) < 32 {
 		return errors.New("OPERATOR_SECRET must be at least 32 random characters")
@@ -290,6 +298,7 @@ func run(log *slog.Logger) error {
 		Secret:         os.LookupEnv,
 		ClientIPHeader: os.Getenv("CLIENT_IP_HEADER"),
 		ClientIPHops:   clientIPHops,
+		ForwardSecret:  os.Getenv("FORWARD_SECRET"),
 		Conformance:    conformance,
 	}
 
