@@ -81,6 +81,11 @@ describe("push authentication", () => {
   it("acknowledges malformed messages (so Pub/Sub stops retrying) and answers 5xx for an unknown package", async () => {
     const g = google();
     expect((await g.notify({}, { rawData: "%%%not base64%%%" })).status).toBe(200);
+    // JSON, but not a notification: null, not an object, or no package name.
+    for (const data of ["null", "42", '"text"', "[]", '{"testNotification":{}}']) {
+      const res = await g.notify({}, { rawData: btoa(data) });
+      expect([data, res.status, await res.json()]).toEqual([data, 200, { message: "Ignored: malformed message." }]);
+    }
     expect((await g.notify({ packageName: "com.unknown.app", testNotification: {} })).status).toBe(500);
   });
 });
