@@ -10,7 +10,7 @@ import { changeProblems, ConfigConflict, currentVersion, getVersion, listVersion
 import type { AppEnv } from "../env";
 import { findCustomer, loadCustomer } from "../ledger";
 import { hashKey, SCOPES as SECRET_KEY_SCOPES } from "../secret-keys";
-import { CHARTS, chartCsv, dayOf, type Interval, lastRollupAt, readChart, rollupInfo, rollupMetrics } from "../metrics";
+import { CHARTS, chartCsv, dayOf, type Interval, lastRollupAt, parseDay, readChart, rollupInfo, rollupMetrics } from "../metrics";
 import { readCustomerInfo } from "../snapshot";
 import { type CustomerExperiment, customerExperimentsQuery, type ExperimentRow, forgetRunning, MAX_VARIANTS, type Variant, VARIANT_IDS, variantsOf } from "../experiments";
 import { experimentResults, publicExperiment } from "./experiments";
@@ -706,7 +706,6 @@ admin.get("/experiments/:id/results", requirePermission("read"), async (c) => {
 
 // --- charts --------------------------------------------------------------------------------------
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
 const MAX_CHART_DAYS = 3660;
 const REFRESH_EVERY_MS = 60_000;
 
@@ -721,11 +720,11 @@ admin.get("/metrics/:chart", requirePermission("read"), async (c) => {
   const principal = p(c);
   const today = dayOf(Date.now());
   const to = c.req.query("to") ?? today;
-  const from = c.req.query("from") ?? dayOf(Date.parse(`${to}T00:00:00Z`) - 89 * 864e5);
-  if (!DATE.test(from) || !DATE.test(to) || Number.isNaN(Date.parse(from)) || Number.isNaN(Date.parse(to)) || from > to) {
-    return bad(c, "from and to must be dates (YYYY-MM-DD), with from on or before to.");
-  }
-  if ((Date.parse(to) - Date.parse(from)) / 864e5 > MAX_CHART_DAYS) return bad(c, `A chart can cover at most ${MAX_CHART_DAYS} days.`);
+  const toMs = parseDay(to);
+  const from = c.req.query("from") ?? (Number.isNaN(toMs) ? "" : dayOf(toMs - 89 * 864e5));
+  const fromMs = parseDay(from);
+  if (Number.isNaN(fromMs) || Number.isNaN(toMs) || from > to) return bad(c, "from and to must be dates (YYYY-MM-DD), with from on or before to.");
+  if ((toMs - fromMs) / 864e5 > MAX_CHART_DAYS) return bad(c, `A chart can cover at most ${MAX_CHART_DAYS} days.`);
   const interval = (c.req.query("interval") ?? "day") as Interval;
   if (!["day", "week", "month"].includes(interval)) return bad(c, "interval must be day, week or month.");
   const environment = c.req.query("environment") ?? "production";

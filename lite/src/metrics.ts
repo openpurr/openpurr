@@ -39,6 +39,12 @@ const STATUS_RECENT_DAYS = 30;
 export const dayOf = (ms: number) => new Date(ms).toISOString().slice(0, 10);
 const startOfDay = (ms: number) => Math.floor(ms / DAY) * DAY;
 
+/** A YYYY-MM-DD date as epoch ms (UTC midnight), or NaN: also for days that don't exist, which Date.parse rolls over (Feb 31 is Mar 3). */
+export function parseDay(date: string) {
+  const ms = /^\d{4}-\d{2}-\d{2}$/.test(date) ? Date.parse(`${date}T00:00:00Z`) : NaN;
+  return !Number.isNaN(ms) && dayOf(ms) === date ? ms : NaN;
+}
+
 /** Stored as daily changes and added up by the chart. */
 export const RUNNING_METRICS = ["active_subs", "active_trials", "paid_subs", "mrr"] as const;
 /** Movements, from the same segments; stored as the day's amount. */
