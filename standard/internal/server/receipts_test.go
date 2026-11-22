@@ -120,6 +120,14 @@ func TestAppStorePurchases(t *testing.T) {
 		}
 	})
 
+	t.Run("rejects a signature that isn't base64url with a 4xx, so the SDK stops retrying", func(t *testing.T) {
+		parts := splitJWS(tu.SignJWS(tu.Transaction(env.Clock.Now(), nil)))
+		res := receipt(env, "u-garbage", parts[0]+"."+parts[1]+".%%%")
+		if res.Status != 400 || prop(res.JSON(t), "code") != 7103.0 || prop(res.JSON(t), "message") != "Invalid transaction: malformed JWS signature" {
+			t.Fatalf("%d %s", res.Status, res.Body)
+		}
+	})
+
 	t.Run("rejects a forged transaction with a 4xx (nothing to retry)", func(t *testing.T) {
 		jws := tu.SignJWS(tu.Transaction(env.Clock.Now(), nil))
 		parts := splitJWS(jws)

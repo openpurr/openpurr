@@ -62,7 +62,8 @@ func TestNotificationDelivery(t *testing.T) {
 	t.Run("rejects a bad signature or body with 400", func(t *testing.T) {
 		signed, _ := tu.SignNotification(env.Clock.Now(), tu.NotificationSpec{Type: "TEST"})
 		parts := splitJWS(signed)
-		for _, bad := range []string{parts[0] + "." + parts[1] + ".AAAA", "not-a-jws"} {
+		// A signature that isn't base64url is invalid too, not a server error Apple would retry.
+		for _, bad := range []string{parts[0] + "." + parts[1] + ".AAAA", "not-a-jws", parts[0] + "." + parts[1] + ".%%%"} {
 			if res := env.PostNotification(bad); res.Status != 400 {
 				t.Errorf("%d %s", res.Status, res.Body)
 			}
