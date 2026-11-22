@@ -5,9 +5,10 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S3 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
-App Store purchases and notifications, and Google Play purchases and notifications. It isn't ready for production use yet (see "Not
-implemented yet").
+This is milestones S1 to S4 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+App Store purchases and notifications, Google Play purchases and notifications, and webhook
+delivery with the background jobs. It isn't ready for production use yet (see "Not implemented
+yet").
 
 ## Build and run
 
@@ -29,8 +30,10 @@ The server applies its migrations at startup (several replicas can start at once
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
 database has none, and serves the SDK API on `/v1`, App Store Server Notifications V2 on
 `POST /notifications/apple`, Google Play Real-time Developer Notifications on
-`POST /notifications/google` and a health check on `GET /healthz`. Logs are JSON on stdout.
-SIGTERM drains requests and stops.
+`POST /notifications/google` and a health check on `GET /healthz`, and runs the background jobs
+(see "Webhooks and background jobs"). Logs are JSON on stdout. SIGTERM stops taking requests, lets
+those in progress, the job in progress and deferred work (first webhook attempts, snapshot
+rebuilds) finish, and stops, within 25 seconds.
 
 | Variable | |
 |---|---|
@@ -100,6 +103,39 @@ As on Lite:
   answer 2xx when retrying can't help (malformed message, a token Google no longer knows), 401 for
   a bad push token, and 5xx when the config doesn't know the package or product.
 
+## Webhooks and background jobs
+
+As on Lite:
+
+- **Webhook events** are written with the change that causes them (see App Store), and the first
+  delivery attempt is made right after the transaction commits. RevenueCat's body and signature:
+  `X-RevenueCat-Webhook-Signature: t=<unix>,v1=<hex>`, HMAC-SHA256 over `<t>.<raw body>`, with
+  one `v1=` per key while the signing secret holds two (a rotation), recomputed on every attempt;
+  `Authorization` is the exact value of the secret `authorization_secret` names. A configured
+  secret that isn't set means no request, and the delivery says why. Each request has 15 seconds;
+  any 2xx is delivered. Failures are retried after 5, 10, 45, 120, 180, 360, 720, 1440 and 1440
+  minutes (about 72 hours), then the delivery is marked failed; an endpoint removed from the config
+  fails at once. At-least-once: consumers deduplicate on `event.id`. Several events from one change
+  reach an endpoint in the order they were written.
+- **Replay** (for the admin API, S5): `webhooks.Replay` queues an event's deliveries again with the
+  same body, then `DeliverNow` sends it; `webhooks.EventApp` and `webhooks.ListDeliveries` are the
+  lookups behind `/admin/v1/webhooks/...`.
+- **The job loop** runs in the server process. Every 5 minutes: `retry-webhooks` (due deliveries,
+  oldest first) and `backfill-snapshots` (CustomerInfo for customers without a current snapshot:
+  none, an older config, or a write whose rebuild didn't happen). Every hour:
+  `prune-notification-payloads` (raw payloads after 30 days), `prune-captures` (14 days),
+  `prune-inactive-customers` (customers with no purchase and no grant, first seen over 90 days ago,
+  with no new app user ID or attribute sync since), `prune-expired-apple-chains`, `prune-oauth`,
+  `refresh-exchange-rates` (90 days of the European Central Bank's rates on first run, then each
+  day's once published, checked from 15:00 UTC), `retry-play-acknowledgements` and
+  `poll-play-voided-purchases`. Slots are aligned to the clock (as a cron), and a job runs once per
+  slot across all replicas: it holds a Postgres advisory lock while it runs and records its slot
+  in `job_state`. A failing job is logged and tried again next slot; it doesn't stop the others.
+- **Several replicas** are safe: deliveries are claimed with `FOR UPDATE SKIP LOCKED` and a lease
+  (`webhook_delivery.claimed_until`), so a delivery is attempted by one server at a time and no
+  database connection waits on a slow endpoint. A server that stops mid-attempt leaves a lease
+  that runs out, and the retry job picks the delivery up.
+
 ## Tests
 
 ```sh
@@ -110,8 +146,8 @@ OPENPURR_TEST_DATABASE_URL=postgres://localhost/openpurr_test go test ./...
 Tests that need Postgres skip without `OPENPURR_TEST_DATABASE_URL`. Each one gets its own schema,
 so packages run in parallel against one database. The HTTP tests mirror Lite's `sdk`, `snapshot`,
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
-`apple-server-api` suites, and the App Store parts of `webhooks` (checked on the recorded events);
-`internal/applejws` mirrors `apple-jws`. The Google Play tests mirror `google-play`,
+`apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx` and
+the snapshot backfill; `internal/applejws` mirrors `apple-jws`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
 Developer API and push-token keys, `internal/testutil/google.go`). App Store payloads are signed
 with a certificate chain the tests generate (`internal/testutil/apple.go`), and a fake App Store
@@ -122,9 +158,10 @@ Server API stands in for Apple's.
 rendered bodies); `golden-apple.json` holds Lite's App Store transaction rows, subscription states,
 planned webhook events, event bodies and App Store Server API syncs; `golden-google.json` holds
 Lite's Google Play rows, subscription states, planned events, event bodies and purchase
-verifications. The tests check Standard matches them byte for byte. `golden.ts`,
-`golden-apple.ts` and `golden-google.ts` next to them say how to regenerate them after a change in
-Lite.
+verifications; `golden-webhooks.json` holds Lite's signature headers, the request each delivery
+attempt makes, what it records, the retry schedule, and its ECB rate parsing. The tests check
+Standard matches them byte for byte. The `.ts` file next to each says how to regenerate it after a
+change in Lite.
 
 The shared HTTP suite is in `../spec/conformance` (see its README); run it against a Standard
 server started in conformance mode.
@@ -140,20 +177,18 @@ set too) turns on:
 - outbound requests to the store, Google, ECB and Cloudflare hosts sent to
   `CONFORMANCE_STORE_BASE` instead;
 - `CONFORMANCE_APPLE_ROOT_B64` trusted instead of Apple Root CA G3;
-- no rate limits, no background job loop (the suite runs jobs with `/__conformance/jobs`),
-  config changes seen on the next request, and deferred work (snapshot rebuilds) finished before
-  a response completes, as in Lite's conformance Worker.
+- no rate limits, no background job loop (`/__conformance/jobs` runs every job at once, slot or
+  not, so deliveries made due by moving the clock are retried), config changes seen on the next
+  request, and deferred work (snapshot rebuilds, first webhook attempts) finished before a response
+  completes, as in Lite's conformance Worker.
 
 ## Not implemented yet
 
-- Webhook delivery (S4). Events and their pending deliveries are recorded exactly as Lite records
-  them, in the same transaction as the purchase, but nothing sends them yet: the first attempt
-  after the response, signing, retries and replay come with S4, as do the other periodic jobs
-  (FX rates, cleanup, snapshot backfill). Google Play's two jobs are registered and run hourly. USD prices use whatever is in `fx_rate`,
-  which nothing fills yet.
 - The back office (`/admin/v1`, operator sign-in, the dashboard, config editing) in S5. A
   conformance reset already creates the owner operator and access token in Lite's formats.
-- Charts and experiment results (S6), MCP and OAuth (S7), GCP packaging (S8), moving from Lite (S9).
+- Charts and experiment results (S6), with the hourly chart rollup, which goes last in the job list
+  (after the exchange rates); MCP and OAuth (S7), GCP packaging (S8), moving from Lite (S9).
+- Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
 
 ## Differences from Lite
@@ -200,3 +235,20 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   Lite says "The Worker secret ...".
 - **A failed acknowledgement's `last_error`** is "Error: " and the error's message; Lite stores
   `String(err)`, which names the JavaScript error class.
+- **Webhook delivery wording.** A missing secret is reported as "Secret WEBHOOK_AUTH isn't set"
+  (Lite: "Worker secret ..."). A failed request's `last_error` is Go's description of the error
+  ("dial tcp ...: connection refused") where Lite has the Workers runtime's; a timeout is "The
+  operation was aborted due to timeout" in both.
+- **Webhook ordering.** The first attempt sends events to one endpoint one after another, in the
+  order they were written (Lite starts them together, which in practice arrives in order).
+  Retries run together, as on Lite.
+- **Work per job run.** Lite's limits come from the free plan's subrequest and query budgets:
+  Standard retries due deliveries in batches of 20 until a batch comes back short (at most 500 per
+  run, Lite 20), and builds up to 200 snapshots per backfill run (Lite 8).
+- **Job slots.** Lite's cron runs every 5 minutes and its hourly tasks in the first 5 minutes of
+  each hour; Standard's loop checks every minute and runs each job once per 5-minute or hourly
+  slot, whichever replica gets to it.
+- **`webhook_delivery.claimed_until`** is a Standard-only column (migration 0003), the delivery
+  lease above.
+- **The inactive-customer cleanup** locks its candidates (`FOR UPDATE SKIP LOCKED`), so a customer
+  a request is writing to at that moment is left for the next run.
