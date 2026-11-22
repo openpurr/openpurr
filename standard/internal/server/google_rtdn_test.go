@@ -6,6 +6,7 @@ package server_test
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"strings"
 	"testing"
@@ -57,6 +58,7 @@ func TestGooglePushAuthentication(t *testing.T) {
 			"not base64url":  parts[0] + "." + parts[1] + ".%%%",
 			"not a JWT":      "abc",
 			"malformed JSON": "e30." + strings.TrimRight(parts[1], "=") + "x." + parts[2],
+			"null header":    "bnVsbA." + parts[1] + ".AAAA",
 		}
 		for name, token := range cases {
 			if res := env.PostGoogleNotification(test, tu.NotifyOptions{Token: token}); res.Status != 401 {
@@ -103,6 +105,13 @@ func TestGooglePushAuthentication(t *testing.T) {
 		raw := "%%%not base64%%%"
 		if res := env.PostGoogleNotification(jsobj.New(), tu.NotifyOptions{RawData: &raw}); res.Status != 200 || prop(res.JSON(t), "message") != "Ignored: malformed message." {
 			t.Errorf("%d %s", res.Status, res.Body)
+		}
+		// JSON, but not a notification: null, not an object, or no package name.
+		for _, data := range []string{"null", "42", `"text"`, "[]", `{"testNotification":{}}`} {
+			encoded := base64.StdEncoding.EncodeToString([]byte(data))
+			if res := env.PostGoogleNotification(jsobj.New(), tu.NotifyOptions{RawData: &encoded}); res.Status != 200 || prop(res.JSON(t), "message") != "Ignored: malformed message." {
+				t.Errorf("%s: %d %s", data, res.Status, res.Body)
+			}
 		}
 		res := env.PostGoogleNotification(jsobj.New("packageName", "com.unknown.app", "testNotification", jsobj.New()), tu.NotifyOptions{})
 		if res.Status != 500 || prop(res.JSON(t), "message") != "No app in the config has package com.unknown.app with Pub/Sub push configured." {
@@ -278,6 +287,26 @@ func TestGoogleSubscriptionNotifications(t *testing.T) {
 		}
 		if prop(playInfo(t, env, "rt-change-user"), "entitlements", "pro", "product_plan_identifier") != "annual" {
 			t.Error("not annual")
+		}
+	})
+
+	t.Run("a notification that links a token to another customer's invalidates that customer's snapshot", func(t *testing.T) {
+		env, fake := tu.StartGoogle(t, false)
+		now := env.Clock.Now()
+		fake.SetSub("rt-a", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00001"}))
+		fake.SetSub("rt-b", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00002"}))
+		env.PlayReceipt("rt-first", "rt-a", "pro", "monthly")
+		env.PlayReceipt("rt-second", "rt-b", "pro", "monthly")
+		if prop(playInfo(t, env, "rt-first"), "entitlements", "pro") == nil {
+			t.Fatal("no entitlement")
+		}
+		// Google now reports rt-b as replacing rt-a.
+		fake.SetSub("rt-b", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00002", LinkedPurchaseToken: "rt-a"}))
+		if res := env.PostGoogleNotification(subNotification("rt-b", 2), tu.NotifyOptions{}); res.Status != 200 {
+			t.Fatalf("%d %s", res.Status, res.Body)
+		}
+		if e := prop(playInfo(t, env, "rt-first"), "entitlements", "pro"); e != nil {
+			t.Errorf("the replaced subscription still grants access: %s", jsobj.Stringify(e))
 		}
 	})
 

@@ -189,9 +189,9 @@ func (k *Keys) Verify(ctx context.Context, token string, audiences []string) (an
 	if err1 != nil || err2 != nil || err3 != nil {
 		return nil, &IDTokenError{"Malformed JWT"}
 	}
-	if header == nil {
-		// Lite reads header.alg off null and fails with a TypeError.
-		return nil, errors.New("Google ID token header is null")
+	// Valid JSON, but nothing to read claims from.
+	if header == nil || claims == nil {
+		return nil, &IDTokenError{"Malformed JWT"}
 	}
 	alg, hasAlg := jsobj.Prop(header, "alg")
 	kid, _ := jsobj.Prop(header, "kid")
@@ -206,10 +206,6 @@ func (k *Keys) Verify(ctx context.Context, token string, audiences []string) (an
 	if rsa.VerifyPKCS1v15(key, crypto.SHA256, digest[:], signature) != nil {
 		return nil, &IDTokenError{"Bad token signature"}
 	}
-	if claims == nil {
-		return nil, errors.New("Google ID token claims are null")
-	}
-
 	now := float64(k.now() / 1000)
 	iss, hasIss := jsobj.Prop(claims, "iss")
 	if s, ok := iss.(string); !ok || !issuers[s] {

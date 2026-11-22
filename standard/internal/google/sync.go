@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/customerinfo"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
 )
@@ -160,22 +161,30 @@ func Acknowledge(ctx context.Context, db ledger.DB, client *Client, appID string
 		_, err := db.Exec(ctx, "DELETE FROM play_ack_pending WHERE purchase_token = $1", ack.PurchaseToken)
 		return err == nil, err
 	}
-	// String(err), as Lite stores it, cut to 500 characters.
-	message := []rune("Error: " + err.Error())
-	if len(message) > 500 {
-		message = message[:500]
-	}
 	_, dbErr := db.Exec(ctx,
 		`INSERT INTO play_ack_pending (purchase_token, app_id, product_id, kind, attempts, last_error, created_at)
 		 VALUES ($1, $2, $3, $4, 1, $5, $6)
 		 ON CONFLICT (purchase_token) DO UPDATE SET attempts = play_ack_pending.attempts + 1, last_error = excluded.last_error`,
-		ack.PurchaseToken, appID, ack.ProductID, ack.Kind, string(message), now)
+		ack.PurchaseToken, appID, ack.ProductID, ack.Kind, lastError(err), now)
 	return false, dbErr
 }
 
+// lastError is String(err), as Lite stores it in play_ack_pending.last_error, cut to 500
+// characters.
+func lastError(err error) string {
+	message := []rune("Error: " + err.Error())
+	if len(message) > 500 {
+		message = message[:500]
+	}
+	return string(message)
+}
+
 // MarkReplaced marks the chain a new purchase replaces as upgraded, so it stops granting
-// entitlements. The caller also invalidates the snapshot of whoever owns that chain.
+// entitlements, and invalidates the snapshot of whoever owns it (who may not be the new
+// purchase's owner).
 func MarkReplaced(ctx context.Context, db ledger.DB, replacedToken string) error {
-	_, err := db.Exec(ctx, "UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = $1", replacedToken)
-	return err
+	if _, err := db.Exec(ctx, "UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = $1", replacedToken); err != nil {
+		return err
+	}
+	return customerinfo.InvalidateOwner(ctx, db, "play_store", replacedToken)
 }

@@ -499,10 +499,6 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 			if err := google.MarkReplaced(ctx, tx, replaces); err != nil {
 				return err
 			}
-			// Lite leaves this to the owner's next write when someone else owns the replaced chain.
-			if err := customerinfo.InvalidateOwner(ctx, tx, "play_store", replaces); err != nil {
-				return err
-			}
 		}
 		for _, id := range affected {
 			if !isMerged(id) {

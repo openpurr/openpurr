@@ -168,4 +168,53 @@ func TestGooglePlayJobs(t *testing.T) {
 			t.Errorf("%d revoked", revoked)
 		}
 	})
+
+	t.Run("one app without a usable key doesn't stop the others", func(t *testing.T) {
+		// A second Play app, first in the config, whose service account secret isn't set.
+		raw := tu.GoogleConfig(false).(*jsobj.Object)
+		appsV, _ := raw.Get("apps")
+		apps := appsV.(*jsobj.Object)
+		androidV, _ := apps.Get("android")
+		broken := androidV.(*jsobj.Object).Clone()
+		broken.Set("package_name", "com.example.broken")
+		broken.Set("sdk_keys", []any{"goog_broken_0123456789"})
+		broken.Set("google_play_api", jsobj.New("service_account_secret", "NOT_SET"))
+		reordered := jsobj.New("broken", broken)
+		for _, k := range apps.Keys() {
+			v, _ := apps.Get(k)
+			reordered.Set(k, v)
+		}
+		raw.Set("apps", reordered)
+		fake := tu.NewFakeGoogle(t)
+		env := tu.Start(t, tu.Options{Config: raw, StoreBase: fake.Server.URL, Secrets: tu.GoogleSecrets()})
+		fake.Route("GET /purchases/voidedpurchases", func(*http.Request) (int, any) { return 200, jsobj.New() })
+		now := env.Clock.Now()
+		env.Exec(`INSERT INTO play_ack_pending (purchase_token, app_id, product_id, kind, attempts, created_at)
+			VALUES ('ack-broken', 'broken', 'pro', 'subscription', 1, $1), ('ack-ok', 'android', 'pro', 'subscription', 1, $2)`, now-2*tu.Day, now-tu.Day)
+
+		runJob(t, env, "retry-play-acknowledgements")
+		if fake.Requested("POST /purchases/subscriptions/pro/tokens/ack-ok:acknowledge") != 1 {
+			t.Errorf("%v", fake.Requests())
+		}
+		var token, lastError string
+		if err := env.Pool.QueryRow(context.Background(), "SELECT purchase_token, last_error FROM play_ack_pending").Scan(&token, &lastError); err != nil ||
+			token != "ack-broken" || !strings.Contains(lastError, "NOT_SET") {
+			t.Errorf("%s %q %v", token, lastError, err)
+		}
+
+		runJob(t, env, "poll-play-voided-purchases")
+		var keys []string
+		rows, err := env.Pool.Query(context.Background(), "SELECT key FROM job_state WHERE key LIKE 'play_voided_checkpoint:%' ORDER BY key")
+		if err != nil {
+			t.Fatal(err)
+		}
+		for rows.Next() {
+			var k string
+			_ = rows.Scan(&k)
+			keys = append(keys, k)
+		}
+		if strings.Join(keys, ",") != "play_voided_checkpoint:android" {
+			t.Errorf("%v", keys)
+		}
+	})
 }

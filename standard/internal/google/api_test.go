@@ -248,6 +248,9 @@ func TestVerifyIDToken(t *testing.T) {
 		{"a.b", "Not a JWT"},
 		{"%%%." + parts[1] + "." + parts[2], "Malformed JWT"},
 		{parts[0] + "." + parts[1] + ".%%%", "Malformed JWT"},
+		// Valid JSON, but null.
+		{base64.RawURLEncoding.EncodeToString([]byte("null")) + "." + parts[1] + "." + parts[2], "Malformed JWT"},
+		{parts[0] + "." + base64.RawURLEncoding.EncodeToString([]byte("null")) + "." + parts[2], "Malformed JWT"},
 		{parts[0] + "." + parts[1] + ".AAAA", "Bad token signature"},
 		{s.token(t, jsobj.New("alg", "HS256", "kid", "kid-1"), claimsAt(secs)), "Unexpected token algorithm HS256"},
 		{s.token(t, jsobj.New("alg", "RS256"), claimsAt(secs)), "Unexpected token algorithm RS256"},
@@ -305,13 +308,6 @@ func TestVerifyIDToken(t *testing.T) {
 	keys.Forget()
 	keyStatus = 503
 	if _, err := keys.Verify(ctx, good, auds); !IsIDTokenError(err) || err.Error() != "Couldn't fetch Google's signing keys (503)" {
-		t.Errorf("%v", err)
-	}
-
-	// A null header is a TypeError in Lite: a 500, not a 401.
-	keyStatus = 200
-	null := base64.RawURLEncoding.EncodeToString([]byte("null"))
-	if _, err := keys.Verify(ctx, null+"."+parts[1]+"."+parts[2], auds); err == nil || IsIDTokenError(err) {
 		t.Errorf("%v", err)
 	}
 }
