@@ -87,6 +87,9 @@ func New(d *Deps) http.Handler {
 		d.GoogleKeys = google.NewKeys(d.Clock.Now, d.HTTPClient)
 	}
 	s := &server{Deps: d}
+	if d.Jobs != nil {
+		s.registerJobs()
+	}
 	return s.logRequests(s.recoverPanics(http.HandlerFunc(s.route)))
 }
 
