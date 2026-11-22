@@ -79,6 +79,8 @@ Follow [Standard on Google Cloud](standard-on-gcp.md), with these differences:
 
 Leave App Store Connect and Google Play alone.
 
+On DigitalOcean, follow [Standard on DigitalOcean](standard-on-digitalocean.md) with the same differences: before the first apply, set `generate_operator_secret = false` and add `FORWARD_SECRET` to `secrets`, then fill `OPERATOR_SECRET` (Lite's) and `FORWARD_SECRET` in the control panel. For step 4, add your address to `db_trusted_ips` and use the cluster's connection string (`postgresql://doadmin:<password>@<host>:25060/openpurr?sslmode=require`) directly, without a proxy or `--network host`.
+
 ## 3. Export from Lite
 
 ```sh
