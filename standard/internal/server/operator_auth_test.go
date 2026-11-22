@@ -6,6 +6,7 @@ package server_test
 import (
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -226,6 +227,69 @@ func TestTwoStepSignIn(t *testing.T) {
 		again, _ := env.Login(op.Email, tu.Password, "code", c)
 		if code(t, again) != "invalid_code" {
 			t.Fatalf("%s", again.Body)
+		}
+	})
+
+	// wrongCode is a six-digit code valid at no step near now.
+	wrongCode := func(env *tu.Env, secret []byte) string {
+		step := env.Clock.Now() / 30_000
+		valid := map[string]bool{}
+		for s := step - 1; s <= step+2; s++ {
+			valid[authcrypto.TOTPCode(secret, s)] = true
+		}
+		for i := 0; ; i++ {
+			c := fmt.Sprintf("%06d", i)
+			if !valid[c] {
+				return c
+			}
+		}
+	}
+
+	t.Run("locks the account after 10 wrong codes, as after 10 wrong passwords", func(t *testing.T) {
+		env := tu.Start(t, tu.Options{})
+		op := env.CreateOperator(env.OwnerToken(), "owner", nil)
+		secret, _ := enrollTOTP(t, env, op.Session)
+		wrong := wrongCode(env, secret)
+		for i := 0; i < 10; i++ {
+			if res, _ := env.Login(op.Email, tu.Password, "code", wrong); code(t, res) != "invalid_code" {
+				t.Fatalf("%d: %s", i, res.Body)
+			}
+		}
+		env.Clock.Add(30_000)
+		locked, _ := env.Login(op.Email, tu.Password, "code", authcrypto.TOTPCode(secret, env.Clock.Now()/30_000))
+		if locked.Status != 429 || code(t, locked) != "locked" {
+			t.Fatalf("%d %s", locked.Status, locked.Body)
+		}
+		var details string
+		env.QueryRow("SELECT details FROM audit_log WHERE operator_id = $1 AND action = 'auth.login_failed' ORDER BY id DESC LIMIT 1", []any{op.ID}, &details)
+		if details != `{"reason":"totp","failures":10}` {
+			t.Fatalf("%s", details)
+		}
+		// It runs out after 15 minutes, as the password lockout does.
+		env.Clock.Add(15 * 60_000)
+		ok, _ := env.Login(op.Email, tu.Password, "code", authcrypto.TOTPCode(secret, env.Clock.Now()/30_000))
+		expectStatus(t, ok, 200)
+	})
+
+	t.Run("counts wrong passwords, codes and recovery codes together toward the lockout", func(t *testing.T) {
+		env := tu.Start(t, tu.Options{})
+		op := env.CreateOperator(env.OwnerToken(), "owner", nil)
+		secret, codes := enrollTOTP(t, env, op.Session)
+		wrong := wrongCode(env, secret)
+		for i := 0; i < 4; i++ {
+			env.Login(op.Email, "wrong password")
+		}
+		for i := 0; i < 3; i++ {
+			env.Login(op.Email, tu.Password, "code", wrong)
+		}
+		for i := 0; i < 3; i++ {
+			if res, _ := env.Login(op.Email, tu.Password, "recovery_code", fmt.Sprintf("zzzz-zzz%d", i)); code(t, res) != "invalid_code" {
+				t.Fatalf("%s", res.Body)
+			}
+		}
+		locked, _ := env.Login(op.Email, tu.Password, "recovery_code", codes[0])
+		if code(t, locked) != "locked" {
+			t.Fatalf("%d %s", locked.Status, locked.Body)
 		}
 	})
 
