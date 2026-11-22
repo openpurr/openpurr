@@ -371,6 +371,22 @@ describe("promotional grants", () => {
     expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", expires_at: "2001-01-01" } })).status).toBe(400);
   });
 
+  it("moves an anonymous user's grants to the account on logIn", async () => {
+    const anon = `$RCAnonymousID:${crypto.randomUUID().replaceAll("-", "")}`;
+    const account = `grant-account-${crypto.randomUUID()}`;
+    await postAppleTransaction(anon, { productId: "coins_100", type: "Consumable", expiresDate: undefined }); // makes the customer
+    await postAppleTransaction(account, { productId: "coins_100", type: "Consumable", expiresDate: undefined });
+    const dev = await operator("developer");
+    const created = await api("POST", `/customers/${encodeURIComponent(anon)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", duration: "weekly" } });
+    expect(created.status).toBe(201);
+
+    const res = await call("/v1/subscribers/identify", { body: { app_user_id: anon, new_app_user_id: account } });
+    expect(res.status).toBe(200);
+    expect((await res.json<any>()).subscriber.entitlements.pro.product_identifier).toBe("rc_promo_pro_weekly");
+    const detail = await api("GET", `/customers/${encodeURIComponent(account)}`, { session: dev.session });
+    expect(detail.body.grants.map((g: any) => g.id)).toEqual([created.body.grant.id]);
+  });
+
   it("keeps customers with grants out of the inactive-customer cleanup", async () => {
     const id = crypto.randomUUID();
     const old = Date.now() - 400 * 864e5;

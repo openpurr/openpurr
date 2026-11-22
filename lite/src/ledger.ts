@@ -200,7 +200,7 @@ export function addAlias(db: D1Database, projectId: string, appUserId: string, c
 }
 
 /**
- * Folds one customer into another: every alias and every owned purchase moves to `into`.
+ * Folds one customer into another: every alias, owned purchase and promotional grant moves to `into`.
  * Used when an anonymous user logs in to an existing account, or restores a purchase that an
  * anonymous user owns.
  */
@@ -208,6 +208,7 @@ export function mergeCustomers(db: D1Database, from: string, into: string) {
   return [
     db.prepare("UPDATE customer_alias SET customer_id = ? WHERE customer_id = ?").bind(into, from),
     db.prepare("UPDATE purchase_owner SET customer_id = ? WHERE customer_id = ?").bind(into, from),
+    db.prepare("UPDATE promotional_grant SET customer_id = ? WHERE customer_id = ?").bind(into, from),
     // Attributes merge too; for a key both have, the more recently set value wins.
     db
       .prepare(
