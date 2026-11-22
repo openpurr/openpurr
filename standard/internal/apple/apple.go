@@ -158,7 +158,7 @@ func TransactionRow(tx any, app *config.App, product *config.Product) (ledger.Ne
 	t.Currency = optStr(tx, "currency")
 	t.Storefront = optStr(tx, "storefront")
 	t.RevokedAt = optMs(tx, "revocationDate")
-	if r, defined := get(tx, "revocationReason"); defined {
+	if r, ok := present(tx, "revocationReason"); ok { // absent or JSON null: NULL
 		s := jsobj.String(r, true)
 		t.RevocationReason = &s
 	}

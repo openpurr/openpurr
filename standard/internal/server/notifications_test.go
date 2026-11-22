@@ -277,6 +277,26 @@ func TestRefundsRevocationsAndUpgrades(t *testing.T) {
 		}
 	})
 
+	t.Run("stores a revocationReason of null as NULL, and a number as its digits", func(t *testing.T) {
+		reasonOf := func(transactionID string) *string {
+			var reason *string
+			if err := env.Pool.QueryRow(context.Background(), "SELECT revocation_reason FROM store_transaction WHERE transaction_id = $1", transactionID).Scan(&reason); err != nil {
+				t.Fatal(err)
+			}
+			return reason
+		}
+		a := subscribed(env, "n-reason-null", nil)
+		notify(env, tu.NotificationSpec{Type: "REFUND", Transaction: tu.Copy(a, tu.Fields{"revocationDate": now - 1000, "revocationReason": tu.Null}), Status: tu.Status(apple.StatusRevoked)})
+		if r := reasonOf(str(a, "transactionId")); r != nil {
+			t.Errorf("null stored as %q", *r)
+		}
+		b := subscribed(env, "n-reason-1", nil)
+		notify(env, tu.NotificationSpec{Type: "REFUND", Transaction: tu.Copy(b, tu.Fields{"revocationDate": now - 1000, "revocationReason": 1.0}), Status: tu.Status(apple.StatusRevoked)})
+		if r := reasonOf(str(b, "transactionId")); r == nil || *r != "1" {
+			t.Errorf("1 stored as %v", r)
+		}
+	})
+
 	t.Run("REVOKE (family sharing ended) removes a one-time purchase", func(t *testing.T) {
 		tx := subscribed(env, "n-revoke", tu.Fields{"productId": "lifetime", "type": "Non-Consumable", "expiresDate": nil, "inAppOwnershipType": "FAMILY_SHARED"})
 		if prop(subscriberOf(env, "n-revoke"), "entitlements", "pro", "product_identifier") != "lifetime" {
