@@ -49,3 +49,45 @@ jobs:
       # outdated strings are reported (see lite/scripts/office-strings.mjs).
       - name: Dashboard translations
         run: node lite/scripts/office-strings.mjs
+
+  standard:
+    name: Standard (vet, tests on Postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: standard
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: openpurr_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      OPENPURR_TEST_DATABASE_URL: postgres://postgres:postgres@localhost:5432/openpurr_test?sslmode=disable
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: standard/go.mod
+          cache-dependency-path: standard/go.sum
+
+      - name: Vet
+        run: go vet ./...
+
+      # Each test runs in its own Postgres schema, so packages can run in parallel.
+      - name: Test
+        run: go test -race ./...
+
+      - name: Build
+        run: CGO_ENABLED=0 go build -o /dev/null ./cmd/openpurr
