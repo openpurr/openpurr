@@ -72,6 +72,7 @@ describe("push authentication", () => {
     const good = await signer.token();
     const [h, p] = good.split(".");
     expect((await g.notify(test, { token: `${h}.${p}.AAAA` })).status).toBe(401);
+    expect((await g.notify(test, { token: `${h}.${p}.%%%` })).status).toBe(401);
     expect(PUSH_ACCOUNT).toMatch(/@/);
   });
 

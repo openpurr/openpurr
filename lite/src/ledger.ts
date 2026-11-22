@@ -138,7 +138,7 @@ export async function loadCustomer(db: D1Database, projectId: string, appUserId:
 /** Like loadCustomer, by internal customer ID (for rebuilding snapshots). One D1 round trip. */
 export async function loadCustomerById(db: D1Database, customerId: string) {
   const [customer, transactions, states, grants] = await db.batch([
-    db.prepare("SELECT id, project_id, app_user_id, first_seen FROM customer WHERE id = ?").bind(customerId),
+    db.prepare("SELECT id, project_id, app_user_id, first_seen, ledger_version FROM customer WHERE id = ?").bind(customerId),
     db
       .prepare(
         `SELECT ${TX_COLUMNS} FROM purchase_owner o
@@ -157,9 +157,11 @@ export async function loadCustomerById(db: D1Database, customerId: string) {
       .bind(customerId),
     db.prepare(`SELECT ${GRANT_COLUMNS} FROM promotional_grant g WHERE g.customer_id = ? ORDER BY g.created_at`).bind(customerId),
   ]);
-  const row = customer!.results[0] as CustomerRecord | undefined;
+  const row = customer!.results[0] as (CustomerRecord & { ledger_version: number }) | undefined;
   return {
     customer: row ? toCustomer(row) : null,
+    /** Read in the same batch as the ledger (snapshot.ts saves only if it's still current). */
+    ledgerVersion: row?.ledger_version ?? 0,
     transactions: transactions!.results as unknown as TransactionRow[],
     states: states!.results as unknown as SubscriptionStateRow[],
     grants: grants!.results as unknown as GrantRow[],
@@ -220,7 +222,8 @@ export function mergeCustomers(db: D1Database, from: string, into: string) {
       )
       .bind(into, from),
     db.prepare("DELETE FROM subscriber_attribute WHERE customer_id = ?").bind(from),
-    db.prepare("DELETE FROM customer_snapshot WHERE customer_id IN (?, ?)").bind(from, into),
+    db.prepare("DELETE FROM customer_snapshot WHERE customer_id = ?").bind(from),
+    db.prepare("UPDATE customer SET ledger_version = ledger_version + 1 WHERE id = ?").bind(into),
     db.prepare("DELETE FROM customer WHERE id = ?").bind(from),
   ];
 }

@@ -114,7 +114,7 @@ function snapshotBackfill(config: Config): Task {
     // Each customer's snapshot must match their own project's config version.
     const versions = JSON.stringify(Object.fromEntries([...config.projects].map(([id, p]) => [id, p.version])));
     const { results } = await env.DB.prepare(
-      `SELECT c.id FROM customer c LEFT JOIN customer_snapshot s ON s.customer_id = c.id
+      `SELECT c.id FROM customer c LEFT JOIN customer_snapshot s ON s.customer_id = c.id AND s.ledger_version = c.ledger_version
        WHERE c.project_id IN (SELECT key FROM json_each(?1))
          AND (s.customer_id IS NULL OR s.config_version IS NOT (SELECT value FROM json_each(?1) WHERE key = c.project_id))
        LIMIT ${SNAPSHOTS_PER_RUN}`,

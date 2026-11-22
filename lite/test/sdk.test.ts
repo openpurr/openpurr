@@ -165,6 +165,14 @@ describe("App Store purchases", () => {
     expect(await env.DB.prepare("SELECT 1 FROM customer_alias WHERE app_user_id = 'u-forge'").first()).toBeNull();
   });
 
+  it("rejects a signature that isn't base64url with a 4xx, so the SDK stops retrying", async () => {
+    const { jws } = await signTransaction();
+    const [h, p] = jws.split(".");
+    const res = await call("/v1/receipts", { body: { app_user_id: "u-garbage", fetch_token: `${h}.${p}.%%%` } });
+    expect(res.status).toBe(400);
+    expect(await res.json()).toMatchObject({ code: 7103 });
+  });
+
   it("keeps the purchase queued (5xx) when the product or bundle doesn't match the config", async () => {
     const unknown = await postAppleTransaction("u-cfg", { productId: "not_configured" });
     expect(unknown.res.status).toBe(500);

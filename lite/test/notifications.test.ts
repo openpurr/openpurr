@@ -34,6 +34,9 @@ describe("delivery", () => {
     const [h, p] = signedPayload.split(".");
     expect((await postNotification(`${h}.${p}.AAAA`)).status).toBe(400);
     expect((await postNotification("not-a-jws")).status).toBe(400);
+    // Not base64url at all: still an invalid signature, not a server error Apple would retry.
+    expect((await postNotification(`${h}.${p}.%%%`)).status).toBe(400);
+    expect((await postNotification(`%%%.${p}.AAAA`)).status).toBe(400);
   });
 
   it("rejects a forged transaction inside a validly signed notification", async () => {
@@ -214,6 +217,19 @@ describe("refunds, revocations and upgrades", () => {
     const info = await customerInfo("n-refund");
     expect(info.subscriptions.pro_monthly).toMatchObject({ refunded_at: iso(revoked), expires_date: iso(revoked) });
     expect(info.entitlements.pro.expires_date).toBe(iso(revoked));
+  });
+
+  it("stores a revocationReason of null as NULL, and a number as its digits", async () => {
+    const reasonOf = async (transactionId: string) =>
+      (await env.DB.prepare("SELECT revocation_reason FROM store_transaction WHERE transaction_id = ?").bind(transactionId).first())?.revocation_reason;
+    const a = await subscribed("n-reason-null");
+    const nulled = (await signTransaction({ ...a, revocationDate: Date.now() - 1000, revocationReason: null })).payload;
+    await postNotification((await signNotification({ type: "REFUND", transaction: nulled, status: APPLE_STATUS.REVOKED })).signedPayload);
+    expect(await reasonOf(a.transactionId)).toBeNull();
+    const b = await subscribed("n-reason-1");
+    const numbered = (await signTransaction({ ...b, revocationDate: Date.now() - 1000, revocationReason: 1 })).payload;
+    await postNotification((await signNotification({ type: "REFUND", transaction: numbered, status: APPLE_STATUS.REVOKED })).signedPayload);
+    expect(await reasonOf(b.transactionId)).toBe("1");
   });
 
   it("REVOKE (family sharing ended) removes a one-time purchase", async () => {
