@@ -60,7 +60,7 @@ func TestScheduledJobs(t *testing.T) {
 		}
 		want := []string{"retry-webhooks/5m0s", "backfill-snapshots/5m0s", "prune-notification-payloads/1h0m0s", "prune-captures/1h0m0s",
 			"prune-inactive-customers/1h0m0s", "prune-expired-apple-chains/1h0m0s", "prune-oauth/1h0m0s", "refresh-exchange-rates/1h0m0s",
-			"retry-play-acknowledgements/1h0m0s", "poll-play-voided-purchases/1h0m0s"}
+			"retry-play-acknowledgements/1h0m0s", "poll-play-voided-purchases/1h0m0s", "rollup-metrics/1h0m0s"}
 		if !slices.Equal(got, want) {
 			t.Errorf("%v", got)
 		}

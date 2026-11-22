@@ -2,9 +2,9 @@ package server
 
 // The periodic jobs, in the order lite/src/scheduled.ts runs them: every 5 minutes, webhook
 // retries and the snapshot backfill; every hour, storage cleanup, exchange rates, Google Play's
-// acknowledgement retries and voided-purchases polling. Lite's free-plan usage check (Cloudflare
-// analytics) has no Standard counterpart. The chart rollup, which Lite runs last each hour after
-// the exchange rates, is registered here with the charts (S6).
+// acknowledgement retries and voided-purchases polling, and last the chart rollup (after the
+// exchange rates it converts with). Lite's free-plan usage check (Cloudflare analytics) has no
+// Standard counterpart.
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 
 	"github.com/openpurr/openpurr/standard/internal/fx"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
+	"github.com/openpurr/openpurr/standard/internal/metrics"
 	"github.com/openpurr/openpurr/standard/internal/scheduled"
 	"github.com/openpurr/openpurr/standard/internal/webhooks"
 )
@@ -66,4 +67,11 @@ func (s *server) registerJobs() {
 		return int64(n), err
 	})
 	s.registerGoogleJobs()
+	hourly("rollup-metrics", func(ctx context.Context, now int64) (int64, error) {
+		r, err := metrics.Rollup(ctx, s.Pool, now, false)
+		if err != nil {
+			return 0, err
+		}
+		return r.Rows, nil
+	})
 }
