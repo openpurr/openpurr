@@ -7,7 +7,8 @@ package server
 // Two ways in:
 //   - the dashboard session cookie (full and recovery sessions, not setup; changes must be
 //     same-origin, see office_auth.go);
-//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and (from S7) MCP.
+//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and MCP (which also takes
+//     OAuth access tokens, oauth.go).
 //
 // Permission = the operator's ROLE, further limited by the token's SCOPES when a token is used:
 //
@@ -390,6 +391,17 @@ type adminReq struct {
 
 	bodyRead bool
 	body     any
+
+	// src overrides how writes are audited ("mcp" for the MCP server's tools).
+	src string
+}
+
+// source is how this request's writes are audited.
+func (q *adminReq) source() string {
+	if q.src != "" {
+		return q.src
+	}
+	return q.p.source()
 }
 
 // bodyValue is Lite's `(await c.req.json().catch(() => null)) ?? {}`.
@@ -458,7 +470,7 @@ func (q *adminReq) audit(db ledger.DB, action string, target *string, details *j
 	p := q.p
 	id, email := p.op.ID, p.op.Email
 	return writeAudit(q.ctx, db, q.now, auditEntry{
-		operatorID: &id, actor: &email, tokenID: p.tokenID, source: p.source(),
+		operatorID: &id, actor: &email, tokenID: p.tokenID, source: q.source(),
 		action: action, target: target, details: details, ip: q.ip(),
 	})
 }

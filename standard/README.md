@@ -5,10 +5,10 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S6 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+This is milestones S1 to S7 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
 App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
-with the background jobs, the back office (operator sign-in, the admin API and the dashboard), and
-charts.
+with the background jobs, the back office (operator sign-in, the admin API and the dashboard),
+charts, and the MCP server with its OAuth authorization server.
 It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
@@ -34,8 +34,9 @@ The server applies its migrations at startup (several replicas can start at once
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
 database has none, and serves the SDK API on `/v1`, App Store Server Notifications V2 on
 `POST /notifications/apple`, Google Play Real-time Developer Notifications on
-`POST /notifications/google`, the admin API on `/admin/v1`, the dashboard under `/admin` and a
-health check on `GET /healthz`, and runs the background jobs
+`POST /notifications/google`, the admin API on `/admin/v1`, the dashboard under `/admin`, the MCP
+server on `/mcp` with its OAuth endpoints (`/.well-known/oauth-*`, `/oauth/*`) and a health check
+on `GET /healthz`, and runs the background jobs
 (see "Webhooks and background jobs"). Logs are JSON on stdout. SIGTERM stops taking requests, lets
 those in progress, the job in progress and deferred work (first webhook attempts, snapshot
 rebuilds) finish, and stops, within 25 seconds.
@@ -46,7 +47,7 @@ rebuilds) finish, and stops, within 25 seconds.
 | `PORT` | Port to listen on (default 8080). |
 | `OPENPURR_CONFIG` | An `openpurr.config.yaml` (Lite's format, version 1 or 2) imported on first start. A file with mistakes stops the server with a message saying what's wrong. After the first start the database is the source of truth. |
 | `OPERATOR_SECRET` | At least 32 random characters: the back office derives the password pepper and the key that encrypts authenticator secrets from it, as Lite does, so use Lite's value when moving from Lite. Without it, sign-in answers 503 (access tokens still work). Changing it invalidates every password and authenticator; reset them with `openpurr admin login-link`. |
-| `PUBLIC_URL` | The server's public origin (`https://purchases.example.com`). Optional: setup links and the dashboard's same-origin check use it, else each request's host and scheme (`X-Forwarded-Proto` behind a proxy that ends TLS). |
+| `PUBLIC_URL` | The server's public origin (`https://purchases.example.com`). Optional: setup links, the dashboard's same-origin check, the MCP server's Origin check and the OAuth issuer and resource (`<PUBLIC_URL>/mcp`) use it, else each request's host and scheme (`X-Forwarded-Proto` behind a proxy that ends TLS). Set it behind a proxy, so OAuth tokens are issued for the address clients use. |
 | `RATE_LIMIT_IP_PER_MINUTE` | SDK requests per client IP per minute (default 300, 0 = off). |
 | `RATE_LIMIT_USER_PER_MINUTE` | SDK requests per app user per minute (default 60, 0 = off). |
 | `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `X-Forwarded-For` or `CF-Connecting-IP`). Without it, the connection's address is used. Only set it behind a proxy that overwrites the header. |
@@ -166,7 +167,8 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   `openpurr import` sends them), price experiments and their results, webhook deliveries and
   replay, the audit log (every write: who, which token, from where), the versioned config
   (validate, save with a base version, history, restore), settings and the setup checks
-  (`/doctor`), and charts (`/metrics`, see below). The MCP consent routes answer 501 until S7.
+  (`/doctor`), charts (`/metrics`, see below), and the OAuth consent screen and connected apps
+  (`/oauth/requests/{id}`, `/oauth/grants`, see MCP and OAuth).
 - **The dashboard** is `lite/office-ui`, unchanged, embedded at build time. Its files get the
   headers of its own `_headers` file (a strict Content-Security-Policy, no framing), and any other
   page under `/admin` gets `index.html`, as Cloudflare's single-page-application mode does.
@@ -226,6 +228,42 @@ As on Lite (`lite/src/metrics.ts`), in `internal/metrics`:
   month about 80 ms (40 ms with a country filter). Both tables compare text byte by byte
   (`COLLATE "C"`), as SQLite does, which is also faster than a locale's collation.
 
+## MCP and OAuth
+
+As on Lite (`lite/src/office/mcp.ts` and `oauth.ts`), in `internal/server/mcp.go` and `oauth.go`:
+
+- **The MCP server** at `POST /mcp`: hand-written JSON-RPC over MCP Streamable HTTP, stateless,
+  one JSON response per request (protocol versions 2025-11-25, 2025-06-18 and 2025-03-26). GET and
+  DELETE answer 405, notifications 202; a browser `Origin` other than this server's is refused, as
+  is an unknown `MCP-Protocol-Version`. The same 13 tools as Lite (`lookup_customer`,
+  `search_customers`, `explain_entitlement`, `get_metrics`, `get_experiments`, `get_config`,
+  `save_config`, `list_webhook_deliveries`, `replay_webhook`, `grant_entitlement`, `revoke_grant`,
+  `check_setup`, `get_audit_log`) with the same definitions, order, text and structured results.
+  `tools/list` lists only what the caller may use; every tool is limited by the operator's role,
+  the token's scopes and the apps they may see; changes are audited with source `mcp` and the
+  token; tool calls count against `RATE_LIMIT_USER_PER_MINUTE` per token.
+- **Who may call it:** a personal access token (`pat_...`), or an OAuth access token (`oat_...`)
+  issued for this server's `/mcp`. Without either, 401 with `WWW-Authenticate` pointing at the
+  protected-resource metadata, which is how Claude.ai and other MCP clients start signing in.
+  OAuth tokens work only at `/mcp` (the admin API refuses them).
+- **The OAuth authorization server** (OAuth 2.1, the MCP authorization spec):
+  `/.well-known/oauth-protected-resource[/mcp]` (RFC 9728), `/.well-known/oauth-authorization-server`
+  (RFC 8414), Dynamic Client Registration at `/oauth/register` (public clients only),
+  `/oauth/authorize`, `/oauth/token` (authorization code with PKCE S256, refresh tokens) and
+  `/oauth/revoke` (RFC 7009). Clients are a registered `opc_...` ID or a Client ID Metadata
+  Document (an HTTPS URL, fetched and cached for a day). Redirect URIs must match one the client
+  registered exactly, and be HTTPS or http on localhost. Scopes: `read`, `write:grants`,
+  `write:webhooks`, `write:config`.
+- **Consent** happens on the dashboard (`/admin/oauth/consent`): `/oauth/authorize` checks the
+  request and hands off to it, the operator signs in if needed and approves the scopes their role
+  allows, and the dashboard sends the browser back with the code (and `iss`). Requests last 10
+  minutes, codes 2 minutes and work once (a second use ends the tokens the first made), access
+  tokens an hour, refresh tokens 30 days and rotate on every use. Codes and tokens are stored only
+  as SHA-256 hashes. Operators see and revoke their connected apps under Access tokens
+  (`GET /admin/v1/oauth/grants`, `POST /admin/v1/oauth/grants/{id}/revoke`); authorizing, denying
+  and revoking are audited. The hourly `prune-oauth` job forgets old requests, grants and unused
+  clients.
+
 ## Tests
 
 ```sh
@@ -237,8 +275,9 @@ Tests that need Postgres skip without `OPENPURR_TEST_DATABASE_URL`. Each one get
 so packages run in parallel against one database. The HTTP tests mirror Lite's `sdk`, `snapshot`,
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
 `apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
-snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor`, `setup-urls`, the admin parts
-of `experiments`, and `metrics` (in `internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
+snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor` (with `check_setup`),
+`setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, and `metrics` (in
+`internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
 crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
 Developer API and push-token keys, `internal/testutil/google.go`). App Store payloads are signed
@@ -258,7 +297,12 @@ and tokens, made from predictable random bytes so Standard can make the same one
 hand-checked one of Lite's metrics test, odd edge cases, and two demo-like ledgers with trials,
 upgrades, refunds, grace periods, pauses, several currencies and Google base plans): every
 `metric_daily` row after each of 25 rollups (full, incremental, during an import), each run's
-result and state, and 592 charts as JSON and CSV. The tests check
+result and state, and 592 charts as JSON and CSV; `golden-mcp.json` holds Lite's own back office
+answering 290 requests from a seeded database (every MCP tool but `check_setup`, whose checks are
+per edition, with its errors; the transport rules; tools/list per role and scope; the OAuth
+metadata, registration, authorize, token, refresh and revoke endpoints with every refusal; the
+consent and connected-apps routes) and the audit log they write, with random tokens and UUIDs
+normalized. The tests check
 Standard matches them byte for byte. The `.ts` file next to each says how to regenerate it after a
 change in Lite.
 
@@ -285,8 +329,6 @@ set too) turns on:
 
 - Cohort charts (project plan section 7, phase 3: subscription retention, trial conversion,
   initial conversion, realized LTV, trial cancellation rate), which Lite leaves to Standard.
-- MCP and OAuth (S7): `/mcp`, `/oauth/*` and the dashboard's consent routes (501; the connected
-  apps list is empty). Access tokens already work the way MCP will use them.
 - GCP packaging and IAP sign-in (S8), moving from Lite (S9).
 - Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
@@ -377,3 +419,27 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   SQLite compares text.
 - **Additions:** the country filter, `metric_daily_country`, and `edition` and `countries` in
   `GET /admin/v1/metrics` (see Charts).
+- **`get_config` before the SDK URL is set** says "not set. It's this server's address, probably
+  `<origin>`; set it on the dashboard's Settings page to be sure." with that origin as `sdk_url`
+  (`sdk_url_source: "guess"`): Standard serves the SDK API itself. Lite guesses the SDK Worker's
+  workers.dev address, or has no guess.
+- **`check_setup`** answers Standard's setup checks (the same as `/admin/v1/doctor`, see the back
+  office's wording above); its description is Lite's.
+- **A tool that fails unexpectedly** says "It's in the server's logs." (Lite: "the Worker's logs").
+- **MCP requests Lite fails on:** `get_metrics` with an invalid `to` and no `from` gets the from/to
+  message (Lite throws working out the default `from`), and a chart named after an
+  `Object.prototype` member (`constructor`) is refused as unknown. `grant_entitlement`'s
+  `expires_at` is read in the ECMAScript date format, as in the admin API.
+- **Ties in MCP and OAuth lists** (aliases with the same creation time, webhook deliveries with the
+  same time, experiments created at the same moment, connected apps approved at the same moment)
+  are ordered by ID, where SQLite leaves them in row order.
+- **Codes and refresh tokens used twice at once.** Exchanging a code locks its request row, so of
+  two simultaneous exchanges one gets tokens and the other is the reuse that ends them; a refresh
+  rotates only if the token is still the current one, so of two simultaneous refreshes one wins
+  (on Lite both could). Approving a request that was approved a moment earlier answers 404 rather
+  than a code that won't work.
+- **Client ID Metadata Documents** are fetched only from public addresses (the host's addresses
+  are checked when connecting, so a client_id can't point this server at its own network), with no
+  redirects and a 64 KB limit counted in bytes. A document that is JSON `null` is refused as having
+  the wrong client_id (Lite answers 500). Workers' `fetch` can't reach a private network; a
+  server in a VPC can.
