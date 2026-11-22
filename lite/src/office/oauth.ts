@@ -322,11 +322,13 @@ oauth.post("/token", async (c) => {
       .bind(await sha256Hex(p.code))
       .first<{ id: string; client_id: string; redirect_uri: string; code_challenge: string; resource: string; expires_at: number; operator_id: string; granted_scope: string; used_at: number | null; grant_id: string | null }>();
     if (!r) return oauthError(c, "invalid_grant", "Unknown or expired authorization code.");
-    if (r.used_at !== null) {
-      // A code used twice may have been stolen: end what the first use created.
-      if (r.grant_id) await db.prepare("UPDATE oauth_grant SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL").bind(now, r.grant_id).run();
+    // A code used twice may have been stolen: end what the first use created (OAuth 2.1 asks to
+    // revoke the tokens issued from it; the grant holds them, rotated or not).
+    const reused = async (grantId: string | null) => {
+      if (grantId) await db.prepare("UPDATE oauth_grant SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL").bind(now, grantId).run();
       return oauthError(c, "invalid_grant", "This authorization code was already used.");
-    }
+    };
+    if (r.used_at !== null) return reused(r.grant_id);
     if (r.expires_at < now) return oauthError(c, "invalid_grant", "The authorization code expired; sign in again.");
     if (r.client_id !== p.client_id) return oauthError(c, "invalid_grant", "The code was issued to another client.");
     if (p.redirect_uri !== undefined && p.redirect_uri !== r.redirect_uri) return oauthError(c, "invalid_grant", "redirect_uri doesn't match the authorization request.");
@@ -337,26 +339,35 @@ oauth.post("/token", async (c) => {
     const scopes = r.granted_scope.split(" ");
     const t = await newTokens();
     const grantId = crypto.randomUUID();
-    await db.batch([
+    // The code is claimed by a conditional UPDATE, and the grant is created only if that claim is
+    // ours, in one batch (one transaction): D1 has no transaction to lock the request between the
+    // read above and this write, so of two exchanges at the same moment only one claims it.
+    const [claim] = await db.batch([
+      db.prepare("UPDATE oauth_request SET used_at = ?, grant_id = ? WHERE id = ? AND used_at IS NULL RETURNING id").bind(now, grantId, r.id),
       db
         .prepare(
           `INSERT INTO oauth_grant (id, client_id, operator_id, scopes, resource, access_hash, access_expires_at, refresh_hash, refresh_expires_at, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           SELECT ?, ?, ?, ?, ?, ?, ?, ?, ?, ? WHERE EXISTS (SELECT 1 FROM oauth_request WHERE id = ? AND grant_id = ?)`,
         )
-        .bind(grantId, r.client_id, r.operator_id, JSON.stringify(scopes), r.resource, t.accessHash, t.accessExpires, t.refreshHash, t.refreshExpires, now),
-      db.prepare("UPDATE oauth_request SET used_at = ?, grant_id = ? WHERE id = ?").bind(now, grantId, r.id),
+        .bind(grantId, r.client_id, r.operator_id, JSON.stringify(scopes), r.resource, t.accessHash, t.accessExpires, t.refreshHash, t.refreshExpires, now, r.id, grantId),
     ]);
+    if (!claim?.results.length) {
+      // Another exchange claimed it in between: this is the second use, which ends the first's grant.
+      const winner = await db.prepare("SELECT grant_id FROM oauth_request WHERE id = ?").bind(r.id).first<{ grant_id: string | null }>();
+      return reused(winner?.grant_id ?? null);
+    }
     return tokenResponse(c, t, scopes);
   }
 
   if (p.grant_type === "refresh_token") {
     if (!p.refresh_token || !p.client_id) return oauthError(c, "invalid_request", "refresh_token and client_id are required.");
+    const refreshHash = await sha256Hex(p.refresh_token);
     const g = await db
       .prepare(
         `SELECT g.id, g.client_id, g.scopes FROM oauth_grant g JOIN operator o ON o.id = g.operator_id
          WHERE g.refresh_hash = ? AND g.revoked_at IS NULL AND g.refresh_expires_at > ? AND o.disabled_at IS NULL`,
       )
-      .bind(await sha256Hex(p.refresh_token), now)
+      .bind(refreshHash, now)
       .first<{ id: string; client_id: string; scopes: string }>();
     if (!g || g.client_id !== p.client_id) return oauthError(c, "invalid_grant", "Unknown, expired or revoked refresh token.");
     let scopes = JSON.parse(g.scopes) as string[];
@@ -366,11 +377,17 @@ oauth.post("/token", async (c) => {
       scopes = narrower;
     }
     const t = await newTokens();
-    // Rotation: the old refresh token stops working now.
-    await db
-      .prepare("UPDATE oauth_grant SET access_hash = ?, access_expires_at = ?, refresh_hash = ?, refresh_expires_at = ?, scopes = ? WHERE id = ?")
-      .bind(t.accessHash, t.accessExpires, t.refreshHash, t.refreshExpires, JSON.stringify(scopes), g.id)
-      .run();
+    // Rotation: the old refresh token stops working now. The grant is only rotated if it still holds
+    // the token we were given, in the same statement, so of two refreshes with one token at the same
+    // moment one wins and the other is refused.
+    const rotated = await db
+      .prepare(
+        `UPDATE oauth_grant SET access_hash = ?, access_expires_at = ?, refresh_hash = ?, refresh_expires_at = ?, scopes = ?
+         WHERE id = ? AND refresh_hash = ? AND revoked_at IS NULL RETURNING id`,
+      )
+      .bind(t.accessHash, t.accessExpires, t.refreshHash, t.refreshExpires, JSON.stringify(scopes), g.id, refreshHash)
+      .first();
+    if (!rotated) return oauthError(c, "invalid_grant", "Unknown, expired or revoked refresh token.");
     return tokenResponse(c, t, scopes);
   }
   return oauthError(c, "unsupported_grant_type", "grant_type must be authorization_code or refresh_token.");
@@ -428,16 +445,20 @@ export async function decideRequest(c: Ctx, id: string, principal: Principal, de
   const db = c.env.DB;
   const pending = await pendingRequest(db, id, principal);
   if (!pending) return null;
-  const r = (await db.prepare("SELECT redirect_uri, state FROM oauth_request WHERE id = ?").bind(id).first<{ redirect_uri: string; state: string | null }>())!;
+  const r = await db.prepare("SELECT redirect_uri, state FROM oauth_request WHERE id = ?").bind(id).first<{ redirect_uri: string; state: string | null }>();
+  if (!r) return null; // denied a moment ago
   const back = new URL(r.redirect_uri);
   if (r.state !== null) back.searchParams.set("state", r.state);
   back.searchParams.set("iss", origin(c));
   const ip = c.req.header("cf-connecting-ip") ?? null;
+  // Each decision is taken by one conditional statement that only matches a request still waiting
+  // for one, before anything else is written: D1 has no transaction to lock the request between the
+  // read above and the write, so of two decisions at the same moment one wins and the other is a 404
+  // (an approval never hands out a code that a moment-earlier decision made useless).
   if (!decision.approve) {
-    await db.batch([
-      db.prepare("DELETE FROM oauth_request WHERE id = ?").bind(id),
-      audit(db, { operator: principal.operator, action: "oauth.denied", target: pending.client.name, ip }),
-    ]);
+    const deleted = await db.prepare("DELETE FROM oauth_request WHERE id = ? AND code_hash IS NULL RETURNING id").bind(id).first();
+    if (!deleted) return null;
+    await audit(db, { operator: principal.operator, action: "oauth.denied", target: pending.client.name, ip }).run();
     back.searchParams.set("error", "access_denied");
     return { redirect: back.toString() };
   }
@@ -445,12 +466,18 @@ export async function decideRequest(c: Ctx, id: string, principal: Principal, de
   const scopes = (decision.scopes ?? allowed).filter((s) => allowed.includes(s));
   if (!scopes.length) throw new Error("Pick at least one permission you have.");
   const code = randomToken();
-  await db.batch([
-    db
-      .prepare("UPDATE oauth_request SET operator_id = ?, granted_scope = ?, code_hash = ?, expires_at = ? WHERE id = ? AND code_hash IS NULL")
-      .bind(principal.operator.id, scopes.join(" "), await sha256Hex(code), Date.now() + CODE_TTL, id),
-    audit(db, { operator: principal.operator, action: "oauth.authorized", target: pending.client.name, details: { client: pending.client.metadata_url ?? pending.client.name, scopes, redirect_host: pending.redirect_host }, ip }),
-  ]);
+  const approved = await db
+    .prepare("UPDATE oauth_request SET operator_id = ?, granted_scope = ?, code_hash = ?, expires_at = ? WHERE id = ? AND code_hash IS NULL RETURNING id")
+    .bind(principal.operator.id, scopes.join(" "), await sha256Hex(code), Date.now() + CODE_TTL, id)
+    .first();
+  if (!approved) return null;
+  await audit(db, {
+    operator: principal.operator,
+    action: "oauth.authorized",
+    target: pending.client.name,
+    details: { client: pending.client.metadata_url ?? pending.client.name, scopes, redirect_host: pending.redirect_host },
+    ip,
+  }).run();
   back.searchParams.set("code", code);
   return { redirect: back.toString() };
 }
@@ -475,10 +502,11 @@ export async function revokeGrantFor(c: Ctx, operator: Operator, grantId: string
     .bind(grantId, operator.id)
     .first<{ id: string; name: string }>();
   if (!g) return false;
-  await db.batch([
-    db.prepare("UPDATE oauth_grant SET revoked_at = ? WHERE id = ?").bind(Date.now(), g.id),
-    audit(db, { operator, action: "oauth.revoked", target: g.name, ip: c.req.header("cf-connecting-ip") ?? null }),
-  ]);
+  // Revoked only if still active, in the same statement, so two revokes at the same moment revoke
+  // (and audit) it once.
+  const revoked = await db.prepare("UPDATE oauth_grant SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL RETURNING id").bind(Date.now(), g.id).first();
+  if (!revoked) return false;
+  await audit(db, { operator, action: "oauth.revoked", target: g.name, ip: c.req.header("cf-connecting-ip") ?? null }).run();
   return true;
 }
 

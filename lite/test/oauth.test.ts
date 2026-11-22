@@ -182,6 +182,72 @@ describe("the authorization code flow", () => {
     expect((await mcpCall(first.access_token)).status).toBe(401);
   });
 
+  it("a code exchanged twice at the same moment gets tokens once, and the second use ends them", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    const both = await Promise.all([1, 2].map(() => exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 400]);
+    const won = both.find((r) => r.status === 200)!;
+    const lost = both.find((r) => r.status === 400)!;
+    expect(await jsonOf(lost)).toMatchObject({ error: "invalid_grant", error_description: "This authorization code was already used." });
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM oauth_grant WHERE client_id = ?").bind(clientId).first<{ n: number }>())!;
+    expect(n).toBe(1);
+    // As with a code used twice one after the other, the tokens the code made are ended.
+    expect((await mcpCall((await jsonOf(won)).access_token)).status).toBe(401);
+  });
+
+  it("a refresh token used twice at the same moment rotates once", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    const t = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier }));
+    const both = await Promise.all([1, 2].map(() => exchange({ grant_type: "refresh_token", refresh_token: t.refresh_token, client_id: clientId })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 400]);
+    const won = both.find((r) => r.status === 200)!;
+    const lost = both.find((r) => r.status === 400)!;
+    expect(await jsonOf(lost)).toMatchObject({ error: "invalid_grant" });
+    const fresh = await jsonOf(won);
+    expect((await mcpCall(fresh.access_token)).status).toBe(200);
+    expect((await exchange({ grant_type: "refresh_token", refresh_token: fresh.refresh_token, client_id: clientId })).status).toBe(200);
+  });
+
+  it("a request decided twice at the same moment is decided once, and an approval's code works", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    for (const decisions of [["approve", "approve"], ["approve", "deny"], ["deny", "deny"]]) {
+      const { verifier, challenge } = await pkce();
+      const start = await request(authorizeUrl(clientId, challenge));
+      const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+      const before = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ?").bind(owner.id).first<{ n: number }>())!.n;
+      const both = await Promise.all(
+        decisions.map((d) => request(`/admin/v1/oauth/requests/${id}/${d}`, { method: "POST", session: owner.session, headers: { origin: ORIGIN, "content-type": "application/json" }, body: "{}" })),
+      );
+      expect(both.map((r) => r.status).sort()).toEqual([200, 404]);
+      const after = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ?").bind(owner.id).first<{ n: number }>())!.n;
+      expect(after - before).toBe(1);
+      const back = new URL((await jsonOf(both.find((r) => r.status === 200)!)).redirect);
+      const code = back.searchParams.get("code");
+      if (code) expect((await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier })).status).toBe(200);
+      else expect(back.searchParams.get("error")).toBe("access_denied");
+    }
+  });
+
+  it("a connected app revoked twice at the same moment is revoked (and audited) once", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier });
+    const [grant] = (await jsonOf(await request("/admin/v1/oauth/grants", { session: owner.session }))).grants;
+    const both = await Promise.all([1, 2].map(() => request(`/admin/v1/oauth/grants/${grant.id}/revoke`, { method: "POST", session: owner.session, headers: { origin: ORIGIN } })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 404]);
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ? AND action = 'oauth.revoked'").bind(owner.id).first<{ n: number }>())!;
+    expect(n).toBe(1);
+  });
+
   it("a viewer can only approve what their role allows, and denying redirects with access_denied", async () => {
     const { client_id: clientId } = await jsonOf(await register());
     const viewer = await signedIn("viewer");
