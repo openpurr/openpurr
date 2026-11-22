@@ -624,7 +624,8 @@ func readStatus(ctx context.Context, db Querier, q *Query, now int64) ([]Categor
 		 LEFT JOIN subscription_state s ON s.store = t.store AND s.original_transaction_id = t.original_transaction_id
 		 WHERE t.product_type = 'subscription' AND t.expires_at >= $2
 		   AND NOT EXISTS (SELECT 1 FROM store_transaction n
-		                   WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at > t.purchased_at)
+		                   WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id
+		                     AND (n.purchased_at > t.purchased_at OR (n.purchased_at = t.purchased_at AND n.id > t.id)))
 		   AND `+w.sql()+`
 		 GROUP BY category`, w.args...)
 	if err != nil {

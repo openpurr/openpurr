@@ -8,11 +8,12 @@
 //
 // Subscriptions become time segments: each transaction gives access from its purchase until the
 // earliest of its expiry (or the end of a grace period, for the latest one), its refund or
-// revocation, and the next transaction in the same chain. A segment adds +1 to the running totals
-// on the day it starts and -1 on the day it ends; a chart adds the daily changes up from the
-// beginning. MRR does the same with each paid segment's price normalized to a month, using the
-// billing period inferred from its length. Movements classify those same starts and ends, so they
-// always add up to the running totals (see lite/src/metrics.ts for the rules).
+// revocation, and the next transaction in the same chain (purchases at the same moment are taken
+// in the order they were recorded, so only the last of them gives access). A segment adds +1 to
+// the running totals on the day it starts and -1 on the day it ends; a chart adds the daily
+// changes up from the beginning. MRR does the same with each paid segment's price normalized to a
+// month, using the billing period inferred from its length. Movements classify those same starts
+// and ends, so they always add up to the running totals (see lite/src/metrics.ts for the rules).
 //
 // Lite does all of this in one SQL statement per kind of total. Standard reads the ledger rows
 // the statement would read and does the same arithmetic in Go, with SQLite's summation and
@@ -689,7 +690,7 @@ func eqInt(a, b *int64) bool {
 func segmentTotals(ctx context.Context, tx pgx.Tx, r rates, fromDay, tomorrow int64, t *totals) error {
 	lookback := fromDay - graceLookback
 	// Every transaction of the chains with a subscription purchase that can still start or end
-	// something (Lite's next_at and prev_at look at the whole chain).
+	// something (Lite's next_at and prev_id look at the whole chain).
 	rows, err := tx.Query(ctx,
 		`WITH chains AS MATERIALIZED (
 		   SELECT c.store, c.original_transaction_id, s.grace_period_expires_at, s.unsubscribe_detected_at
@@ -743,26 +744,16 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 			continue
 		}
 		start, expires := b.purchasedAt, *b.expiresAt
-		// The chain is in purchase order: the next purchase after this one, and every purchase at
-		// the moment of the one before it (LEFT JOIN store_transaction p ON p.purchased_at = b.prev_at:
-		// normally one, or none).
+		// The chain is in purchase order, and purchases at the same moment in the order they were
+		// recorded: the next purchase is the one after this, and the previous one the last purchase
+		// before this one's moment (of a tie, only the last gives access: the next starts at once).
 		var nextAt *int64
-		if j := sort.Search(len(chain), func(j int) bool { return chain[j].purchasedAt > start }); j < len(chain) {
-			nextAt = &chain[j].purchasedAt
+		if i+1 < len(chain) {
+			nextAt = &chain[i+1].purchasedAt
 		}
-		var prevs []*chainTx
+		var p *chainTx
 		if lo := sort.Search(len(chain), func(j int) bool { return chain[j].purchasedAt >= start }); lo > 0 {
-			prevAt := chain[lo-1].purchasedAt
-			first := lo - 1
-			for first > 0 && chain[first-1].purchasedAt == prevAt {
-				first--
-			}
-			for j := first; j < lo; j++ {
-				prevs = append(prevs, &chain[j])
-			}
-		}
-		if len(prevs) == 0 {
-			prevs = []*chainTx{nil}
+			p = &chain[lo-1]
 		}
 
 		end := expires
@@ -781,100 +772,98 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 		}
 		country := CountryOf(store, b.storefront)
 
-		for _, p := range prevs {
-			hasPrev := p != nil
-			continues := triFalse
-			var prevType string
-			sameTerms := false
-			var prevMrr float64
-			if hasPrev {
-				prevType = p.periodType
-				if p.expiresAt == nil {
-					continues = triNull // min(NULL, ...) is NULL
-				} else if min(*p.expiresAt, orFar(p.revokedAt)) >= start {
-					continues = triTrue
-				}
-				pMs := sub(p.expiresAt, &p.purchasedAt)
-				sameTerms = eqInt(p.priceMicros, b.priceMicros) && eqStr(p.currency, b.currency) &&
-					product(p.productID, p.basePlan) == prod && periodDays(pMs) == bDays
-				if p.periodType != "trial" {
-					usd := 0.0
-					if p.usd != nil {
-						usd = *p.usd
-					}
-					prevMrr = usd * 30.4375 / periodDays(pMs)
-				}
+		hasPrev := p != nil
+		continues := triFalse
+		var prevType string
+		sameTerms := false
+		var prevMrr float64
+		if hasPrev {
+			prevType = p.periodType
+			if p.expiresAt == nil {
+				continues = triNull // min(NULL, ...) is NULL
+			} else if min(*p.expiresAt, orFar(p.revokedAt)) >= start {
+				continues = triTrue
 			}
+			pMs := sub(p.expiresAt, &p.purchasedAt)
+			sameTerms = eqInt(p.priceMicros, b.priceMicros) && eqStr(p.currency, b.currency) &&
+				product(p.productID, p.basePlan) == prod && periodDays(pMs) == bDays
+			if p.periodType != "trial" {
+				usd := 0.0
+				if p.usd != nil {
+					usd = *p.usd
+				}
+				prevMrr = usd * 30.4375 / periodDays(pMs)
+			}
+		}
 
-			event := func(kind string, at int64, dir int64) {
-				as := t.both(dims{b.environment, b.app, store, prod, country, DayOf(at)})
-				isStart := kind == "start"
-				isNew := isStart && nonTrial && (!hasPrev || (continues == triTrue && prevType == "trial"))
-				isRenewal := isStart && nonTrial && continues == triTrue && prevType != "trial"
-				isReactivation := isStart && nonTrial && hasPrev && continues == triFalse
-				isChurn := kind == "end" && nonTrial && !continued
-				for _, a := range as {
-					a.activeSubs += dir
-					if b.periodType == "trial" {
-						a.activeTrials += dir
-					}
-					if b.periodType == "normal" {
-						a.paidSubs += dir
-					}
-					if mrr != 0 && dir != 0 {
-						a.mrr.add(float64(dir) * mrr)
-					}
-					if isNew {
-						a.subNew++
-						if mrr != 0 {
-							a.mrrNew.add(mrr)
-						}
-					}
-					if isRenewal {
-						a.subRenewed++
-						if !sameTerms && mrr > prevMrr {
-							a.mrrExpansion.add(mrr - prevMrr)
-						}
-						if !sameTerms && mrr < prevMrr {
-							a.mrrContraction.add(mrr - prevMrr)
-						}
-					}
-					if isReactivation {
-						a.subReactivated++
-						if mrr != 0 {
-							a.mrrReactivation.add(mrr)
-						}
-					}
-					if isChurn {
-						a.subChurned++
-						if mrr != 0 {
-							a.mrrChurned.add(-mrr)
-						}
-					}
-					if kind == "end" && !nonTrial {
-						if continued {
-							a.trialConverted++
-						} else {
-							a.trialExpired++
-						}
-					}
-					if kind == "cancel" {
-						a.trialCancelled++
+		event := func(kind string, at int64, dir int64) {
+			as := t.both(dims{b.environment, b.app, store, prod, country, DayOf(at)})
+			isStart := kind == "start"
+			isNew := isStart && nonTrial && (!hasPrev || (continues == triTrue && prevType == "trial"))
+			isRenewal := isStart && nonTrial && continues == triTrue && prevType != "trial"
+			isReactivation := isStart && nonTrial && hasPrev && continues == triFalse
+			isChurn := kind == "end" && nonTrial && !continued
+			for _, a := range as {
+				a.activeSubs += dir
+				if b.periodType == "trial" {
+					a.activeTrials += dir
+				}
+				if b.periodType == "normal" {
+					a.paidSubs += dir
+				}
+				if mrr != 0 && dir != 0 {
+					a.mrr.add(float64(dir) * mrr)
+				}
+				if isNew {
+					a.subNew++
+					if mrr != 0 {
+						a.mrrNew.add(mrr)
 					}
 				}
-			}
-			if stop > start {
-				if start >= fromDay && start < tomorrow {
-					event("start", start, 1)
+				if isRenewal {
+					a.subRenewed++
+					if !sameTerms && mrr > prevMrr {
+						a.mrrExpansion.add(mrr - prevMrr)
+					}
+					if !sameTerms && mrr < prevMrr {
+						a.mrrContraction.add(mrr - prevMrr)
+					}
 				}
-				if stop >= fromDay && stop < tomorrow {
-					event("end", stop, -1)
+				if isReactivation {
+					a.subReactivated++
+					if mrr != 0 {
+						a.mrrReactivation.add(mrr)
+					}
+				}
+				if isChurn {
+					a.subChurned++
+					if mrr != 0 {
+						a.mrrChurned.add(-mrr)
+					}
+				}
+				if kind == "end" && !nonTrial {
+					if continued {
+						a.trialConverted++
+					} else {
+						a.trialExpired++
+					}
+				}
+				if kind == "cancel" {
+					a.trialCancelled++
 				}
 			}
-			// Auto-renew turned off during a free trial.
-			if !nonTrial && unsub != nil && *unsub >= start && *unsub < expires && *unsub >= fromDay && *unsub < tomorrow {
-				event("cancel", *unsub, 0)
+		}
+		if stop > start {
+			if start >= fromDay && start < tomorrow {
+				event("start", start, 1)
 			}
+			if stop >= fromDay && stop < tomorrow {
+				event("end", stop, -1)
+			}
+		}
+		// Auto-renew turned off during a free trial.
+		if !nonTrial && unsub != nil && *unsub >= start && *unsub < expires && *unsub >= fromDay && *unsub < tomorrow {
+			event("cancel", *unsub, 0)
 		}
 	}
 }
