@@ -11,7 +11,7 @@ import { assessUsage, cloudflarePlan, describe as describeUsage, readUsage, usag
 import { guessSdkUrl, storedSdkUrl } from "./setup";
 
 /** The newest migration this code expects. A test keeps it in step with migrations/. */
-export const EXPECTED_MIGRATION = "0020_experiments.sql";
+export const EXPECTED_MIGRATION = "0021_snapshot_ledger_version.sql";
 
 export type CheckStatus = "ok" | "warn" | "fail" | "info";
 export interface Check {

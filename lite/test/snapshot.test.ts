@@ -1,10 +1,10 @@
 import { env } from "cloudflare:workers";
 import { describe, expect, it } from "vitest";
 import { parseConfig } from "../src/config";
-import { findCustomer } from "../src/ledger";
+import { findCustomer, upsertTransaction } from "../src/ledger";
 import { runScheduled, SNAPSHOTS_PER_RUN } from "../src/scheduled";
-import { readCustomerInfo } from "../src/snapshot";
-import { APPLE_STATUS } from "../src/stores/apple";
+import { invalidateSnapshot, readCustomerInfo, refreshSnapshot } from "../src/snapshot";
+import { APPLE_STATUS, appleTransactionRow } from "../src/stores/apple";
 import { call, DAY, postAppleTransaction, postNotification, rawTestConfig, signNotification, signTransaction, testConfig, testProject } from "./helpers";
 
 const read = (user: string, config = testProject) => readCustomerInfo(env.DB, config, user, { requestStore: "app_store", now: 1_800_000_000_000 });
@@ -79,5 +79,39 @@ describe("CustomerInfo snapshots", () => {
     const res = await read("snap-nobody");
     expect(res.source).toBe("empty");
     expect(res.body.subscriber.entitlements).toEqual({});
+  });
+
+  it("aren't saved by a rebuild that read the ledger before a later write", async () => {
+    const { payload } = await postAppleTransaction("snap-race", { productId: "pro_annual", expiresDate: Date.now() + 300 * DAY });
+    const customer = (await findCustomer(env.DB, "default", "snap-race"))!;
+    const app = testProject.apps.get("ios")!;
+    const revoked = Date.now() - 1000;
+    const refund = appleTransactionRow({ ...payload, revocationDate: revoked, revocationReason: 0 }, app, app.products.get("pro_annual")!);
+    const refundedAt = new Date(revoked).toISOString().replace(/\.\d{3}Z$/, "Z");
+
+    // The rebuild reads the ledger (one batch); a refund lands before it saves.
+    let interleaved = false;
+    const db = new Proxy(env.DB, {
+      get(target, prop) {
+        if (prop !== "batch") return Reflect.get(target, prop).bind(target);
+        return async (statements: D1PreparedStatement[]) => {
+          const results = await target.batch(statements);
+          if (!interleaved) {
+            interleaved = true;
+            await target.batch([upsertTransaction(target, refund), invalidateSnapshot(target, customer.id)]);
+          }
+          return results;
+        };
+      },
+    });
+    await refreshSnapshot(db, testConfig, customer.id);
+    expect(interleaved).toBe(true);
+    expect(((await read("snap-race")).body.subscriber.entitlements as any).pro.expires_date).toBe(refundedAt);
+
+    // The next rebuild stores the refunded CustomerInfo.
+    await refreshSnapshot(env.DB, testConfig, customer.id);
+    const after = await read("snap-race");
+    expect(after.source).toBe("snapshot");
+    expect((after.body.subscriber.entitlements as any).pro.expires_date).toBe(refundedAt);
   });
 });
