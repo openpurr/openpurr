@@ -421,17 +421,184 @@ func TestHandCheckedLedger(t *testing.T) {
 			t.Errorf("%v %q", status.Points, status.CSV())
 		}
 	})
+
+	// Ties and missing expiries, in an app of their own.
+	edge := func(more func(*metrics.Query)) metrics.Query {
+		return q(func(q *metrics.Query) {
+			q.App, q.To = "edge", "2026-03-31"
+			if more != nil {
+				more(q)
+			}
+		})
+	}
+	edgeMonths := func(chart string, more func(*metrics.Query)) map[string]string {
+		return byPeriod(read(t, pool, chart, edge(func(q *metrics.Query) {
+			q.Interval = "month"
+			if more != nil {
+				more(q)
+			}
+		})))
+	}
+	edgeDay := func(chart, date, key string, more func(*metrics.Query)) any {
+		for _, p := range read(t, pool, chart, edge(more)).Points {
+			if p.Date == date {
+				v, _ := p.Values.Get(key)
+				return v
+			}
+		}
+		return "missing"
+	}
+	edgeStatus := func(more func(*metrics.Query)) string {
+		r, err := metrics.ReadChart(ctx, pool, "subscription_status", edge(more), at("2026-03-15"))
+		if err != nil {
+			t.Fatal(err)
+		}
+		got := map[string]float64{}
+		for _, c := range r.Categories {
+			got[c.Key] = c.Value
+		}
+		return fmt.Sprint(got)
+	}
+	status := func(active, expired float64) string {
+		return fmt.Sprint(map[string]float64{"active": active, "cancelled": 0, "trial": 0, "grace": 0, "billing_retry": 0, "paused": 0, "expired": expired})
+	}
+	// Days where the movements don't add up to the change in the running totals.
+	mismatches := func() []string {
+		values := func(chart string) []metrics.Point { return read(t, pool, chart, edge(nil)).Points }
+		num := func(p metrics.Point, k string) float64 { v, _ := p.Values.Get(k); return v.(float64) }
+		mrrs, mrrMoves, subs, subMoves := values("mrr"), values("mrr_movement"), values("active_subscriptions"), values("subscription_movement")
+		var out []string
+		var before [2]float64
+		for i := range mrrs {
+			cur := [2]float64{num(mrrs[i], "mrr"), num(subs[i], "paid")}
+			if math.Abs(num(mrrMoves[i], "net")-(cur[0]-before[0])) > 0.005 || num(subMoves[i], "net") != cur[1]-before[1] {
+				out = append(out, mrrs[i].Date)
+			}
+			before = cur
+		}
+		return out
+	}
+	edgeTx := func(x ledgerTx) {
+		x.app = "edge"
+		if x.updatedAt == 0 {
+			x.updatedAt = at("2026-04-20", 13)
+		}
+		l.tx(x)
+	}
+
+	t.Run("two purchases at the same moment in a chain count once: the later recorded one", func(t *testing.T) {
+		// T: bought twice at the same moment ($10, then $20), then renewed at $20.
+		edgeTx(ledgerTx{chain: "T", bought: "2026-01-05", expires: "2026-02-05", price: 10})
+		edgeTx(ledgerTx{chain: "T", bought: "2026-01-05", expires: "2026-02-05", price: 20})
+		edgeTx(ledgerTx{chain: "T", bought: "2026-02-05", expires: "2026-03-05", price: 20})
+		// U: the latest purchase recorded twice; still active on Mar 15.
+		edgeTx(ledgerTx{chain: "U", bought: "2026-03-10", expires: "2026-04-10", price: 10})
+		edgeTx(ledgerTx{chain: "U", bought: "2026-03-10", expires: "2026-04-10", price: 10})
+		run, err := metrics.Rollup(ctx, pool, at("2026-04-20", 14), false)
+		if err != nil || run.Full || run.From == nil || *run.From != "2026-01-05" {
+			t.Fatalf("%+v %v", run, err)
+		}
+
+		if got := edgeDay("active_subscriptions", "2026-01-10", "paid", nil); got != 1.0 {
+			t.Errorf("paid on Jan 10: %v", got)
+		}
+		if got := edgeDay("mrr", "2026-01-10", "mrr", nil); got != 20.0 {
+			t.Errorf("MRR on Jan 10: %v", got)
+		}
+		if got := edgeDay("active_subscriptions", "2026-03-15", "paid", nil); got != 1.0 { // U
+			t.Errorf("paid on Mar 15: %v", got)
+		}
+		m := edgeMonths("subscription_movement", nil)
+		if m["2026-01-01"] != `{"new":1,"reactivated":0,"churned":0,"net":1,"renewed":0}` ||
+			m["2026-02-01"] != `{"new":0,"reactivated":0,"churned":0,"net":0,"renewed":1}` ||
+			m["2026-03-01"] != `{"new":1,"reactivated":0,"churned":-1,"net":0,"renewed":0}` { // U starts, T ends
+			t.Errorf("%v", m)
+		}
+		// The renewal keeps the $20 terms.
+		if got := edgeMonths("mrr_movement", nil)["2026-02-01"]; got != `{"new":0,"reactivation":0,"expansion":0,"contraction":0,"churned":0,"net":0}` {
+			t.Errorf("%s", got)
+		}
+		if got := mismatches(); len(got) != 0 {
+			t.Errorf("movements don't add up on %v", got)
+		}
+		if got := edgeStatus(nil); got != status(1, 1) {
+			t.Errorf("%s", got)
+		}
+	})
+
+	t.Run("a purchase with no expiry gives no access, and the purchases around it are classified past it", func(t *testing.T) {
+		noexp := func(x ledgerTx) {
+			x.prod, x.updatedAt = "noexp", at("2026-04-20", 14)+60_000
+			edgeTx(x)
+		}
+		// N: a purchase with no expiry, then a subscription: new.
+		noexp(ledgerTx{chain: "N", bought: "2026-01-05", price: 5})
+		noexp(ledgerTx{chain: "N", bought: "2026-01-20", expires: "2026-02-20", price: 10})
+		// M: one with no expiry in the middle of a subscription: it neither ends M1 nor separates M3 from it.
+		noexp(ledgerTx{chain: "M", bought: "2026-01-05", expires: "2026-02-05", price: 10})
+		noexp(ledgerTx{chain: "M", bought: "2026-01-25", price: 10})
+		noexp(ledgerTx{chain: "M", bought: "2026-02-05", expires: "2026-03-05", price: 10})
+		// V: one with no expiry after the latest purchase, which is still active on Mar 15.
+		noexp(ledgerTx{chain: "V", bought: "2026-03-10", expires: "2026-04-10", price: 10})
+		noexp(ledgerTx{chain: "V", bought: "2026-03-12", price: 10})
+		if _, err := metrics.Rollup(ctx, pool, at("2026-04-20", 14)+1800_000, false); err != nil {
+			t.Fatal(err)
+		}
+
+		only := func(q *metrics.Query) { q.Product = "noexp" }
+		if got := edgeDay("active_subscriptions", "2026-01-28", "paid", only); got != 2.0 { // N2 and M1
+			t.Errorf("paid on Jan 28: %v", got)
+		}
+		m := edgeMonths("subscription_movement", only)
+		if m["2026-01-01"] != `{"new":2,"reactivated":0,"churned":0,"net":2,"renewed":0}` || // N2, M1
+			m["2026-02-01"] != `{"new":0,"reactivated":0,"churned":-1,"net":-1,"renewed":1}` || // N2 ends; M3 renews M1
+			m["2026-03-01"] != `{"new":1,"reactivated":0,"churned":-1,"net":0,"renewed":0}` { // V1 starts, M3 ends
+			t.Errorf("%v", m)
+		}
+		if got := mismatches(); len(got) != 0 {
+			t.Errorf("movements don't add up on %v", got)
+		}
+		if got := edgeStatus(only); got != status(1, 2) { // V1; N2 and M3
+			t.Errorf("%s", got)
+		}
+	})
+
+	t.Run("the incremental runs match a full rebuild", func(t *testing.T) {
+		snapshot := func() string {
+			out := ""
+			for _, c := range metrics.Charts {
+				for _, country := range []string{"", "US"} {
+					r, err := metrics.ReadChart(ctx, pool, c.ID, edge(func(q *metrics.Query) { q.Country = country }), at("2026-03-15"))
+					if err != nil {
+						t.Fatal(err)
+					}
+					o := r.JSON().Clone()
+					o.Delete("updated_at") // when each run was
+					out += jsobj.Stringify(o) + "\n"
+				}
+			}
+			return out
+		}
+		incremental := snapshot()
+		if _, err := metrics.Rollup(ctx, pool, at("2026-04-20", 15), true); err != nil {
+			t.Fatal(err)
+		}
+		if got := snapshot(); got != incremental {
+			t.Error("a full rebuild differs from the incremental runs")
+		}
+	})
 }
 
-func TestParseDateIsV8s(t *testing.T) {
+func TestParseDateIsLites(t *testing.T) {
 	for in, want := range map[string]int64{
-		"2026-02-29": at("2026-03-01", 0), "2026-02-31": at("2026-03-03", 0), "2026-04-31": at("2026-05-01", 0), "0000-01-01": -62167219200000,
+		"2026-03-03": at("2026-03-03", 0), "2024-02-29": at("2024-02-29", 0), "2026-12-31": at("2026-12-31", 0), "0000-01-01": -62167219200000,
 	} {
 		if got, ok := metrics.ParseDate(in); !ok || got != want {
 			t.Errorf("%s: %d %v", in, got, ok)
 		}
 	}
-	for _, in := range []string{"2026-02-32", "2026-00-10", "2026-01-00", "2026-1-01", "+026-01-01", "2026-13-01", ""} {
+	// Days that don't exist, which V8's Date.parse rolls over (Feb 31 is Mar 3), aren't dates.
+	for _, in := range []string{"2026-02-29", "2026-02-31", "2026-04-31", "2100-02-29", "2026-02-32", "2026-00-10", "2026-01-00", "2026-1-01", "+026-01-01", "2026-13-01", ""} {
 		if _, ok := metrics.ParseDate(in); ok {
 			t.Errorf("%s parsed", in)
 		}
