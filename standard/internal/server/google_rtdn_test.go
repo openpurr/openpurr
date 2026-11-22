@@ -281,6 +281,26 @@ func TestGoogleSubscriptionNotifications(t *testing.T) {
 		}
 	})
 
+	t.Run("a notification that links a token to another customer's invalidates that customer's snapshot", func(t *testing.T) {
+		env, fake := tu.StartGoogle(t, false)
+		now := env.Clock.Now()
+		fake.SetSub("rt-a", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00001"}))
+		fake.SetSub("rt-b", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00002"}))
+		env.PlayReceipt("rt-first", "rt-a", "pro", "monthly")
+		env.PlayReceipt("rt-second", "rt-b", "pro", "monthly")
+		if prop(playInfo(t, env, "rt-first"), "entitlements", "pro") == nil {
+			t.Fatal("no entitlement")
+		}
+		// Google now reports rt-b as replacing rt-a.
+		fake.SetSub("rt-b", tu.PlaySubscription(now, tu.PlaySub{Ack: true, OrderID: "GPA.5100-0000-0000-00002", LinkedPurchaseToken: "rt-a"}))
+		if res := env.PostGoogleNotification(subNotification("rt-b", 2), tu.NotifyOptions{}); res.Status != 200 {
+			t.Fatalf("%d %s", res.Status, res.Body)
+		}
+		if e := prop(playInfo(t, env, "rt-first"), "entitlements", "pro"); e != nil {
+			t.Errorf("the replaced subscription still grants access: %s", jsobj.Stringify(e))
+		}
+	})
+
 	t.Run("ignores a token Google no longer knows", func(t *testing.T) {
 		env, _ := tu.StartGoogle(t, true)
 		res := env.PostGoogleNotification(subNotification("rt-gone", 2), tu.NotifyOptions{})

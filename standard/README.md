@@ -198,9 +198,5 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   before parsing, which only matters for non-ASCII text).
 - **The missing-key message** for Google Play says "The secret GOOGLE_SERVICE_ACCOUNT ..." where
   Lite says "The Worker secret ...".
-- **A replaced Play subscription's owner.** When an upgrade or re-signup marks an old purchase
-  token as replaced, the snapshot of whoever owns the old token is invalidated too. Lite only
-  invalidates the customers whose purchases were posted, so if someone else owned the old token
-  they kept being served a snapshot that still showed it.
 - **A failed acknowledgement's `last_error`** is "Error: " and the error's message; Lite stores
   `String(err)`, which names the JavaScript error class.

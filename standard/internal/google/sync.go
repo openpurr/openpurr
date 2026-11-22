@@ -15,6 +15,7 @@ import (
 	"net/http"
 
 	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/customerinfo"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
 )
@@ -174,8 +175,11 @@ func Acknowledge(ctx context.Context, db ledger.DB, client *Client, appID string
 }
 
 // MarkReplaced marks the chain a new purchase replaces as upgraded, so it stops granting
-// entitlements. The caller also invalidates the snapshot of whoever owns that chain.
+// entitlements, and invalidates the snapshot of whoever owns it (who may not be the new
+// purchase's owner).
 func MarkReplaced(ctx context.Context, db ledger.DB, replacedToken string) error {
-	_, err := db.Exec(ctx, "UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = $1", replacedToken)
-	return err
+	if _, err := db.Exec(ctx, "UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = $1", replacedToken); err != nil {
+		return err
+	}
+	return customerinfo.InvalidateOwner(ctx, db, "play_store", replacedToken)
 }

@@ -315,10 +315,6 @@ func (s *server) handleGoogleNotification(w http.ResponseWriter, r *http.Request
 			if err := google.MarkReplaced(ctx, tx, p.replaces); err != nil {
 				return err
 			}
-			// Lite leaves this to the owner's next write when someone else owns the replaced chain.
-			if err := customerinfo.InvalidateOwner(ctx, tx, "play_store", p.replaces); err != nil {
-				return err
-			}
 		}
 		if p.voidedOrder != "" {
 			if _, err := tx.Exec(ctx,
