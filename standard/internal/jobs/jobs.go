@@ -5,8 +5,8 @@
 // per job run, so with several replicas each job runs on one at a time. Conformance mode doesn't
 // start the loop; POST /__conformance/jobs runs every job at once with RunAll.
 //
-// No jobs are registered yet: webhook retries, Google acknowledgements, FX rates, rollups and
-// cleanup come in later milestones.
+// The server registers Google Play's jobs (acknowledgement retries, voided-purchases polling);
+// webhook retries, FX rates, rollups and cleanup come in later milestones.
 package jobs
 
 import (

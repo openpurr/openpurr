@@ -54,8 +54,8 @@ type GooglePlayAPI struct {
 	ServiceAccountSecret string
 	// The service account Pub/Sub uses to sign push requests to /notifications/google.
 	PubsubPushAccount string
-	// The audience Pub/Sub puts in those tokens; defaults to the notification URL.
-	PubsubAudience string
+	// The audience Pub/Sub puts in those tokens; nil means the notification URL.
+	PubsubAudience *string
 }
 
 type AppStoreServerAPI struct {
@@ -465,7 +465,7 @@ func parseProject(projectID string, raw *jsobj.Object, prefix string, g *globals
 						api.PubsubPushAccount = pushStr
 					}
 					if audIsStr {
-						api.PubsubAudience = audStr
+						api.PubsubAudience = &audStr
 					}
 					app.GooglePlayAPI = api
 				}

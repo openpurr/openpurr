@@ -1,6 +1,6 @@
-// Package testdata holds golden.json and golden-apple.json, generated from Lite's own code by
-// golden.ts and golden-apple.ts, so tests can check that Standard produces the same output byte
-// for byte.
+// Package testdata holds golden.json, golden-apple.json and golden-google.json, generated from
+// Lite's own code by golden.ts, golden-apple.ts and golden-google.ts, so tests can check that
+// Standard produces the same output byte for byte.
 package testdata
 
 import (
@@ -18,6 +18,12 @@ var goldenJSON []byte
 //
 //go:embed golden-apple.json
 var GoldenApple []byte
+
+// GoldenGoogle is golden-google.json: Lite's Google Play mapping, events, event bodies and purchase
+// verification (golden-google.ts says how to regenerate it).
+//
+//go:embed golden-google.json
+var GoldenGoogle []byte
 
 // Golden is golden.json.
 type Golden struct {

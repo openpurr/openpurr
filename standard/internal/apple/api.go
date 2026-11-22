@@ -181,7 +181,7 @@ func (c *Client) TransactionHistory(ctx context.Context, anyTransactionID string
 		if revision != "" {
 			query.Set("revision", revision)
 		}
-		res, err := c.request(ctx, http.MethodGet, "/inApps/v2/history/"+encodeURIComponent(anyTransactionID), query)
+		res, err := c.request(ctx, http.MethodGet, "/inApps/v2/history/"+jsobj.EncodeURIComponent(anyTransactionID), query)
 		if err != nil {
 			return nil, false, err
 		}
@@ -208,7 +208,7 @@ func (c *Client) TransactionHistory(ctx context.Context, anyTransactionID string
 // SubscriptionStatuses returns the latest transaction and renewal info for every subscription the
 // customer has in the app.
 func (c *Client) SubscriptionStatuses(ctx context.Context, anyTransactionID string) ([]SubscriptionStatus, error) {
-	res, err := c.request(ctx, http.MethodGet, "/inApps/v1/subscriptions/"+encodeURIComponent(anyTransactionID), nil)
+	res, err := c.request(ctx, http.MethodGet, "/inApps/v1/subscriptions/"+jsobj.EncodeURIComponent(anyTransactionID), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -256,7 +256,7 @@ func (c *Client) RequestTestNotification(ctx context.Context) (string, error) {
 
 // TestNotificationStatus is Apple's answer about a test notification.
 func (c *Client) TestNotificationStatus(ctx context.Context, token string) (any, error) {
-	return c.request(ctx, http.MethodGet, "/inApps/v1/notifications/test/"+encodeURIComponent(token), nil)
+	return c.request(ctx, http.MethodGet, "/inApps/v1/notifications/test/"+jsobj.EncodeURIComponent(token), nil)
 }
 
 // Clients is one client per environment.
@@ -392,20 +392,3 @@ func SignES256(key *ecdsa.PrivateKey, header, claims *jsobj.Object) (string, err
 }
 
 var pemArmor = regexp.MustCompile(`-----(BEGIN|END) [^-]+-----`)
-
-// encodeURIComponent is JavaScript's: everything but A-Z a-z 0-9 - _ . ! ~ * ' ( ) is escaped.
-func encodeURIComponent(s string) string {
-	const hex = "0123456789ABCDEF"
-	var b strings.Builder
-	for i := 0; i < len(s); i++ {
-		c := s[i]
-		if c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9' || strings.IndexByte("-_.!~*'()", c) >= 0 {
-			b.WriteByte(c)
-			continue
-		}
-		b.WriteByte('%')
-		b.WriteByte(hex[c>>4])
-		b.WriteByte(hex[c&15])
-	}
-	return b.String()
-}

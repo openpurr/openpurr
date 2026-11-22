@@ -1,0 +1,914 @@
+{
+ "now": 1800000000000,
+ "config": {
+  "version": 1,
+  "apps": {
+   "ios": {
+    "store": "app_store",
+    "bundle_id": "com.example.openpurr",
+    "sdk_keys": [
+     "appl_test_ios_0123456789"
+    ],
+    "products": {
+     "pro_monthly": {
+      "type": "subscription"
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     }
+    }
+   },
+   "android": {
+    "store": "play_store",
+    "package_name": "com.example.openpurr",
+    "sdk_keys": [
+     "goog_test_android_0123456789"
+    ],
+    "products": {
+     "pro": {
+      "type": "subscription",
+      "base_plans": [
+       "monthly",
+       "annual"
+      ]
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   }
+  },
+  "entitlements": {
+   "pro": {
+    "products": {
+     "ios": [
+      "pro_monthly",
+      "lifetime"
+     ],
+     "android": [
+      "pro",
+      "lifetime"
+     ]
+    }
+   },
+   "annual_perks": {
+    "products": {
+     "android": [
+      "pro:annual"
+     ]
+    }
+   }
+  },
+  "offerings": []
+ },
+ "money": [
+  {
+   "name": "units and nanos",
+   "money": "{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}",
+   "result": "{\"micros\":4990000,\"currency\":\"USD\"}"
+  },
+  {
+   "name": "no nanos",
+   "money": "{\"currencyCode\":\"JPY\",\"units\":\"1200\"}",
+   "result": "{\"micros\":1200000000,\"currency\":\"JPY\"}"
+  },
+  {
+   "name": "no units",
+   "money": "{\"currencyCode\":\"EUR\",\"nanos\":500000}",
+   "result": "{\"micros\":500,\"currency\":\"EUR\"}"
+  },
+  {
+   "name": "rounded nanos",
+   "money": "{\"currencyCode\":\"EUR\",\"units\":\"0\",\"nanos\":1500}",
+   "result": "{\"micros\":2,\"currency\":\"EUR\"}"
+  },
+  {
+   "name": "numeric units",
+   "money": "{\"currencyCode\":\"EUR\",\"units\":3}",
+   "result": "{\"micros\":3000000,\"currency\":\"EUR\"}"
+  },
+  {
+   "name": "no currency",
+   "money": "{\"units\":\"4\"}",
+   "result": "null"
+  },
+  {
+   "name": "undefined",
+   "money": null,
+   "result": "null"
+  }
+ ],
+ "subscriptionRows": [
+  {
+   "name": "active",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "price paid",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": "{\"orderId\":\"GPA.1234-5678-9012-34567\",\"total\":{\"currencyCode\":\"EUR\",\"units\":\"4\",\"nanos\":490000000}}",
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4490000,\"currency\":\"EUR\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "price paid per line item",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": "{\"total\":{\"currencyCode\":\"USD\",\"units\":\"9\"},\"lineItems\":[{\"productId\":\"other\",\"total\":{\"currencyCode\":\"GBP\",\"units\":\"1\"}},{\"productId\":\"pro\",\"total\":{\"currencyCode\":\"CHF\",\"units\":\"5\",\"nanos\":250000000}}]}",
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":5250000,\"currency\":\"CHF\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "line item without total",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": "{\"total\":{\"currencyCode\":\"USD\",\"units\":\"9\"},\"lineItems\":[{\"productId\":\"pro\"}]}",
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9000000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "order without total",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": "{\"orderId\":\"x\"}",
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "production",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"production\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "renewal order",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567..3\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..3\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1800000000000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "free trial",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"freeTrial\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"trial\",\"ownership_type\":\"PURCHASED\",\"price_micros\":0,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "free trial without recurring price",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"freeTrial\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"trial\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "intro price",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"introductoryPrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"intro\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "intro price, paid",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"introductoryPrice\":{}}}]}",
+   "order": "{\"orderId\":\"GPA.1234-5678-9012-34567\",\"total\":{\"currencyCode\":\"EUR\",\"units\":\"4\",\"nanos\":490000000}}",
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"intro\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4490000,\"currency\":\"EUR\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no offer phase",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "prepaid",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}},\"prepaidPlan\":{}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no order id",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"tok-1:2027-02-13T08:00:00.000Z\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no order id, no expiry",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"tok-1:1799913600000\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no start time",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1800000000000,\"original_purchased_at\":1800000000000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no region, no base plan",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":null,\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "fractional seconds",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-15T08:00:00.123Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-15T08:00:00.987654Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1800000000123,\"original_purchased_at\":1800000000123,\"expires_at\":1802678400987,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "offset time",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-15T08:00:00+02:00\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799992800000,\"original_purchased_at\":1799992800000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no line item for the product",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"other\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "pro",
+   "error": "Google's answer has no line item for pro"
+  },
+  {
+   "name": "one-time product in config",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"lifetime\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "order": null,
+   "productId": "lifetime",
+   "error": "lifetime is a subscription in Google Play, but the config says non_consumable"
+  }
+ ],
+ "subscriptionStates": [
+  {
+   "name": "SUBSCRIPTION_STATE_ACTIVE",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_CANCELED",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_IN_GRACE_PERIOD",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_IN_GRACE_PERIOD\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":1802505600000,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_ON_HOLD",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ON_HOLD\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":3,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_PAUSED",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PAUSED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":6,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_EXPIRED",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_EXPIRED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":2,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":2,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_PENDING",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PENDING\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":null,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "SUBSCRIPTION_STATE_UNSPECIFIED",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_UNSPECIFIED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":null,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "no state",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":null,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "auto-renew off",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":false},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":0,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "auto-renew unset",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":0,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "prepaid",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}},\"prepaidPlan\":{}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":null,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "paused with resume time",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PAUSED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"pausedStateContext\":{\"autoResumeTime\":\"2027-02-04T08:00:00.000Z\"}}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":6,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":1801728000000,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "active with resume time",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"pausedStateContext\":{\"autoResumeTime\":\"2027-02-04T08:00:00.000Z\"}}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "grace without expiry",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_IN_GRACE_PERIOD\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "no line items",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[]}",
+   "state": "{\"store\":\"play_store\",\"original_transaction_id\":\"tok-1\",\"status\":1,\"auto_renew\":null,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}"
+  }
+ ],
+ "productRows": [
+  {
+   "name": "license test",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "production",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"production\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "promo",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":1,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"production\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "consumable, price paid",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": "{\"total\":{\"currencyCode\":\"EUR\",\"units\":\"0\",\"nanos\":990000000}}",
+   "productId": "coins_100",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"coins_100\",\"base_plan_id\":null,\"product_type\":\"consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":990000,\"currency\":\"EUR\",\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "canceled",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":1,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":1800000000000,\"revocation_reason\":\"canceled\",\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "pending",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":2,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "null"
+  },
+  {
+   "name": "no order id",
+   "product": "{\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"tok-2\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no purchase time",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1800000000000,\"original_purchased_at\":1800000000000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "numeric purchase time",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":1799999995000,\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999995000,\"original_purchased_at\":1799999995000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no region",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0}",
+   "order": null,
+   "productId": "lifetime",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-2\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":null,\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "subscription in config",
+   "product": "{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}",
+   "order": null,
+   "productId": "pro",
+   "error": "pro is a one-time product in Google Play, but the config says subscription"
+  }
+ ],
+ "subscriptionEvents": [
+  {
+   "name": "purchased",
+   "type": "4",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\"}]"
+  },
+  {
+   "name": "purchased, plan change",
+   "type": "4",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"annual\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "pro:monthly",
+   "events": "[{\"type\":\"PRODUCT_CHANGE\",\"dedupeKey\":\"notification:play_store:msg-1:PRODUCT_CHANGE\",\"extra\":{\"new_product_id\":\"pro:annual\"}},{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\"}]"
+  },
+  {
+   "name": "purchased, same plan re-signup",
+   "type": "4",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "pro:monthly",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\"}]"
+  },
+  {
+   "name": "purchased, no base plan",
+   "type": "4",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "pro:monthly",
+   "events": "[{\"type\":\"PRODUCT_CHANGE\",\"dedupeKey\":\"notification:play_store:msg-1:PRODUCT_CHANGE\",\"extra\":{\"new_product_id\":\"pro\"}},{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\"}]"
+  },
+  {
+   "name": "purchased, no base plan either side",
+   "type": "4",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "pro:null",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\"}]"
+  },
+  {
+   "name": "renewed after trial",
+   "type": "2",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "trial",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"is_trial_conversion\":true}}]"
+  },
+  {
+   "name": "renewed",
+   "type": "2",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "normal",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"is_trial_conversion\":false}}]"
+  },
+  {
+   "name": "renewed, first seen",
+   "type": "2",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"is_trial_conversion\":false}}]"
+  },
+  {
+   "name": "recovered",
+   "type": "1",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "intro",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"is_trial_conversion\":false}}]"
+  },
+  {
+   "name": "restarted",
+   "type": "7",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"UNCANCELLATION\",\"dedupeKey\":\"notification:play_store:msg-1:UNCANCELLATION\"}]"
+  },
+  {
+   "name": "canceled by user",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"userInitiatedCancellation\":{\"cancelTime\":\"2027-01-15T08:00:00.000Z\"}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"notification:play_store:msg-1:CANCELLATION\",\"extra\":{\"cancel_reason\":\"UNSUBSCRIBE\"}}]"
+  },
+  {
+   "name": "canceled by system",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"systemInitiatedCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"billing-cancel:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "name": "canceled by developer",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"developerInitiatedCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"notification:play_store:msg-1:CANCELLATION\",\"extra\":{\"cancel_reason\":\"DEVELOPER_INITIATED\"}}]"
+  },
+  {
+   "name": "canceled by replacement",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"replacementCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "canceled without context",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "canceled, empty context",
+   "type": "3",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "grace period",
+   "type": "6",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"BILLING_ISSUE\",\"dedupeKey\":\"billing-issue:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"grace_period_expiration_at_ms\":1802505600000}},{\"type\":\"CANCELLATION\",\"dedupeKey\":\"billing-cancel:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "name": "grace period, no expiry",
+   "type": "6",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"BILLING_ISSUE\",\"dedupeKey\":\"billing-issue:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"grace_period_expiration_at_ms\":null}},{\"type\":\"CANCELLATION\",\"dedupeKey\":\"billing-cancel:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "name": "on hold",
+   "type": "5",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"BILLING_ISSUE\",\"dedupeKey\":\"billing-issue:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"grace_period_expiration_at_ms\":null}},{\"type\":\"CANCELLATION\",\"dedupeKey\":\"billing-cancel:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}},{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"expiration_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "name": "expired",
+   "type": "13",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"expiration_reason\":\"UNKNOWN\"}}]"
+  },
+  {
+   "name": "expired after cancel",
+   "type": "13",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"userInitiatedCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"expiration_reason\":\"UNSUBSCRIBE\"}}]"
+  },
+  {
+   "name": "expired after billing",
+   "type": "13",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"systemInitiatedCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"expiration_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "name": "expired after replacement",
+   "type": "13",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"canceledStateContext\":{\"replacementCancellation\":{}}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "pause scheduled",
+   "type": "11",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}],\"pausedStateContext\":{\"autoResumeTime\":\"2027-02-14T08:00:00.000Z\"}}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"SUBSCRIPTION_PAUSED\",\"dedupeKey\":\"notification:play_store:msg-1:SUBSCRIPTION_PAUSED\",\"extra\":{\"auto_resume_at_ms\":1802592000000}}]"
+  },
+  {
+   "name": "pause schedule cleared",
+   "type": "11",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"SUBSCRIPTION_PAUSED\",\"dedupeKey\":\"notification:play_store:msg-1:SUBSCRIPTION_PAUSED\",\"extra\":{\"auto_resume_at_ms\":null}}]"
+  },
+  {
+   "name": "paused",
+   "type": "10",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:play_store:tok-1:GPA.1234-5678-9012-34567..1\",\"extra\":{\"expiration_reason\":\"SUBSCRIPTION_PAUSED\"}}]"
+  },
+  {
+   "name": "deferred",
+   "type": "9",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"SUBSCRIPTION_EXTENDED\",\"dedupeKey\":\"notification:play_store:msg-1:SUBSCRIPTION_EXTENDED\"}]"
+  },
+  {
+   "name": "revoked",
+   "type": "12",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":1800000000000,\"revocation_reason\":\"revoked\",\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"refund:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"CUSTOMER_SUPPORT\"},\"negativePrice\":true}]"
+  },
+  {
+   "name": "price change confirmed (8)",
+   "type": "8",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "pending purchase canceled (20)",
+   "type": "20",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  },
+  {
+   "name": "type as a string",
+   "type": "\"4\"",
+   "sub": "{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "previousPeriodType": "",
+   "replacedProductId": "",
+   "events": "[]"
+  }
+ ],
+ "otherEvents": [
+  {
+   "name": "refund",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":1800000000000,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"refund:play_store:GPA.1234-5678-9012-34567..1\",\"extra\":{\"cancel_reason\":\"CUSTOMER_SUPPORT\"},\"negativePrice\":true}]"
+  },
+  {
+   "name": "one-time purchase",
+   "row": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"NON_RENEWING_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.3333-4444-5555-66666\"}]"
+  }
+ ],
+ "eventBodies": [
+  {
+   "name": "initial purchase",
+   "type": "INITIAL_PURCHASE",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "renewal after trial",
+   "type": "RENEWAL",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"is_trial_conversion\":true}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"RENEWAL\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"is_trial_conversion\":true}}"
+  },
+  {
+   "name": "product change",
+   "type": "PRODUCT_CHANGE",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"annual\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"new_product_id\":\"pro:annual\"}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"PRODUCT_CHANGE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:annual\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\",\"annual_perks\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"new_product_id\":\"pro:annual\"}}"
+  },
+  {
+   "name": "billing issue",
+   "type": "BILLING_ISSUE",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"grace_period_expiration_at_ms\":1800259200000}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"BILLING_ISSUE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"grace_period_expiration_at_ms\":1800259200000}}"
+  },
+  {
+   "name": "billing cancellation",
+   "type": "CANCELLATION",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"cancel_reason\":\"BILLING_ERROR\"}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"CANCELLATION\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"cancel_reason\":\"BILLING_ERROR\"}}"
+  },
+  {
+   "name": "expiration, paused",
+   "type": "EXPIRATION",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"expiration_reason\":\"SUBSCRIPTION_PAUSED\"}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"EXPIRATION\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"expiration_reason\":\"SUBSCRIPTION_PAUSED\"}}"
+  },
+  {
+   "name": "paused",
+   "type": "SUBSCRIPTION_PAUSED",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"auto_resume_at_ms\":1802592000000}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"SUBSCRIPTION_PAUSED\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"auto_resume_at_ms\":1802592000000}}"
+  },
+  {
+   "name": "extended",
+   "type": "SUBSCRIPTION_EXTENDED",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"SUBSCRIPTION_EXTENDED\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "uncancellation",
+   "type": "UNCANCELLATION",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"UNCANCELLATION\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":4.99,\"price_in_purchased_currency\":4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "refund",
+   "type": "CANCELLATION",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":1800000000000,\"revocation_reason\":\"voided\",\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"cancel_reason\":\"CUSTOMER_SUPPORT\"}",
+   "negativePrice": true,
+   "priceUsd": -4.99,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"CANCELLATION\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":-4.99,\"price_in_purchased_currency\":-4.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"cancel_reason\":\"CUSTOMER_SUPPORT\"}}"
+  },
+  {
+   "name": "one-time, production, EUR",
+   "type": "NON_RENEWING_PURCHASE",
+   "environment": "production",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"production\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"EUR\",\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": 10.5,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"NON_RENEWING_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"PRODUCTION\",\"store\":\"PLAY_STORE\",\"product_id\":\"lifetime\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":null,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":\"DE\",\"currency\":\"EUR\",\"price\":10.5,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "no price, no region",
+   "type": "INITIAL_PURCHASE",
+   "environment": "sandbox",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"trial\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":null,\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"android\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:monthly\",\"period_type\":\"TRIAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"GPA.1234-5678-9012-34567..1\",\"original_transaction_id\":\"tok-1\",\"is_family_share\":false,\"country_code\":null,\"currency\":null,\"price\":null,\"price_in_purchased_currency\":null,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  }
+ ],
+ "verifications": [
+  {
+   "name": "subscription, order readable",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}},\"order\":{\"body\":{\"orderId\":\"GPA.1234-5678-9012-34567\",\"total\":{\"currencyCode\":\"EUR\",\"units\":\"4\",\"nanos\":490000000}}}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4490000,\"currency\":\"EUR\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[{\"store\":\"play_store\",\"original_transaction_id\":\"tok-v\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}],\"postedTransactionId\":\"GPA.1234-5678-9012-34567\",\"ack\":{\"kind\":\"subscription\",\"productId\":\"pro\",\"purchaseToken\":\"tok-v\"},\"replaces\":null}"
+  },
+  {
+   "name": "subscription, order forbidden",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_ACKNOWLEDGED\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}},\"order\":{\"status\":403}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[{\"store\":\"play_store\",\"original_transaction_id\":\"tok-v\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}],\"postedTransactionId\":\"GPA.1234-5678-9012-34567\",\"ack\":null,\"replaces\":null}"
+  },
+  {
+   "name": "subscription, linked token",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"annual\"},\"offerPhase\":{\"basePrice\":{}}}],\"linkedPurchaseToken\":\"tok-old\"}},\"order\":{\"body\":{}}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"pro\",\"base_plan_id\":\"annual\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[{\"store\":\"play_store\",\"original_transaction_id\":\"tok-v\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}],\"postedTransactionId\":\"GPA.1234-5678-9012-34567\",\"ack\":{\"kind\":\"subscription\",\"productId\":\"pro\",\"purchaseToken\":\"tok-v\"},\"replaces\":\"tok-old\"}"
+  },
+  {
+   "name": "subscription, pending",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PENDING\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}}}",
+   "error": "pending: The subscription purchase is still pending."
+  },
+  {
+   "name": "subscription, pending canceled",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}}}",
+   "error": "pending: The subscription purchase is still pending."
+  },
+  {
+   "name": "subscription, no order id",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"pro\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"tok-v:2027-02-13T08:00:00.000Z\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"pro\",\"base_plan_id\":\"monthly\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":4990000,\"currency\":\"USD\",\"storefront\":\"US\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[{\"store\":\"play_store\",\"original_transaction_id\":\"tok-v\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"auto_resume_at\":null,\"signed_at\":1800000000000}],\"postedTransactionId\":\"tok-v:2027-02-13T08:00:00.000Z\",\"ack\":{\"kind\":\"subscription\",\"productId\":\"pro\",\"purchaseToken\":\"tok-v\"},\"replaces\":null}"
+  },
+  {
+   "name": "subscription, wrong product",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"body\":{\"kind\":\"androidpublisher#subscriptionPurchaseV2\",\"startTime\":\"2027-01-14T08:00:00.000Z\",\"regionCode\":\"US\",\"subscriptionState\":\"SUBSCRIPTION_STATE_ACTIVE\",\"acknowledgementState\":\"ACKNOWLEDGEMENT_STATE_PENDING\",\"testPurchase\":{},\"lineItems\":[{\"productId\":\"other\",\"expiryTime\":\"2027-02-13T08:00:00.000Z\",\"latestSuccessfulOrderId\":\"GPA.1234-5678-9012-34567\",\"autoRenewingPlan\":{\"autoRenewEnabled\":true,\"recurringPrice\":{\"currencyCode\":\"USD\",\"units\":\"4\",\"nanos\":990000000}},\"offerDetails\":{\"basePlanId\":\"monthly\"},\"offerPhase\":{\"basePrice\":{}}}]}}}",
+   "error": "mapping: Google's answer has no line item for pro"
+  },
+  {
+   "name": "subscription, unknown token",
+   "productId": "pro",
+   "answers": "{\"sub\":{\"status\":410}}",
+   "error": "api 410: Google Play Developer API 410: GET"
+  },
+  {
+   "name": "non-consumable",
+   "productId": "lifetime",
+   "answers": "{\"product\":{\"body\":{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}},\"order\":{\"body\":{\"total\":{\"currencyCode\":\"EUR\",\"units\":\"19\",\"nanos\":990000000}}}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":19990000,\"currency\":\"EUR\",\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[],\"postedTransactionId\":\"GPA.3333-4444-5555-66666\",\"ack\":{\"kind\":\"product\",\"productId\":\"lifetime\",\"purchaseToken\":\"tok-v\"},\"replaces\":null}"
+  },
+  {
+   "name": "non-consumable, acknowledged",
+   "productId": "lifetime",
+   "answers": "{\"product\":{\"body\":{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":1,\"purchaseType\":0,\"regionCode\":\"DE\"}},\"order\":{\"status\":403}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[],\"postedTransactionId\":\"GPA.3333-4444-5555-66666\",\"ack\":null,\"replaces\":null}"
+  },
+  {
+   "name": "consumable",
+   "productId": "coins_100",
+   "answers": "{\"product\":{\"body\":{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":0,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}},\"order\":{\"status\":403}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"coins_100\",\"base_plan_id\":null,\"product_type\":\"consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[],\"postedTransactionId\":\"GPA.3333-4444-5555-66666\",\"ack\":null,\"replaces\":null}"
+  },
+  {
+   "name": "one-time, pending",
+   "productId": "lifetime",
+   "answers": "{\"product\":{\"body\":{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":2,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}}}",
+   "error": "pending: The purchase is still pending."
+  },
+  {
+   "name": "one-time, canceled",
+   "productId": "lifetime",
+   "answers": "{\"product\":{\"body\":{\"orderId\":\"GPA.3333-4444-5555-66666\",\"purchaseTimeMillis\":\"1799999999000\",\"purchaseState\":1,\"acknowledgementState\":0,\"purchaseType\":0,\"regionCode\":\"DE\"}},\"order\":{\"status\":403}}",
+   "result": "{\"transactions\":[{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.3333-4444-5555-66666\",\"original_transaction_id\":\"tok-v\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799999999000,\"original_purchased_at\":1799999999000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":\"DE\",\"revoked_at\":1800000000000,\"revocation_reason\":\"canceled\",\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}],\"states\":[],\"postedTransactionId\":\"GPA.3333-4444-5555-66666\",\"ack\":{\"kind\":\"product\",\"productId\":\"lifetime\",\"purchaseToken\":\"tok-v\"},\"replaces\":null}"
+  }
+ ]
+}
