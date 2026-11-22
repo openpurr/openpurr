@@ -1,5 +1,6 @@
-// Package fx converts prices to USD with the daily exchange rates in fx_rate (lite/src/fx.ts).
-// Fetching the rates (the European Central Bank's reference rates) arrives with the job loop.
+// Package fx converts prices to USD with the daily exchange rates in fx_rate, and fetches the
+// rates (lite/src/fx.ts). Conversion uses the rate for the purchase's date, or the most recent
+// earlier business day (weekends, holidays, and today before publication).
 package fx
 
 import (

@@ -20,6 +20,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/applejws"
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/fx"
 	"github.com/openpurr/openpurr/standard/internal/google"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
@@ -55,6 +56,8 @@ type Deps struct {
 	GoogleKeys   *google.Keys
 	// Sends webhook deliveries; made by New when nil.
 	Webhooks *webhooks.Deliverer
+	// Exchange rates; the European Central Bank when nil.
+	FX fx.Provider
 	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
 	OperatorSecret string
 	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
@@ -91,6 +94,9 @@ func New(d *Deps) http.Handler {
 	}
 	if d.Webhooks == nil {
 		d.Webhooks = &webhooks.Deliverer{DB: d.Pool, HTTP: d.HTTPClient, Secret: d.Secret, Now: d.Clock.Now, Log: d.Log}
+	}
+	if d.FX == nil {
+		d.FX = fx.ECB
 	}
 	s := &server{Deps: d}
 	if d.Jobs != nil {
