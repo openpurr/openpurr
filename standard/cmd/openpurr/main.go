@@ -10,8 +10,11 @@
 //	RATE_LIMIT_IP_PER_MINUTE     SDK requests per client IP per minute (default 300; 0 = off)
 //	RATE_LIMIT_USER_PER_MINUTE   SDK requests per app user per minute (default 60; 0 = off)
 //	CLIENT_IP_HEADER             header with the client IP set by your proxy (default: the connection)
+//	CLIENT_IP_HOPS               with X-Forwarded-For: the client is this many entries from the end (default 0: the first)
 //	IAP_AUDIENCE                 sign operators in through Google's Identity-Aware Proxy (optional)
 //	LOG_LEVEL                    debug, info (default), warn or error
+//	LOG_FORMAT                   json, or gcp (Cloud Logging's severity and message; the default on Cloud Run)
+//	SHUTDOWN_TIMEOUT_SECONDS     how long SIGTERM waits for work in progress (default 25; 8 on Cloud Run)
 //
 // `openpurr admin ...` manages operators straight in the database (create, login-link, list,
 // require-totp); see admin.go.
@@ -27,6 +30,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -53,20 +57,80 @@ import (
 // SDK_CONFIG_MAX_AGE_MS).
 const configMaxAgeMs = 60_000
 
-// How long shutdown waits for requests, the job in progress and deferred work. Cloud Run allows
-// 10 seconds after SIGTERM by default, Kubernetes 30.
-const shutdownTimeout = 25 * time.Second
+// How long shutdown waits for requests, the job in progress and deferred work: 25 seconds (within
+// Kubernetes' 30), or 8 on Cloud Run, which stops a container 10 seconds after SIGTERM.
+// SHUTDOWN_TIMEOUT_SECONDS overrides it.
+func shutdownTimeout(onCloudRun bool) (time.Duration, error) {
+	def := 25
+	if onCloudRun {
+		def = 8
+	}
+	n, err := envInt("SHUTDOWN_TIMEOUT_SECONDS", def)
+	if err != nil {
+		return 0, err
+	}
+	return time.Duration(n) * time.Second, nil
+}
 
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "admin" {
 		os.Exit(runAdmin(os.Args[2:], os.Stdout, os.Stderr))
 	}
-	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel(os.Getenv("LOG_LEVEL"))}))
+	log, err := newLogger(os.Stdout, os.Getenv("LOG_FORMAT"), os.Getenv("LOG_LEVEL"), os.Getenv("K_SERVICE") != "")
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
 	slog.SetDefault(log)
 	if err := run(log); err != nil {
 		log.Error("openpurr stopped", "error", err.Error())
 		os.Exit(1)
 	}
+}
+
+// newLogger writes JSON lines to w. Format "gcp" (the default on Cloud Run, which sets K_SERVICE)
+// names the fields as Cloud Logging reads them: severity (DEBUG, INFO, WARNING, ERROR) and message,
+// so the console shows each line's level and text. "json" keeps slog's level and msg.
+func newLogger(w io.Writer, format, level string, onCloudRun bool) (*slog.Logger, error) {
+	opts := &slog.HandlerOptions{Level: logLevel(level)}
+	switch strings.ToLower(format) {
+	case "":
+		if onCloudRun {
+			opts.ReplaceAttr = cloudLogging
+		}
+	case "gcp":
+		opts.ReplaceAttr = cloudLogging
+	case "json":
+	default:
+		return nil, fmt.Errorf("LOG_FORMAT must be json or gcp (got %q)", format)
+	}
+	return slog.New(slog.NewJSONHandler(w, opts)), nil
+}
+
+// cloudLogging renames slog's built-in fields to Cloud Logging's structured-logging names
+// (https://cloud.google.com/logging/docs/structured-logging).
+func cloudLogging(groups []string, a slog.Attr) slog.Attr {
+	if len(groups) > 0 {
+		return a
+	}
+	switch a.Key {
+	case slog.MessageKey:
+		a.Key = "message"
+	case slog.LevelKey:
+		a.Key = "severity"
+		level, _ := a.Value.Any().(slog.Level)
+		switch {
+		case level >= slog.LevelError:
+			a.Value = slog.StringValue("ERROR")
+		case level >= slog.LevelWarn:
+			a.Value = slog.StringValue("WARNING")
+		case level >= slog.LevelInfo:
+			a.Value = slog.StringValue("INFO")
+		default:
+			a.Value = slog.StringValue("DEBUG")
+		}
+	}
+	return a
 }
 
 func logLevel(s string) slog.Level {
@@ -110,6 +174,14 @@ func run(log *slog.Logger) error {
 		return err
 	}
 	userLimit, err := envInt("RATE_LIMIT_USER_PER_MINUTE", 60)
+	if err != nil {
+		return err
+	}
+	clientIPHops, err := envInt("CLIENT_IP_HOPS", 0)
+	if err != nil {
+		return err
+	}
+	stopWithin, err := shutdownTimeout(os.Getenv("K_SERVICE") != "")
 	if err != nil {
 		return err
 	}
@@ -214,6 +286,7 @@ func run(log *slog.Logger) error {
 		PublicURL:      publicURL,
 		Secret:         os.LookupEnv,
 		ClientIPHeader: os.Getenv("CLIENT_IP_HEADER"),
+		ClientIPHops:   clientIPHops,
 		Conformance:    conformance,
 	}
 
@@ -251,8 +324,8 @@ func run(log *slog.Logger) error {
 		log.Info("shutting down")
 	}
 	// Stop taking requests (in-flight ones finish), then let the job in progress and deferred
-	// work (first webhook attempts, snapshot rebuilds) finish, all within shutdownTimeout.
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	// work (first webhook attempts, snapshot rebuilds) finish, all within stopWithin.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), stopWithin)
 	defer cancel()
 	if err := srv.Shutdown(shutdownCtx); err != nil {
 		log.Error("shutdown", "error", err.Error())

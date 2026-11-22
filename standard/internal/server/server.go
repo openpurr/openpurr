@@ -73,6 +73,9 @@ type Deps struct {
 	// The header holding the client IP set by a trusted proxy (for example CF-Connecting-IP or
 	// X-Forwarded-For); empty means the connection's address.
 	ClientIPHeader string
+	// With a list header (X-Forwarded-For), which entry from the end is the client's: the number of
+	// trusted proxies that append to it. 0 means the first entry.
+	ClientIPHops int
 
 	// Verifies Identity-Aware Proxy assertions (IAP_AUDIENCE); nil means IAP sign-in is off.
 	IAP *iap.Verifier
@@ -293,9 +296,25 @@ func (s *server) logRequests(next http.Handler) http.Handler {
 	})
 }
 
-// clientIP is the address rate limits count against.
+// clientIP is the address rate limits count against and the audit log records.
+//
+// With ClientIPHops = 0, the first entry of ClientIPHeader (a proxy that overwrites the header,
+// such as Cloudflare's CF-Connecting-IP). With N > 0, the Nth entry from the end of the list, for
+// proxies that append to whatever X-Forwarded-For the client sent (Google's front ends do): only
+// the entries the trusted proxies added can be believed, and a request with fewer entries than
+// that didn't come through them, so it counts as the connection's address.
 func (s *server) clientIP(r *http.Request) string {
-	if s.ClientIPHeader != "" {
+	if s.ClientIPHeader != "" && s.ClientIPHops > 0 {
+		var entries []string
+		for _, line := range r.Header.Values(s.ClientIPHeader) {
+			for _, e := range strings.Split(line, ",") {
+				entries = append(entries, strings.TrimSpace(e))
+			}
+		}
+		if len(entries) >= s.ClientIPHops {
+			return entries[len(entries)-s.ClientIPHops]
+		}
+	} else if s.ClientIPHeader != "" {
 		v := r.Header.Get(s.ClientIPHeader)
 		if i := strings.IndexByte(v, ','); i >= 0 {
 			v = v[:i]

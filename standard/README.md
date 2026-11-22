@@ -39,7 +39,8 @@ server on `/mcp` with its OAuth endpoints (`/.well-known/oauth-*`, `/oauth/*`) a
 on `GET /healthz`, and runs the background jobs
 (see "Webhooks and background jobs"). Logs are JSON on stdout. SIGTERM stops taking requests, lets
 those in progress, the job in progress and deferred work (first webhook attempts, snapshot
-rebuilds) finish, and stops, within 25 seconds.
+rebuilds) finish, and stops, within 25 seconds (8 on Cloud Run, which stops a container 10 seconds
+after SIGTERM; work cut short is picked up by the next server's jobs).
 
 | Variable | |
 |---|---|
@@ -50,12 +51,25 @@ rebuilds) finish, and stops, within 25 seconds.
 | `PUBLIC_URL` | The server's public origin (`https://purchases.example.com`). Optional: setup links, the dashboard's same-origin check, the MCP server's Origin check and the OAuth issuer and resource (`<PUBLIC_URL>/mcp`) use it, else each request's host and scheme (`X-Forwarded-Proto` behind a proxy that ends TLS). Set it behind a proxy, so OAuth tokens are issued for the address clients use. |
 | `RATE_LIMIT_IP_PER_MINUTE` | SDK requests per client IP per minute (default 300, 0 = off). |
 | `RATE_LIMIT_USER_PER_MINUTE` | SDK requests per app user per minute (default 60, 0 = off). |
-| `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `X-Forwarded-For` or `CF-Connecting-IP`). Without it, the connection's address is used. Only set it behind a proxy that overwrites the header. |
+| `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `CF-Connecting-IP`, `X-Client-IP` or `X-Forwarded-For`). Without it, the connection's address is used. Only set it behind a proxy that sets the header, so clients can't choose their own address. |
+| `CLIENT_IP_HOPS` | For a header proxies append to (`X-Forwarded-For`): the client is this many entries from the end, one per trusted proxy that appends (default 0: the first entry, for a header the proxy overwrites). A request with fewer entries counts as the connection's address. |
 | `LOG_LEVEL` | `debug`, `info` (default), `warn` or `error`. |
+| `LOG_FORMAT` | `json` (slog's `level` and `msg`) or `gcp` (Cloud Logging's `severity` and `message`). Default `gcp` on Cloud Run (when `K_SERVICE` is set), else `json`. |
+| `SHUTDOWN_TIMEOUT_SECONDS` | How long SIGTERM waits for work in progress (default 25; 8 on Cloud Run). |
 | `IAP_AUDIENCE` | Sign operators in through Google's Identity-Aware Proxy (see below): the audience IAP signs for, `/projects/<project number>/global/backendServices/<id>` behind a load balancer (several separated by commas). Off when unset. |
 
 Secrets the config names (`APPLE_IAP_KEY`, `GOOGLE_SERVICE_ACCOUNT`, webhook secrets) are
 environment variables of that name, as they're Worker secrets of that name on Lite.
+
+`DATABASE_URL` can name a Unix socket with the `host` parameter, which is how Cloud Run reaches
+Cloud SQL through its built-in connection (no connector library or sidecar):
+`postgres://openpurr:<password>@/openpurr?host=/cloudsql/<project>:<region>:<instance>`. pgx's
+`pool_max_conns` parameter caps each replica's connections (the default is the larger of 4 and
+the number of CPUs); keep replicas times that under the database's `max_connections`.
+
+To run it on Google Cloud (Cloud Run, Cloud SQL, Secret Manager, a load balancer on your own
+domain and optionally IAP), see [`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md) and the
+OpenTofu module in [`infra/gcp`](../infra/gcp).
 
 ## App Store
 

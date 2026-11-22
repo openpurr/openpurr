@@ -114,8 +114,9 @@ type Options struct {
 	ConformanceToken string
 	// Conformance store base.
 	StoreBase string
-	// The client IP header (default CF-Connecting-IP, as in Lite's tests).
+	// The client IP header (default CF-Connecting-IP, as in Lite's tests), and CLIENT_IP_HOPS.
 	ClientIPHeader string
+	ClientIPHops   int
 	// Secrets by name (APPLE_IAP_KEY...), instead of the environment.
 	Secrets map[string]string
 	// Trusted Apple roots; the test chain's root when nil.
@@ -227,6 +228,7 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		Deferred:       jobs.NewDeferred(Quiet),
 		HTTPClient:     outbound.NewClient(opts.StoreBase),
 		ClientIPHeader: header,
+		ClientIPHops:   opts.ClientIPHops,
 		Secret:         secret,
 		AppleRoots:     roots,
 		Conformance:    conf,
