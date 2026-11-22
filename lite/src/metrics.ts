@@ -10,6 +10,7 @@
 // earliest of its expiry (or the end of a grace period, for the latest one), its refund or
 // revocation, and the next transaction in the same chain (renewals don't overlap; purchases at the
 // same moment are taken in the order they were recorded, so only the last of them gives access).
+// A transaction with no expiry (missing data) gives no access and isn't part of its chain.
 // A segment adds +1 to the running totals on the day it starts and -1 on the day it ends; a chart
 // adds the daily changes up from the beginning. MRR does the same with each paid segment's price
 // normalized to a month, using the billing period inferred from its length.
@@ -142,7 +143,7 @@ export async function rollupMetrics(db: D1Database, now: number, opts: { full?: 
       db.prepare(
         `SELECT min(latest) AS at FROM (
            SELECT max(t.purchased_at) AS latest FROM subscription_state s
-           JOIN store_transaction t ON t.store = s.store AND t.original_transaction_id = s.original_transaction_id
+           JOIN store_transaction t ON t.store = s.store AND t.original_transaction_id = s.original_transaction_id AND t.expires_at IS NOT NULL
            WHERE s.updated_at >= ? GROUP BY s.store, s.original_transaction_id)`,
       ).bind(since),
     ]);
@@ -167,11 +168,13 @@ export async function rollupMetrics(db: D1Database, now: number, opts: { full?: 
                s.grace_period_expires_at AS grace_end, s.unsubscribe_detected_at AS unsubscribed_at,
                -- A chain is in purchase order, and purchases at the same moment in the order they
                -- were recorded: of those, only the last gives access (the next starts at once).
+               -- Purchases with no expiry give no access, so they're not part of it.
                (SELECT min(n.purchased_at) FROM store_transaction n
-                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id
+                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.expires_at IS NOT NULL
                   AND (n.purchased_at > t.purchased_at OR (n.purchased_at = t.purchased_at AND n.id > t.id))) AS next_at,
                (SELECT n.id FROM store_transaction n
-                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at < t.purchased_at
+                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.expires_at IS NOT NULL
+                  AND n.purchased_at < t.purchased_at
                 ORDER BY n.purchased_at DESC, n.id DESC LIMIT 1) AS prev_id,
                ${usd("t")} AS usd
              FROM store_transaction t
@@ -690,7 +693,7 @@ async function readStatus(db: D1Database, q: ChartQuery, now: number) {
        LEFT JOIN subscription_state s ON s.store = t.store AND s.original_transaction_id = t.original_transaction_id
        WHERE t.product_type = 'subscription' AND t.expires_at >= ?2
          AND NOT EXISTS (SELECT 1 FROM store_transaction n
-                         WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id
+                         WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.expires_at IS NOT NULL
                            AND (n.purchased_at > t.purchased_at OR (n.purchased_at = t.purchased_at AND n.id > t.id)))
          AND ${dims.where.join(" AND ")}
        -- Not "status": subscription_state has a column by that name, and GROUP BY would pick it.

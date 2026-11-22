@@ -278,8 +278,10 @@ describe("phase 2: reactivation, expansion, contraction, trials, status (a sandb
 
 describe("ties and missing expiries (an app of their own)", () => {
   const edge = (over: Partial<ChartQuery> = {}) => q({ app: "edge", to: "2026-03-31", ...over });
-  const months = async (chart: string) => Object.fromEntries((await readChart(env.DB, chart, edge({ interval: "month" })))!.points.map((p) => [p.date.slice(0, 7), p.values]));
-  const day = async (chart: string, date: string, key: string) => (await readChart(env.DB, chart, edge()))!.points.find((p) => p.date === date)?.values[key];
+  const months = async (chart: string, over: Partial<ChartQuery> = {}) =>
+    Object.fromEntries((await readChart(env.DB, chart, edge({ interval: "month", ...over })))!.points.map((p) => [p.date.slice(0, 7), p.values]));
+  const day = async (chart: string, date: string, key: string, over: Partial<ChartQuery> = {}) =>
+    (await readChart(env.DB, chart, edge(over)))!.points.find((p) => p.date === date)?.values[key];
   // Days where the movements don't add up to the change in the running totals.
   const mismatches = async () => {
     const [mrr, mrrMove, subs, subsMove] = await Promise.all(["mrr", "mrr_movement", "active_subscriptions", "subscription_movement"].map((c) => readChart(env.DB, c, edge())));
@@ -317,6 +319,33 @@ describe("ties and missing expiries (an app of their own)", () => {
 
     const r = await readChart(env.DB, "subscription_status", edge(), at("2026-03-15"));
     expect(Object.fromEntries(r!.categories!.map((c) => [c.key, c.value]))).toMatchObject({ active: 1, expired: 1 });
+  });
+
+  it("a purchase with no expiry gives no access, and the purchases around it are classified past it", async () => {
+    const product = "noexp";
+    const t = (x: Parameters<typeof tx>[0]) => edgeTx({ product, updatedAt: at("2026-04-20", 14) + 60_000, ...x });
+    // N: a purchase with no expiry, then a subscription: new.
+    await t({ chain: "N", bought: "2026-01-05", price: 5 });
+    await t({ chain: "N", bought: "2026-01-20", expires: "2026-02-20", price: 10 });
+    // M: one with no expiry in the middle of a subscription: it neither ends M1 nor separates M3 from it.
+    await t({ chain: "M", bought: "2026-01-05", expires: "2026-02-05", price: 10 });
+    await t({ chain: "M", bought: "2026-01-25", price: 10 });
+    await t({ chain: "M", bought: "2026-02-05", expires: "2026-03-05", price: 10 });
+    // V: one with no expiry after the latest purchase, which is still active on Mar 15.
+    await t({ chain: "V", bought: "2026-03-10", expires: "2026-04-10", price: 10 });
+    await t({ chain: "V", bought: "2026-03-12", price: 10 });
+    await rollupMetrics(env.DB, at("2026-04-20", 14) + 1800_000);
+
+    const only = { product };
+    expect(await day("active_subscriptions", "2026-01-28", "paid", only)).toBe(2); // N2 and M1
+    const m = await months("subscription_movement", only);
+    expect(m["2026-01"]).toMatchObject({ new: 2, reactivated: 0, churned: -0 }); // N2, M1
+    expect(m["2026-02"]).toMatchObject({ new: 0, reactivated: 0, churned: -1, renewed: 1 }); // N2 ends; M3 renews M1
+    expect(m["2026-03"]).toMatchObject({ new: 1, churned: -1 }); // V1 starts, M3 ends
+    expect(await mismatches()).toEqual([]);
+
+    const r = await readChart(env.DB, "subscription_status", edge(only), at("2026-03-15"));
+    expect(Object.fromEntries(r!.categories!.map((c) => [c.key, c.value]))).toMatchObject({ active: 1, expired: 2 }); // V1; N2 and M3
   });
 
   it("the incremental runs match a full rebuild", async () => {
