@@ -330,7 +330,21 @@ describe("charts API", () => {
     expect(csv.headers.get("content-type")).toMatch(/text\/csv/);
     expect((await csv.text()).split("\n")[0]).toBe("date,net,refunds,gross");
 
-    for (const bad of ["from=2026-02-01&to=2026-01-01", "from=yesterday", "interval=hour", "environment=staging", "store=amazon", "from=2000-01-01&to=2026-01-01"]) {
+    for (const bad of [
+      "from=2026-02-01&to=2026-01-01",
+      "from=yesterday",
+      "interval=hour",
+      "environment=staging",
+      "store=amazon",
+      "from=2000-01-01&to=2026-01-01",
+      // Days that don't exist (V8 would roll them over into the next month).
+      "from=2026-02-31&to=2026-03-04",
+      "from=2026-02-29&to=2026-03-04",
+      "from=2026-01-01&to=2026-04-31",
+      "to=2026-06-31",
+      "to=bad",
+      "to=",
+    ]) {
       expect((await api("GET", `/metrics/revenue?${bad}`, { session })).status).toBe(400);
     }
     expect((await api("GET", "/metrics/ltv", { session })).status).toBe(404);

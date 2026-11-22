@@ -159,6 +159,8 @@ describe("tools", () => {
     const mrr = await tool(token, "get_metrics", { chart: "mrr", environment: "sandbox", from: "2026-01-01", to: "2026-03-31", interval: "month" });
     expect(text(mrr)).toMatch(/\| month \| mrr \|/);
     expect((await tool(token, "get_metrics", { chart: "nope" })).isError).toBe(true);
+    expect((await tool(token, "get_metrics", { chart: "mrr", from: "2026-02-31", to: "2026-03-31" })).isError).toBe(true); // no Feb 31
+    expect((await tool(token, "get_metrics", { chart: "mrr", to: "2026-04-31" })).isError).toBe(true);
     expect((await tool(token, "lookup_customer", {})).isError).toBe(true);
   });
 
