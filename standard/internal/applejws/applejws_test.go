@@ -135,12 +135,10 @@ func TestVerify(t *testing.T) {
 		wantError(t, err, "unexpected alg none")
 	})
 
-	t.Run("a signature that isn't base64url isn't a verification error (Lite answers 500)", func(t *testing.T) {
+	t.Run("a signature that isn't base64url is an invalid JWS", func(t *testing.T) {
 		p := strings.Split(jws, ".")
 		_, err := applejws.NewVerifier().Verify(ctx, p[0]+"."+p[1]+".!!!", applejws.Options{Roots: roots(), At: at})
-		if err == nil || applejws.IsError(err) {
-			t.Fatalf("got %v", err)
-		}
+		wantError(t, err, "malformed JWS signature")
 	})
 }
 

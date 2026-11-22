@@ -175,8 +175,14 @@ var nextID atomic.Int64
 
 func init() { nextID.Store(2000000000000000) }
 
-// Fields are payload overrides; a nil value removes the field (Lite's `expiresDate: undefined`).
+// Fields are payload overrides; a nil value removes the field (Lite's `expiresDate: undefined`),
+// and Null sets it to JSON null.
 type Fields map[string]any
+
+type jsonNull struct{}
+
+// Null is a Fields value for JSON null.
+var Null = jsonNull{}
 
 // Transaction builds a signed-transaction payload like Lite's signTransaction, with overrides
 // applied in place (new fields at the end), at server time now.
@@ -221,6 +227,8 @@ func apply(o *jsobj.Object, overrides Fields) {
 		case nil:
 			o.Delete(k)
 			continue
+		case jsonNull:
+			v = nil
 		case int64:
 			v = float64(x)
 		case int:

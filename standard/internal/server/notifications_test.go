@@ -62,7 +62,8 @@ func TestNotificationDelivery(t *testing.T) {
 	t.Run("rejects a bad signature or body with 400", func(t *testing.T) {
 		signed, _ := tu.SignNotification(env.Clock.Now(), tu.NotificationSpec{Type: "TEST"})
 		parts := splitJWS(signed)
-		for _, bad := range []string{parts[0] + "." + parts[1] + ".AAAA", "not-a-jws"} {
+		// A signature that isn't base64url is invalid too, not a server error Apple would retry.
+		for _, bad := range []string{parts[0] + "." + parts[1] + ".AAAA", "not-a-jws", parts[0] + "." + parts[1] + ".%%%"} {
 			if res := env.PostNotification(bad); res.Status != 400 {
 				t.Errorf("%d %s", res.Status, res.Body)
 			}
@@ -273,6 +274,26 @@ func TestRefundsRevocationsAndUpgrades(t *testing.T) {
 		if prop(info, "subscriptions", "pro_monthly", "refunded_at") != r || prop(info, "subscriptions", "pro_monthly", "expires_date") != r ||
 			prop(info, "entitlements", "pro", "expires_date") != r {
 			t.Errorf("%s", jsobj.Stringify(info))
+		}
+	})
+
+	t.Run("stores a revocationReason of null as NULL, and a number as its digits", func(t *testing.T) {
+		reasonOf := func(transactionID string) *string {
+			var reason *string
+			if err := env.Pool.QueryRow(context.Background(), "SELECT revocation_reason FROM store_transaction WHERE transaction_id = $1", transactionID).Scan(&reason); err != nil {
+				t.Fatal(err)
+			}
+			return reason
+		}
+		a := subscribed(env, "n-reason-null", nil)
+		notify(env, tu.NotificationSpec{Type: "REFUND", Transaction: tu.Copy(a, tu.Fields{"revocationDate": now - 1000, "revocationReason": tu.Null}), Status: tu.Status(apple.StatusRevoked)})
+		if r := reasonOf(str(a, "transactionId")); r != nil {
+			t.Errorf("null stored as %q", *r)
+		}
+		b := subscribed(env, "n-reason-1", nil)
+		notify(env, tu.NotificationSpec{Type: "REFUND", Transaction: tu.Copy(b, tu.Fields{"revocationDate": now - 1000, "revocationReason": 1.0}), Status: tu.Status(apple.StatusRevoked)})
+		if r := reasonOf(str(b, "transactionId")); r == nil || *r != "1" {
+			t.Errorf("1 stored as %v", r)
 		}
 	})
 

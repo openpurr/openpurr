@@ -110,8 +110,7 @@ type Options struct {
 }
 
 // Verify checks a compact JWS and returns its payload, parsed with JavaScript semantics. A
-// verification failure is an *Error; anything else (a ChainStore failure, a signature that isn't
-// base64url) is returned as is, as Lite lets such errors escape as internal errors.
+// verification failure is an *Error; anything else (a ChainStore failure) is returned as is.
 func (v *Verifier) Verify(ctx context.Context, jws string, opts Options) (any, error) {
 	parts := strings.Split(jws, ".")
 	if len(parts) != 3 {
@@ -145,6 +144,11 @@ func (v *Verifier) Verify(ctx context.Context, jws string, opts Options) (any, e
 		x5c[i] = str
 	}
 
+	sig, err := DecodeBase64URL(s)
+	if err != nil {
+		return nil, fail("malformed JWS signature")
+	}
+
 	chain, err := v.resolveChain(ctx, x5c, opts)
 	if err != nil {
 		return nil, err
@@ -153,11 +157,6 @@ func (v *Verifier) Verify(ctx context.Context, jws string, opts Options) (any, e
 		return nil, fail("certificate not valid at the requested time")
 	}
 
-	sig, err := DecodeBase64URL(s)
-	if err != nil {
-		// Lite's atob throws here, outside its AppleJwsError handling.
-		return nil, errors.New("JWS signature is not base64url")
-	}
 	digest := sha256.Sum256([]byte(h + "." + p))
 	if len(sig) != 64 || !ecdsa.Verify(chain.key, digest[:], new(big.Int).SetBytes(sig[:32]), new(big.Int).SetBytes(sig[32:])) {
 		return nil, fail("JWS signature invalid")

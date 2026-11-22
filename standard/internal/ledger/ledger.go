@@ -94,10 +94,12 @@ type Grant struct {
 
 // Loaded is a customer with everything CustomerInfo is built from.
 type Loaded struct {
-	Customer     *Customer
-	Transactions []Transaction
-	States       []SubscriptionState
-	Grants       []Grant
+	Customer *Customer
+	// The customer's ledger version (LoadCustomerByID only), read before the ledger.
+	LedgerVersion int64
+	Transactions  []Transaction
+	States        []SubscriptionState
+	Grants        []Grant
 }
 
 const anonymousPrefix = "$RCAnonymousID:"
@@ -166,15 +168,26 @@ func LoadCustomer(ctx context.Context, db DB, projectID, appUserID string) (*Loa
 
 // LoadCustomerByID is LoadCustomer by internal customer ID (for rebuilding snapshots). The
 // customer is nil if there's no such customer.
+//
+// The ledger version is read first: the ledger rows that follow are at least that new, so a
+// snapshot built from them is current if the version hasn't changed by the time it's saved.
 func LoadCustomerByID(ctx context.Context, db DB, customerID string) (*Loaded, error) {
-	c, err := scanCustomer(db.QueryRow(ctx, "SELECT id, project_id, app_user_id, first_seen FROM customer WHERE id = $1", customerID))
+	var c Customer
+	var version int64
+	err := db.QueryRow(ctx, "SELECT id, project_id, app_user_id, first_seen, ledger_version FROM customer WHERE id = $1", customerID).
+		Scan(&c.ID, &c.ProjectID, &c.AppUserID, &c.FirstSeen, &version)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return &Loaded{}, nil
+	}
 	if err != nil {
 		return nil, err
 	}
-	if c == nil {
-		return &Loaded{}, nil
+	loaded, err := loadByID(ctx, db, &c)
+	if err != nil {
+		return nil, err
 	}
-	return loadByID(ctx, db, c)
+	loaded.LedgerVersion = version
+	return loaded, nil
 }
 
 func loadByID(ctx context.Context, db DB, c *Customer) (*Loaded, error) {
@@ -273,7 +286,8 @@ func MergeCustomers(ctx context.Context, tx DB, from, into string) error {
 		    received_at = excluded.received_at
 		  WHERE excluded.updated_at > subscriber_attribute.updated_at`, []any{into, from}},
 		{"DELETE FROM subscriber_attribute WHERE customer_id = $1", []any{from}},
-		{"DELETE FROM customer_snapshot WHERE customer_id IN ($1, $2)", []any{from, into}},
+		{"DELETE FROM customer_snapshot WHERE customer_id = $1", []any{from}},
+		{"UPDATE customer SET ledger_version = ledger_version + 1 WHERE id = $1", []any{into}},
 		{"DELETE FROM customer WHERE id = $1", []any{from}},
 	}
 	for _, s := range stmts {

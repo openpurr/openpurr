@@ -2,12 +2,15 @@ package customerinfo
 
 // Precomputed CustomerInfo (customer_snapshot), so GET /v1/subscribers/{id} is one query.
 //
-// Consistency rule: every write that changes what a customer's CustomerInfo shows deletes their
-// snapshot in the same transaction (Invalidate), and the snapshot is rebuilt afterwards (Refresh).
-// If the rebuild fails or hasn't happened yet, there's simply no snapshot and reads compute from
-// the ledger without writing. So the worst case is a little extra work, never stale data. A
-// snapshot built from an older config is treated as missing: each project has its own config
-// version, so a change to one project only rebuilds that project's snapshots.
+// Consistency rule: every write that changes what a customer's CustomerInfo shows bumps their
+// ledger version in the same transaction (Invalidate, migration 0002), and the snapshot is
+// rebuilt afterwards (Refresh). A snapshot counts only while its ledger version is the customer's
+// current one, and a rebuild saves only if the version it read is still current, so a write that
+// commits between a rebuild's read and its save makes the save a no-op. If the rebuild fails or
+// hasn't happened yet, there's simply no current snapshot and reads compute from the ledger
+// without writing. So the worst case is a little extra work, never stale data. A snapshot built
+// from an older config is treated as missing: each project has its own config version, so a
+// change to one project only rebuilds that project's snapshots.
 
 import (
 	"context"
@@ -28,16 +31,16 @@ func ETagOf(body string) string {
 	return `"` + hex.EncodeToString(sum[:12]) + `"`
 }
 
-// Invalidate deletes a customer's snapshot; run it in the same transaction as the change.
+// Invalidate makes a customer's snapshot outdated; run it in the same transaction as the change.
 func Invalidate(ctx context.Context, db ledger.DB, customerID string) error {
-	_, err := db.Exec(ctx, "DELETE FROM customer_snapshot WHERE customer_id = $1", customerID)
+	_, err := db.Exec(ctx, "UPDATE customer SET ledger_version = ledger_version + 1 WHERE id = $1", customerID)
 	return err
 }
 
-// InvalidateOwner deletes the snapshot of whoever owns a purchase chain.
+// InvalidateOwner makes the snapshot of whoever owns a purchase chain outdated.
 func InvalidateOwner(ctx context.Context, db ledger.DB, store, originalTransactionID string) error {
 	_, err := db.Exec(ctx,
-		`DELETE FROM customer_snapshot WHERE customer_id =
+		`UPDATE customer SET ledger_version = ledger_version + 1 WHERE id =
 		   (SELECT customer_id FROM purchase_owner WHERE store = $1 AND original_transaction_id = $2)`,
 		store, originalTransactionID)
 	return err
@@ -67,11 +70,14 @@ func Refresh(ctx context.Context, db ledger.DB, all *config.Config, customerID s
 	snapshot := ComputeSnapshot(loaded.Customer.AppUserID, loaded, project, now)
 	body := jsobj.Stringify(snapshot)
 	etag := ETagOf(body)
+	// Saved only if no write has bumped the ledger version since we read it. A write that hasn't
+	// committed yet doesn't stop the save, but its commit makes this snapshot outdated.
 	_, err = db.Exec(ctx,
-		`INSERT INTO customer_snapshot (customer_id, body, etag, config_version, updated_at) VALUES ($1, $2, $3, $4, $5)
+		`INSERT INTO customer_snapshot (customer_id, body, etag, config_version, updated_at, ledger_version)
+		 SELECT id, $2, $3, $4, $5, ledger_version FROM customer WHERE id = $1 AND ledger_version = $6
 		 ON CONFLICT (customer_id) DO UPDATE SET body = excluded.body, etag = excluded.etag,
-		   config_version = excluded.config_version, updated_at = excluded.updated_at`,
-		customerID, body, etag, project.Version, now)
+		   config_version = excluded.config_version, updated_at = excluded.updated_at, ledger_version = excluded.ledger_version`,
+		customerID, body, etag, project.Version, now, loaded.LedgerVersion)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +111,7 @@ func ReadCustomerInfo(ctx context.Context, db ledger.DB, project *config.Project
 	err := db.QueryRow(ctx,
 		`SELECT c.id, c.app_user_id, c.first_seen, s.body, s.etag, s.config_version
 		 FROM customer_alias a JOIN customer c ON c.id = a.customer_id
-		 LEFT JOIN customer_snapshot s ON s.customer_id = c.id
+		 LEFT JOIN customer_snapshot s ON s.customer_id = c.id AND s.ledger_version = c.ledger_version
 		 WHERE a.project_id = $1 AND a.app_user_id = $2`, project.ID, appUserID).
 		Scan(&id, &origID, &firstSeen, &body, &etag, &version)
 	if errors.Is(err, pgx.ErrNoRows) {
