@@ -19,7 +19,7 @@ const envWith = () => ({ ...env, OPERATOR_SECRET: SECRET });
 
 // A client metadata document host, for the Client ID Metadata Document flow.
 const METADATA_URL = "https://client.example/oauth/metadata.json";
-let metadataDoc: Record<string, unknown> = {};
+let metadataDoc: unknown = {};
 const fakeFetch = (async (input: RequestInfo | URL) => {
   const url = String(input instanceof Request ? input.url : input);
   if (url.startsWith("https://client.example/")) return new Response(JSON.stringify(metadataDoc), { headers: { "content-type": "application/json" } });
@@ -314,6 +314,13 @@ describe("Client ID Metadata Documents", () => {
     const bad = await request(authorizeUrl("https://client.example/oauth/other.json", challenge));
     expect(bad.status).toBe(400);
     expect(await bad.text()).toMatch(/different client_id/);
+    // JSON that isn't an object has no client_id either.
+    for (const doc of [null, 42, "https://client.example/oauth/other.json", [METADATA_URL], true]) {
+      metadataDoc = doc;
+      const res = await request(authorizeUrl("https://client.example/oauth/other.json", challenge));
+      expect(res.status).toBe(400);
+      expect(await res.text()).toBe("openpurr couldn't start signing in this app: The client's metadata document has a different client_id than its URL.");
+    }
     expect((await request(authorizeUrl("http://client.example/meta.json", challenge))).status).toBe(400);
     expect((await request(authorizeUrl("https://10.0.0.1/meta.json", challenge))).status).toBe(400);
   });

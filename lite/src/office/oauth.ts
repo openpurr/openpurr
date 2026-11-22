@@ -164,12 +164,14 @@ async function fetchMetadataDocument(c: Ctx, url: URL): Promise<Client> {
   if (res.status !== 200) throw new ClientError(`The client's metadata document at ${url} answered HTTP ${res.status}.`);
   const text = await res.text();
   if (text.length > METADATA_MAX_BYTES) throw new ClientError("The client's metadata document is too large.");
-  let doc: Record<string, unknown>;
+  let parsed: unknown;
   try {
-    doc = JSON.parse(text);
+    parsed = JSON.parse(text);
   } catch {
     throw new ClientError("The client's metadata document isn't valid JSON.");
   }
+  // JSON that isn't an object (null, a number, a string, an array) has no client_id: refused like one that doesn't match.
+  const doc = (parsed !== null && typeof parsed === "object" ? parsed : {}) as Record<string, unknown>;
   if (doc.client_id !== url.toString()) throw new ClientError("The client's metadata document has a different client_id than its URL.");
   const redirects = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter(validRedirect) : [];
   if (!redirects.length) throw new ClientError("The client's metadata document has no usable redirect_uris (HTTPS or localhost).");
