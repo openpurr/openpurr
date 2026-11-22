@@ -1,6 +1,7 @@
 packages:
   - cli
   - lite
+  - spec/conformance
   - website
 
 # Only these dependencies may run install scripts (they download platform binaries).
