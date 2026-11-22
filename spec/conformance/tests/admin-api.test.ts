@@ -11,6 +11,7 @@ import {
   createOperator,
   createToken,
   DAY,
+  EDITION,
   fake,
   jobs,
   linkToken,
@@ -382,11 +383,11 @@ describe("audit log and settings", () => {
     expect((await admin("PUT", "/settings", { session: adminOp.session }, { body: { require_totp: false } })).status).toBe(403);
   });
 
-  it("keeps the SDK URL (the apps' proxyURL) as a deployment-wide setting that owners set", async () => {
+  it("keeps the SDK URL (the apps' proxyURL) as a deployment-wide setting that owners set, and says which edition this is", async () => {
     const owner = await createOperator("owner");
     const viewer = await createOperator("viewer");
     const put = (session: string, sdk_url: unknown) => admin("PUT", "/settings", { session }, { body: { sdk_url } });
-    expect((await admin("GET", "/settings", { session: viewer.session })).body).toMatchObject({ sdk_url: null });
+    expect((await admin("GET", "/settings", { session: viewer.session })).body).toMatchObject({ sdk_url: null, edition: EDITION });
     expect((await put(owner.session, "https://purchases.example.com/")).body).toMatchObject({ sdk_url: "https://purchases.example.com" });
     expect((await admin("GET", "/settings", { session: viewer.session })).body.sdk_url).toBe("https://purchases.example.com");
     expect((await put(owner.session, "https://purchases.example.com/v1")).body.message).toMatch(/no path/);
