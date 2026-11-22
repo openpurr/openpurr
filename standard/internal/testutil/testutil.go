@@ -11,6 +11,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"io"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
@@ -118,7 +119,14 @@ type Options struct {
 	AppleRoots [][]byte
 	// Exchange rates for the refresh-exchange-rates job; none when nil (tests don't fetch the ECB).
 	FX fx.Provider
+	// OPERATOR_SECRET; OperatorSecret when empty, "-" for none.
+	OperatorSecret string
+	// The dashboard's files (Deps.Dashboard); the embedded copy when nil.
+	Dashboard fs.FS
 }
+
+// OperatorSecret is the tests' OPERATOR_SECRET.
+const OperatorSecret = "test-operator-secret-0123456789abcdef"
 
 // NoRates is an exchange-rate provider that never has any.
 type NoRates struct{}
@@ -193,6 +201,13 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 	if rates == nil {
 		rates = NoRates{}
 	}
+	operatorSecret := opts.OperatorSecret
+	switch operatorSecret {
+	case "":
+		operatorSecret = OperatorSecret
+	case "-":
+		operatorSecret = ""
+	}
 	loader := config.NewLoader(pool, serverClock, 60_000, seed, Quiet)
 	env.Loader = loader
 	env.Deps = &server.Deps{
@@ -211,6 +226,8 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		AppleRoots:     roots,
 		Conformance:    conf,
 		FX:             rates,
+		OperatorSecret: operatorSecret,
+		Dashboard:      opts.Dashboard,
 	}
 	env.Server = httptest.NewServer(server.New(env.Deps))
 	t.Cleanup(env.Server.Close)
