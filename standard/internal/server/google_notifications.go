@@ -121,8 +121,11 @@ func (s *server) handleGoogleNotification(w http.ResponseWriter, r *http.Request
 	if err == nil {
 		n, err = jsobj.Parse(decoded)
 	}
-	if err != nil {
-		// Redelivery can't fix a malformed message; acknowledge it so Pub/Sub stops retrying.
+	pkgV, _ := jsobj.Prop(n, "packageName")
+	pkg, hasPkg := pkgV.(string)
+	// Not JSON, or JSON that isn't a notification for some package (null, a number, no
+	// packageName): redelivery can't fix that, so acknowledge it and Pub/Sub stops retrying.
+	if err != nil || !hasPkg {
 		s.Log.Error("Ignoring malformed Pub/Sub message", "messageId", jsobj.String(messageIDV, messageIDV != nil))
 		notificationReply(w, http.StatusOK, "Ignored: malformed message.")
 		return nil
@@ -132,21 +135,15 @@ func (s *server) handleGoogleNotification(w http.ResponseWriter, r *http.Request
 		return nil
 	}
 	messageID := jsobj.String(messageIDV, true)
-	if n == nil {
-		// Lite reads packageName off null and fails.
-		return errors.New("Pub/Sub message data is null")
-	}
 
-	pkgV, hasPkg := jsobj.Prop(n, "packageName")
 	var app *config.App
 	for _, a := range playApps {
-		if hasPkg && pkgV == a.PackageName {
+		if pkg == a.PackageName {
 			app = a
 			break
 		}
 	}
 	if app == nil {
-		pkg := jsobj.String(pkgV, hasPkg)
 		s.Log.Error("Google notification for a package no configured app has", "package", pkg)
 		notificationReply(w, http.StatusInternalServerError, "No app in the config has package "+pkg+" with Pub/Sub push configured.")
 		return nil

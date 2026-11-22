@@ -6,6 +6,7 @@ package server_test
 
 import (
 	"context"
+	"encoding/base64"
 	"net/http"
 	"strings"
 	"testing"
@@ -104,6 +105,13 @@ func TestGooglePushAuthentication(t *testing.T) {
 		raw := "%%%not base64%%%"
 		if res := env.PostGoogleNotification(jsobj.New(), tu.NotifyOptions{RawData: &raw}); res.Status != 200 || prop(res.JSON(t), "message") != "Ignored: malformed message." {
 			t.Errorf("%d %s", res.Status, res.Body)
+		}
+		// JSON, but not a notification: null, not an object, or no package name.
+		for _, data := range []string{"null", "42", `"text"`, "[]", `{"testNotification":{}}`} {
+			encoded := base64.StdEncoding.EncodeToString([]byte(data))
+			if res := env.PostGoogleNotification(jsobj.New(), tu.NotifyOptions{RawData: &encoded}); res.Status != 200 || prop(res.JSON(t), "message") != "Ignored: malformed message." {
+				t.Errorf("%s: %d %s", data, res.Status, res.Body)
+			}
 		}
 		res := env.PostGoogleNotification(jsobj.New("packageName", "com.unknown.app", "testNotification", jsobj.New()), tu.NotifyOptions{})
 		if res.Status != 500 || prop(res.JSON(t), "message") != "No app in the config has package com.unknown.app with Pub/Sub push configured." {
