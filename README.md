@@ -57,7 +57,7 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 | Cost | Designed to fit the Cloudflare free plan | Your cloud bill |
 | For | Indie apps: lightweight and cheap to run | Larger portfolios of apps (coming soon) |
 
-Both editions pass the same conformance suite in `spec/`. You can move from Lite to Standard without shipping an app update, as long as your app points at a custom domain you own.
+Both editions pass the same conformance suite in `spec/`. You can move from Lite to Standard without shipping an app update, as long as your app points at a custom domain you own: see [Moving from Lite to Standard](docs/migrating-from-lite-to-standard.md).
 
 ## What you'd keep compared with RevenueCat
 
