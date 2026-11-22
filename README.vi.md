@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ Lập trình viên ứng dụng muốn:
 
 openpurr cũng phù hợp nếu bạn đang dùng SDK của RevenueCat và muốn giữ nguyên. openpurr hoạt động với các SDK chính thức, không chỉnh sửa, nên việc chuyển đổi bắt đầu bằng việc đổi một URL, không phải viết lại code mua hàng. Để chuyển khách hàng hiện có sang, xem [Chuyển từ RevenueCat sang](https://openpurr.org/vi/migrate-from-revenuecat/).
 
-**Có thể nó chưa phù hợp với bạn** nếu bạn cần công cụ dựng paywall, thử nghiệm A/B, tích hợp analytics bên thứ ba hoặc hợp đồng hỗ trợ. Các nền tảng thương mại hiện đã có sẵn những thứ đó. Xem [lộ trình](ROADMAP.md) (tiếng Anh) để biết những gì sắp có.
+**Có thể nó chưa phù hợp với bạn** nếu bạn cần công cụ dựng paywall, tích hợp analytics bên thứ ba hoặc hợp đồng hỗ trợ. Các nền tảng thương mại hiện đã có sẵn những thứ đó. Xem [lộ trình](ROADMAP.md) (tiếng Anh) để biết những gì sắp có.
 
 ## openpurr làm gì
 

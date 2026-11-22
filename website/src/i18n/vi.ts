@@ -101,12 +101,8 @@ export const vi: Dict = {
       title: "Backend cho gói đăng ký, không kèm những thứ bạn không dùng",
       items: [
         {
-          title: "Mua hàng",
-          body: "Xác thực giao dịch StoreKit 2 và giao dịch mua trên Google Play, đồng thời trả về CustomerInfo và entitlement mà SDK cần.",
-        },
-        {
-          title: "Thông báo từ store",
-          body: "Nhận App Store Server Notifications V2 và Google Play Real-time Developer Notifications, để việc gia hạn, hoàn tiền và thời gian ân hạn luôn được cập nhật.",
+          title: "Mua hàng và thông báo từ store",
+          body: "Xác thực giao dịch StoreKit 2 và giao dịch mua trên Google Play, trả về CustomerInfo và entitlement mà SDK cần, đồng thời dựa vào thông báo từ App Store và Google Play để việc gia hạn, hoàn tiền và thời gian ân hạn luôn được cập nhật.",
         },
         {
           title: "Webhook",
@@ -115,6 +111,10 @@ export const vi: Dict = {
         {
           title: "Biểu đồ",
           body: "16 biểu đồ: doanh thu, MRR và ARR, biến động MRR và gói đăng ký, gói đăng ký đang hoạt động và trả phí, trạng thái gói đăng ký, churn, dùng thử và tỷ lệ chuyển đổi từ dùng thử, khách hàng mới, hoàn tiền và tỷ lệ hoàn tiền, và giao dịch mua một lần. Lọc theo ứng dụng, store, sản phẩm và môi trường, doanh thu được quy đổi sang USD.",
+        },
+        {
+          title: "Thử nghiệm giá",
+          body: "Hiển thị các offering khác nhau cho khách hàng mới của ứng dụng, rồi so sánh tỷ lệ chuyển đổi và doanh thu trên mỗi khách hàng, kèm xác suất mỗi biến thể vượt nhóm đối chứng. Không cần cập nhật ứng dụng.",
         },
         {
           title: "Xác thực và nhật ký kiểm tra",
@@ -176,7 +176,7 @@ export const vi: Dict = {
     fit: {
       eyebrow: "Nói thẳng",
       title: "Có thể nó chưa phù hợp với bạn",
-      lede: "Nếu bạn cần công cụ dựng paywall, thử nghiệm A/B, tích hợp analytics bên thứ ba hoặc hợp đồng hỗ trợ, các nền tảng thương mại hiện đã có sẵn những thứ đó.",
+      lede: "Nếu bạn cần công cụ dựng paywall, tích hợp analytics bên thứ ba hoặc hợp đồng hỗ trợ, các nền tảng thương mại hiện đã có sẵn những thứ đó.",
       outTitle: "Tạm thời ngoài phạm vi",
       tags: ["Paywall", "Sự kiện quảng cáo", "Customer Center", "Tiền tệ ảo", "Thanh toán trên web", "Amazon", "Tích hợp analytics"],
     },
@@ -194,6 +194,7 @@ export const vi: Dict = {
             "App Store và Google Play",
             "Webhook, dashboard và trang quản trị",
             "Nhiều ứng dụng trong một lần triển khai",
+            "Thử nghiệm giá",
             "MCP server, CLI và Claude skill",
             "Tiếp theo: kiểm thử trên thiết bị, rồi đến 1.0",
           ],
@@ -233,7 +234,7 @@ export const vi: Dict = {
       },
       {
         q: "openpurr khác RevenueCat như thế nào?",
-        a: "RevenueCat là dịch vụ thương mại được host sẵn, thu một phần doanh thu khi bạn vượt quá mức miễn phí. openpurr là phần mềm bạn tự vận hành: lịch sử mua hàng, entitlement và thông tin xác thực store nằm trong cơ sở dữ liệu của riêng bạn, và không có khoản chia doanh thu hay phí trên mỗi giao dịch. Hiện tại RevenueCat có nhiều tính năng hơn, chẳng hạn paywall, thử nghiệm và tích hợp analytics. openpurr tập trung vào phần backend cốt lõi cho gói đăng ký.",
+        a: "RevenueCat là dịch vụ thương mại được host sẵn, thu một phần doanh thu khi bạn vượt quá mức miễn phí. openpurr là phần mềm bạn tự vận hành: lịch sử mua hàng, entitlement và thông tin xác thực store nằm trong cơ sở dữ liệu của riêng bạn, và không có khoản chia doanh thu hay phí trên mỗi giao dịch. Hiện tại RevenueCat có nhiều tính năng hơn, chẳng hạn paywall và tích hợp analytics. openpurr tập trung vào phần backend cốt lõi cho gói đăng ký.",
       },
       {
         q: "Tôi có phải viết lại code mua hàng để chuyển từ RevenueCat sang không?",
@@ -262,7 +263,7 @@ export const vi: Dict = {
       },
       {
         q: "RevenueCat có những gì mà openpurr không có?",
-        a: "Paywall, tích hợp analytics bên thứ ba, Customer Center, tiền tệ ảo, thanh toán trên web, Amazon, sự kiện quảng cáo và hợp đồng hỗ trợ thương mại hiện nằm ngoài phạm vi. Thử nghiệm giá đã có trong lộ trình. Nếu bạn cần những thứ đó ngay bây giờ, một nền tảng thương mại sẽ phù hợp hơn.",
+        a: "Paywall, tích hợp analytics bên thứ ba, Customer Center, tiền tệ ảo, thanh toán trên web, Amazon, sự kiện quảng cáo và hợp đồng hỗ trợ thương mại hiện nằm ngoài phạm vi. Thử nghiệm giá đã có sẵn. Nếu bạn cần những thứ còn lại ngay bây giờ, một nền tảng thương mại sẽ phù hợp hơn.",
       },
       {
         q: "openpurr đã sẵn sàng cho môi trường production chưa?",
@@ -284,6 +285,7 @@ export const vi: Dict = {
       "App Store Server Notifications V2 và Google Play Real-time Developer Notifications",
       "Webhook theo định dạng của RevenueCat, ký bằng HMAC-SHA256",
       "16 biểu đồ gói đăng ký, gồm MRR, churn và tỷ lệ chuyển đổi từ dùng thử",
+      "Thử nghiệm giá trên offering, với kết quả theo từng biến thể",
       "MCP server, CLI và Claude skill",
     ],
   },

@@ -130,7 +130,8 @@ export const migrateEn = {
       ["Customer attributes ($email, $displayName and your own)", "Yes, from an Audience export"],
       ["Products, entitlements and offerings", "You recreate them, with the same identifiers"],
       ["Chart history before the switch", "Partly: keep RevenueCat's chart CSVs for your records"],
-      ["Paywalls, experiments, integrations, Customer Center", "No: openpurr doesn't have them"],
+      ["Experiments", "You recreate them: openpurr runs price experiments on your offerings"],
+      ["Paywalls, integrations, Customer Center", "No: openpurr doesn't have them"],
     ] as [string, string][],
   },
   faq: {

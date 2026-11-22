@@ -97,12 +97,8 @@ export const nl: Dict = {
       title: "De abonnementsbackend, zonder de extra's die je niet gebruikt",
       items: [
         {
-          title: "Aankopen",
-          body: "Valideert StoreKit 2-transacties en Google Play-aankopen, en geeft de CustomerInfo en entitlements terug die de SDK verwacht.",
-        },
-        {
-          title: "Store-meldingen",
-          body: "Ontvangt App Store Server Notifications V2 en Google Play Real-time Developer Notifications, zodat verlengingen, terugbetalingen en respijtperiodes actueel blijven.",
+          title: "Aankopen en store-meldingen",
+          body: "Valideert StoreKit 2-transacties en Google Play-aankopen, geeft de CustomerInfo en entitlements terug die de SDK verwacht, en houdt verlengingen, terugbetalingen en respijtperiodes actueel via meldingen van de App Store en Google Play.",
         },
         {
           title: "Webhooks",
@@ -111,6 +107,10 @@ export const nl: Dict = {
         {
           title: "Grafieken",
           body: "16 grafieken: omzet, MRR en ARR, MRR- en abonnementsverloop, actieve en betaalde abonnementen, abonnementsstatus, churn, proefperiodes en hun conversie, nieuwe klanten, terugbetalingen en terugbetalingspercentage, en eenmalige aankopen. Filter op app, store, product en omgeving, met omzet omgerekend naar USD.",
+        },
+        {
+          title: "Prijsexperimenten",
+          body: "Toon klanten die nieuw zijn in je app verschillende offerings en vergelijk daarna conversie en omzet per klant, met de kans dat elke variant beter scoort dan de controlegroep. Zonder app-update.",
         },
         {
           title: "Toegang en audit",
@@ -172,7 +172,7 @@ export const nl: Dict = {
     fit: {
       eyebrow: "Eerlijk gezegd",
       title: "Misschien is het nog niets voor jou",
-      lede: "Heb je paywall-builders, A/B-experimenten, analytics-integraties van derden of een supportcontract nodig, dan bieden commerciële platforms dat vandaag al.",
+      lede: "Heb je paywall-builders, analytics-integraties van derden of een supportcontract nodig, dan bieden commerciële platforms dat vandaag al.",
       outTitle: "Voorlopig buiten scope",
       tags: ["Paywalls", "Advertentie-events", "Customer Center", "Virtuele valuta", "Webbetalingen", "Amazon", "Analytics-integraties"],
     },
@@ -190,6 +190,7 @@ export const nl: Dict = {
             "App Store en Google Play",
             "Webhooks, dashboard en beheer",
             "Meerdere apps in één deployment",
+            "Prijsexperimenten",
             "MCP-server, CLI en Claude-skills",
             "Hierna: testen op apparaten, dan 1.0",
           ],
@@ -224,7 +225,7 @@ export const nl: Dict = {
       },
       {
         q: "Wat is het verschil tussen openpurr en RevenueCat?",
-        a: "RevenueCat is een gehoste commerciële dienst die boven een gratis niveau een deel van je omzet rekent. openpurr is software die je zelf draait: je aankoopgegevens, entitlements en store-inloggegevens staan in je eigen database, en er is geen omzetaandeel en er zijn geen kosten per transactie. RevenueCat biedt vandaag meer functies, zoals paywalls, experimenten en analytics-integraties. openpurr richt zich op de kern van de abonnementsbackend.",
+        a: "RevenueCat is een gehoste commerciële dienst die boven een gratis niveau een deel van je omzet rekent. openpurr is software die je zelf draait: je aankoopgegevens, entitlements en store-inloggegevens staan in je eigen database, en er is geen omzetaandeel en er zijn geen kosten per transactie. RevenueCat biedt vandaag meer functies, zoals paywalls en analytics-integraties. openpurr richt zich op de kern van de abonnementsbackend.",
       },
       {
         q: "Moet ik mijn aankoopcode herschrijven om over te stappen van RevenueCat?",
@@ -253,7 +254,7 @@ export const nl: Dict = {
       },
       {
         q: "Wat doet RevenueCat dat openpurr niet doet?",
-        a: "Paywalls, analytics-integraties van derden, Customer Center, virtuele valuta, webbetalingen, Amazon, advertentie-events en een commercieel supportcontract vallen voorlopig buiten scope. Prijsexperimenten staan op de roadmap. Heb je die functies vandaag nodig, dan past een commercieel platform beter.",
+        a: "Paywalls, analytics-integraties van derden, Customer Center, virtuele valuta, webbetalingen, Amazon, advertentie-events en een commercieel supportcontract vallen voorlopig buiten scope. Prijsexperimenten zijn ingebouwd. Heb je de andere functies vandaag nodig, dan past een commercieel platform beter.",
       },
       {
         q: "Is openpurr klaar voor productie?",
@@ -275,6 +276,7 @@ export const nl: Dict = {
       "App Store Server Notifications V2 en Google Play Real-time Developer Notifications",
       "Webhooks in het formaat van RevenueCat, ondertekend met HMAC-SHA256",
       "16 abonnementsgrafieken, waaronder MRR, churn en conversie van proefperiodes",
+      "Prijsexperimenten op offerings, met resultaten per variant",
       "MCP-server, CLI en Claude-skills",
     ],
   },

@@ -101,12 +101,8 @@ export const pl: Dict = {
       title: "Backend subskrypcji bez dodatków, których nie używasz",
       items: [
         {
-          title: "Zakupy",
-          body: "Weryfikuje transakcje StoreKit 2 i zakupy w Google Play oraz zwraca CustomerInfo i entitlementy, których oczekuje SDK.",
-        },
-        {
-          title: "Powiadomienia ze sklepów",
-          body: "Odbiera App Store Server Notifications V2 i Google Play Real-time Developer Notifications, dzięki czemu odnowienia, zwroty i okresy karencji są zawsze aktualne.",
+          title: "Zakupy i powiadomienia ze sklepów",
+          body: "Weryfikuje transakcje StoreKit 2 i zakupy w Google Play, zwraca CustomerInfo i entitlementy, których oczekuje SDK, a dzięki powiadomieniom z App Store i Google Play odnowienia, zwroty i okresy karencji są zawsze aktualne.",
         },
         {
           title: "Webhooki",
@@ -115,6 +111,10 @@ export const pl: Dict = {
         {
           title: "Wykresy",
           body: "16 wykresów: przychody, MRR i ARR, zmiany MRR i subskrypcji, aktywne i płatne subskrypcje, status subskrypcji, churn, okresy próbne i ich konwersja, nowi klienci, zwroty i wskaźnik zwrotów oraz zakupy jednorazowe. Filtrowanie według aplikacji, sklepu, produktu i środowiska, z przychodami przeliczonymi na USD.",
+        },
+        {
+          title: "Eksperymenty cenowe",
+          body: "Pokazuj nowym klientom aplikacji różne oferty i porównuj konwersję oraz przychód na klienta, wraz z szansą, że dany wariant wypadnie lepiej niż kontrolny. Bez aktualizacji aplikacji.",
         },
         {
           title: "Uwierzytelnianie i audyt",
@@ -172,7 +172,7 @@ export const pl: Dict = {
     fit: {
       eyebrow: "Uczciwie",
       title: "Może jeszcze nie być dla ciebie",
-      lede: "Jeśli potrzebujesz kreatora paywalli, testów A/B, integracji z zewnętrzną analityką albo umowy wsparcia, komercyjne platformy oferują to już dziś.",
+      lede: "Jeśli potrzebujesz kreatora paywalli, integracji z zewnętrzną analityką albo umowy wsparcia, komercyjne platformy oferują to już dziś.",
       outTitle: "Na razie poza zakresem",
       tags: ["Paywalle", "Zdarzenia reklamowe", "Customer Center", "Waluty wirtualne", "Płatności webowe", "Amazon", "Integracje analityczne"],
     },
@@ -190,6 +190,7 @@ export const pl: Dict = {
             "App Store i Google Play",
             "Webhooki, panel i administracja",
             "Wiele aplikacji w jednym wdrożeniu",
+            "Eksperymenty cenowe",
             "Serwer MCP, CLI i skille Claude",
             "Dalej: testy na urządzeniach, potem 1.0",
           ],
@@ -224,7 +225,7 @@ export const pl: Dict = {
       },
       {
         q: "Czym openpurr różni się od RevenueCat?",
-        a: "RevenueCat to hostowana usługa komercyjna, która powyżej darmowego progu pobiera część przychodów. openpurr to oprogramowanie, które uruchamiasz sam: historia zakupów, entitlementy i dane dostępowe do sklepów są w twojej własnej bazie danych, a nie ma żadnej prowizji od przychodów ani opłat za transakcję. RevenueCat oferuje dziś więcej funkcji, takich jak paywalle, eksperymenty i integracje analityczne. openpurr skupia się na podstawowym backendzie subskrypcji.",
+        a: "RevenueCat to hostowana usługa komercyjna, która powyżej darmowego progu pobiera część przychodów. openpurr to oprogramowanie, które uruchamiasz sam: historia zakupów, entitlementy i dane dostępowe do sklepów są w twojej własnej bazie danych, a nie ma żadnej prowizji od przychodów ani opłat za transakcję. RevenueCat oferuje dziś więcej funkcji, takich jak paywalle i integracje analityczne. openpurr skupia się na podstawowym backendzie subskrypcji.",
       },
       {
         q: "Czy przy przejściu z RevenueCat muszę przepisać kod zakupów?",
@@ -253,7 +254,7 @@ export const pl: Dict = {
       },
       {
         q: "Czego openpurr nie robi, a RevenueCat tak?",
-        a: "Paywalle, integracje z zewnętrzną analityką, Customer Center, waluty wirtualne, płatności webowe, Amazon, zdarzenia reklamowe i komercyjna umowa wsparcia są na razie poza zakresem. Eksperymenty cenowe są na roadmapie. Jeśli potrzebujesz tego już dziś, lepiej sprawdzi się komercyjna platforma.",
+        a: "Paywalle, integracje z zewnętrzną analityką, Customer Center, waluty wirtualne, płatności webowe, Amazon, zdarzenia reklamowe i komercyjna umowa wsparcia są na razie poza zakresem. Eksperymenty cenowe są wbudowane. Jeśli potrzebujesz pozostałych funkcji już dziś, lepiej sprawdzi się komercyjna platforma.",
       },
       {
         q: "Czy openpurr jest gotowy do użycia na produkcji?",
@@ -275,6 +276,7 @@ export const pl: Dict = {
       "App Store Server Notifications V2 i Google Play Real-time Developer Notifications",
       "Webhooki w formacie RevenueCat podpisane HMAC-SHA256",
       "16 wykresów subskrypcji, w tym MRR, churn i konwersja okresów próbnych",
+      "Eksperymenty cenowe na ofertach, z wynikami dla każdego wariantu",
       "Serwer MCP, CLI i skille Claude",
     ],
   },

@@ -115,7 +115,8 @@ export const migrateNl: MigrateDict = {
       ["Klantattributen ($email, $displayName en je eigen attributen)", "Ja, uit een Audience export"],
       ["Producten, entitlements en offerings", "Je maakt ze opnieuw aan, met dezelfde identifiers"],
       ["Grafiekgeschiedenis van vóór de overstap", "Deels: bewaar de grafiek-CSV's van RevenueCat voor je administratie"],
-      ["Paywalls, experimenten, integraties, Customer Center", "Nee: openpurr heeft ze niet"],
+      ["Experimenten", "Je maakt ze opnieuw aan: openpurr voert prijsexperimenten uit op je offerings"],
+      ["Paywalls, integraties, Customer Center", "Nee: openpurr heeft ze niet"],
     ] as [string, string][],
   },
   faq: {

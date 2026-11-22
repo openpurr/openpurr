@@ -115,7 +115,8 @@ export const migrateFr: MigrateDict = {
       ["Attributs des clients ($email, $displayName et les vôtres)", "Oui, à partir d'un Audience export"],
       ["Produits, entitlements et offres", "Vous les recréez, avec les mêmes identifiants"],
       ["Historique des graphiques avant la bascule", "En partie : conservez les CSV des graphiques de RevenueCat pour vos archives"],
-      ["Paywalls, expériences, intégrations, Customer Center", "Non : openpurr ne les propose pas"],
+      ["Expériences", "Vous les recréez : openpurr mène des tests de prix sur vos offres"],
+      ["Paywalls, intégrations, Customer Center", "Non : openpurr ne les propose pas"],
     ] as [string, string][],
   },
   faq: {

@@ -16,6 +16,7 @@ Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: the Lit
 - Receives App Store Server Notifications V2 and Google Play Real-time Developer Notifications, so renewals, refunds, grace periods and billing problems stay current.
 - Sends RevenueCat-shaped webhooks to your backend, signed with HMAC-SHA256 and retried for about 72 hours.
 - Dashboard with 16 charts: revenue, MRR and ARR, MRR and subscription movement, active and paid subscriptions, subscription status, churn, trials and trial conversion, new customers, refunds and refund rate, one-time purchases.
+- Price experiments: customers new to the app are split between offerings, and the dashboard compares conversion and revenue per customer by variant, with the chance each variant beats the control. Webhooks carry RevenueCat's \`experiments\` field.
 - Several apps (projects) in one deployment; config edited in the dashboard, with versions and rollback.
 - Operator sign-in with authenticator codes, roles, access tokens, secret keys and an audit log.
 - MCP server, a CLI (\`openpurr\`, on npm as @openpurr/cli) and Claude skills for setup and debugging purchases.
@@ -27,7 +28,7 @@ Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: the Lit
 
 ## Not included (for now)
 
-Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon Appstore, ad events, and a commercial support contract. Price experiments are on the roadmap.
+Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon Appstore, ad events, and a commercial support contract.
 
 ## Links
 

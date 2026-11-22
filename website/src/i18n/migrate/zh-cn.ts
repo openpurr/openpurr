@@ -115,7 +115,8 @@ export const migrateZhCn: MigrateDict = {
       ["客户属性（$email、$displayName 和你自定义的属性）", "会，来自 Audience export"],
       ["产品、权益和 Offering", "需要你用相同的标识符重新创建"],
       ["切换前的图表历史", "部分迁移：请保留 RevenueCat 的图表 CSV 作为存档"],
-      ["付费墙、实验、集成、Customer Center", "不会：openpurr 没有这些功能"],
+      ["实验", "需要你重新创建：openpurr 可以对你的 Offering 运行价格实验"],
+      ["付费墙、集成、Customer Center", "不会：openpurr 没有这些功能"],
     ] as [string, string][],
   },
   faq: {

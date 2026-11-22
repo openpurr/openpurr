@@ -97,12 +97,8 @@ export const tr: Dict = {
       title: "Kullanmadığınız ekstralar olmadan abonelik backend'i",
       items: [
         {
-          title: "Satın almalar",
-          body: "StoreKit 2 işlemlerini ve Google Play satın almalarını doğrular, SDK'nın beklediği CustomerInfo'yu ve erişim haklarını döndürür.",
-        },
-        {
-          title: "Mağaza bildirimleri",
-          body: "App Store Server Notifications V2 ve Google Play Real-time Developer Notifications'ı alır; böylece yenilemeler, iadeler ve ek süreler güncel kalır.",
+          title: "Satın almalar ve mağaza bildirimleri",
+          body: "StoreKit 2 işlemlerini ve Google Play satın almalarını doğrular, SDK'nın beklediği CustomerInfo'yu ve erişim haklarını döndürür; App Store ve Google Play bildirimleriyle yenilemeleri, iadeleri ve ek süreleri güncel tutar.",
         },
         {
           title: "Webhook'lar",
@@ -111,6 +107,10 @@ export const tr: Dict = {
         {
           title: "Grafikler",
           body: "16 grafik: gelir, MRR ve ARR, MRR ve abonelik hareketi, aktif ve ücretli abonelikler, abonelik durumu, churn, deneme süreleri ve denemeden dönüşüm, yeni müşteriler, iadeler ve iade oranı, tek seferlik satın almalar. Uygulamaya, mağazaya, ürüne ve ortama göre filtreleyin; gelir USD'ye çevrilir.",
+        },
+        {
+          title: "Fiyat deneyleri",
+          body: "Uygulamanıza yeni gelen müşterilere farklı teklifler (offerings) gösterin, ardından dönüşümü ve müşteri başına geliri, her varyantın kontrol grubunu geçme olasılığıyla birlikte karşılaştırın. Uygulama güncellemesi gerekmez.",
         },
         {
           title: "Kimlik doğrulama ve denetim",
@@ -172,7 +172,7 @@ export const tr: Dict = {
     fit: {
       eyebrow: "Açık konuşalım",
       title: "Henüz size göre olmayabilir",
-      lede: "Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları veya bir destek sözleşmesi gerekiyorsa, ticari platformlar bunları bugün sunuyor.",
+      lede: "Paywall oluşturucular, üçüncü taraf analiz entegrasyonları veya bir destek sözleşmesi gerekiyorsa, ticari platformlar bunları bugün sunuyor.",
       outTitle: "Şimdilik kapsam dışı",
       tags: ["Paywall'lar", "Reklam olayları", "Customer Center", "Sanal para birimleri", "Web üzerinden ödeme", "Amazon", "Analiz entegrasyonları"],
     },
@@ -190,6 +190,7 @@ export const tr: Dict = {
             "App Store ve Google Play",
             "Webhook'lar, panel ve yönetim",
             "Tek kurulumda birden fazla uygulama",
+            "Fiyat deneyleri",
             "MCP sunucusu, CLI ve Claude becerileri",
             "Sırada: cihaz testleri, ardından 1.0",
           ],
@@ -229,7 +230,7 @@ export const tr: Dict = {
       },
       {
         q: "openpurr'ın RevenueCat'ten farkı nedir?",
-        a: "RevenueCat, ücretsiz katmanın üzerinde gelirden pay alan, barındırılan ticari bir hizmettir. openpurr ise kendiniz çalıştırdığınız bir yazılımdır: satın alma kayıtlarınız, erişim haklarınız ve mağaza kimlik bilgileriniz kendi veritabanınızda durur, gelir payı veya işlem başına ücret yoktur. RevenueCat bugün paywall'lar, deneyler ve analiz entegrasyonları gibi daha fazla özellik sunuyor. openpurr ise temel abonelik backend'ine odaklanır.",
+        a: "RevenueCat, ücretsiz katmanın üzerinde gelirden pay alan, barındırılan ticari bir hizmettir. openpurr ise kendiniz çalıştırdığınız bir yazılımdır: satın alma kayıtlarınız, erişim haklarınız ve mağaza kimlik bilgileriniz kendi veritabanınızda durur, gelir payı veya işlem başına ücret yoktur. RevenueCat bugün paywall'lar ve analiz entegrasyonları gibi daha fazla özellik sunuyor. openpurr ise temel abonelik backend'ine odaklanır.",
       },
       {
         q: "RevenueCat'ten geçmek için satın alma kodumu yeniden yazmam gerekir mi?",
@@ -258,7 +259,7 @@ export const tr: Dict = {
       },
       {
         q: "RevenueCat'in yapıp openpurr'ın yapmadığı neler var?",
-        a: "Paywall'lar, üçüncü taraf analiz entegrasyonları, Customer Center, sanal para birimleri, web üzerinden ödeme, Amazon, reklam olayları ve ticari destek sözleşmesi şimdilik kapsam dışıdır. Fiyat deneyleri yol haritasındadır. Bunlara bugün ihtiyacınız varsa ticari bir platform size daha uygun olur.",
+        a: "Paywall'lar, üçüncü taraf analiz entegrasyonları, Customer Center, sanal para birimleri, web üzerinden ödeme, Amazon, reklam olayları ve ticari destek sözleşmesi şimdilik kapsam dışıdır. Fiyat deneyleri yerleşik olarak gelir. Diğerlerine bugün ihtiyacınız varsa ticari bir platform size daha uygun olur.",
       },
       {
         q: "openpurr canlı kullanıma hazır mı?",
@@ -280,6 +281,7 @@ export const tr: Dict = {
       "App Store Server Notifications V2 ve Google Play Real-time Developer Notifications",
       "HMAC-SHA256 ile imzalanan, RevenueCat biçiminde webhook'lar",
       "MRR, churn ve denemeden dönüşüm dahil 16 abonelik grafiği",
+      "Teklifler (offerings) üzerinde fiyat deneyleri, varyant bazında sonuçlarla",
       "MCP sunucusu, CLI ve Claude becerileri",
     ],
   },

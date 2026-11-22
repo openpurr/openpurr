@@ -97,12 +97,8 @@ export const de: Dict = {
       title: "Das Abo-Backend, ohne die Extras, die du nicht nutzt",
       items: [
         {
-          title: "Käufe",
-          body: "Validiert StoreKit-2-Transaktionen und Google-Play-Käufe und liefert die CustomerInfo und Entitlements, die das SDK erwartet.",
-        },
-        {
-          title: "Store-Benachrichtigungen",
-          body: "Empfängt App Store Server Notifications V2 und Google Play Real-time Developer Notifications, damit Verlängerungen, Erstattungen und Kulanzzeiträume aktuell bleiben.",
+          title: "Käufe und Store-Benachrichtigungen",
+          body: "Validiert StoreKit-2-Transaktionen und Google-Play-Käufe, liefert die CustomerInfo und Entitlements, die das SDK erwartet, und hält Verlängerungen, Erstattungen und Kulanzzeiträume über die Benachrichtigungen von App Store und Google Play aktuell.",
         },
         {
           title: "Webhooks",
@@ -111,6 +107,10 @@ export const de: Dict = {
         {
           title: "Diagramme",
           body: "16 Diagramme: Umsatz, MRR und ARR, MRR- und Abo-Bewegung, aktive und bezahlte Abos, Abo-Status, Churn, Testphasen und ihre Conversion, Neukunden, Erstattungen und Erstattungsquote sowie Einmalkäufe. Filter nach App, Store, Produkt und Umgebung, mit Umsatz in USD umgerechnet.",
+        },
+        {
+          title: "Preisexperimente",
+          body: "Zeig Kunden, die neu in deiner App sind, unterschiedliche Offerings und vergleiche dann Conversion und Umsatz pro Kunde, samt der Wahrscheinlichkeit, dass jede Variante die Kontrollgruppe schlägt. Ohne App-Update.",
         },
         {
           title: "Anmeldung und Audit",
@@ -172,7 +172,7 @@ export const de: Dict = {
     fit: {
       eyebrow: "Ganz ehrlich",
       title: "Vielleicht ist es noch nichts für dich",
-      lede: "Wenn du Paywall-Builder, A/B-Tests, Analytics-Integrationen von Drittanbietern oder einen Supportvertrag brauchst, bieten kommerzielle Plattformen das heute schon.",
+      lede: "Wenn du Paywall-Builder, Analytics-Integrationen von Drittanbietern oder einen Supportvertrag brauchst, bieten kommerzielle Plattformen das heute schon.",
       outTitle: "Vorerst nicht vorgesehen",
       tags: ["Paywalls", "Werbeereignisse", "Customer Center", "Virtuelle Währungen", "Web-Billing", "Amazon", "Analytics-Integrationen"],
     },
@@ -190,6 +190,7 @@ export const de: Dict = {
             "App Store und Google Play",
             "Webhooks, Dashboard und Verwaltung",
             "Mehrere Apps in einem Deployment",
+            "Preisexperimente",
             "MCP-Server, CLI und Claude-Skills",
             "Als Nächstes: Tests auf Geräten, dann 1.0",
           ],
@@ -224,7 +225,7 @@ export const de: Dict = {
       },
       {
         q: "Worin unterscheidet sich openpurr von RevenueCat?",
-        a: "RevenueCat ist ein gehosteter kommerzieller Dienst, der oberhalb eines kostenlosen Kontingents einen Anteil am Umsatz verlangt. openpurr ist Software, die du selbst betreibst: Deine Käufe, Entitlements und Store-Zugangsdaten liegen in deiner eigenen Datenbank, und es gibt weder Umsatzbeteiligung noch Gebühren pro Transaktion. RevenueCat bietet heute mehr Funktionen, etwa Paywalls, Experimente und Analytics-Integrationen. openpurr konzentriert sich auf das zentrale Abo-Backend.",
+        a: "RevenueCat ist ein gehosteter kommerzieller Dienst, der oberhalb eines kostenlosen Kontingents einen Anteil am Umsatz verlangt. openpurr ist Software, die du selbst betreibst: Deine Käufe, Entitlements und Store-Zugangsdaten liegen in deiner eigenen Datenbank, und es gibt weder Umsatzbeteiligung noch Gebühren pro Transaktion. RevenueCat bietet heute mehr Funktionen, etwa Paywalls und Analytics-Integrationen. openpurr konzentriert sich auf das zentrale Abo-Backend.",
       },
       {
         q: "Muss ich meinen Kaufcode neu schreiben, um von RevenueCat umzusteigen?",
@@ -253,7 +254,7 @@ export const de: Dict = {
       },
       {
         q: "Was kann RevenueCat, was openpurr nicht kann?",
-        a: "Paywalls, Analytics-Integrationen von Drittanbietern, Customer Center, virtuelle Währungen, Web-Billing, Amazon, Werbeereignisse und ein kommerzieller Supportvertrag sind vorerst nicht vorgesehen. Preisexperimente stehen auf der Roadmap. Wenn du das heute brauchst, passt eine kommerzielle Plattform besser.",
+        a: "Paywalls, Analytics-Integrationen von Drittanbietern, Customer Center, virtuelle Währungen, Web-Billing, Amazon, Werbeereignisse und ein kommerzieller Supportvertrag sind vorerst nicht vorgesehen. Preisexperimente sind eingebaut. Wenn du den Rest heute brauchst, passt eine kommerzielle Plattform besser.",
       },
       {
         q: "Ist openpurr bereit für den Produktivbetrieb?",
@@ -275,6 +276,7 @@ export const de: Dict = {
       "App Store Server Notifications V2 und Google Play Real-time Developer Notifications",
       "Webhooks im Format von RevenueCat, signiert mit HMAC-SHA256",
       "16 Abo-Diagramme, darunter MRR, Churn und Conversion von Testphasen",
+      "Preisexperimente mit Offerings, mit Ergebnissen pro Variante",
       "MCP-Server, CLI und Claude-Skills",
     ],
   },

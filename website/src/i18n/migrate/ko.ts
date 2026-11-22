@@ -115,7 +115,8 @@ export const migrateKo: MigrateDict = {
       ["고객 속성 ($email, $displayName, 직접 정의한 속성)", "예, Audience export에서 가져옵니다"],
       ["상품, 엔타이틀먼트, 오퍼링", "같은 식별자로 직접 다시 만듭니다"],
       ["전환 이전의 차트 기록", "일부만: 기록용으로 RevenueCat 차트 CSV를 보관하세요"],
-      ["페이월, 실험, 연동, Customer Center", "아니요: openpurr에는 없습니다"],
+      ["실험", "직접 다시 만듭니다: openpurr는 오퍼링에서 가격 실험을 실행합니다"],
+      ["페이월, 연동, Customer Center", "아니요: openpurr에는 없습니다"],
     ] as [string, string][],
   },
   faq: {

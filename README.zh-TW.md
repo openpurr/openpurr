@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲�
 
 如果你已經在使用 RevenueCat SDK，而且想繼續使用，它也很適合。openpurr 相容於官方、未經修改的 SDK，因此切換只要從改一個 URL 開始，不必重寫購買程式碼。要把現有客戶搬過來，請參閱[從 RevenueCat 遷移](https://openpurr.org/zh-tw/migrate-from-revenuecat/)。
 
-如果你需要付費牆建構工具、A/B 實驗、第三方分析整合或支援合約，**它（目前）可能還不適合你**。目前商業平台已經能提供這些。即將推出的功能請參閱[路線圖](ROADMAP.md)（英文）。
+如果你需要付費牆建構工具、第三方分析整合或支援合約，**它（目前）可能還不適合你**。目前商業平台已經能提供這些。即將推出的功能請參閱[路線圖](ROADMAP.md)（英文）。
 
 ## 功能
 

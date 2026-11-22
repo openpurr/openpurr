@@ -115,7 +115,8 @@ export const migrateHi: MigrateDict = {
       ["Customer attributes ($email, $displayName और आपके अपने)", "हाँ, Audience export से"],
       ["Products, entitlements और offerings", "आप इन्हें उन्हीं identifiers के साथ दोबारा बनाते हैं"],
       ["Switch से पहले की chart history", "आंशिक रूप से: अपने records के लिए RevenueCat के chart CSVs रख लें"],
-      ["Paywalls, experiments, integrations, Customer Center", "नहीं: ये openpurr में नहीं हैं"],
+      ["Experiments", "आप इन्हें दोबारा बनाते हैं: openpurr आपकी offerings पर price experiments चलाता है"],
+      ["Paywalls, integrations, Customer Center", "नहीं: ये openpurr में नहीं हैं"],
     ] as [string, string][],
   },
   faq: {

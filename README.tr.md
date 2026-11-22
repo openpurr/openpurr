@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ openpurr bağımsız bir projedir. RevenueCat, Inc. ile bağlantılı değildir 
 
 RevenueCat SDK'larını zaten kullanıyor ve onları korumak istiyorsanız da iyi bir seçenektir. openpurr resmi ve değiştirilmemiş SDK'larla çalışır, bu yüzden geçiş, satın alma kodunuzu yeniden yazmakla değil, tek bir URL'yi değiştirmekle başlar. Mevcut müşterilerinizi taşımak için [RevenueCat'ten geçiş](https://openpurr.org/tr/migrate-from-revenuecat/) sayfasına bakın.
 
-Paywall oluşturucular, A/B deneyleri, üçüncü taraf analiz entegrasyonları veya bir destek sözleşmesi gerekiyorsa **openpurr (henüz) size göre olmayabilir**. Ticari platformlar bunları bugün sunuyor. Neler geleceğini [yol haritasında](ROADMAP.md) (İngilizce) görebilirsiniz.
+Paywall oluşturucular, üçüncü taraf analiz entegrasyonları veya bir destek sözleşmesi gerekiyorsa **openpurr (henüz) size göre olmayabilir**. Ticari platformlar bunları bugün sunuyor. Neler geleceğini [yol haritasında](ROADMAP.md) (İngilizce) görebilirsiniz.
 
 ## Neler yapar
 

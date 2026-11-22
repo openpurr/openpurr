@@ -101,12 +101,8 @@ export const hi: Dict = {
       title: "Subscription backend, बिना उन extras के जिनका आप इस्तेमाल नहीं करते",
       items: [
         {
-          title: "Purchases",
-          body: "StoreKit 2 transactions और Google Play purchases को validate करता है, और वही CustomerInfo और entitlements लौटाता है जिनकी SDK को ज़रूरत होती है।",
-        },
-        {
-          title: "Store notifications",
-          body: "App Store Server Notifications V2 और Google Play Real-time Developer Notifications receive करता है, ताकि renewals, refunds और grace periods हमेशा up to date रहें।",
+          title: "Purchases और store notifications",
+          body: "StoreKit 2 transactions और Google Play purchases को validate करता है, वही CustomerInfo और entitlements लौटाता है जिनकी SDK को ज़रूरत होती है, और App Store व Google Play notifications से renewals, refunds और grace periods को up to date रखता है।",
         },
         {
           title: "Webhooks",
@@ -115,6 +111,10 @@ export const hi: Dict = {
         {
           title: "Charts",
           body: "16 charts: revenue, MRR और ARR, MRR और subscription movement, active और paid subscriptions, subscription status, churn, trials और trial conversion, नए ग्राहक, refunds और refund rate, और one-time purchases। App, store, product और environment के हिसाब से filter करें, revenue USD में convert होकर दिखता है।",
+        },
+        {
+          title: "Price experiments",
+          body: "आपके app पर नए ग्राहकों को अलग-अलग offerings दिखाएँ, फिर हर ग्राहक के हिसाब से conversion और revenue की तुलना करें, साथ ही देखें कि हर variant के control से बेहतर होने की कितनी संभावना है। App update की ज़रूरत नहीं।",
         },
         {
           title: "Auth और audit",
@@ -172,7 +172,7 @@ export const hi: Dict = {
     fit: {
       eyebrow: "साफ़-साफ़ बात",
       title: "हो सकता है यह अभी आपके लिए न हो",
-      lede: "अगर आपको paywall builders, A/B experiments, third-party analytics integrations या support contract चाहिए, तो commercial platforms ये आज ही देते हैं।",
+      lede: "अगर आपको paywall builders, third-party analytics integrations या support contract चाहिए, तो commercial platforms ये आज ही देते हैं।",
       outTitle: "फ़िलहाल scope से बाहर",
       tags: ["Paywalls", "Ad events", "Customer Center", "Virtual currencies", "Web billing", "Amazon", "Analytics integrations"],
     },
@@ -191,6 +191,7 @@ export const hi: Dict = {
             "App Store और Google Play",
             "Webhooks, dashboard और admin",
             "एक deployment में कई apps",
+            "Price experiments",
             "MCP server, CLI और Claude skills",
             "अगला कदम: device testing, फिर 1.0",
           ],
@@ -225,7 +226,7 @@ export const hi: Dict = {
       },
       {
         q: "openpurr, RevenueCat से कैसे अलग है?",
-        a: "RevenueCat एक hosted commercial service है, जो free tier के बाद revenue का एक हिस्सा लेती है। openpurr ऐसा software है जिसे आप ख़ुद चलाते हैं: आपके purchase records, entitlements और store credentials आपके अपने database में रहते हैं, और कोई revenue share या per-transaction fee नहीं है। RevenueCat आज ज़्यादा features देता है, जैसे paywalls, experiments और analytics integrations। openpurr का फ़ोकस मुख्य subscription backend पर है।",
+        a: "RevenueCat एक hosted commercial service है, जो free tier के बाद revenue का एक हिस्सा लेती है। openpurr ऐसा software है जिसे आप ख़ुद चलाते हैं: आपके purchase records, entitlements और store credentials आपके अपने database में रहते हैं, और कोई revenue share या per-transaction fee नहीं है। RevenueCat आज ज़्यादा features देता है, जैसे paywalls और analytics integrations। openpurr का फ़ोकस मुख्य subscription backend पर है।",
       },
       {
         q: "क्या RevenueCat से switch करने के लिए मुझे अपना purchase code दोबारा लिखना होगा?",
@@ -254,7 +255,7 @@ export const hi: Dict = {
       },
       {
         q: "RevenueCat ऐसा क्या करता है जो openpurr नहीं करता?",
-        a: "Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events और commercial support contract फ़िलहाल scope से बाहर हैं। Price experiments roadmap पर हैं। अगर आपको ये आज ही चाहिए, तो कोई commercial platform आपके लिए बेहतर रहेगा।",
+        a: "Paywalls, third-party analytics integrations, Customer Center, virtual currencies, web billing, Amazon, ad events और commercial support contract फ़िलहाल scope से बाहर हैं। Price experiments इसमें built in हैं। अगर आपको बाकी चीज़ें आज ही चाहिए, तो कोई commercial platform आपके लिए बेहतर रहेगा।",
       },
       {
         q: "क्या openpurr production के लिए तैयार है?",
@@ -277,6 +278,7 @@ export const hi: Dict = {
       "App Store Server Notifications V2 और Google Play Real-time Developer Notifications",
       "HMAC-SHA256 से signed, RevenueCat जैसे format वाले webhooks",
       "16 subscription charts, जिनमें MRR, churn और trial conversion शामिल हैं",
+      "Offerings पर price experiments, हर variant के results के साथ",
       "MCP server, CLI और Claude skills",
     ],
   },

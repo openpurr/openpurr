@@ -115,7 +115,8 @@ export const migrateVi: MigrateDict = {
       ["Thuộc tính khách hàng ($email, $displayName và thuộc tính của riêng bạn)", "Có, từ Audience export"],
       ["Sản phẩm, entitlement và offering", "Bạn tạo lại, với cùng các identifier"],
       ["Lịch sử biểu đồ trước khi chuyển đổi", "Một phần: hãy lưu các file CSV biểu đồ của RevenueCat để tham khảo"],
-      ["Paywall, thử nghiệm, tích hợp, Customer Center", "Không: openpurr không có các tính năng này"],
+      ["Thử nghiệm", "Bạn tạo lại: openpurr chạy thử nghiệm giá trên các offering của bạn"],
+      ["Paywall, tích hợp, Customer Center", "Không: openpurr không có các tính năng này"],
     ] as [string, string][],
   },
   faq: {

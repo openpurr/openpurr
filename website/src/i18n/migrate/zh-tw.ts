@@ -115,7 +115,8 @@ export const migrateZhTw: MigrateDict = {
       ["客戶屬性（$email、$displayName 和你自訂的屬性）", "會，來自 Audience export"],
       ["產品、權益和 Offering", "需要你以相同的識別碼重新建立"],
       ["切換前的圖表歷史", "部分：請保留 RevenueCat 的圖表 CSV 作為紀錄"],
-      ["付費牆、實驗、整合、Customer Center", "不會：openpurr 沒有這些功能"],
+      ["實驗", "需要你重新建立：openpurr 可以針對你的 Offering 執行價格實驗"],
+      ["付費牆、整合、Customer Center", "不會：openpurr 沒有這些功能"],
     ] as [string, string][],
   },
   faq: {

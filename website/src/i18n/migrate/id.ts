@@ -115,7 +115,8 @@ export const migrateId: MigrateDict = {
       ["Atribut pelanggan ($email, $displayName, dan atribut Anda sendiri)", "Ya, dari Audience export"],
       ["Produk, entitlement, dan offering", "Anda membuatnya ulang, dengan identifier yang sama"],
       ["Riwayat grafik sebelum peralihan", "Sebagian: simpan CSV grafik RevenueCat sebagai arsip Anda"],
-      ["Paywall, eksperimen, integrasi, Customer Center", "Tidak: openpurr tidak memilikinya"],
+      ["Eksperimen", "Anda membuatnya ulang: openpurr menjalankan eksperimen harga pada offering Anda"],
+      ["Paywall, integrasi, Customer Center", "Tidak: openpurr tidak memilikinya"],
     ] as [string, string][],
   },
   faq: {

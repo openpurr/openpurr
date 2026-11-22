@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 
 अगर आप पहले से RevenueCat SDKs इस्तेमाल करते हैं और उन्हें रखना चाहते हैं, तब भी यह अच्छा विकल्प है। openpurr आधिकारिक, बिना बदलाव वाले SDKs के साथ काम करता है, इसलिए switch करने की शुरुआत एक URL बदलने से होती है, purchase code दोबारा लिखने से नहीं। अपने मौजूदा ग्राहकों को लाने के लिए [RevenueCat से माइग्रेट करना](https://openpurr.org/hi/migrate-from-revenuecat/) देखें।
 
-**हो सकता है यह (अभी) आपके लिए न हो** अगर आपको paywall builders, A/B experiments, third-party analytics integrations या support contract चाहिए। Commercial platforms ये आज ही देते हैं। आगे क्या आ रहा है, इसके लिए [roadmap](ROADMAP.md) (अंग्रेज़ी में) देखें।
+**हो सकता है यह (अभी) आपके लिए न हो** अगर आपको paywall builders, third-party analytics integrations या support contract चाहिए। Commercial platforms ये आज ही देते हैं। आगे क्या आ रहा है, इसके लिए [roadmap](ROADMAP.md) (अंग्रेज़ी में) देखें।
 
 ## यह क्या करता है
 

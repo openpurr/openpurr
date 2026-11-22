@@ -98,12 +98,8 @@ export const fr: Dict = {
       title: "Le backend d'abonnements, sans les extras dont vous ne vous servez pas",
       items: [
         {
-          title: "Achats",
-          body: "Valide les transactions StoreKit 2 et les achats Google Play, et renvoie le CustomerInfo et les entitlements attendus par le SDK.",
-        },
-        {
-          title: "Notifications des stores",
-          body: "Reçoit les App Store Server Notifications V2 et les Real-time Developer Notifications de Google Play, pour que les renouvellements, remboursements et délais de grâce restent à jour.",
+          title: "Achats et notifications des stores",
+          body: "Valide les transactions StoreKit 2 et les achats Google Play, renvoie le CustomerInfo et les entitlements attendus par le SDK, et tient à jour les renouvellements, remboursements et délais de grâce à partir des notifications de l'App Store et de Google Play.",
         },
         {
           title: "Webhooks",
@@ -112,6 +108,10 @@ export const fr: Dict = {
         {
           title: "Graphiques",
           body: "16 graphiques : revenus, MRR et ARR, évolution du MRR et des abonnements, abonnements actifs et payants, statut des abonnements, churn, essais et conversion des essais, nouveaux clients, remboursements et taux de remboursement, et achats ponctuels. Filtrez par application, store, produit et environnement, avec les revenus convertis en USD.",
+        },
+        {
+          title: "Tests de prix",
+          body: "Montrez des offres différentes aux nouveaux clients de votre application, puis comparez la conversion et les revenus par client, avec la probabilité que chaque variante batte le groupe témoin. Sans mise à jour de l'application.",
         },
         {
           title: "Authentification et audit",
@@ -173,7 +173,7 @@ export const fr: Dict = {
     fit: {
       eyebrow: "En toute franchise",
       title: "Ce n'est peut-être pas encore pour vous",
-      lede: "Si vous avez besoin d'un éditeur de paywalls, de tests A/B, d'intégrations analytiques tierces ou d'un contrat de support, les plateformes commerciales les proposent dès aujourd'hui.",
+      lede: "Si vous avez besoin d'un éditeur de paywalls, d'intégrations analytiques tierces ou d'un contrat de support, les plateformes commerciales les proposent dès aujourd'hui.",
       outTitle: "Hors périmètre pour l'instant",
       tags: [
         "Paywalls",
@@ -199,6 +199,7 @@ export const fr: Dict = {
             "App Store et Google Play",
             "Webhooks, tableau de bord et administration",
             "Plusieurs applications dans un même déploiement",
+            "Tests de prix",
             "Serveur MCP, CLI et skills Claude",
             "Ensuite : tests sur appareils, puis la 1.0",
           ],
@@ -238,7 +239,7 @@ export const fr: Dict = {
       },
       {
         q: "En quoi openpurr diffère-t-il de RevenueCat ?",
-        a: "RevenueCat est un service commercial hébergé qui prélève une part des revenus au-delà d'un palier gratuit. openpurr est un logiciel que vous faites tourner vous-même : vos achats, vos entitlements et les identifiants de vos stores sont dans votre propre base de données, sans part des revenus ni frais par transaction. RevenueCat propose aujourd'hui davantage de fonctionnalités, comme les paywalls, les expériences et les intégrations analytiques. openpurr se concentre sur l'essentiel du backend d'abonnements.",
+        a: "RevenueCat est un service commercial hébergé qui prélève une part des revenus au-delà d'un palier gratuit. openpurr est un logiciel que vous faites tourner vous-même : vos achats, vos entitlements et les identifiants de vos stores sont dans votre propre base de données, sans part des revenus ni frais par transaction. RevenueCat propose aujourd'hui davantage de fonctionnalités, comme les paywalls et les intégrations analytiques. openpurr se concentre sur l'essentiel du backend d'abonnements.",
       },
       {
         q: "Dois-je réécrire mon code d'achat pour quitter RevenueCat ?",
@@ -267,7 +268,7 @@ export const fr: Dict = {
       },
       {
         q: "Que fait RevenueCat qu'openpurr ne fait pas ?",
-        a: "Les paywalls, les intégrations analytiques tierces, Customer Center, les monnaies virtuelles, le paiement web, Amazon, les événements publicitaires et un contrat de support commercial sont hors périmètre pour l'instant. Les tests de prix figurent sur la feuille de route. Si vous en avez besoin dès aujourd'hui, une plateforme commerciale vous conviendra mieux.",
+        a: "Les paywalls, les intégrations analytiques tierces, Customer Center, les monnaies virtuelles, le paiement web, Amazon, les événements publicitaires et un contrat de support commercial sont hors périmètre pour l'instant. Les tests de prix sont intégrés. Si vous avez besoin du reste dès aujourd'hui, une plateforme commerciale vous conviendra mieux.",
       },
       {
         q: "openpurr est-il prêt pour la production ?",
@@ -289,6 +290,7 @@ export const fr: Dict = {
       "App Store Server Notifications V2 et Real-time Developer Notifications de Google Play",
       "Webhooks au format RevenueCat, signés en HMAC-SHA256",
       "16 graphiques d'abonnement, dont le MRR, le churn et la conversion des essais",
+      "Tests de prix sur les offres, avec résultats par variante",
       "Serveur MCP, CLI et skills Claude",
     ],
   },

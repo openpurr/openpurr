@@ -97,12 +97,8 @@ export const id: Dict = {
       title: "Backend langganan, tanpa fitur tambahan yang tidak Anda pakai",
       items: [
         {
-          title: "Pembelian",
-          body: "Memvalidasi transaksi StoreKit 2 dan pembelian Google Play, lalu mengembalikan CustomerInfo dan entitlement yang diharapkan SDK.",
-        },
-        {
-          title: "Notifikasi store",
-          body: "Menerima App Store Server Notifications V2 dan Google Play Real-time Developer Notifications, sehingga perpanjangan, pengembalian dana, dan masa tenggang selalu terbaru.",
+          title: "Pembelian dan notifikasi store",
+          body: "Memvalidasi transaksi StoreKit 2 dan pembelian Google Play, mengembalikan CustomerInfo dan entitlement yang diharapkan SDK, serta menjaga perpanjangan, pengembalian dana, dan masa tenggang tetap terbaru dari notifikasi App Store dan Google Play.",
         },
         {
           title: "Webhook",
@@ -111,6 +107,10 @@ export const id: Dict = {
         {
           title: "Grafik",
           body: "16 grafik: pendapatan, MRR dan ARR, pergerakan MRR dan langganan, langganan aktif dan berbayar, status langganan, churn, uji coba dan konversi uji coba, pelanggan baru, pengembalian dana dan rasio pengembalian dana, serta pembelian satu kali. Filter berdasarkan aplikasi, store, produk, dan lingkungan, dengan pendapatan dikonversi ke USD.",
+        },
+        {
+          title: "Eksperimen harga",
+          body: "Tampilkan offering yang berbeda kepada pelanggan baru di aplikasi Anda, lalu bandingkan konversi dan pendapatan per pelanggan, beserta peluang setiap varian mengungguli kontrol. Tanpa update aplikasi.",
         },
         {
           title: "Autentikasi dan audit",
@@ -172,7 +172,7 @@ export const id: Dict = {
     fit: {
       eyebrow: "Terus terang saja",
       title: "Mungkin belum cocok untuk Anda",
-      lede: "Jika Anda membutuhkan pembuat paywall, eksperimen A/B, integrasi analitik pihak ketiga, atau kontrak dukungan, platform komersial sudah menyediakannya saat ini.",
+      lede: "Jika Anda membutuhkan pembuat paywall, integrasi analitik pihak ketiga, atau kontrak dukungan, platform komersial sudah menyediakannya saat ini.",
       outTitle: "Belum termasuk untuk saat ini",
       tags: ["Paywall", "Event iklan", "Customer Center", "Mata uang virtual", "Penagihan web", "Amazon", "Integrasi analitik"],
     },
@@ -190,6 +190,7 @@ export const id: Dict = {
             "App Store dan Google Play",
             "Webhook, dashboard, dan admin",
             "Beberapa aplikasi dalam satu deployment",
+            "Eksperimen harga",
             "Server MCP, CLI, dan skill Claude",
             "Berikutnya: pengujian di perangkat, lalu 1.0",
           ],
@@ -229,7 +230,7 @@ export const id: Dict = {
       },
       {
         q: "Apa bedanya openpurr dengan RevenueCat?",
-        a: "RevenueCat adalah layanan komersial yang di-host, yang mengambil bagian dari pendapatan di atas batas paket gratisnya. openpurr adalah perangkat lunak yang Anda jalankan sendiri: catatan pembelian, entitlement, dan kredensial store Anda tersimpan di database Anda sendiri, dan tidak ada bagi hasil pendapatan maupun biaya per transaksi. Saat ini RevenueCat menawarkan lebih banyak fitur, seperti paywall, eksperimen, dan integrasi analitik. openpurr berfokus pada backend langganan inti.",
+        a: "RevenueCat adalah layanan komersial yang di-host, yang mengambil bagian dari pendapatan di atas batas paket gratisnya. openpurr adalah perangkat lunak yang Anda jalankan sendiri: catatan pembelian, entitlement, dan kredensial store Anda tersimpan di database Anda sendiri, dan tidak ada bagi hasil pendapatan maupun biaya per transaksi. Saat ini RevenueCat menawarkan lebih banyak fitur, seperti paywall dan integrasi analitik. openpurr berfokus pada backend langganan inti.",
       },
       {
         q: "Apakah saya harus menulis ulang kode pembelian untuk beralih dari RevenueCat?",
@@ -258,7 +259,7 @@ export const id: Dict = {
       },
       {
         q: "Apa yang dilakukan RevenueCat tetapi tidak dilakukan openpurr?",
-        a: "Paywall, integrasi analitik pihak ketiga, Customer Center, mata uang virtual, penagihan web, Amazon, event iklan, dan kontrak dukungan komersial belum termasuk untuk saat ini. Eksperimen harga ada di roadmap. Jika Anda membutuhkannya sekarang, platform komersial lebih cocok.",
+        a: "Paywall, integrasi analitik pihak ketiga, Customer Center, mata uang virtual, penagihan web, Amazon, event iklan, dan kontrak dukungan komersial belum termasuk untuk saat ini. Eksperimen harga sudah tersedia bawaan. Jika Anda membutuhkan yang lainnya sekarang, platform komersial lebih cocok.",
       },
       {
         q: "Apakah openpurr siap untuk produksi?",
@@ -280,6 +281,7 @@ export const id: Dict = {
       "App Store Server Notifications V2 dan Google Play Real-time Developer Notifications",
       "Webhook berformat RevenueCat yang ditandatangani dengan HMAC-SHA256",
       "16 grafik langganan, termasuk MRR, churn, dan konversi uji coba",
+      "Eksperimen harga pada offering, dengan hasil per varian",
       "Server MCP, CLI, dan skill Claude",
     ],
   },

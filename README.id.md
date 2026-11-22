@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:8dbb0e93d652582d -->
+<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -31,7 +31,7 @@ Developer aplikasi yang:
 
 openpurr juga cocok jika Anda sudah memakai SDK RevenueCat dan ingin tetap memakainya. openpurr bekerja dengan SDK resmi tanpa modifikasi, jadi beralih cukup dimulai dengan mengganti satu URL, bukan menulis ulang kode pembelian Anda. Untuk memindahkan pelanggan yang sudah ada, lihat [Pindah dari RevenueCat](https://openpurr.org/id/migrate-from-revenuecat/).
 
-**Mungkin belum cocok untuk Anda** jika Anda membutuhkan pembuat paywall, eksperimen A/B, integrasi analitik pihak ketiga, atau kontrak dukungan. Platform komersial sudah menyediakannya saat ini. Lihat [roadmap](ROADMAP.md) (bahasa Inggris) untuk fitur yang akan datang.
+**Mungkin belum cocok untuk Anda** jika Anda membutuhkan pembuat paywall, integrasi analitik pihak ketiga, atau kontrak dukungan. Platform komersial sudah menyediakannya saat ini. Lihat [roadmap](ROADMAP.md) (bahasa Inggris) untuk fitur yang akan datang.
 
 ## Apa yang dilakukannya
 
