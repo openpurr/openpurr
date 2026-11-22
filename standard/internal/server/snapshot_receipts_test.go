@@ -4,12 +4,33 @@ package server_test
 // lite/test/snapshot.test.ts and lite/test/intro-eligibility.test.ts that post receipts.
 
 import (
+	"context"
 	"testing"
 
+	"github.com/jackc/pgx/v5/pgconn"
+
+	"github.com/openpurr/openpurr/standard/internal/apple"
 	"github.com/openpurr/openpurr/standard/internal/customerinfo"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
+	"github.com/openpurr/openpurr/standard/internal/ledger"
 	tu "github.com/openpurr/openpurr/standard/internal/testutil"
 )
+
+// beforeFirstExec runs a function just before the first Exec through it: in Refresh, between
+// reading the ledger and saving the snapshot.
+type beforeFirstExec struct {
+	ledger.DB
+	run  func()
+	done bool
+}
+
+func (d *beforeFirstExec) Exec(ctx context.Context, sql string, args ...any) (pgconn.CommandTag, error) {
+	if !d.done {
+		d.done = true
+		d.run()
+	}
+	return d.DB.Exec(ctx, sql, args...)
+}
 
 func TestSnapshotsAfterPurchases(t *testing.T) {
 	env := tu.Start(t, tu.Options{})
@@ -68,6 +89,70 @@ func TestSnapshotsAfterPurchases(t *testing.T) {
 		alice := read("snap-alice")
 		if alice.Source != customerinfo.FromSnapshot || len(keys(prop(alice.Body, "subscriber", "entitlements"))) != 0 {
 			t.Fatalf("%s %s", alice.Source, jsobj.Stringify(alice.Body))
+		}
+	})
+}
+
+func TestSnapshotRebuildRace(t *testing.T) {
+	env := tu.Start(t, tu.Options{})
+	now := env.Clock.Now()
+	ctx := t.Context()
+	cfg, err := env.Loader.Get(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	read := func(user string) *customerinfo.Read {
+		r, err := customerinfo.ReadCustomerInfo(ctx, env.Pool, cfg.Projects["default"], user, customerinfo.RenderOptions{Now: now, RequestStore: "app_store"})
+		if err != nil {
+			t.Fatal(err)
+		}
+		return r
+	}
+
+	t.Run("aren't saved by a rebuild that read the ledger before a later write", func(t *testing.T) {
+		_, payload := env.PostAppleTransaction("snap-race", tu.Fields{"productId": "pro_annual", "expiresDate": now + 300*tu.Day})
+		customerID := env.CustomerID("default", "snap-race")
+		app := cfg.Apps["ios"]
+		revoked := now - 1000
+		refund, err := apple.TransactionRow(tu.Copy(payload, tu.Fields{"revocationDate": revoked, "revocationReason": 0}), app, app.Products["pro_annual"])
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		// The rebuild reads the ledger; a refund commits before it saves.
+		db := &beforeFirstExec{DB: env.Pool, run: func() {
+			tx, err := env.Pool.Begin(ctx)
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer tx.Rollback(ctx)
+			if err := ledger.UpsertTransaction(ctx, tx, refund, now); err != nil {
+				t.Fatal(err)
+			}
+			if err := customerinfo.Invalidate(ctx, tx, customerID); err != nil {
+				t.Fatal(err)
+			}
+			if err := tx.Commit(ctx); err != nil {
+				t.Fatal(err)
+			}
+		}}
+		if _, err := customerinfo.Refresh(ctx, db, cfg, customerID, now); err != nil {
+			t.Fatal(err)
+		}
+		if !db.done {
+			t.Fatal("the write didn't run")
+		}
+		want := customerinfo.ISO(revoked)
+		if got := read("snap-race"); prop(got.Body, "subscriber", "entitlements", "pro", "expires_date") != want {
+			t.Fatalf("stale: %s %s", got.Source, jsobj.Stringify(got.Body))
+		}
+
+		// The next rebuild stores the refunded CustomerInfo.
+		if _, err := customerinfo.Refresh(ctx, env.Pool, cfg, customerID, now); err != nil {
+			t.Fatal(err)
+		}
+		if got := read("snap-race"); got.Source != customerinfo.FromSnapshot || prop(got.Body, "subscriber", "entitlements", "pro", "expires_date") != want {
+			t.Fatalf("%s %s", got.Source, jsobj.Stringify(got.Body))
 		}
 	})
 }
