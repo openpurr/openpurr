@@ -201,6 +201,8 @@ function defaults(r: FakeRequest): FakeResponse {
     case "www.ecb.europa.eu":
       return { text: ecbXml([]), headers: { "content-type": "text/xml" } };
     case "androidpublisher.googleapis.com":
+      // No voided purchases unless a scenario says otherwise (the scheduled job polls for them).
+      if (r.method === "GET" && r.path === `${PLAY_PREFIX}/purchases/voidedpurchases`) return { body: {} };
       return { status: 404, body: { error: { code: 404, message: "Not found" } } };
   }
   return { status: 404, body: { error: "not faked" } };
