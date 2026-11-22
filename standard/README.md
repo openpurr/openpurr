@@ -79,6 +79,12 @@ domain and optionally IAP), see [`docs/standard-on-gcp.md`](../docs/standard-on-
 OpenTofu module in [`infra/gcp`](../infra/gcp). `openpurr setup gcp [--config <file>]` asks a few
 questions and writes the module's variables file (it doesn't touch Google Cloud).
 
+To run it on AWS (ECS on Fargate, RDS for PostgreSQL, Secrets Manager, an Application Load
+Balancer on your own domain), see [`docs/standard-on-aws.md`](../docs/standard-on-aws.md) and the
+OpenTofu module in [`infra/aws`](../infra/aws). There, `DATABASE_URL` names only the host and
+database, and the password RDS manages and rotates comes in as `PGPASSWORD` (with `PGUSER`), which
+pgx reads for what the URL leaves out.
+
 ## App Store
 
 As on Lite:
