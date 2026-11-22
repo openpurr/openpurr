@@ -1,7 +1,7 @@
 ---
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
-import { MIGRATION_PAGE } from "../consts";
+import { ADAPTY_GUIDE_URL, MIGRATION_PAGE } from "../consts";
 import { DEFAULT_LOCALE, dirOf, langTag, localePath, t, type Locale } from "../i18n";
 
 interface Props {
@@ -10,16 +10,18 @@ interface Props {
 const { locale = DEFAULT_LOCALE } = Astro.props;
 const copy = t(locale).faq;
 const faqs = copy.items;
+/** Where an item's link goes: the migration page, or the Adapty guide in the repo. */
+const href = (linkTo?: string) => (linkTo === "adapty" ? ADAPTY_GUIDE_URL : localePath(locale, MIGRATION_PAGE));
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "FAQPage",
   inLanguage: langTag(locale),
-  mainEntity: faqs.map(({ q, a, link }) => ({
+  mainEntity: faqs.map(({ q, a, link, linkTo }) => ({
     "@type": "Question",
     name: q,
     // Google allows links in an answer's text.
-    acceptedAnswer: { "@type": "Answer", text: link ? `${a} <a href="${new URL(localePath(locale, MIGRATION_PAGE), Astro.site)}">${link}</a>` : a },
+    acceptedAnswer: { "@type": "Answer", text: link ? `${a} <a href="${new URL(href(linkTo), Astro.site)}">${link}</a>` : a },
   })),
 };
 // Escape "<" so answer text can never close the script element.
@@ -35,7 +37,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
     </div>
     <div class="list">
       {
-        faqs.map(({ q, a, link }) => (
+        faqs.map(({ q, a, link, linkTo }) => (
           <details>
             <summary>
               <h3>{q}</h3>
@@ -45,7 +47,7 @@ const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
               {link && (
                 <>
                   {" "}
-                  <a href={localePath(locale, MIGRATION_PAGE)}>{link} {dirOf(locale) === "rtl" ? "←" : "→"}</a>
+                  <a href={href(linkTo)}>{link} {dirOf(locale) === "rtl" ? "←" : "→"}</a>
                 </>
               )}
             </p>

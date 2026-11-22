@@ -246,6 +246,12 @@ export const vi: Dict = {
         link: "Cách chuyển đổi",
       },
       {
+        q: "Tôi có thể chuyển từ Adapty sang không?",
+        a: "Có, nhưng cần cập nhật ứng dụng. SDK của Adapty không thể trỏ tới server khác, nên bản cập nhật sẽ thay nó bằng Purchases SDK, vốn hoạt động được với openpurr. Sản phẩm của bạn trên các store vẫn giữ nguyên. openpurr import khách hàng App Store của bạn từ bản xuất sự kiện của Adapty, phiên bản mới của ứng dụng sẽ chuyển tất cả những khách hàng còn lại sang ở lần chạy đầu tiên, và cả hai backend đều được cập nhật trong lúc mọi người nâng cấp ứng dụng.",
+        link: "Đọc hướng dẫn về Adapty",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr hỗ trợ những nền tảng và store nào?",
         a: "openpurr hỗ trợ Purchases SDK cho iOS, Android, Flutter và React Native, với giao dịch mua từ App Store và Google Play. Amazon và thanh toán trên web hiện nằm ngoài phạm vi.",
       },

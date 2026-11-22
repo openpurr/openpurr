@@ -55,6 +55,11 @@ describe("reading the file", () => {
     assert.deepEqual(toRow(rows[1], mapping, { app: "android" }), { app_user_id: "bob", store: "PLAY_STORE", product_id: "pro:monthly", purchase_token: "tok-1", app: "android" });
   });
 
+  it("reads Adapty's event export: customer_user_id and original_transaction_id", () => {
+    const [header, ...rows] = parseCsv("profile_id,event_type,transaction_id,original_transaction_id,customer_user_id,store,product_id\nprof-1,subscription_renewed,201,200,jane,app_store,pro_annual\n");
+    assert.deepEqual(toRow(rows[0], mapHeader(header), {}), { app_user_id: "jane", store: "app_store", product_id: "pro_annual", transaction_id: "200" });
+  });
+
   it("needs an app_user_id column", async () => {
     const r = await run(["import", csv("user,token\na,b\n")], office(ok).fetch);
     assert.equal(r.code, 2);
@@ -80,6 +85,18 @@ describe("openpurr import", () => {
     assert.match(report, /4,"gone",not_found_at_store,"Apple doesn't know transaction 3\."/);
     // Done: running again does nothing.
     assert.match((await run(["import", file], back.fetch)).stdout, /already imported/);
+  });
+
+  it("skips anonymous rows and Google Play rows without a token, without asking the back office", async () => {
+    const back = office(ok);
+    const file = csv("profile_id,original_transaction_id,customer_user_id,store,product_id\np1,100,jane,app_store,pro\np2,101,,app_store,pro\np3,GPA.1,bob,play_store,pro\n");
+    const r = await run(["import", file, "--concurrency", "1"], back.fetch);
+    assert.equal(r.code, 0, r.stderr);
+    assert.match(r.stdout, /3 of 3 rows: imported 1 \(1 new customers\), 0 already covered by another row, 2 skipped, 0 problems\./);
+    assert.deepEqual(back.rows.map((b) => b.row.app_user_id), ["jane"]);
+    const report = readFileSync(`${file}.report.csv`, "utf8");
+    assert.match(report, /3,"",skipped,"No app user ID/);
+    assert.match(report, /4,"bob",skipped,"A Google Play row without a purchase token/);
   });
 
   it("stops at a daily limit and resumes from that row", async () => {

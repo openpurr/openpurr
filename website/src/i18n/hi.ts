@@ -238,6 +238,12 @@ export const hi: Dict = {
         link: "माइग्रेट कैसे करें",
       },
       {
+        q: "क्या मैं Adapty से switch कर सकता हूँ?",
+        a: "हाँ, एक app update के साथ। Adapty के SDK को किसी दूसरे server पर point नहीं किया जा सकता, इसलिए update उसकी जगह Purchases SDK लगा देता है, जिसके साथ openpurr काम करता है। आपके products stores में वैसे ही रहते हैं। openpurr आपके App Store ग्राहकों को Adapty के event export से import करता है, आपके app का नया version बाक़ी सभी ग्राहकों को पहली बार चलने पर ले आता है, और जब तक लोग app update करते हैं, दोनों backends up to date रहते हैं।",
+        link: "Adapty guide पढ़ें",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr किन platforms और stores को support करता है?",
         a: "यह iOS, Android, Flutter और React Native के लिए Purchases SDK को support करता है, और App Store और Google Play की purchases को। Amazon और web billing फ़िलहाल scope से बाहर हैं।",
       },

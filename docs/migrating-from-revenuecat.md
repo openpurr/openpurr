@@ -37,7 +37,7 @@ In order:
 
 ## 1. Set up openpurr
 
-1. **Deploy openpurr Lite** ([README](../README.md#quick-start)). Give the SDK Worker a custom domain you own, so you can move servers later without another app update.
+1. **Deploy openpurr Lite** ([README](../README.md#getting-started)). Give the SDK Worker a custom domain you own, so you can move servers later without another app update.
 2. **Give openpurr store API access.** The import uses it to fetch every purchase.
    - App Store: the In-App Purchase key ([`app-store-setup`](../plugin/skills/app-store-setup/SKILL.md), step 2).
    - Google Play: the service account ([`play-setup`](../plugin/skills/play-setup/SKILL.md), step 2).

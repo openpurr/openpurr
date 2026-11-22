@@ -1,7 +1,7 @@
 // llms.txt (https://llmstxt.org): a plain-text summary of openpurr for AI assistants, with links to
 // the details. Keep it factual and in step with the homepage and the README.
 import type { APIRoute } from "astro";
-import { CONTRIBUTING_URL, LICENSE_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
+import { ADAPTY_GUIDE_URL, CONTRIBUTING_URL, LICENSE_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
 
 export const GET: APIRoute = ({ site }) => {
   const text = `# openpurr
@@ -35,6 +35,7 @@ Paywalls, third-party analytics integrations, Customer Center, virtual currencie
 - [Source code and README](${REPO_URL}): what it is, quick start and setup
 - [Migrating from RevenueCat](${new URL(MIGRATION_PAGE, site)}): how moving an app from RevenueCat to openpurr works, and what moves
 - [Migration guide](${MIGRATION_GUIDE_URL}): every step and command, including the customer import
+- [Moving from Adapty](${ADAPTY_GUIDE_URL}): an app update replaces the Adapty SDK with the Purchases SDK; App Store customers are imported from Adapty's event export
 - [Roadmap](${ROADMAP_URL}): what's done and what's next
 - [Releases](${REPO_URL}/releases): release notes
 - [Contributing](${CONTRIBUTING_URL}): how the code is organized, and how to run and test it

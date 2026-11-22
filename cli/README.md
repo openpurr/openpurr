@@ -56,7 +56,7 @@ Add `--json` to any command for machine-readable output, and `--project ID` when
 | **Customers** | `customers`, `customer`, `explain`, `grant`, `revoke-grant` |
 | **Charts and config** | `metrics` (revenue, MRR, ARR, churn, trials, refunds and more), `config`, `config pull` / `push` / `history` / `restore` |
 | **Operations** | `webhooks`, `webhooks replay`, `audit`, `keys`, `team` |
-| **Moving from RevenueCat** | `import` (see the [migration guide](https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-revenuecat.md)) |
+| **Moving from RevenueCat or Adapty** | `import` (see [Moving from RevenueCat](https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-revenuecat.md) and [Moving from Adapty](https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-adapty.md)) |
 | **Moving between editions** | `export`, `migrate verify`, `migrate sql` (see [Moving from Lite to Standard](https://github.com/openpurr/openpurr/blob/main/docs/migrating-from-lite-to-standard.md)) |
 
 Run `openpurr --help` for every option.

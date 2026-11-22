@@ -237,6 +237,12 @@ export const pl: Dict = {
         link: "Jak przeprowadzić migrację",
       },
       {
+        q: "Czy mogę przejść z Adapty?",
+        a: "Tak, przez aktualizację aplikacji. SDK Adapty nie da się skierować na inny serwer, więc aktualizacja zastępuje je Purchases SDK, z którym działa openpurr. Twoje produkty w sklepach pozostają bez zmian. openpurr importuje twoich klientów z App Store z eksportu zdarzeń Adapty, nowa wersja twojej aplikacji przenosi wszystkich pozostałych przy pierwszym uruchomieniu, a oba backendy pozostają aktualne, dopóki ludzie aktualizują aplikację.",
+        link: "Przeczytaj przewodnik po migracji z Adapty",
+        linkTo: "adapty",
+      },
+      {
         q: "Jakie platformy i sklepy obsługuje openpurr?",
         a: "openpurr obsługuje Purchases SDK dla iOS, Androida, Fluttera i React Native, z zakupami z App Store i Google Play. Amazon i płatności webowe są na razie poza zakresem.",
       },

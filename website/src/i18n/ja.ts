@@ -233,6 +233,12 @@ export const ja: Dict = {
         link: "移行の手順",
       },
       {
+        q: "Adapty から乗り換えられますか？",
+        a: "はい、アプリのアップデートが必要です。Adapty の SDK は接続先を別のサーバーに変更できないため、アップデートで openpurr が対応する Purchases SDK に置き換えます。ストアの商品はそのままです。openpurr は App Store の顧客を Adapty のイベントエクスポートからインポートし、それ以外の顧客は新しいバージョンのアプリを初めて起動したときに移行されます。ユーザーがアップデートするあいだは両方のバックエンドが最新の状態に保たれます。",
+        link: "Adapty のガイドを読む",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr はどのプラットフォームとストアに対応していますか？",
         a: "iOS、Android、Flutter、React Native 向けの Purchases SDK に対応し、App Store と Google Play での購入を扱います。Amazon と Web 決済は現時点では対象外です。",
       },

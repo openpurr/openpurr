@@ -232,6 +232,12 @@ export const zhCn: Dict = {
         link: "迁移指南",
       },
       {
+        q: "可以从 Adapty 迁移过来吗？",
+        a: "可以，但需要更新 App。Adapty 的 SDK 无法指向其他服务器，因此需要通过更新把它替换为 openpurr 兼容的 Purchases SDK。你在商店中的产品保持不变。openpurr 会从 Adapty 的事件导出文件中导入你的 App Store 客户，其他客户会在新版 App 首次运行时迁移过来，在用户陆续更新期间，两个后端都会保持同步。",
+        link: "阅读 Adapty 指南",
+        linkTo: "adapty",
+      },
+      {
         q: "openpurr 支持哪些平台和商店？",
         a: "openpurr 支持 iOS、Android、Flutter 和 React Native 的 Purchases SDK，以及来自 App Store 和 Google Play 的购买。Amazon 和 Web 计费目前暂不支持。",
       },
