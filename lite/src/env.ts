@@ -27,6 +27,13 @@ export interface Env {
    */
   CLOUDFLARE_ANALYTICS_TOKEN?: string;
   CLOUDFLARE_ACCOUNT_ID?: string;
+  /**
+   * Forward mode (src/lib/forward.ts), both Workers: the origin of the Standard server this
+   * deployment is moving to. Set, every request goes there and the scheduled jobs stop.
+   */
+  FORWARD_TO?: string;
+  /** Forward mode: the shared secret the new origin checks (its own FORWARD_SECRET). */
+  FORWARD_SECRET?: string;
   // Store credentials (for example the App Store In-App Purchase key) are Worker secrets whose
   // names come from the config, so they're looked up by name rather than declared here.
 }
