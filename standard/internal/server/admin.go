@@ -963,7 +963,8 @@ func (q *adminReq) queryLimit(name string, def, max int) int {
 	}
 	n = math.Min(n, float64(max))
 	if n < 1 {
-		// SQLite reads a negative LIMIT as no limit; Postgres refuses it, so it's the maximum here.
+		// Below one (Postgres refuses a negative LIMIT, SQLite reads it as no limit) it's the
+		// largest page, as on Lite.
 		return max
 	}
 	return int(n)
