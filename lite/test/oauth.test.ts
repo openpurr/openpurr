@@ -19,7 +19,7 @@ const envWith = () => ({ ...env, OPERATOR_SECRET: SECRET });
 
 // A client metadata document host, for the Client ID Metadata Document flow.
 const METADATA_URL = "https://client.example/oauth/metadata.json";
-let metadataDoc: Record<string, unknown> = {};
+let metadataDoc: unknown = {};
 const fakeFetch = (async (input: RequestInfo | URL) => {
   const url = String(input instanceof Request ? input.url : input);
   if (url.startsWith("https://client.example/")) return new Response(JSON.stringify(metadataDoc), { headers: { "content-type": "application/json" } });
@@ -182,6 +182,87 @@ describe("the authorization code flow", () => {
     expect((await mcpCall(first.access_token)).status).toBe(401);
   });
 
+  it("a code exchanged twice at the same moment gets tokens once, and the second use ends them", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    const both = await Promise.all([1, 2].map(() => exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 400]);
+    const won = both.find((r) => r.status === 200)!;
+    const lost = both.find((r) => r.status === 400)!;
+    expect(await jsonOf(lost)).toMatchObject({ error: "invalid_grant", error_description: "This authorization code was already used." });
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM oauth_grant WHERE client_id = ?").bind(clientId).first<{ n: number }>())!;
+    expect(n).toBe(1);
+    // As with a code used twice one after the other, the tokens the code made are ended.
+    expect((await mcpCall((await jsonOf(won)).access_token)).status).toBe(401);
+  });
+
+  it("a refresh token used twice at the same moment rotates once", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    const t = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier }));
+    const both = await Promise.all([1, 2].map(() => exchange({ grant_type: "refresh_token", refresh_token: t.refresh_token, client_id: clientId })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 400]);
+    const won = both.find((r) => r.status === 200)!;
+    const lost = both.find((r) => r.status === 400)!;
+    expect(await jsonOf(lost)).toMatchObject({ error: "invalid_grant" });
+    const fresh = await jsonOf(won);
+    expect((await mcpCall(fresh.access_token)).status).toBe(200);
+    expect((await exchange({ grant_type: "refresh_token", refresh_token: fresh.refresh_token, client_id: clientId })).status).toBe(200);
+  });
+
+  it("a request decided twice at the same moment is decided once, and an approval's code works", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    for (const decisions of [["approve", "approve"], ["approve", "deny"], ["deny", "deny"]]) {
+      const { verifier, challenge } = await pkce();
+      const start = await request(authorizeUrl(clientId, challenge));
+      const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+      const before = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ?").bind(owner.id).first<{ n: number }>())!.n;
+      const both = await Promise.all(
+        decisions.map((d) => request(`/admin/v1/oauth/requests/${id}/${d}`, { method: "POST", session: owner.session, headers: { origin: ORIGIN, "content-type": "application/json" }, body: "{}" })),
+      );
+      expect(both.map((r) => r.status).sort()).toEqual([200, 404]);
+      const after = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ?").bind(owner.id).first<{ n: number }>())!.n;
+      expect(after - before).toBe(1);
+      const back = new URL((await jsonOf(both.find((r) => r.status === 200)!)).redirect);
+      const code = back.searchParams.get("code");
+      if (code) expect((await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier })).status).toBe(200);
+      else expect(back.searchParams.get("error")).toBe("access_denied");
+    }
+  });
+
+  it("a connected app revoked twice at the same moment is revoked (and audited) once", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge);
+    await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier });
+    const [grant] = (await jsonOf(await request("/admin/v1/oauth/grants", { session: owner.session }))).grants;
+    const both = await Promise.all([1, 2].map(() => request(`/admin/v1/oauth/grants/${grant.id}/revoke`, { method: "POST", session: owner.session, headers: { origin: ORIGIN } })));
+    expect(both.map((r) => r.status).sort()).toEqual([200, 404]);
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM audit_log WHERE operator_id = ? AND action = 'oauth.revoked'").bind(owner.id).first<{ n: number }>())!;
+    expect(n).toBe(1);
+  });
+
+  it("approving or refreshing with a scope listed twice keeps it once, in order", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge, ["write:grants", "read", "write:grants", "read"]);
+    const t = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier }));
+    expect(t.scope).toBe("write:grants read");
+    const [grant] = (await jsonOf(await request("/admin/v1/oauth/grants", { session: owner.session }))).grants;
+    expect(grant.scopes).toEqual(["write:grants", "read"]);
+    const { details } = (await env.DB.prepare("SELECT details FROM audit_log WHERE operator_id = ? AND action = 'oauth.authorized'").bind(owner.id).first<{ details: string }>())!;
+    expect(JSON.parse(details).scopes).toEqual(["write:grants", "read"]);
+    const refreshed = await jsonOf(await exchange({ grant_type: "refresh_token", refresh_token: t.refresh_token, client_id: clientId, scope: "read read" }));
+    expect(refreshed.scope).toBe("read");
+  });
+
   it("a viewer can only approve what their role allows, and denying redirects with access_denied", async () => {
     const { client_id: clientId } = await jsonOf(await register());
     const viewer = await signedIn("viewer");
@@ -199,6 +280,21 @@ describe("the authorization code flow", () => {
     const denied = await jsonOf(await request(`/admin/v1/oauth/requests/${id2}/deny`, { method: "POST", session: viewer.session, headers: { origin: ORIGIN } }));
     expect(new URL(denied.redirect).searchParams.get("error")).toBe("access_denied");
     expect((await request(`/admin/v1/oauth/requests/${id2}`, { session: viewer.session })).status).toBe(404);
+  });
+
+  it("shortens a long client name or URI without splitting a character", async () => {
+    const name = `${"a".repeat(99)}\u{1F63A}b`; // the cat straddles the 100-code-unit limit
+    const uri = `https://client.example/${"p".repeat(476)}\u{1F63A}`; // and the 500 one
+    const reg = await jsonOf(await register({ client_name: name, client_uri: uri }));
+    expect(reg.client_name).toBe("a".repeat(99));
+    expect(reg.client_uri).toBe(uri.slice(0, 499));
+    metadataDoc = { client_id: "https://client.example/oauth/long.json", client_name: name, client_uri: uri, redirect_uris: [CALLBACK] };
+    const owner = await signedIn("owner");
+    const start = await request(authorizeUrl("https://client.example/oauth/long.json", (await pkce()).challenge));
+    const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+    expect((await jsonOf(await request(`/admin/v1/oauth/requests/${id}`, { session: owner.session }))).client).toMatchObject({ name: "a".repeat(99), uri: uri.slice(0, 499) });
+    // Short enough: kept whole.
+    expect((await jsonOf(await register({ client_name: `${"a".repeat(98)}\u{1F63A}` }))).client_name).toBe(`${"a".repeat(98)}\u{1F63A}`);
   });
 
   it("refuses bad requests", async () => {
@@ -248,6 +344,13 @@ describe("Client ID Metadata Documents", () => {
     const bad = await request(authorizeUrl("https://client.example/oauth/other.json", challenge));
     expect(bad.status).toBe(400);
     expect(await bad.text()).toMatch(/different client_id/);
+    // JSON that isn't an object has no client_id either.
+    for (const doc of [null, 42, "https://client.example/oauth/other.json", [METADATA_URL], true]) {
+      metadataDoc = doc;
+      const res = await request(authorizeUrl("https://client.example/oauth/other.json", challenge));
+      expect(res.status).toBe(400);
+      expect(await res.text()).toBe("openpurr couldn't start signing in this app: The client's metadata document has a different client_id than its URL.");
+    }
     expect((await request(authorizeUrl("http://client.example/meta.json", challenge))).status).toBe(400);
     expect((await request(authorizeUrl("https://10.0.0.1/meta.json", challenge))).status).toBe(400);
   });
