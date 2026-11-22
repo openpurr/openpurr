@@ -47,6 +47,10 @@ import (
 // SDK_CONFIG_MAX_AGE_MS).
 const configMaxAgeMs = 60_000
 
+// How long shutdown waits for requests, the job in progress and deferred work. Cloud Run allows
+// 10 seconds after SIGTERM by default, Kubernetes 30.
+const shutdownTimeout = 25 * time.Second
+
 func main() {
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel(os.Getenv("LOG_LEVEL"))}))
 	slog.SetDefault(log)
@@ -193,13 +197,14 @@ func run(log *slog.Logger) error {
 		Conformance:    conformance,
 	}
 
+	handler := server.New(deps) // registers the periodic jobs
 	if conformance == nil {
-		registry.Start(ctx, time.Minute)
+		registry.Start(time.Minute)
 	}
 
 	srv := &http.Server{
 		Addr:              ":" + port,
-		Handler:           server.New(deps),
+		Handler:           handler,
 		ReadHeaderTimeout: 10 * time.Second,
 		ReadTimeout:       30 * time.Second,
 		WriteTimeout:      60 * time.Second,
@@ -211,19 +216,25 @@ func run(log *slog.Logger) error {
 		errc <- srv.ListenAndServe()
 	}()
 
+	var serveErr error
 	select {
 	case err := <-errc:
 		if !errors.Is(err, http.ErrServerClosed) {
-			return err
+			serveErr = err
 		}
 	case <-ctx.Done():
 		log.Info("shutting down")
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
-		defer cancel()
-		if err := srv.Shutdown(shutdownCtx); err != nil {
-			log.Error("shutdown", "error", err.Error())
-		}
 	}
-	deferred.Wait()
-	return nil
+	// Stop taking requests (in-flight ones finish), then let the job in progress and deferred
+	// work (first webhook attempts, snapshot rebuilds) finish, all within shutdownTimeout.
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+	defer cancel()
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Error("shutdown", "error", err.Error())
+	}
+	registry.Stop(shutdownCtx)
+	if !deferred.WaitContext(shutdownCtx) {
+		log.Warn("stopped with deferred work unfinished; webhook deliveries left are retried by the next server")
+	}
+	return serveErr
 }
