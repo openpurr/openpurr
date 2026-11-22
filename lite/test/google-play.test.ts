@@ -82,6 +82,19 @@ describe("Google Play subscriptions", () => {
     expect(old).toEqual({ is_upgraded: 1 });
   });
 
+  it("an upgrade invalidates the snapshot of whoever owns the replaced subscription", async () => {
+    const api = fakeGoogleApi({
+      "GET /purchases/subscriptionsv2/tokens/tok-a": () => ({ body: playSubscription({ ack: true, orderId: "GPA.0010-0000-0000-00001" }) }),
+      "GET /purchases/subscriptionsv2/tokens/tok-b": () => ({ body: playSubscription({ ack: true, orderId: "GPA.0010-0000-0000-00002", linkedPurchaseToken: "tok-a" }) }),
+    });
+    const app = appWithGooglePlay(api);
+    const info = async (user: string) => (await (await call(`/v1/subscribers/${user}`, { platform: "android", app })).json<any>()).subscriber;
+    await postPlay(app, subscriptionBody("gp-first", "tok-a"));
+    expect((await info("gp-first")).entitlements.pro).toBeDefined();
+    await postPlay(app, subscriptionBody("gp-second", "tok-b"));
+    expect((await info("gp-first")).entitlements.pro).toBeUndefined();
+  });
+
   it("answers 4xx for a token Google doesn't know, 5xx when Google is down or the purchase is pending", async () => {
     const api = fakeGoogleApi({
       "GET /purchases/subscriptionsv2/tokens/tok-down": () => ({ status: 503, body: {} }),

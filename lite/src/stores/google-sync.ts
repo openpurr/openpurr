@@ -9,6 +9,7 @@
 import type { AppConfig } from "../config";
 import type { Deps, Env } from "../env";
 import type { NewTransaction } from "../ledger";
+import { invalidateOwnerSnapshot } from "../snapshot";
 import type { SubscriptionStateUpdate } from "./apple";
 import { type GooglePlayClient, googlePlayClient, type GoogleServiceAccountKey, type Order } from "./google-api";
 import { googleProductRow, googleSubscriptionRow, googleSubscriptionState, isPending } from "./google";
@@ -119,9 +120,10 @@ export async function acknowledge(db: D1Database, client: GooglePlayClient, appI
   }
 }
 
-/** Marks the chain a new purchase replaces as upgraded, so it stops granting entitlements. */
+/** Marks a replaced chain as upgraded and invalidates its owner's snapshot (maybe someone else). */
 export function markReplaced(db: D1Database, replacedToken: string) {
-  return db
-    .prepare("UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = ?")
-    .bind(replacedToken);
+  return [
+    db.prepare("UPDATE store_transaction SET is_upgraded = 1 WHERE store = 'play_store' AND original_transaction_id = ?").bind(replacedToken),
+    invalidateOwnerSnapshot(db, "play_store", replacedToken),
+  ];
 }

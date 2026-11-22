@@ -234,10 +234,13 @@ const tryJson = (s: string) => {
 let server: Server | undefined;
 export const fake = new FakeStore();
 
-/** Starts the fake server once per test process. */
+/**
+ * Starts the fake server once per test process. A server that failed to listen isn't kept, so
+ * every file reports the failure instead of running against whatever holds the port.
+ */
 export async function startFakeStore() {
   if (server) return;
-  server = createServer((req, res) => {
+  const s = createServer((req, res) => {
     const chunks: Buffer[] = [];
     req.on("data", (c: Buffer) => chunks.push(c));
     req.on("end", async () => {
@@ -253,8 +256,9 @@ export async function startFakeStore() {
     });
   });
   await new Promise<void>((resolve, reject) => {
-    server!.once("error", reject);
-    server!.listen(STORE_PORT, STORE_HOST, () => resolve());
+    s.once("error", reject);
+    s.listen(STORE_PORT, STORE_HOST, () => resolve());
   });
-  server.unref();
+  s.unref();
+  server = s;
 }

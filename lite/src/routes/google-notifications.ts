@@ -71,11 +71,15 @@ googleNotifications.post("/", async (c) => {
   // 2. Unwrap the Pub/Sub message.
   const body = await c.req.json<{ message?: { data?: string; messageId?: string } }>().catch(() => null);
   const messageId = body?.message?.messageId;
-  let n: DeveloperNotification;
+  let n: DeveloperNotification | null = null;
   try {
     n = JSON.parse(atob(body?.message?.data ?? ""));
   } catch {
-    // Redelivery can't fix a malformed message; acknowledge it so Pub/Sub stops retrying.
+    // Reported below.
+  }
+  // Not JSON, or JSON that isn't a notification for some package (null, a number, no
+  // packageName): redelivery can't fix that, so acknowledge it and Pub/Sub stops retrying.
+  if (typeof n?.packageName !== "string") {
     console.error("Ignoring malformed Pub/Sub message", messageId);
     return reply(c, 200, "Ignored: malformed message.");
   }
@@ -149,7 +153,7 @@ googleNotifications.post("/", async (c) => {
       if (type === PLAY_SUB.REVOKED) row = { ...row, revoked_at: eventTime, revocation_reason: "revoked" };
       writes.push(upsertTransaction(db, row), upsertSubscriptionState(db, googleSubscriptionState(sub, token, eventTime)));
       replaces = sub.linkedPurchaseToken ?? null;
-      if (replaces) writes.push(markReplaced(db, replaces));
+      if (replaces) writes.push(...markReplaced(db, replaces));
       if (type === PLAY_SUB.PURCHASED && sub.acknowledgementState === "ACKNOWLEDGEMENT_STATE_PENDING") {
         ack = { kind: "subscription", productId: product.id, purchaseToken: token };
       }

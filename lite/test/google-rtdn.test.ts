@@ -73,12 +73,19 @@ describe("push authentication", () => {
     const [h, p] = good.split(".");
     expect((await g.notify(test, { token: `${h}.${p}.AAAA` })).status).toBe(401);
     expect((await g.notify(test, { token: `${h}.${p}.%%%` })).status).toBe(401);
+    // A header that decodes to null (JSON, but not an object).
+    expect((await g.notify(test, { token: `${btoa("null")}.${p}.AAAA` })).status).toBe(401);
     expect(PUSH_ACCOUNT).toMatch(/@/);
   });
 
   it("acknowledges malformed messages (so Pub/Sub stops retrying) and answers 5xx for an unknown package", async () => {
     const g = google();
     expect((await g.notify({}, { rawData: "%%%not base64%%%" })).status).toBe(200);
+    // JSON, but not a notification: null, not an object, or no package name.
+    for (const data of ["null", "42", '"text"', "[]", '{"testNotification":{}}']) {
+      const res = await g.notify({}, { rawData: btoa(data) });
+      expect([data, res.status, await res.json()]).toEqual([data, 200, { message: "Ignored: malformed message." }]);
+    }
     expect((await g.notify({ packageName: "com.unknown.app", testNotification: {} })).status).toBe(500);
   });
 });
@@ -188,6 +195,19 @@ describe("subscription notifications", () => {
       ["INITIAL_PURCHASE", null],
     ]);
     expect((await g.info("rt-change-user")).entitlements.pro.product_plan_identifier).toBe("annual");
+  });
+
+  it("a notification that links a token to another customer's invalidates that customer's snapshot", async () => {
+    const g = google();
+    g.subs.set("rt-a", playSubscription({ ack: true, orderId: "GPA.5100-0000-0000-00001" }));
+    g.subs.set("rt-b", playSubscription({ ack: true, orderId: "GPA.5100-0000-0000-00002" }));
+    await g.receipt("rt-first", "rt-a");
+    await g.receipt("rt-second", "rt-b");
+    expect((await g.info("rt-first")).entitlements.pro).toBeDefined();
+    // Google now reports rt-b as replacing rt-a.
+    g.subs.set("rt-b", playSubscription({ ack: true, orderId: "GPA.5100-0000-0000-00002", linkedPurchaseToken: "rt-a" }));
+    expect((await g.sub("rt-b", 2)).status).toBe(200);
+    expect((await g.info("rt-first")).entitlements.pro).toBeUndefined();
   });
 
   it("ignores a token Google no longer knows", async () => {

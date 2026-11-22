@@ -83,6 +83,8 @@ export async function verifyGoogleIdToken(
   } catch {
     throw new GoogleIdTokenError("Malformed JWT");
   }
+  // Valid JSON, but nothing to read claims from.
+  if (header === null || claims === null) throw new GoogleIdTokenError("Malformed JWT");
   if (header.alg !== "RS256" || !header.kid) throw new GoogleIdTokenError(`Unexpected token algorithm ${header.alg}`);
 
   const key = await keyFor(header.kid, opts.fetch ?? fetch);

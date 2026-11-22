@@ -24,15 +24,30 @@ const keep = argv.includes("--keep");
 const serveOnly = argv.includes("--serve-only");
 const { rest } = parseArgs(argv.filter((a) => a !== "--keep" && a !== "--serve-only"));
 
-const freePort = () =>
-  new Promise((resolve, reject) => {
+// Ports are picked here but bound later by other processes (wrangler, and the fake store in the
+// test process), so they come from below the OS ephemeral ranges (Linux from 32768, macOS from
+// 49152): a port the OS hands out for listen(0) could be handed again to wrangler or workerd for
+// one of their own sockets in the meantime, and the fake store's listen would fail.
+const LOW = 20000;
+const HIGH = 32000;
+const taken = new Set();
+
+const canListen = (port) =>
+  new Promise((resolve) => {
     const s = createServer();
-    s.once("error", reject);
-    s.listen(0, "127.0.0.1", () => {
-      const { port } = s.address();
-      s.close(() => resolve(port));
-    });
+    s.once("error", () => resolve(false));
+    s.listen(port, "127.0.0.1", () => s.close(() => resolve(true)));
   });
+
+async function freePort() {
+  for (let i = 0; i < 50; i++) {
+    const port = LOW + Math.floor(Math.random() * (HIGH - LOW));
+    if (taken.has(port) || !(await canListen(port))) continue;
+    taken.add(port);
+    return port;
+  }
+  throw new Error(`conformance: no free port between ${LOW} and ${HIGH}`);
+}
 
 const port = Number(process.env.CONFORMANCE_LITE_PORT) || (await freePort());
 const storePort = Number(process.env.CONFORMANCE_STORE_PORT) || (await freePort());
