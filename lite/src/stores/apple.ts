@@ -16,7 +16,7 @@ export interface AppleTransaction {
   type: "Auto-Renewable Subscription" | "Non-Consumable" | "Consumable" | "Non-Renewing Subscription";
   inAppOwnershipType?: "PURCHASED" | "FAMILY_SHARED";
   revocationDate?: number;
-  revocationReason?: number;
+  revocationReason?: number | null;
   isUpgraded?: boolean;
   /** 1 introductory, 2 promotional, 3 offer code, 4 win-back. */
   offerType?: number;
@@ -66,7 +66,7 @@ export function appleTransactionRow(tx: AppleTransaction, app: AppConfig, produc
     currency: tx.currency ?? null,
     storefront: tx.storefront ?? null,
     revoked_at: tx.revocationDate ?? null,
-    revocation_reason: tx.revocationReason === undefined ? null : String(tx.revocationReason),
+    revocation_reason: tx.revocationReason == null ? null : String(tx.revocationReason), // absent or JSON null
     is_upgraded: tx.isUpgraded ? 1 : 0,
     verified: 1,
     source: "sdk",

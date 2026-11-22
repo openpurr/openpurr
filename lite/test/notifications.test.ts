@@ -219,6 +219,19 @@ describe("refunds, revocations and upgrades", () => {
     expect(info.entitlements.pro.expires_date).toBe(iso(revoked));
   });
 
+  it("stores a revocationReason of null as NULL, and a number as its digits", async () => {
+    const reasonOf = async (transactionId: string) =>
+      (await env.DB.prepare("SELECT revocation_reason FROM store_transaction WHERE transaction_id = ?").bind(transactionId).first())?.revocation_reason;
+    const a = await subscribed("n-reason-null");
+    const nulled = (await signTransaction({ ...a, revocationDate: Date.now() - 1000, revocationReason: null })).payload;
+    await postNotification((await signNotification({ type: "REFUND", transaction: nulled, status: APPLE_STATUS.REVOKED })).signedPayload);
+    expect(await reasonOf(a.transactionId)).toBeNull();
+    const b = await subscribed("n-reason-1");
+    const numbered = (await signTransaction({ ...b, revocationDate: Date.now() - 1000, revocationReason: 1 })).payload;
+    await postNotification((await signNotification({ type: "REFUND", transaction: numbered, status: APPLE_STATUS.REVOKED })).signedPayload);
+    expect(await reasonOf(b.transactionId)).toBe("1");
+  });
+
   it("REVOKE (family sharing ended) removes a one-time purchase", async () => {
     const tx = await subscribed("n-revoke", { productId: "lifetime", type: "Non-Consumable", expiresDate: undefined, inAppOwnershipType: "FAMILY_SHARED" });
     expect((await customerInfo("n-revoke")).entitlements.pro.product_identifier).toBe("lifetime");
