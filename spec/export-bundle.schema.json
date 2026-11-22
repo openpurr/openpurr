@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://openpurr.org/spec/export-bundle.schema.json",
+  "title": "openpurr export bundle manifest, version 1",
+  "description": "manifest.json of an export bundle; see spec/export-bundle.md.",
+  "type": "object",
+  "required": ["format", "version", "id", "kind", "created_at", "source", "started_at_ms", "since_ms", "previous_id", "options", "tables"],
+  "properties": {
+    "format": { "const": "openpurr-export" },
+    "version": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "kind": { "enum": ["full", "delta"] },
+    "created_at": { "type": "string", "format": "date-time" },
+    "source": {
+      "type": "object",
+      "required": ["url", "edition"],
+      "properties": {
+        "url": { "type": "string" },
+        "edition": { "enum": ["lite", "standard"] },
+        "schema": { "type": ["string", "null"] }
+      }
+    },
+    "started_at_ms": { "type": "integer", "minimum": 0 },
+    "since_ms": { "type": ["integer", "null"] },
+    "previous_id": { "type": ["string", "null"] },
+    "options": {
+      "type": "object",
+      "properties": { "optional_columns": { "type": "boolean" } }
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "allOf": [
+          { "$ref": "#/$defs/file" },
+          { "type": "object", "required": ["name"], "properties": { "name": { "type": "string", "pattern": "^[a-z_]+$" } } }
+        ]
+      }
+    },
+    "customer_index": { "oneOf": [{ "$ref": "#/$defs/file" }, { "type": "null" }] },
+    "deleted_customers": { "oneOf": [{ "$ref": "#/$defs/file" }, { "type": "null" }] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "kind": { "const": "delta" } } },
+      "then": {
+        "properties": { "since_ms": { "type": "integer" }, "previous_id": { "type": "string" } },
+        "required": ["customer_index", "deleted_customers"]
+      }
+    }
+  ],
+  "$defs": {
+    "file": {
+      "type": "object",
+      "required": ["file", "rows", "sha256"],
+      "properties": {
+        "file": { "type": "string", "pattern": "^(?!/)(?!.*\\.\\.)[^\\\\]+$" },
+        "rows": { "type": "integer", "minimum": 0 },
+        "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+      }
+    }
+  }
+}
