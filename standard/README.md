@@ -5,32 +5,36 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S4 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
-App Store purchases and notifications, Google Play purchases and notifications, and webhook
-delivery with the background jobs. It isn't ready for production use yet (see "Not implemented
-yet").
+This is milestones S1 to S5 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
+with the background jobs, and the back office (operator sign-in, the admin API and the dashboard).
+It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
 
 Go 1.26 and Postgres 14 or later.
 
 ```sh
+go generate ./internal/officeui     # copies the dashboard (../lite/office-ui) in to be embedded
 go build -o openpurr ./cmd/openpurr
-DATABASE_URL=postgres://localhost/openpurr OPENPURR_CONFIG=../lite/openpurr.config.yaml ./openpurr
+DATABASE_URL=postgres://localhost/openpurr OPENPURR_CONFIG=../lite/openpurr.config.yaml OPERATOR_SECRET=... ./openpurr
+DATABASE_URL=postgres://localhost/openpurr ./openpurr admin create --email you@example.com --url http://localhost:8080
 ```
 
-Or with Docker (static binary on distroless):
+Without `go generate` the binary still serves the APIs; the dashboard's pages then say how to add
+it. Or with Docker (static binary on distroless, dashboard included), from the repository root:
 
 ```sh
-docker build -t openpurr-standard .
-docker run -e DATABASE_URL=... -p 8080:8080 openpurr-standard
+docker build -f standard/Dockerfile -t openpurr-standard .
+docker run -e DATABASE_URL=... -e OPERATOR_SECRET=... -p 8080:8080 openpurr-standard
 ```
 
 The server applies its migrations at startup (several replicas can start at once; they take
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
 database has none, and serves the SDK API on `/v1`, App Store Server Notifications V2 on
 `POST /notifications/apple`, Google Play Real-time Developer Notifications on
-`POST /notifications/google` and a health check on `GET /healthz`, and runs the background jobs
+`POST /notifications/google`, the admin API on `/admin/v1`, the dashboard under `/admin` and a
+health check on `GET /healthz`, and runs the background jobs
 (see "Webhooks and background jobs"). Logs are JSON on stdout. SIGTERM stops taking requests, lets
 those in progress, the job in progress and deferred work (first webhook attempts, snapshot
 rebuilds) finish, and stops, within 25 seconds.
@@ -40,7 +44,8 @@ rebuilds) finish, and stops, within 25 seconds.
 | `DATABASE_URL` | Postgres connection string (required). |
 | `PORT` | Port to listen on (default 8080). |
 | `OPENPURR_CONFIG` | An `openpurr.config.yaml` (Lite's format, version 1 or 2) imported on first start. A file with mistakes stops the server with a message saying what's wrong. After the first start the database is the source of truth. |
-| `OPERATOR_SECRET` | At least 32 random characters, for the back office (operator passwords and TOTP), once it arrives. |
+| `OPERATOR_SECRET` | At least 32 random characters: the back office derives the password pepper and the key that encrypts authenticator secrets from it, as Lite does, so use Lite's value when moving from Lite. Without it, sign-in answers 503 (access tokens still work). Changing it invalidates every password and authenticator; reset them with `openpurr admin login-link`. |
+| `PUBLIC_URL` | The server's public origin (`https://purchases.example.com`). Optional: setup links and the dashboard's same-origin check use it, else each request's host and scheme (`X-Forwarded-Proto` behind a proxy that ends TLS). |
 | `RATE_LIMIT_IP_PER_MINUTE` | SDK requests per client IP per minute (default 300, 0 = off). |
 | `RATE_LIMIT_USER_PER_MINUTE` | SDK requests per app user per minute (default 60, 0 = off). |
 | `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `X-Forwarded-For` or `CF-Connecting-IP`). Without it, the connection's address is used. Only set it behind a proxy that overwrites the header. |
@@ -117,9 +122,8 @@ As on Lite:
   minutes (about 72 hours), then the delivery is marked failed; an endpoint removed from the config
   fails at once. At-least-once: consumers deduplicate on `event.id`. Several events from one change
   reach an endpoint in the order they were written.
-- **Replay** (for the admin API, S5): `webhooks.Replay` queues an event's deliveries again with the
-  same body, then `DeliverNow` sends it; `webhooks.EventApp` and `webhooks.ListDeliveries` are the
-  lookups behind `/admin/v1/webhooks/...`.
+- **Replay** (`POST /admin/v1/webhooks/events/{id}/replay`) queues an event's deliveries again with
+  the same body and sends them at once; consumers deduplicate on `event.id`.
 - **The job loop** runs in the server process. Every 5 minutes: `retry-webhooks` (due deliveries,
   oldest first) and `backfill-snapshots` (CustomerInfo for customers without a current snapshot:
   none, an older config, or a write whose rebuild didn't happen). Every hour:
@@ -136,6 +140,40 @@ As on Lite:
   database connection waits on a slow endpoint. A server that stops mid-attempt leaves a lease
   that runs out, and the retry job picks the delivery up.
 
+## The back office
+
+As on Lite (`lite/src/office`), with the same tables, so operators, tokens and settings move over:
+
+- **Operators** sign in at `/admin/v1/auth/*` with a password (HMAC-SHA256 with a pepper derived
+  from `OPERATOR_SECRET`, then PBKDF2-SHA256, Lite's exact format) and optionally an authenticator
+  app (RFC 6238; the secret AES-GCM encrypted with a second key from `OPERATOR_SECRET`) or a
+  one-time recovery code. Sessions are an HttpOnly, Secure, SameSite=Strict cookie (7 days; 30
+  minutes for setup and recovery links), and every cookie-authenticated write must carry this
+  server's `Origin`. Unknown emails cost the same as wrong passwords and get the same answer; 10
+  failures in a row lock the account for 15 minutes; sign-in counts against the per-IP and
+  per-user rate limits.
+- **Bootstrap and recovery:** `openpurr admin create` makes the owner and prints a 24-hour setup
+  link; `openpurr admin login-link` prints a 15-minute recovery link (to replace a lost password
+  or authenticator); `list` and `require-totp on|off` as Lite's `scripts/admin.mjs`. They use
+  `DATABASE_URL`, so whoever runs the infrastructure can always get in.
+- **Roles** (owner, admin, developer, viewer), optionally limited to some apps, and **personal
+  access tokens** (`pat_...`, scopes `read`, `write:grants`, `write:webhooks`, `write:config`,
+  `admin`) for the CLI: a token can do what its operator's role allows, limited to its scopes.
+- **The admin API** (`/admin/v1`): projects and apps, operators, tokens, secret keys, customers
+  (the list and search, and each customer's CustomerInfo, transactions, attributes, events, grants
+  and experiments), promotional grants, imports from RevenueCat (one row per request, as
+  `openpurr import` sends them), price experiments and their results, webhook deliveries and
+  replay, the audit log (every write: who, which token, from where), the versioned config
+  (validate, save with a base version, history, restore), settings and the setup checks
+  (`/doctor`). Charts (`/metrics`) answer 501 until S6, the MCP consent routes until S7.
+- **The dashboard** is `lite/office-ui`, unchanged, embedded at build time. Its files get the
+  headers of its own `_headers` file (a strict Content-Security-Policy, no framing), and any other
+  page under `/admin` gets `index.html`, as Cloudflare's single-page-application mode does.
+- **Edition:** `GET /admin/v1/settings` and `GET /admin/v1/usage` include `"edition": "standard"`.
+  The usage report has no metrics (Standard has no Cloudflare daily limits) and
+  `POST /admin/v1/usage/refresh` answers 400. The dashboard doesn't read the edition yet; until it
+  does, it shows "Lite" and the usage card's Cloudflare text.
+
 ## Tests
 
 ```sh
@@ -146,8 +184,10 @@ OPENPURR_TEST_DATABASE_URL=postgres://localhost/openpurr_test go test ./...
 Tests that need Postgres skip without `OPENPURR_TEST_DATABASE_URL`. Each one gets its own schema,
 so packages run in parallel against one database. The HTTP tests mirror Lite's `sdk`, `snapshot`,
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
-`apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx` and
-the snapshot backfill; `internal/applejws` mirrors `apple-jws`. The Google Play tests mirror `google-play`,
+`apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
+snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor`, `setup-urls` and the admin parts
+of `experiments`; `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
+crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
 Developer API and push-token keys, `internal/testutil/google.go`). App Store payloads are signed
 with a certificate chain the tests generate (`internal/testutil/apple.go`), and a fake App Store
@@ -159,7 +199,9 @@ rendered bodies); `golden-apple.json` holds Lite's App Store transaction rows, s
 planned webhook events, event bodies and App Store Server API syncs; `golden-google.json` holds
 Lite's Google Play rows, subscription states, planned events, event bodies and purchase
 verifications; `golden-webhooks.json` holds Lite's signature headers, the request each delivery
-attempt makes, what it records, the retry schedule, and its ECB rate parsing. The tests check
+attempt makes, what it records, the retry schedule, and its ECB rate parsing; `golden-auth.json`
+holds Lite's password hashes, TOTP codes, encrypted authenticator secrets, base32, recovery codes
+and tokens, made from predictable random bytes so Standard can make the same ones. The tests check
 Standard matches them byte for byte. The `.ts` file next to each says how to regenerate it after a
 change in Lite.
 
@@ -184,10 +226,12 @@ set too) turns on:
 
 ## Not implemented yet
 
-- The back office (`/admin/v1`, operator sign-in, the dashboard, config editing) in S5. A
-  conformance reset already creates the owner operator and access token in Lite's formats.
-- Charts and experiment results (S6), with the hourly chart rollup, which goes last in the job list
-  (after the exchange rates); MCP and OAuth (S7), GCP packaging (S8), moving from Lite (S9).
+- Charts (S6): `/admin/v1/metrics*` answer 501, and the hourly chart rollup, which goes last in
+  the job list (after the exchange rates). Imports already count backdated customers into
+  `metric_daily` once a rollup has run, as Lite does.
+- MCP and OAuth (S7): `/mcp`, `/oauth/*` and the dashboard's consent routes (501; the connected
+  apps list is empty). Access tokens already work the way MCP will use them.
+- GCP packaging and IAP sign-in (S8), moving from Lite (S9).
 - Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
 
@@ -250,5 +294,26 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   slot, whichever replica gets to it.
 - **`webhook_delivery.claimed_until`** is a Standard-only column (migration 0003), the delivery
   lease above.
+- **The back office's wording** says "The secret OPERATOR_SECRET ..." where Lite says "The Worker
+  secret ...", and its setup checks give environment variables where Lite gives `wrangler secret
+  put`. Lite's Cloudflare checks (D1 migrations and size, free-plan usage, the workers.dev domain)
+  are replaced by a check of Standard's own migrations; the scheduled-job check reads the job
+  loop's slots.
+- **One-time credentials are claimed atomically.** A TOTP code, a setup or recovery link and the
+  last-owner check are each decided inside one Postgres statement or a locked transaction, so two
+  requests at the same moment can't both use one code or link, or both demote the last two
+  owners (on Lite, D1 reads then writes).
+- **The SDK URL guess** is this server's own origin (it serves the SDK API too); Lite guesses the
+  SDK Worker's workers.dev address.
+- **Unknown pages:** only `/`, `/admin` and pages under it fall back to the dashboard; any other
+  unknown path still gets the SDK's JSON 404 (Lite's back-office Worker answers every unknown page
+  with `index.html`).
+- **Dates in the admin API** (a grant's `expires_at`, an import row's `first_seen`) are read in the
+  ECMAScript date format (`2026-01-31`, `2026-01-31T12:00:00Z`, with an offset); V8's looser forms
+  ("Jan 31 2026") aren't accepted.
+- **Customer search:** the email lookup is case-insensitive for all of Unicode (D1's `NOCASE` folds
+  ASCII only), a customer's `stores` are listed in alphabetical order, and a negative `limit` on the
+  audit log, deliveries or config history means the maximum (SQLite reads it as no limit).
+- **Imports** don't stop near a daily limit (Standard has none).
 - **The inactive-customer cleanup** locks its candidates (`FOR UPDATE SKIP LOCKED`), so a customer
   a request is writing to at that moment is left for the next run.
