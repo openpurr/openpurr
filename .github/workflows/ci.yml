@@ -91,3 +91,27 @@ jobs:
 
       - name: Build
         run: CGO_ENABLED=0 go build -o /dev/null ./cmd/openpurr
+
+  conformance-lite:
+    name: Conformance suite against Lite
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Boots Lite in conformance mode (wrangler dev, local D1, test-only keys generated on the fly)
+      # and runs spec/conformance against it over HTTP.
+      - name: Conformance suite
+        run: pnpm --filter @openpurr/conformance test:lite
