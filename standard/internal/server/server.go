@@ -16,6 +16,8 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 
+	"github.com/openpurr/openpurr/standard/internal/apple"
+	"github.com/openpurr/openpurr/standard/internal/applejws"
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
@@ -42,6 +44,10 @@ type Deps struct {
 	HTTPClient *http.Client
 	// Trusted Apple roots, DER. Production: Apple Root CA G3 only.
 	AppleRoots [][]byte
+	// Verifies App Store signed data, caching verified chains; made by New when nil.
+	JWS *applejws.Verifier
+	// App Store Server API bearer tokens; made by New when nil.
+	AppleTokens *apple.Tokens
 	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
 	OperatorSecret string
 	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
@@ -64,6 +70,12 @@ type Conformance struct {
 
 // New returns the server's handler.
 func New(d *Deps) http.Handler {
+	if d.JWS == nil {
+		d.JWS = applejws.NewVerifier()
+	}
+	if d.AppleTokens == nil {
+		d.AppleTokens = apple.NewTokens(d.Clock.Now)
+	}
 	s := &server{Deps: d}
 	return s.logRequests(s.recoverPanics(http.HandlerFunc(s.route)))
 }
@@ -88,10 +100,22 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusOK, jsobj.New("report_logs", false))
 	case strings.HasPrefix(path, "/v1/"):
 		s.sdk(w, r)
+		s.settleInConformance()
+	case path == "/notifications/apple":
+		s.appleNotification(w, r)
+		s.settleInConformance()
 	case s.Conformance != nil && strings.HasPrefix(path, "/__conformance/"):
 		s.conformance(w, r)
 	default:
 		writeJSON(w, http.StatusNotFound, jsobj.New("code", 0.0, "message", "Not found"))
+	}
+}
+
+// settleInConformance finishes deferred work before the response is complete in conformance mode,
+// as Lite's conformance Worker does, so a scenario's next request sees its effects.
+func (s *server) settleInConformance() {
+	if s.Conformance != nil {
+		s.Deferred.Wait()
 	}
 }
 

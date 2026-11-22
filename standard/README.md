@@ -5,8 +5,9 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestone S1 of `Specs/standard-plan.md`: the foundation and the SDK read endpoints. It
-isn't ready for production use yet (see "Not implemented yet").
+This is milestones S1 and S2 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+and App Store purchases and notifications. It isn't ready for production use yet (see "Not
+implemented yet").
 
 ## Build and run
 
@@ -26,8 +27,9 @@ docker run -e DATABASE_URL=... -p 8080:8080 openpurr-standard
 
 The server applies its migrations at startup (several replicas can start at once; they take
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
-database has none, and serves the SDK API on `/v1` and a health check on `GET /healthz`. Logs are
-JSON on stdout. SIGTERM drains requests and stops.
+database has none, and serves the SDK API on `/v1`, App Store Server Notifications V2 on
+`POST /notifications/apple` and a health check on `GET /healthz`. Logs are JSON on stdout.
+SIGTERM drains requests and stops.
 
 | Variable | |
 |---|---|
@@ -43,6 +45,29 @@ JSON on stdout. SIGTERM drains requests and stops.
 Secrets the config names (`APPLE_IAP_KEY`, `GOOGLE_SERVICE_ACCOUNT`, webhook secrets) are
 environment variables of that name, as they're Worker secrets of that name on Lite.
 
+## App Store
+
+As on Lite:
+
+- **StoreKit 2** apps post a signed transaction to `POST /v1/receipts`. It's verified against
+  Apple Root CA G3 (alg, chain, validity, Apple's marker extensions, signature); verified chains
+  are cached in memory and in `apple_verified_chain`, so another replica reads the stored leaf
+  key instead of checking the chain again. A restore (`is_restore`) also asks the App Store
+  Server API for the current status of every subscription, when the app has API access.
+- **StoreKit 1** apps post the app receipt. One transaction ID is read from it and the App Store
+  Server API (production, then sandbox) is asked for the customer's history and subscription
+  statuses; Apple's answer is what's recorded. This needs `app_store_server_api` in the config and
+  the In-App Purchase key (`.p8`) in the secret it names (default `APPLE_IAP_KEY`).
+- **Server Notifications V2** at `POST /notifications/apple`: three signatures verified, the
+  transaction and renewal status applied, each notification processed once. Point App Store
+  Connect's production and sandbox notification URLs at it.
+- Purchases follow RevenueCat's default restore behavior (an anonymous owner is merged in, a named
+  owner's purchase transfers), and the status codes of `spec/sdk-wire-contract.md`: 4xx only for
+  receipts that will never be good, 5xx (keeping the purchase queued on the device) for config
+  mistakes, a missing key or Apple being unavailable.
+- Every ledger change, its webhook events and the snapshot invalidation are one Postgres
+  transaction (Lite's D1 batch).
+
 ## Tests
 
 ```sh
@@ -52,13 +77,18 @@ OPENPURR_TEST_DATABASE_URL=postgres://localhost/openpurr_test go test ./...
 
 Tests that need Postgres skip without `OPENPURR_TEST_DATABASE_URL`. Each one gets its own schema,
 so packages run in parallel against one database. The HTTP tests mirror Lite's `sdk`, `snapshot`,
-`attributes`, `secret-keys`, `rate-limit`, `projects` and `intro-eligibility` suites; purchases
-are written to the ledger directly until the receipt endpoint exists.
+`attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
+`apple-server-api` suites, and the App Store parts of `webhooks` (checked on the recorded events);
+`internal/applejws` mirrors `apple-jws`. App Store payloads are signed with a certificate chain the
+tests generate (`internal/testutil/apple.go`), and a fake App Store Server API stands in for
+Apple's.
 
 `internal/testdata/golden.json` holds what Lite's own code produces for a set of config documents
 (versions, stored form and every validation message) and CustomerInfo scenarios (snapshot bytes and
-rendered bodies); the tests check Standard matches it byte for byte. `golden.ts` next to it says how
-to regenerate it after a change in Lite.
+rendered bodies); `golden-apple.json` holds Lite's App Store transaction rows, subscription states,
+planned webhook events, event bodies and App Store Server API syncs. The tests check Standard
+matches them byte for byte. `golden.ts` and `golden-apple.ts` next to them say how to regenerate
+them after a change in Lite.
 
 The shared HTTP suite is in `../spec/conformance` (see its README); run it against a Standard
 server started in conformance mode.
@@ -74,16 +104,20 @@ set too) turns on:
 - outbound requests to the store, Google, ECB and Cloudflare hosts sent to
   `CONFORMANCE_STORE_BASE` instead;
 - `CONFORMANCE_APPLE_ROOT_B64` trusted instead of Apple Root CA G3;
-- no rate limits, no background job loop (the suite runs jobs with `/__conformance/jobs`), and
-  config changes seen on the next request.
+- no rate limits, no background job loop (the suite runs jobs with `/__conformance/jobs`),
+  config changes seen on the next request, and deferred work (snapshot rebuilds) finished before
+  a response completes, as in Lite's conformance Worker.
 
 ## Not implemented yet
 
-- `POST /v1/receipts` answers 503 for any well-formed receipt, which keeps the purchase queued on
-  the device. Recording purchases, JWS and chain verification, StoreKit 1 receipts and App Store
-  Server Notifications come in S2; Google Play in S3.
-- Webhooks, the job loop's jobs (retries, acknowledgements, FX rates, cleanup, snapshot backfill)
-  in S4. The job registry is there, empty.
+- Google Play (S3). Unverified development purchases (`allow_unverified_purchases`) work; an app
+  with `google_play_api` gets 503 on `/v1/receipts`, which keeps the purchase queued on the device,
+  and `/notifications/google` doesn't exist yet.
+- Webhook delivery (S4). Events and their pending deliveries are recorded exactly as Lite records
+  them, in the same transaction as the purchase, but nothing sends them yet: the first attempt
+  after the response, signing, retries and replay come with the job loop, as do its other jobs
+  (acknowledgements, FX rates, cleanup, snapshot backfill). USD prices use whatever is in `fx_rate`,
+  which nothing fills yet.
 - The back office (`/admin/v1`, operator sign-in, the dashboard, config editing) in S5. A
   conformance reset already creates the owner operator and access token in Lite's formats.
 - Charts and experiment results (S6), MCP and OAuth (S7), GCP packaging (S8), moving from Lite (S9).
@@ -109,3 +143,15 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
   for export compatibility.
 - **Non-string IDs** in a logIn body are used as their text, as D1 stores them; fractional
   `updated_at_ms` values are truncated to whole milliseconds.
+- **App Store payload fields of the wrong JSON type.** A date or price that isn't a number counts
+  as missing (D1 would store whatever it was given); `price` in milliunits is rounded to whole
+  micros for the `bigint` column.
+- **Certificates** are parsed with `crypto/x509` rather than Lite's DER reader, so the detail after
+  "malformed certificate:" in an error message is Go's wording; the checks and every other message
+  are Lite's.
+- **The missing-key message** for StoreKit 1 receipts says "The secret APPLE_IAP_KEY ..." where
+  Lite says "The Worker secret ...".
+- **Ties in webhook event bodies.** Aliases with the same creation time are ordered by app user ID
+  and attributes with the same update time by key (SQLite leaves both to its row order).
+- **Calls to the App Store Server API** end when the SDK's request does, and after the outbound
+  client's 30-second timeout.

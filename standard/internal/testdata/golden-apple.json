@@ -1,0 +1,748 @@
+{
+ "now": 1800000000000,
+ "config": {
+  "version": 1,
+  "apps": {
+   "ios": {
+    "store": "app_store",
+    "bundle_id": "com.example.openpurr",
+    "sdk_keys": [
+     "appl_test_ios_0123456789"
+    ],
+    "products": {
+     "pro_monthly": {
+      "type": "subscription"
+     },
+     "pro_annual": {
+      "type": "subscription",
+      "subscription_group": "21000000"
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   },
+   "android": {
+    "store": "play_store",
+    "package_name": "com.example.openpurr",
+    "sdk_keys": [
+     "goog_test_android_0123456789"
+    ],
+    "allow_unverified_purchases": true,
+    "products": {
+     "pro": {
+      "type": "subscription",
+      "base_plans": [
+       "monthly",
+       "annual"
+      ]
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     }
+    }
+   }
+  },
+  "entitlements": {
+   "pro": {
+    "products": {
+     "ios": [
+      "pro_monthly",
+      "pro_annual",
+      "lifetime"
+     ],
+     "android": [
+      "pro",
+      "lifetime"
+     ]
+    }
+   },
+   "annual_perks": {
+    "products": {
+     "ios": [
+      "pro_annual"
+     ],
+     "android": [
+      "pro:annual"
+     ]
+    }
+   }
+  },
+  "offerings": []
+ },
+ "transactionRows": [
+  {
+   "name": "subscription",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "non-consumable ignores expiresDate",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "consumable",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"coins_100\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"type\":\"Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"coins_100\",\"base_plan_id\":null,\"product_type\":\"consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "production, family shared",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"FAMILY_SHARED\",\"environment\":\"Production\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"production\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"FAMILY_SHARED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "xcode environment is sandbox",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Xcode\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "free trial",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"offerType\":1,\"offerDiscountType\":\"FREE_TRIAL\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"trial\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "pay as you go",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"offerType\":2,\"offerDiscountType\":\"PAY_AS_YOU_GO\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"intro\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "offer code without discount type",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"offerType\":3}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"intro\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "offerType 0",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"offerType\":0,\"offerDiscountType\":\"FREE_TRIAL\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "revoked, reason 1",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"revocationDate\":1799999999000,\"revocationReason\":1}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":1799999999000,\"revocation_reason\":\"1\",\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "revocation reason null",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"revocationReason\":null}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":\"null\",\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "upgraded",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"isUpgraded\":true}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":1,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "isUpgraded false",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"isUpgraded\":false}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no price",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":null,\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "price zero",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":0,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":0,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "price with fraction",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":1234.5,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":1234500,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "numeric ids",
+   "payload": "{\"transactionId\":2000000000000002,\"originalTransactionId\":2000000000000001,\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "no originalPurchaseDate",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "null expiresDate",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":null,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "currency null",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":null,\"storefront\":\"USA\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":null,\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":null}"
+  },
+  {
+   "name": "subscription group",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"subscriptionGroupIdentifier\":\"21000000\"}",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"sdk\",\"subscription_group\":\"21000000\"}"
+  },
+  {
+   "name": "wrong bundle",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.someone.else\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "transaction is for bundle com.someone.else, but app ios is com.example.openpurr"
+  },
+  {
+   "name": "no bundle",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "transaction is for bundle undefined, but app ios is com.example.openpurr"
+  },
+  {
+   "name": "wrong type",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "Apple says lifetime is \"Auto-Renewable Subscription\", but the config says non_consumable"
+  },
+  {
+   "name": "no type",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "Apple says pro_monthly is \"undefined\", but the config says subscription"
+  },
+  {
+   "name": "no transactionId",
+   "payload": "{\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "transaction has no transactionId"
+  },
+  {
+   "name": "null originalTransactionId",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":null,\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "transaction has no originalTransactionId"
+  },
+  {
+   "name": "no purchaseDate",
+   "payload": "{\"transactionId\":\"2000000000000001\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}",
+   "error": "transaction has no purchaseDate"
+  }
+ ],
+ "subscriptionStates": [
+  {
+   "name": "active",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "status": 1,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "no status",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "status": null,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":null,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "auto-renew off",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":0,\"signedDate\":1800000000000,\"expirationIntent\":1}",
+   "status": 1,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":1,\"auto_renew\":0,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":1,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "auto-renew null",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":null,\"signedDate\":1800000000000}",
+   "status": 1,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":1,\"auto_renew\":0,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "no auto-renew status",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"signedDate\":1800000000000}",
+   "status": 2,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":2,\"auto_renew\":null,\"auto_renew_product_id\":null,\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "grace from status",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1800432000000}",
+   "status": 4,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":1800432000000,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "grace inferred",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1800432000000}",
+   "status": null,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":1800432000000,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "grace in the past",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1799913600000,\"isInBillingRetryPeriod\":true}",
+   "status": null,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":3,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "billing retry inferred",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"isInBillingRetryPeriod\":true}",
+   "status": null,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":3,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "billing retry status, grace ignored",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1800086400000}",
+   "status": 3,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":3,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "revoked",
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "status": 5,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":5,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  },
+  {
+   "name": "numeric original id",
+   "renewal": "{\"originalTransactionId\":2000000000000001,\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "status": 1,
+   "state": "{\"store\":\"app_store\",\"original_transaction_id\":\"2000000000000001\",\"status\":1,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":false,\"grace_period_expires_at\":null,\"signed_at\":1800000000000}"
+  }
+ ],
+ "notificationEvents": [
+  {
+   "type": "SUBSCRIBED",
+   "subtype": "INITIAL_BUY",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "type": "SUBSCRIBED",
+   "subtype": "RESUBSCRIBE",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "trial",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:app_store:2000000000000002\",\"extra\":{\"is_trial_conversion\":true}}]"
+  },
+  {
+   "type": "DID_RENEW",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "trial",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:app_store:2000000000000002\",\"extra\":{\"is_trial_conversion\":true}}]"
+  },
+  {
+   "type": "DID_RENEW",
+   "subtype": "BILLING_RECOVERY",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "normal",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:app_store:2000000000000002\",\"extra\":{\"is_trial_conversion\":false}}]"
+  },
+  {
+   "type": "ONE_TIME_CHARGE",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"NON_RENEWING_PURCHASE\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_STATUS",
+   "subtype": "AUTO_RENEW_DISABLED",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:CANCELLATION\",\"extra\":{\"cancel_reason\":\"UNSUBSCRIBE\"}}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_STATUS",
+   "subtype": "AUTO_RENEW_ENABLED",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"UNCANCELLATION\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:UNCANCELLATION\"}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_STATUS",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[]"
+  },
+  {
+   "type": "DID_FAIL_TO_RENEW",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "previous": "",
+   "events": "[{\"type\":\"BILLING_ISSUE\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:BILLING_ISSUE\",\"extra\":{\"grace_period_expiration_at_ms\":null}},{\"type\":\"CANCELLATION\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:CANCELLATION\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}},{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "type": "DID_FAIL_TO_RENEW",
+   "subtype": "GRACE_PERIOD",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1800259200000}",
+   "previous": "",
+   "events": "[{\"type\":\"BILLING_ISSUE\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:BILLING_ISSUE\",\"extra\":{\"grace_period_expiration_at_ms\":1800259200000}},{\"type\":\"CANCELLATION\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:CANCELLATION\",\"extra\":{\"cancel_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "type": "GRACE_PERIOD_EXPIRED",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "type": "EXPIRED",
+   "subtype": "VOLUNTARY",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"UNSUBSCRIBE\"}}]"
+  },
+  {
+   "type": "EXPIRED",
+   "subtype": "BILLING_RETRY",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"BILLING_ERROR\"}}]"
+  },
+  {
+   "type": "EXPIRED",
+   "subtype": "PRICE_INCREASE",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"PRICE_INCREASE\"}}]"
+  },
+  {
+   "type": "EXPIRED",
+   "subtype": "PRODUCT_NOT_FOR_SALE",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:1802505600000\",\"extra\":{\"expiration_reason\":\"UNKNOWN\"}}]"
+  },
+  {
+   "type": "EXPIRED",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": true,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"EXPIRATION\",\"dedupeKey\":\"expiration:app_store:2000000000000001:2000000000000002\",\"extra\":{\"expiration_reason\":\"UNKNOWN\"}}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_PREF",
+   "subtype": "UPGRADE",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_annual\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "previous": "",
+   "events": "[{\"type\":\"PRODUCT_CHANGE\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:PRODUCT_CHANGE\",\"extra\":{\"new_product_id\":\"pro_annual\"}}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_PREF",
+   "subtype": "DOWNGRADE",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"PRODUCT_CHANGE\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:PRODUCT_CHANGE\",\"extra\":{\"new_product_id\":null}}]"
+  },
+  {
+   "type": "DID_CHANGE_RENEWAL_PREF",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": "{\"originalTransactionId\":\"2000000000000001\",\"productId\":\"pro_monthly\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000}",
+   "previous": "",
+   "events": "[]"
+  },
+  {
+   "type": "REFUND",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"refund:app_store:2000000000000002\",\"extra\":{\"cancel_reason\":\"CUSTOMER_SUPPORT\"},\"negativePrice\":true}]"
+  },
+  {
+   "type": "REVOKE",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"CANCELLATION\",\"dedupeKey\":\"revoke:app_store:2000000000000002\",\"extra\":{\"cancel_reason\":\"UNKNOWN\"}}]"
+  },
+  {
+   "type": "REFUND_REVERSED",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"REFUND_REVERSED\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:REFUND_REVERSED\"}]"
+  },
+  {
+   "type": "RENEWAL_EXTENDED",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"SUBSCRIPTION_EXTENDED\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:SUBSCRIPTION_EXTENDED\"}]"
+  },
+  {
+   "type": "PRICE_INCREASE",
+   "subtype": "PENDING",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"PRICE_INCREASE_CONSENT_REQUIRED\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:PRICE_INCREASE_CONSENT_REQUIRED\"}]"
+  },
+  {
+   "type": "PRICE_INCREASE",
+   "subtype": "ACCEPTED",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[{\"type\":\"PRICE_INCREASE_CONSENT_APPROVED\",\"dedupeKey\":\"notification:app_store:11111111-2222-4333-8444-555555555555:PRICE_INCREASE_CONSENT_APPROVED\"}]"
+  },
+  {
+   "type": "PRICE_INCREASE",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[]"
+  },
+  {
+   "type": "CONSUMPTION_REQUEST",
+   "subtype": "",
+   "hasTransaction": true,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[]"
+  },
+  {
+   "type": "TEST",
+   "subtype": "",
+   "hasTransaction": false,
+   "expiresNull": false,
+   "renewal": null,
+   "previous": "",
+   "events": "[]"
+  }
+ ],
+ "receiptEvents": [
+  {
+   "name": "first period",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000001\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:app_store:2000000000000001\"}]"
+  },
+  {
+   "name": "renewal",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "name": "revoked",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":1799999999000,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[]"
+  },
+  {
+   "name": "old",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799737200000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[]"
+  },
+  {
+   "name": "just recent",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799740800000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "name": "non-consumable",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"NON_RENEWING_PURCHASE\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "name": "consumable",
+   "row": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"NON_RENEWING_PURCHASE\",\"dedupeKey\":\"purchase:app_store:2000000000000002\"}]"
+  },
+  {
+   "name": "play first",
+   "row": "{\"app_id\":\"ios\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567\",\"original_transaction_id\":\"tok\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"INITIAL_PURCHASE\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567\"}]"
+  },
+  {
+   "name": "play renewal",
+   "row": "{\"app_id\":\"ios\",\"store\":\"play_store\",\"environment\":\"sandbox\",\"transaction_id\":\"GPA.1234-5678-9012-34567..0\",\"original_transaction_id\":\"tok\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "events": "[{\"type\":\"RENEWAL\",\"dedupeKey\":\"purchase:play_store:GPA.1234-5678-9012-34567..0\"}]"
+  }
+ ],
+ "eventBodies": [
+  {
+   "name": "USD purchase",
+   "type": "INITIAL_PURCHASE",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":9.99,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "EUR with a USD price",
+   "type": "RENEWAL",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":8990000,\"currency\":\"EUR\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"is_trial_conversion\":true}",
+   "negativePrice": false,
+   "priceUsd": 9.5,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"RENEWAL\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"EUR\",\"price\":9.5,\"price_in_purchased_currency\":8.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"is_trial_conversion\":true}}"
+  },
+  {
+   "name": "EUR without a rate",
+   "type": "RENEWAL",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":8990000,\"currency\":\"EUR\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"RENEWAL\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"EUR\",\"price\":null,\"price_in_purchased_currency\":8.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "refund",
+   "type": "CANCELLATION",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"cancel_reason\":\"CUSTOMER_SUPPORT\"}",
+   "negativePrice": true,
+   "priceUsd": -9.99,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"CANCELLATION\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":-9.99,\"price_in_purchased_currency\":-9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"cancel_reason\":\"CUSTOMER_SUPPORT\"}}"
+  },
+  {
+   "name": "no price",
+   "type": "INITIAL_PURCHASE",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":null,\"currency\":null,\"storefront\":null,\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":null,\"currency\":null,\"price\":null,\"price_in_purchased_currency\":null,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "unknown storefront, family",
+   "type": "INITIAL_PURCHASE",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"trial\",\"ownership_type\":\"FAMILY_SHARED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"XXX\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"TRIAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":true,\"country_code\":null,\"currency\":\"USD\",\"price\":9.99,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "lifetime",
+   "type": "NON_RENEWING_PURCHASE",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"NON_RENEWING_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"lifetime\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":null,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":9.99,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "play",
+   "type": "INITIAL_PURCHASE",
+   "appId": "android",
+   "environment": "production",
+   "store": "play_store",
+   "transaction": "{\"app_id\":\"android\",\"store\":\"play_store\",\"environment\":\"production\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro\",\"base_plan_id\":\"annual\",\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"DE\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": null,
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"INITIAL_PURCHASE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"PRODUCTION\",\"store\":\"PLAY_STORE\",\"product_id\":\"pro:annual\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\",\"annual_perks\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"DE\",\"currency\":\"USD\",\"price\":9.99,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}}}}"
+  },
+  {
+   "name": "transfer",
+   "type": "TRANSFER",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": null,
+   "extra": "{\"transferred_from\":[\"alice\"],\"transferred_to\":[\"user@example\"]}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": null,
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"TRANSFER\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"ios\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"transferred_from\":[\"alice\"],\"transferred_to\":[\"user@example\"]}}"
+  },
+  {
+   "name": "experiments, extra overriding",
+   "type": "BILLING_ISSUE",
+   "appId": "ios",
+   "environment": "sandbox",
+   "store": "app_store",
+   "transaction": "{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1797321600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"subscription_group\":null}",
+   "extra": "{\"grace_period_expiration_at_ms\":null,\"app_id\":\"override\"}",
+   "negativePrice": false,
+   "priceUsd": null,
+   "experiments": "[{\"experiment_id\":\"e1\",\"experiment_variant\":\"b\",\"enrolled_at_ms\":7}]",
+   "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"event-id\",\"type\":\"BILLING_ISSUE\",\"event_timestamp_ms\":1800000000000,\"app_id\":\"override\",\"app_user_id\":\"user@example\",\"original_app_user_id\":\"$RCAnonymousID:abc\",\"aliases\":[\"$RCAnonymousID:abc\",\"user@example\"],\"environment\":\"SANDBOX\",\"store\":\"APP_STORE\",\"product_id\":\"pro_monthly\",\"period_type\":\"NORMAL\",\"purchased_at_ms\":1799913600000,\"expiration_at_ms\":1802505600000,\"entitlement_id\":null,\"entitlement_ids\":[\"pro\"],\"presented_offering_id\":null,\"transaction_id\":\"2000000000000002\",\"original_transaction_id\":\"2000000000000001\",\"is_family_share\":false,\"country_code\":\"US\",\"currency\":\"USD\",\"price\":9.99,\"price_in_purchased_currency\":9.99,\"tax_percentage\":null,\"commission_percentage\":null,\"takehome_percentage\":null,\"offer_code\":null,\"subscriber_attributes\":{\"10\":{\"value\":\"x\",\"updated_at_ms\":6},\"$email\":{\"value\":\"a@example.com\",\"updated_at_ms\":5}},\"experiments\":[{\"experiment_id\":\"e1\",\"experiment_variant\":\"b\",\"enrolled_at_ms\":7}],\"grace_period_expiration_at_ms\":null}}"
+  }
+ ],
+ "syncs": [
+  {
+   "name": "history",
+   "history": "[{\"transactionId\":\"3000000001\",\"originalTransactionId\":\"3000000000\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_annual\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1817280000000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000002\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"2999999999\",\"originalTransactionId\":\"3000000000\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_annual\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1785744000000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000003\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"discontinued_product\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000004\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.other\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000005\",\"originalTransactionId\":\"2000000000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000006\",\"originalTransactionId\":\"3000000006\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"revocationDate\":1799913600000},{\"transactionId\":\"3000000007\",\"originalTransactionId\":\"3000000006\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\",\"isUpgraded\":true},{\"transactionId\":\"3000000008\",\"originalTransactionId\":\"3000000006\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799827200000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1800864000000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000009\",\"originalTransactionId\":\"3000000006\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_monthly\",\"purchaseDate\":1799740800000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1800864000000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}]",
+   "statuses": "[]",
+   "result": "{\"transactions\":[{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000002\",\"original_transaction_id\":\"2000000000000001\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000006\",\"original_transaction_id\":\"3000000006\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":1799913600000,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000007\",\"original_transaction_id\":\"3000000006\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1802505600000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":1,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000001\",\"original_transaction_id\":\"3000000000\",\"product_id\":\"pro_annual\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1817280000000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000008\",\"original_transaction_id\":\"3000000006\",\"product_id\":\"pro_monthly\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799827200000,\"original_purchased_at\":1799913600000,\"expires_at\":1800864000000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null}],\"states\":[],\"skipped\":[\"discontinued_product\",\"lifetime\"],\"environment\":\"sandbox\"}",
+   "statusesResult": "{\"transactions\":[],\"states\":[],\"skipped\":[]}"
+  },
+  {
+   "name": "capped at 15",
+   "history": "[{\"transactionId\":\"3000000000\",\"originalTransactionId\":\"3000000000\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1800000000000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000001\",\"originalTransactionId\":\"3000000001\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000002\",\"originalTransactionId\":\"3000000002\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799827200000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000003\",\"originalTransactionId\":\"3000000003\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799740800000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000004\",\"originalTransactionId\":\"3000000004\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799654400000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000005\",\"originalTransactionId\":\"3000000005\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799568000000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000006\",\"originalTransactionId\":\"3000000006\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799481600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000007\",\"originalTransactionId\":\"3000000007\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799395200000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000008\",\"originalTransactionId\":\"3000000008\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799308800000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000009\",\"originalTransactionId\":\"3000000009\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799222400000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000010\",\"originalTransactionId\":\"3000000010\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799136000000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000011\",\"originalTransactionId\":\"3000000011\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1799049600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000012\",\"originalTransactionId\":\"3000000012\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798963200000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000013\",\"originalTransactionId\":\"3000000013\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798876800000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000014\",\"originalTransactionId\":\"3000000014\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798790400000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000015\",\"originalTransactionId\":\"3000000015\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798704000000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000016\",\"originalTransactionId\":\"3000000016\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798617600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},{\"transactionId\":\"3000000017\",\"originalTransactionId\":\"3000000017\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"lifetime\",\"purchaseDate\":1798531200000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1802505600000,\"type\":\"Non-Consumable\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}]",
+   "statuses": "[]",
+   "result": "{\"transactions\":[{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000000\",\"original_transaction_id\":\"3000000000\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1800000000000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000001\",\"original_transaction_id\":\"3000000001\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000002\",\"original_transaction_id\":\"3000000002\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799827200000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000003\",\"original_transaction_id\":\"3000000003\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799740800000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000004\",\"original_transaction_id\":\"3000000004\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799654400000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000005\",\"original_transaction_id\":\"3000000005\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799568000000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000006\",\"original_transaction_id\":\"3000000006\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799481600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000007\",\"original_transaction_id\":\"3000000007\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799395200000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000008\",\"original_transaction_id\":\"3000000008\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799308800000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000009\",\"original_transaction_id\":\"3000000009\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799222400000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000010\",\"original_transaction_id\":\"3000000010\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799136000000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000011\",\"original_transaction_id\":\"3000000011\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1799049600000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000012\",\"original_transaction_id\":\"3000000012\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1798963200000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000013\",\"original_transaction_id\":\"3000000013\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1798876800000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null},{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000014\",\"original_transaction_id\":\"3000000014\",\"product_id\":\"lifetime\",\"base_plan_id\":null,\"product_type\":\"non_consumable\",\"purchased_at\":1798790400000,\"original_purchased_at\":1799913600000,\"expires_at\":null,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null}],\"states\":[],\"skipped\":[],\"environment\":\"sandbox\"}",
+   "statusesResult": "{\"transactions\":[],\"states\":[],\"skipped\":[]}"
+  },
+  {
+   "name": "statuses first, duplicates replace",
+   "history": "[{\"transactionId\":\"3000000001\",\"originalTransactionId\":\"3000000000\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_annual\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1800432000000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"}]",
+   "statuses": "[{\"originalTransactionId\":\"3000000000\",\"status\":4,\"transaction\":{\"transactionId\":\"3000000001\",\"originalTransactionId\":\"3000000000\",\"bundleId\":\"com.example.openpurr\",\"productId\":\"pro_annual\",\"purchaseDate\":1799913600000,\"originalPurchaseDate\":1799913600000,\"expiresDate\":1800518400000,\"type\":\"Auto-Renewable Subscription\",\"inAppOwnershipType\":\"PURCHASED\",\"environment\":\"Sandbox\",\"price\":9990,\"currency\":\"USD\",\"storefront\":\"USA\"},\"renewal\":{\"originalTransactionId\":\"3000000000\",\"productId\":\"pro_annual\",\"autoRenewProductId\":\"pro_monthly\",\"autoRenewStatus\":1,\"signedDate\":1800000000000,\"gracePeriodExpiresDate\":1800777600000}}]",
+   "result": "{\"transactions\":[{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000001\",\"original_transaction_id\":\"3000000000\",\"product_id\":\"pro_annual\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1800432000000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null}],\"states\":[{\"store\":\"app_store\",\"original_transaction_id\":\"3000000000\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":1800777600000,\"signed_at\":1800000000000}],\"skipped\":[],\"environment\":\"sandbox\"}",
+   "statusesResult": "{\"transactions\":[{\"app_id\":\"ios\",\"store\":\"app_store\",\"environment\":\"sandbox\",\"transaction_id\":\"3000000001\",\"original_transaction_id\":\"3000000000\",\"product_id\":\"pro_annual\",\"base_plan_id\":null,\"product_type\":\"subscription\",\"purchased_at\":1799913600000,\"original_purchased_at\":1799913600000,\"expires_at\":1800518400000,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"price_micros\":9990000,\"currency\":\"USD\",\"storefront\":\"USA\",\"revoked_at\":null,\"revocation_reason\":null,\"is_upgraded\":0,\"verified\":1,\"source\":\"store_api\",\"subscription_group\":null}],\"states\":[{\"store\":\"app_store\",\"original_transaction_id\":\"3000000000\",\"status\":4,\"auto_renew\":1,\"auto_renew_product_id\":\"pro_monthly\",\"expiration_intent\":null,\"billing_issue\":true,\"grace_period_expires_at\":1800777600000,\"signed_at\":1800000000000}],\"skipped\":[]}"
+  }
+ ]
+}

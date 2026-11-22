@@ -4,8 +4,7 @@
 // Source of truth: store_transaction, plus who owns each purchase (purchase_owner) and which app
 // user IDs belong to which customer (customer_alias). CustomerInfo, entitlements and metrics are
 // derived from these and can always be rebuilt. This file has the read side and the customer
-// writes the SDK read endpoints need (logIn, aliases, merges); purchase writes come with the
-// receipt endpoint.
+// writes (logIn, aliases, merges); writes.go has the purchase writes.
 package ledger
 
 import (
