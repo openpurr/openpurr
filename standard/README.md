@@ -5,10 +5,12 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S7 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+This is milestones S1 to S8 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
 App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
 with the background jobs, the back office (operator sign-in, the admin API and the dashboard),
-charts, and the MCP server with its OAuth authorization server.
+charts, the MCP server with its OAuth authorization server, and packaging for Google Cloud
+(Cloud Run, Cloud SQL, Secret Manager, sign-in through Identity-Aware Proxy; see
+[`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md)).
 It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
@@ -29,6 +31,9 @@ it. Or with Docker (static binary on distroless, dashboard included), from the r
 docker build -f standard/Dockerfile -t openpurr-standard .
 docker run -e DATABASE_URL=... -e OPERATOR_SECRET=... -p 8080:8080 openpurr-standard
 ```
+
+Releases publish the image as `ghcr.io/openpurr/openpurr-standard:<version>` (linux/amd64 and
+linux/arm64; `.github/workflows/standard-image.yml`).
 
 The server applies its migrations at startup (several replicas can start at once; they take
 turns under an advisory lock), imports `OPENPURR_CONFIG` as the first config version if the
@@ -325,7 +330,8 @@ so packages run in parallel against one database. The HTTP tests mirror Lite's `
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
 `apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
 snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor` (with `check_setup`),
-`setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, and `metrics` (in
+`setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, IAP sign-in (Standard only,
+with a fake IAP key server, `internal/testutil/iap.go`), and `metrics` (in
 `internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
 crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
@@ -378,7 +384,7 @@ set too) turns on:
 
 - Cohort charts (project plan section 7, phase 3: subscription retention, trial conversion,
   initial conversion, realized LTV, trial cancellation rate), which Lite leaves to Standard.
-- GCP packaging and IAP sign-in (S8), moving from Lite (S9).
+- Moving from Lite (S9).
 - Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
 
