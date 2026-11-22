@@ -53,6 +53,16 @@ function auditBy(c: Ctx, action: string, target?: string | null, details?: unkno
   });
 }
 
+/**
+ * The page size from ?limit=: `def` when it's missing or not a number, at most `max`. Below one
+ * it's `max`: SQLite reads a negative LIMIT as no limit at all (a whole-table read), and Standard
+ * answers a negative limit with its largest page too.
+ */
+function pageLimit(c: Ctx, def: number, max: number) {
+  const n = Math.min(Number(c.req.query("limit") ?? def) || def, max);
+  return n < 1 ? max : Math.floor(n);
+}
+
 async function body<T>(c: Ctx) {
   return (await c.req.json<T>().catch(() => null)) ?? ({} as Partial<T>);
 }
@@ -196,27 +206,40 @@ admin.patch("/operators/:id", requirePermission("operators:manage"), async (c) =
   if (apps instanceof Response) return apps;
   if (b.disabled === true && target.id === principal.operator.id) return forbidden(c, "You can't disable yourself.");
 
-  // Never leave the deployment without an active owner.
+  // Never leave the deployment without an active owner. Taking an owner away is one conditional
+  // UPDATE that needs another active owner to remain, run before anything else is written: D1 has
+  // no transaction to lock the owners while counting, so a count then a write would let two owners
+  // demoting each other at the same moment both succeed.
   const losingOwner = target.role === "owner" && ((b.role !== undefined && b.role !== "owner") || b.disabled === true);
+  const now = Date.now();
   if (losingOwner) {
-    const { n } = (await db.prepare("SELECT count(*) AS n FROM operator WHERE role = 'owner' AND disabled_at IS NULL").first<{ n: number }>())!;
-    if (n <= 1) return forbidden(c, "This is the only owner. Make someone else an owner first.");
+    const sets: [string, unknown][] = [];
+    if (b.role !== undefined) sets.push(["role", b.role]);
+    if (b.disabled === true) sets.push(["disabled_at", now]);
+    const res = await db
+      .prepare(
+        `UPDATE operator SET ${sets.map(([column]) => `${column} = ?`).join(", ")}
+         WHERE id = ? AND EXISTS (SELECT 1 FROM operator WHERE role = 'owner' AND disabled_at IS NULL AND id != ?)`,
+      )
+      .bind(...sets.map(([, value]) => value), target.id, target.id)
+      .run();
+    if (!res.meta.changes) return forbidden(c, "This is the only owner. Make someone else an owner first.");
   }
 
   const writes: D1PreparedStatement[] = [];
-  if (b.role !== undefined) writes.push(db.prepare("UPDATE operator SET role = ? WHERE id = ?").bind(b.role, target.id));
+  if (b.role !== undefined && !losingOwner) writes.push(db.prepare("UPDATE operator SET role = ? WHERE id = ?").bind(b.role, target.id));
   if (apps !== undefined) writes.push(db.prepare("UPDATE operator SET app_ids = ? WHERE id = ?").bind(apps ? JSON.stringify(apps) : null, target.id));
   if (typeof b.name === "string" && b.name.trim()) writes.push(db.prepare("UPDATE operator SET name = ? WHERE id = ?").bind(b.name.trim(), target.id));
   if (b.disabled === true) {
+    if (!losingOwner) writes.push(db.prepare("UPDATE operator SET disabled_at = ? WHERE id = ?").bind(now, target.id));
     writes.push(
-      db.prepare("UPDATE operator SET disabled_at = ? WHERE id = ?").bind(Date.now(), target.id),
       db.prepare("DELETE FROM session WHERE operator_id = ?").bind(target.id),
-      db.prepare("UPDATE access_token SET revoked_at = ? WHERE operator_id = ? AND revoked_at IS NULL").bind(Date.now(), target.id),
+      db.prepare("UPDATE access_token SET revoked_at = ? WHERE operator_id = ? AND revoked_at IS NULL").bind(now, target.id),
     );
   } else if (b.disabled === false) {
     writes.push(db.prepare("UPDATE operator SET disabled_at = NULL, failed_logins = 0, locked_until = NULL WHERE id = ?").bind(target.id));
   }
-  if (!writes.length) return bad(c, "Nothing to change. Send role, app_ids, name or disabled.");
+  if (!writes.length && !losingOwner) return bad(c, "Nothing to change. Send role, app_ids, name or disabled.");
   writes.push(auditBy(c, "operator.updated", target.email, { role: b.role, app_ids: apps, disabled: b.disabled }));
   await db.batch(writes);
   const updated = (await db.prepare("SELECT * FROM operator WHERE id = ?").bind(target.id).first<Operator>())!;
@@ -792,7 +815,7 @@ admin.get("/webhooks/deliveries", requirePermission("read"), async (c) => {
   const principal = p(c);
   const status = c.req.query("status");
   if (status && !["pending", "delivered", "failed"].includes(status)) return bad(c, "status must be pending, delivered or failed.");
-  const limit = Math.min(Number(c.req.query("limit") ?? 50) || 50, 200);
+  const limit = pageLimit(c, 50, 200);
   const { results } = await c.env.DB.prepare(
     `SELECT d.event_id, d.endpoint, d.status, d.attempts, d.next_attempt_at, d.last_status, d.last_error, d.delivered_at, d.created_at,
             e.type, e.app_id, e.environment
@@ -822,7 +845,7 @@ admin.post("/webhooks/events/:id/replay", requirePermission("webhooks:replay"), 
 
 admin.get("/audit", requirePermission("audit:read"), async (c) => {
   const before = Number(c.req.query("before") ?? 0) || null;
-  const limit = Math.min(Number(c.req.query("limit") ?? 100) || 100, 500);
+  const limit = pageLimit(c, 100, 500);
   const { results } = await c.env.DB.prepare(
     `SELECT id, at, operator_id, actor, token_id, source, action, target, details, ip FROM audit_log
      ${before ? "WHERE id < ?" : ""} ORDER BY id DESC LIMIT ${limit}`,
@@ -890,7 +913,7 @@ admin.put("/config", requirePermission("config:manage"), async (c) => {
 });
 
 admin.get("/config/versions", requirePermission("read"), async (c) => {
-  const limit = Math.min(Number(c.req.query("limit") ?? 50) || 50, 200);
+  const limit = pageLimit(c, 50, 200);
   const before = Number(c.req.query("before") ?? 0) || undefined;
   const versions = await listVersions(c.env.DB, limit, before);
   return c.json({ versions, next_before: versions.length === limit ? versions.at(-1)!.id : null });

@@ -81,6 +81,15 @@ describe("credential crypto", () => {
     expect(await verifyPassword(SECRET, "a long passphrase here", old)).toEqual({ ok: true, rehash: true });
   });
 
+  it("treats a stored hash it can't read as a wrong password instead of throwing", async () => {
+    const stored = await hashPassword(SECRET, "a long passphrase here");
+    const [alg, , pepper, salt, hash] = stored.split("$");
+    for (const iterations of ["abc", "0", "-5", "1.5", "1e4", "0x4e20", "100001", ""]) {
+      expect(await verifyPassword(SECRET, "a long passphrase here", [alg, iterations, pepper, salt, hash].join("$"))).toEqual({ ok: false, rehash: false });
+    }
+    expect(await verifyPassword(SECRET, "a long passphrase here", [alg, "20000", pepper, "not base64!", hash].join("$"))).toEqual({ ok: false, rehash: false });
+  });
+
   it("computes RFC 6238 TOTP codes (the RFC's SHA-1 test vectors)", async () => {
     const secret = new TextEncoder().encode("12345678901234567890");
     expect(await totpCode(secret, Math.floor(59 / 30))).toBe("287082"); // 94287082
@@ -122,6 +131,15 @@ describe("setup links and passwords", () => {
     await env.DB.prepare("UPDATE login_link SET expires_at = ? WHERE operator_id = ?").bind(Date.now() - 1, expired.id).run();
     expect((await req("/link", { body: { token: expired.token } })).body.code).toBe("invalid_link");
   });
+
+  it("a link works once even when redeemed twice at the same moment", async () => {
+    const op = await newOperator();
+    const both = await Promise.all([req("/link", { body: { token: op.token } }), req("/link", { body: { token: op.token } })]);
+    expect(both.map((r) => r.res.status).sort()).toEqual([200, 401]);
+    expect(both.find((r) => r.res.status === 401)!.body.code).toBe("invalid_link");
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM session WHERE operator_id = ?").bind(op.id).first<{ n: number }>())!;
+    expect(n).toBe(1);
+  });
 });
 
 describe("sign-in", () => {
@@ -159,6 +177,20 @@ describe("sign-in", () => {
     const recovered = await req("/link", { body: { token } });
     expect(recovered.body.session).toBe("recovery");
     expect((await req("/login", { body: { email: op.email, password: op.password } })).res.status).toBe(200);
+  });
+
+  it("answers a stored hash it can't read as a wrong password, and counts the failure", async () => {
+    const op = await signedUp();
+    // The operator's real hash, with an iteration count that isn't a number.
+    const real = await hashPassword(SECRET, op.password);
+    await env.DB.prepare("UPDATE operator SET password_hash = ? WHERE id = ?").bind(real.replace("$20000$", "$lots$"), op.id).run();
+    const res = await req("/login", { body: { email: op.email, password: op.password } });
+    expect(res.res.status).toBe(401);
+    expect(res.body.code).toBe("invalid_credentials");
+    const row = await env.DB.prepare("SELECT failed_logins FROM operator WHERE id = ?").bind(op.id).first<{ failed_logins: number }>();
+    expect(row!.failed_logins).toBe(1);
+    // Changing the password from a full session doesn't throw either.
+    expect((await req("/password", { body: { current_password: op.password, new_password: "a new long passphrase" }, cookie: op.session })).res.status).toBe(401);
   });
 
   it("rate limits sign-in attempts per IP", async () => {
@@ -201,6 +233,52 @@ describe("two-step sign-in (TOTP)", () => {
     const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
     expect((await req("/login", { body: { email: op.email, password: op.password, code: next } })).res.status).toBe(200);
     expect((await req("/login", { body: { email: op.email, password: op.password, code: next } })).body.code).toBe("invalid_code");
+  });
+
+  it("lets one code sign in once, even from two sign-ins at the same moment", async () => {
+    const op = await enrolled();
+    const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
+    const login = () => req("/login", { body: { email: op.email, password: op.password, code: next } });
+    const both = await Promise.all([login(), login()]);
+    expect(both.map((r) => r.res.status).sort()).toEqual([200, 401]);
+    expect(both.find((r) => r.res.status === 401)!.body.code).toBe("invalid_code");
+    expect(both.filter((r) => r.session)).toHaveLength(1);
+  });
+
+  /** A six-digit code that isn't valid right now (nor one step either side). */
+  async function wrongCode(secret: Uint8Array) {
+    const step = Math.floor(Date.now() / 30_000);
+    const valid = await Promise.all([step - 1, step, step + 1, step + 2].map((s) => totpCode(secret, s)));
+    for (let i = 0; ; i++) {
+      const code = String(i).padStart(6, "0");
+      if (!valid.includes(code)) return code;
+    }
+  }
+
+  it("locks the account after 10 wrong codes, as after 10 wrong passwords", async () => {
+    const op = await enrolled();
+    const wrong = await wrongCode(op.secret);
+    for (let i = 0; i < 10; i++) {
+      expect((await req("/login", { body: { email: op.email, password: op.password, code: wrong } })).body.code).toBe("invalid_code");
+    }
+    const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
+    const locked = await req("/login", { body: { email: op.email, password: op.password, code: next } });
+    expect(locked.res.status).toBe(429);
+    expect(locked.body.code).toBe("locked");
+    const last = await env.DB.prepare("SELECT details FROM audit_log WHERE operator_id = ? AND action = 'auth.login_failed' ORDER BY id DESC").bind(op.id).first<{ details: string }>();
+    expect(JSON.parse(last!.details)).toEqual({ reason: "totp", failures: 10 });
+  });
+
+  it("counts wrong passwords, codes and recovery codes together toward the lockout", async () => {
+    const op = await enrolled();
+    const wrong = await wrongCode(op.secret);
+    for (let i = 0; i < 4; i++) await req("/login", { body: { email: op.email, password: `wrong password ${i}` } });
+    for (let i = 0; i < 3; i++) await req("/login", { body: { email: op.email, password: op.password, code: wrong } });
+    for (let i = 0; i < 3; i++) {
+      expect((await req("/login", { body: { email: op.email, password: op.password, recovery_code: `zzzz-zzz${i}` } })).body.code).toBe("invalid_code");
+    }
+    const locked = await req("/login", { body: { email: op.email, password: op.password, recovery_code: op.recoveryCodes[0] } });
+    expect(locked.body.code).toBe("locked");
   });
 
   it("accepts each recovery code once instead of a TOTP code", async () => {

@@ -71,6 +71,17 @@ export async function hashPassword(secret: string | undefined, password: string,
   return `pbkdf2-sha256$${iterations}$${keys.pepperId}$${bytesToBase64(salt)}$${bytesToBase64(hash)}`;
 }
 
+/** The most iterations a stored hash may ask for (Workers' PBKDF2 limit). */
+const MAX_ITERATIONS = 100_000;
+
+function base64OrNull(s: string) {
+  try {
+    return base64ToBytes(s);
+  } catch {
+    return null;
+  }
+}
+
 /** Checks a password. `rehash` is true when it matched but was stored with old parameters. */
 export async function verifyPassword(secret: string | undefined, password: string, stored: string) {
   const keys = await operatorKeys(secret);
@@ -80,8 +91,17 @@ export async function verifyPassword(secret: string | undefined, password: strin
     // Hashed with a different OPERATOR_SECRET: can't be checked any more. Reset via a login link.
     return { ok: false, rehash: false };
   }
-  const iterations = Number(iter);
-  const ok = bytesEqual(await derivePassword(keys, password, base64ToBytes(salt), iterations), base64ToBytes(hash));
+  // A damaged hash (an iteration count PBKDF2 refuses, a salt or hash that isn't base64) is a wrong
+  // password, not an error: the sign-in fails, and is counted and audited, like any other.
+  const iterations = /^\d+$/.test(iter) ? Number(iter) : NaN;
+  const saltBytes = base64OrNull(salt);
+  const hashBytes = base64OrNull(hash);
+  if (!(iterations >= 1 && iterations <= MAX_ITERATIONS) || !saltBytes || !hashBytes) {
+    console.warn("A stored operator password hash can't be read; treating it as a wrong password. Reset the operator to set a new one.");
+    await derivePassword(keys, password, new Uint8Array(16), PBKDF2_ITERATIONS); // the same CPU as a real check
+    return { ok: false, rehash: false };
+  }
+  const ok = bytesEqual(await derivePassword(keys, password, saltBytes, iterations), hashBytes);
   return { ok, rehash: ok && iterations !== PBKDF2_ITERATIONS };
 }
 

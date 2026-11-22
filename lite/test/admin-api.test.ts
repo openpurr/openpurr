@@ -164,6 +164,24 @@ describe("operators", () => {
     expect((await api("PATCH", `/operators/${owner.id}`, { session: owner.session }, { body: { disabled: true } })).status).toBe(403);
   });
 
+  it("keeps an owner when two owners demote or disable each other at the same moment", async () => {
+    for (const change of [{ role: "admin" }, { disabled: true }]) {
+      await env.DB.prepare("UPDATE operator SET disabled_at = ? WHERE role = 'owner' AND disabled_at IS NULL").bind(Date.now()).run();
+      const a = await operator("owner");
+      const b = await operator("owner");
+      const both = await Promise.all([
+        api("PATCH", `/operators/${b.id}`, { session: a.session }, { body: change }),
+        api("PATCH", `/operators/${a.id}`, { session: b.session }, { body: change }),
+      ]);
+      expect(both.map((r) => r.status).sort()).toEqual([200, 403]);
+      const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM operator WHERE role = 'owner' AND disabled_at IS NULL").first<{ n: number }>())!;
+      expect(n).toBe(1);
+      // The refused change wrote nothing, not even its audit row.
+      const refused = both[0]!.status === 403 ? b : a;
+      expect(await env.DB.prepare("SELECT 1 FROM audit_log WHERE action = 'operator.updated' AND target = ?").bind(refused.email).first()).toBeNull();
+    }
+  });
+
   it("disabling ends sessions and revokes tokens; reset issues a new setup link", async () => {
     const owner = await operator("owner");
     const dev = await operator("developer");
@@ -371,6 +389,20 @@ describe("promotional grants", () => {
     expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", expires_at: "2001-01-01" } })).status).toBe(400);
   });
 
+  it("refuses a note that isn't text with a 400", async () => {
+    const user = `grant-note-${crypto.randomUUID()}`;
+    await postAppleTransaction(user, { productId: "coins_100", type: "Consumable", expiresDate: undefined }); // makes the customer
+    const dev = await operator("developer");
+    const grant = (note: unknown) => api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", duration: "weekly", note } });
+    for (const note of [5, true, { text: "hi" }, ["hi"]]) {
+      const res = await grant(note);
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ code: "bad_request", message: "note must be text." });
+    }
+    expect((await grant(null)).body.grant.note).toBeNull();
+    expect((await grant(" ok ")).body.grant.note).toBe("ok");
+  });
+
   it("moves an anonymous user's grants to the account on logIn", async () => {
     const anon = `$RCAnonymousID:${crypto.randomUUID().replaceAll("-", "")}`;
     const account = `grant-account-${crypto.randomUUID()}`;
@@ -478,5 +510,42 @@ describe("dashboard language", () => {
     expect(bad.body.message).toMatch(/zh-tw/);
     const pat = await token(dev.id, ["read"]);
     expect((await api("PATCH", "/me", { token: pat }, { body: { locale: "zh-tw" }, origin: null })).body.operator.locale).toBe("zh-tw");
+  });
+});
+
+describe("page sizes", () => {
+  // SQLite reads LIMIT -1 as no limit at all: a whole-table read. A negative (or zero, or
+  // fractional below one) limit is the route's largest page instead, as on Standard.
+  const filler = (sql: string, n: number) => env.DB.prepare(`WITH RECURSIVE i(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM i WHERE x < ${n}) ${sql}`);
+
+  it("clamps a negative limit on the audit log, deliveries and config history to the largest page", async () => {
+    const owner = await operator("owner");
+    const tag = crypto.randomUUID();
+    const now = Date.now();
+    await filler(`INSERT INTO audit_log (at, source, action) SELECT ${now}, 'system', 'test.filler' FROM i`, 510).run();
+    await filler(`INSERT INTO webhook_event (id, dedupe_key, type, app_id, environment, body, created_at) SELECT '${tag}-' || x, '${tag}-' || x, 'TEST', 'ios', 'sandbox', '{}', ${now} FROM i`, 210).run();
+    await filler(`INSERT INTO webhook_delivery (event_id, endpoint, status, created_at) SELECT '${tag}-' || x, 'test', 'failed', ${now} FROM i`, 210).run();
+    const current = (await api("GET", "/config", { session: owner.session })).body;
+    await filler("INSERT INTO config_version (document, created_at, created_by, note) SELECT ?, ?, 'test', 'filler' FROM i", 210)
+      .bind(JSON.stringify(current.document), now)
+      .run();
+
+    for (const limit of ["-1", "-500", "0.5"]) {
+      const audit = await api("GET", `/audit?limit=${limit}`, { session: owner.session });
+      expect(audit.status).toBe(200);
+      expect(audit.body.entries).toHaveLength(500);
+      expect(audit.body.next_before).toBe(audit.body.entries.at(-1).id);
+      const deliveries = await api("GET", `/webhooks/deliveries?limit=${limit}`, { session: owner.session });
+      expect(deliveries.status).toBe(200);
+      expect(deliveries.body.deliveries).toHaveLength(200);
+      const versions = await api("GET", `/config/versions?limit=${limit}`, { session: owner.session });
+      expect(versions.status).toBe(200);
+      expect(versions.body.versions).toHaveLength(200);
+    }
+    // In range, and fractions, still work as before.
+    expect((await api("GET", "/audit?limit=3", { session: owner.session })).body.entries).toHaveLength(3);
+    expect((await api("GET", "/audit?limit=2.7", { session: owner.session })).body.entries).toHaveLength(2);
+    expect((await api("GET", "/webhooks/deliveries?limit=1000", { session: owner.session })).body.deliveries).toHaveLength(200);
+    expect((await api("GET", "/config/versions?limit=abc", { session: owner.session })).body.versions).toHaveLength(50);
   });
 });

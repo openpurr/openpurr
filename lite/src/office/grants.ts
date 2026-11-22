@@ -88,6 +88,7 @@ export async function grantEntitlement(
     duration = input.duration!;
     expiresAt = grantEnd(duration as GrantDuration, now);
   }
+  if (input.note !== undefined && input.note !== null && typeof input.note !== "string") throw new GrantError("note must be text.");
   const note = input.note?.trim() || null;
   if (note && note.length > MAX_NOTE) throw new GrantError(`The note can be at most ${MAX_NOTE} characters.`);
   const customer = await findCustomer(db, config.id, input.appUserId);
