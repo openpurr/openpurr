@@ -1,12 +1,15 @@
 // openpurr: the command line for an openpurr deployment. A thin client of the back office's
 // admin API and MCP server, with a personal access token (create one under Access tokens).
 
-import { readFileSync } from "node:fs";
+import { closeSync, openSync, readFileSync, writeSync } from "node:fs";
 import { createInterface } from "node:readline";
 import { parseArgs } from "node:util";
 import { CliError, client } from "./client.js";
 import { credentialsPath, readCredentials, resolveTarget, writeCredentials } from "./credentials.js";
+import { runExport } from "./export.js";
 import { runImport } from "./import.js";
+import { bundleToSql } from "./sql.js";
+import { runVerify } from "./verify.js";
 import { json, styles, table, when } from "./output.js";
 
 const VERSION = JSON.parse(readFileSync(new URL("../package.json", import.meta.url), "utf8")).version;
@@ -38,6 +41,17 @@ Moving from RevenueCat
         [--app ID] [--store S]        For files without an app or store column
         [--limit N] [--concurrency N] Rows this run (resume by running again), requests at once (4)
         [--restart]                   Start over instead of resuming
+
+Moving between editions (Lite to Standard, or back; owners only)
+  export [--out DIR]                  Write every customer, purchase, operator, key hash and setting to
+                                      an export bundle (a directory). Needs the new server to get this
+                                      deployment's OPERATOR_SECRET, or operators' passwords stop working.
+        [--since BUNDLE]              A delta: only what changed after that bundle began
+        [--optional] [--page N]       Include raw store notifications; rows per request (500)
+  migrate verify --from URL --to URL  Compare every customer's CustomerInfo and every chart; exit 1 on
+        [--from-token T] [--to-token T]   any difference (tokens default to your saved one)
+  migrate sql --bundle DIR [--out F]  SQL to load a bundle into a new Lite (D1) database (rolling back)
+  (The import into Standard is the server's own: openpurr migrate import --bundle DIR, with DATABASE_URL.)
 
 Charts and config
   metrics CHART [--from D] [--to D] [--interval day|week|month] [--environment sandbox]
@@ -99,6 +113,13 @@ const OPTIONS = {
   "dry-run": { type: "boolean" },
   restart: { type: "boolean" },
   concurrency: { type: "string" },
+  out: { type: "string" },
+  since: { type: "string" },
+  optional: { type: "boolean" },
+  page: { type: "string" },
+  bundle: { type: "string" },
+  "from-token": { type: "string" },
+  "to-token": { type: "string" },
 };
 
 /** Runs the CLI. Returns the exit code. io: { env, stdout, stderr, stdin, fetch? }. */
@@ -211,6 +232,10 @@ export async function main(argv, io) {
           out,
           s,
         );
+      case "export":
+        return await runExport(api(), { out: flags.out, since: flags.since, optional: flags.optional, page: flags.page, json: flags.json, sleep: io.sleep }, out, s);
+      case "migrate":
+        return await migrate(io, rest, flags, out, s, target);
       case "keys":
         return await keys(api(), rest, flags, out);
       case "team":
@@ -285,6 +310,43 @@ async function doctor(c, flags, out, s) {
   }
   out(`\n${failed ? s.red(r.summary) : r.checks.some((x) => x.status === "warn") ? s.yellow(r.summary) : s.green(r.summary)}`);
   return failed ? 1 : 0;
+}
+
+// ---- migrate ----------------------------------------------------------------------------------------
+
+async function migrate(io, rest, flags, out, s, target) {
+  const [sub] = rest;
+  if (sub === "verify") {
+    const saved = (() => {
+      try {
+        return target();
+      } catch {
+        return { url: "", token: "" };
+      }
+    })();
+    const from = { url: (flags.from || saved.url || "").replace(/\/+$/, ""), token: flags["from-token"] || io.env.OPENPURR_FROM_TOKEN || saved.token };
+    const to = { url: (flags.to || "").replace(/\/+$/, ""), token: flags["to-token"] || io.env.OPENPURR_TO_TOKEN || saved.token };
+    return runVerify({ from, to, page: flags.page, json: flags.json, fetch: io.fetch ?? fetch }, out, s);
+  }
+  if (sub === "sql") {
+    if (!flags.bundle) throw new CliError("Usage: openpurr migrate sql --bundle DIR [--out FILE]", 2);
+    if (flags.out) {
+      const fd = openSync(flags.out, "w", 0o600);
+      try {
+        const rows = await bundleToSql(flags.bundle, (text) => writeSync(fd, text));
+        out(`Wrote ${rows} rows to ${flags.out}. Load it into a new D1 database after its migrations: wrangler d1 execute <database> --remote --file ${flags.out}`);
+      } finally {
+        closeSync(fd);
+      }
+      return 0;
+    }
+    await bundleToSql(flags.bundle, (text) => io.stdout.write(text));
+    return 0;
+  }
+  if (sub === "import") {
+    throw new CliError("The import runs on the Standard server, with its DATABASE_URL: openpurr migrate import --bundle DIR (the server's binary or container image). See docs/migrating-from-lite-to-standard.md.", 2);
+  }
+  throw new CliError("Usage: openpurr migrate verify --from URL --to URL, or openpurr migrate sql --bundle DIR", 2);
 }
 
 // ---- keys and team (admin API: secrets never go through MCP) ---------------------------------------
