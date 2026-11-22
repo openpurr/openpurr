@@ -12,6 +12,9 @@
 //	CLIENT_IP_HEADER             header with the client IP set by your proxy (default: the connection)
 //	LOG_LEVEL                    debug, info (default), warn or error
 //
+// `openpurr admin ...` manages operators straight in the database (create, login-link, list,
+// require-totp); see admin.go.
+//
 // Conformance mode, for the test suite in spec/ only:
 //
 //	OPENPURR_CONFORMANCE=1, CONFORMANCE_TOKEN, CONFORMANCE_STORE_BASE, CONFORMANCE_APPLE_ROOT_B64
@@ -53,6 +56,9 @@ const configMaxAgeMs = 60_000
 const shutdownTimeout = 25 * time.Second
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "admin" {
+		os.Exit(runAdmin(os.Args[2:], os.Stdout, os.Stderr))
+	}
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel(os.Getenv("LOG_LEVEL"))}))
 	slog.SetDefault(log)
 	if err := run(log); err != nil {
