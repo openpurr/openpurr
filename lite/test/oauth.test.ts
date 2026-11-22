@@ -248,6 +248,21 @@ describe("the authorization code flow", () => {
     expect(n).toBe(1);
   });
 
+  it("approving or refreshing with a scope listed twice keeps it once, in order", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const code = await approvedCode(clientId, owner.session, challenge, ["write:grants", "read", "write:grants", "read"]);
+    const t = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier }));
+    expect(t.scope).toBe("write:grants read");
+    const [grant] = (await jsonOf(await request("/admin/v1/oauth/grants", { session: owner.session }))).grants;
+    expect(grant.scopes).toEqual(["write:grants", "read"]);
+    const { details } = (await env.DB.prepare("SELECT details FROM audit_log WHERE operator_id = ? AND action = 'oauth.authorized'").bind(owner.id).first<{ details: string }>())!;
+    expect(JSON.parse(details).scopes).toEqual(["write:grants", "read"]);
+    const refreshed = await jsonOf(await exchange({ grant_type: "refresh_token", refresh_token: t.refresh_token, client_id: clientId, scope: "read read" }));
+    expect(refreshed.scope).toBe("read");
+  });
+
   it("a viewer can only approve what their role allows, and denying redirects with access_denied", async () => {
     const { client_id: clientId } = await jsonOf(await register());
     const viewer = await signedIn("viewer");

@@ -374,7 +374,7 @@ oauth.post("/token", async (c) => {
     if (!g || g.client_id !== p.client_id) return oauthError(c, "invalid_grant", "Unknown, expired or revoked refresh token.");
     let scopes = JSON.parse(g.scopes) as string[];
     if (p.scope) {
-      const narrower = p.scope.split(/\s+/).filter((s) => scopes.includes(s));
+      const narrower = [...new Set(p.scope.split(/\s+/))].filter((s) => scopes.includes(s));
       if (!narrower.length) return oauthError(c, "invalid_scope", "Refresh can only keep or narrow the approved scopes.");
       scopes = narrower;
     }
@@ -465,7 +465,7 @@ export async function decideRequest(c: Ctx, id: string, principal: Principal, de
     return { redirect: back.toString() };
   }
   const allowed = pending.scopes.filter((s) => s.allowed).map((s) => s.scope);
-  const scopes = (decision.scopes ?? allowed).filter((s) => allowed.includes(s));
+  const scopes = [...new Set(decision.scopes ?? allowed)].filter((s) => allowed.includes(s)); // each once, in the order given
   if (!scopes.length) throw new Error("Pick at least one permission you have.");
   const code = randomToken();
   const approved = await db
