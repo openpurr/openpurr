@@ -1,11 +1,14 @@
-// Package testdata holds golden.json, golden-apple.json, golden-google.json, golden-webhooks.json
-// and golden-auth.json, generated from Lite's own code by the .ts files of the same names, so tests
-// can check that Standard produces the same output byte for byte.
+// Package testdata holds golden.json, golden-apple.json, golden-google.json, golden-webhooks.json,
+// golden-auth.json and golden-metrics.json.gz, generated from Lite's own code by the .ts files of
+// the same names, so tests can check that Standard produces the same output byte for byte.
 package testdata
 
 import (
+	"bytes"
+	"compress/gzip"
 	_ "embed"
 	"encoding/json"
+	"io"
 
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 )
@@ -37,6 +40,24 @@ var GoldenWebhooks []byte
 //
 //go:embed golden-auth.json
 var GoldenAuth []byte
+
+// GoldenMetrics is golden-metrics.json.gz, uncompressed: Lite's chart rollups (every metric_daily
+// row, the rollup state and each run's result) and charts (JSON and CSV) for a set of ledgers
+// (golden-metrics.ts says how to regenerate it).
+func GoldenMetrics() []byte {
+	r, err := gzip.NewReader(bytes.NewReader(goldenMetricsGz))
+	if err != nil {
+		panic(err)
+	}
+	out, err := io.ReadAll(r)
+	if err != nil {
+		panic(err)
+	}
+	return out
+}
+
+//go:embed golden-metrics.json.gz
+var goldenMetricsGz []byte
 
 // Golden is golden.json.
 type Golden struct {

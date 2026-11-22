@@ -466,7 +466,6 @@ func TestAdminWebhooksAuditSettings(t *testing.T) {
 			t.Errorf("%s", usage.Body)
 		}
 		expectStatus(t, env.Admin("POST", "/usage/refresh", tu.Auth{Session: owner.Session}, jsobj.New()), 400)
-		expectStatus(t, env.Admin("GET", "/metrics", tu.Auth{Session: viewer.Session}, nil), 501)
 	})
 
 	t.Run("dashboard language: any operator sets their own, from the dashboard's languages", func(t *testing.T) {

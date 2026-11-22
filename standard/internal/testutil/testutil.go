@@ -366,6 +366,7 @@ type Tx struct {
 	PriceMicros                                                                             *int64
 	SubscriptionGroup                                                                       *string
 	IsUpgraded                                                                              int
+	Storefront                                                                              *string
 }
 
 var txCounter atomic.Int64
@@ -418,11 +419,11 @@ func (e *Env) PurchaseFor(customerID string, tx Tx) {
 	now := e.Clock.Now()
 	e.Exec(`INSERT INTO store_transaction (app_id, store, environment, transaction_id, original_transaction_id, product_id,
 		base_plan_id, product_type, purchased_at, original_purchased_at, expires_at, price_micros, currency, revoked_at,
-		is_upgraded, verified, source, received_at, updated_at, subscription_group)
+		is_upgraded, verified, source, received_at, updated_at, subscription_group, storefront)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $9, $10, $11, CASE WHEN $11::bigint IS NULL THEN NULL ELSE 'USD' END, $12,
-		$13, 1, 'sdk', $14, $14, $15)`,
+		$13, 1, 'sdk', $14, $14, $15, $16)`,
 		tx.AppID, tx.Store, tx.Environment, id, tx.OriginalTransactionID, tx.ProductID, tx.BasePlanID, tx.ProductType,
-		tx.PurchasedAt, tx.ExpiresAt, tx.PriceMicros, tx.RevokedAt, tx.IsUpgraded, now, tx.SubscriptionGroup)
+		tx.PurchasedAt, tx.ExpiresAt, tx.PriceMicros, tx.RevokedAt, tx.IsUpgraded, now, tx.SubscriptionGroup, tx.Storefront)
 	e.Exec(`INSERT INTO purchase_owner (store, original_transaction_id, customer_id, app_id, updated_at) VALUES ($1, $2, $3, $4, $5)
 		ON CONFLICT (store, original_transaction_id) DO UPDATE SET customer_id = excluded.customer_id`,
 		tx.Store, tx.OriginalTransactionID, customerID, tx.AppID, now)

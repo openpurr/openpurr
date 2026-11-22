@@ -35,6 +35,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/google"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
+	"github.com/openpurr/openpurr/standard/internal/metrics"
 )
 
 const (
@@ -490,23 +491,9 @@ func (s *server) importRow(ctx context.Context, project *config.Project, row any
 	return result, s.writeImport(ctx, project, customerID, result, f, assign, aliases, attributes, now, audit, extra)
 }
 
-// lastRollupAt is when the chart totals were last updated (the S6 rollup), or nil.
+// lastRollupAt is when the chart totals were last updated, or nil.
 func (s *server) lastRollupAt(ctx context.Context) (*int64, error) {
-	var value string
-	err := s.Pool.QueryRow(ctx, "SELECT value FROM job_state WHERE key = 'metrics_rollup'").Scan(&value)
-	if errors.Is(err, pgx.ErrNoRows) {
-		return nil, nil
-	}
-	if err != nil {
-		return nil, err
-	}
-	v, _ := jsobj.Parse([]byte(value))
-	at, ok := jsobj.Prop(v, "at")
-	if f, isNum := at.(float64); ok && isNum {
-		n := int64(f)
-		return &n, nil
-	}
-	return nil, nil
+	return metrics.LastRollupAt(ctx, s.Pool)
 }
 
 func (s *server) writeImport(ctx context.Context, project *config.Project, customerID string, result *importResult, f *fetched, assign, aliases []string,

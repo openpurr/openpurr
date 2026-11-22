@@ -27,16 +27,29 @@ var (
 	table map[string]string
 )
 
-// Alpha2FromAlpha3 returns the alpha-2 code for an alpha-3 code, or "" if unknown.
-func Alpha2FromAlpha3(alpha3 string) string {
-	if alpha3 == "" {
-		return ""
-	}
+func load() {
 	once.Do(func() {
 		table = make(map[string]string, len(packed)/5)
 		for i := 0; i+5 <= len(packed); i += 5 {
 			table[packed[i:i+3]] = packed[i+3 : i+5]
 		}
 	})
+}
+
+// Alpha3Codes lists every alpha-3 code the table knows, in alphabetical order.
+func Alpha3Codes() []string {
+	out := make([]string, 0, len(packed)/5)
+	for i := 0; i+5 <= len(packed); i += 5 {
+		out = append(out, packed[i:i+3])
+	}
+	return out
+}
+
+// Alpha2FromAlpha3 returns the alpha-2 code for an alpha-3 code, or "" if unknown.
+func Alpha2FromAlpha3(alpha3 string) string {
+	if alpha3 == "" {
+		return ""
+	}
+	load()
 	return table[strings.ToUpper(alpha3)]
 }

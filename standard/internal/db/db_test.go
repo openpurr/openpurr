@@ -27,7 +27,7 @@ func TestMigrationsApplyOnceEvenConcurrently(t *testing.T) {
 		}
 	}
 	var n int
-	if err := pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&n); err != nil || n != 3 {
+	if err := pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&n); err != nil || n != 4 {
 		t.Fatal(n, err)
 	}
 }
@@ -38,10 +38,10 @@ func TestSchemaHasLitesTables(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Every table Lite has after its 21 migrations.
+	// Every table Lite has after its 21 migrations, and Standard's per-country chart totals.
 	want := []string{"access_token", "api_key", "apple_verified_chain", "audit_log", "capture", "config_version", "customer",
 		"customer_alias", "customer_snapshot", "experiment", "experiment_enrollment", "fx_rate", "job_state", "login_link",
-		"metric_daily", "oauth_client", "oauth_grant", "oauth_request", "operator", "play_ack_pending", "promotional_grant",
+		"metric_daily", "metric_daily_country", "oauth_client", "oauth_grant", "oauth_request", "operator", "play_ack_pending", "promotional_grant",
 		"purchase_owner", "recovery_code", "session", "setting", "store_notification", "store_transaction",
 		"subscriber_attribute", "subscription_state", "webhook_delivery", "webhook_event"}
 	if len(tables) != len(want) {
@@ -66,7 +66,7 @@ func TestTruncateKeepsMigrations(t *testing.T) {
 	var customers, migrations int
 	_ = pool.QueryRow(ctx, "SELECT count(*) FROM customer").Scan(&customers)
 	_ = pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&migrations)
-	if customers != 0 || migrations != 3 {
+	if customers != 0 || migrations != 4 {
 		t.Fatal(customers, migrations)
 	}
 }

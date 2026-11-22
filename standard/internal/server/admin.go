@@ -73,10 +73,11 @@ func buildAdminRoutes() *adminRouter {
 	rt.add(del, "/experiments/:id", permConfigManage, adminDeleteExperiment)
 	rt.add(get, "/experiments/:id/results", permRead, adminExperimentResults)
 
-	// Charts arrive with S6, the OAuth consent screen with S7 (MCP).
-	rt.add(get, "/metrics", permRead, notYet("Charts"))
-	rt.add(get, "/metrics/:chart", permRead, notYet("Charts"))
-	rt.add(post, "/metrics/refresh", permRead, notYet("Charts"))
+	rt.add(get, "/metrics", permRead, adminMetrics)
+	rt.add(get, "/metrics/:chart", permRead, adminChart)
+	rt.add(post, "/metrics/refresh", permRead, adminRefreshMetrics)
+
+	// The OAuth consent screen arrives with S7 (MCP).
 	rt.add(get, "/oauth/requests/:id", "", notYet("Connecting MCP clients"))
 	rt.add(post, "/oauth/requests/:id/:decision", "", notYet("Connecting MCP clients"))
 	rt.add(get, "/oauth/grants", "", adminOAuthGrants)

@@ -5,9 +5,10 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S5 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+This is milestones S1 to S6 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
 App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
-with the background jobs, and the back office (operator sign-in, the admin API and the dashboard).
+with the background jobs, the back office (operator sign-in, the admin API and the dashboard), and
+charts.
 It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
@@ -131,8 +132,8 @@ As on Lite:
   `prune-inactive-customers` (customers with no purchase and no grant, first seen over 90 days ago,
   with no new app user ID or attribute sync since), `prune-expired-apple-chains`, `prune-oauth`,
   `refresh-exchange-rates` (90 days of the European Central Bank's rates on first run, then each
-  day's once published, checked from 15:00 UTC), `retry-play-acknowledgements` and
-  `poll-play-voided-purchases`. Slots are aligned to the clock (as a cron), and a job runs once per
+  day's once published, checked from 15:00 UTC), `retry-play-acknowledgements`,
+  `poll-play-voided-purchases` and, last, `rollup-metrics` (the charts, see below). Slots are aligned to the clock (as a cron), and a job runs once per
   slot across all replicas: it holds a Postgres advisory lock while it runs and records its slot
   in `job_state`. A failing job is logged and tried again next slot; it doesn't stop the others.
 - **Several replicas** are safe: deliveries are claimed with `FOR UPDATE SKIP LOCKED` and a lease
@@ -165,7 +166,7 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   `openpurr import` sends them), price experiments and their results, webhook deliveries and
   replay, the audit log (every write: who, which token, from where), the versioned config
   (validate, save with a base version, history, restore), settings and the setup checks
-  (`/doctor`). Charts (`/metrics`) answer 501 until S6, the MCP consent routes until S7.
+  (`/doctor`), and charts (`/metrics`, see below). The MCP consent routes answer 501 until S7.
 - **The dashboard** is `lite/office-ui`, unchanged, embedded at build time. Its files get the
   headers of its own `_headers` file (a strict Content-Security-Policy, no framing), and any other
   page under `/admin` gets `index.html`, as Cloudflare's single-page-application mode does.
@@ -173,6 +174,55 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   The usage report has no metrics (Standard has no Cloudflare daily limits) and
   `POST /admin/v1/usage/refresh` answers 400. The dashboard doesn't read the edition yet; until it
   does, it shows "Lite" and the usage card's Cloudflare text.
+
+## Charts
+
+As on Lite (`lite/src/metrics.ts`), in `internal/metrics`:
+
+- **Daily totals** in `metric_daily`, derived from the ledger: subscriptions become time segments
+  (purchase to the earliest of expiry or grace end, refund, or the next renewal) that add +1/-1 to
+  the running totals (active subscriptions, trials, paid subscriptions, MRR) on the days they start
+  and end; movements (new, renewed, reactivated, churned; trials converted, expired, cancelled; MRR
+  new, reactivation, expansion, contraction, churned) classify the same starts and ends; revenue,
+  transactions, refunds, new trials and one-time purchases are per-day amounts, in USD at the
+  purchase date's rate. New customers are counted once per day and never recounted (the cleanup
+  job deletes old non-buyers).
+- **The rollup** runs hourly (`rollup-metrics`, after the exchange rates) and on
+  `POST /admin/v1/metrics/refresh` (at most once a minute; `{"full": true}` rebuilds all history,
+  owners only, audited). It recomputes from the earliest purchase date among ledger rows changed
+  since the last run (or that run's own day), waits while an import is running (until an hour
+  after the last imported row), and does a full rebuild the first time and after migration 0004.
+  Runs on any replica take turns under an advisory lock.
+- **The charts** (`GET /admin/v1/metrics`, `/metrics/{chart}`, `format=csv`): the same 16 charts,
+  parameters (`from`, `to`, `interval`, `environment`, `store`, `app`, `product`, `project`),
+  checks, permissions and output as Lite, byte for byte.
+- **Exact numbers:** Lite does the arithmetic in SQLite. Standard reads the same ledger rows and
+  does it in Go with SQLite's summation (Kahan-Babuska-Neumaier) and `round()`, adding values up in
+  Lite's order, so every stored total and every chart matches Lite's to the last bit (see Tests).
+- **Country filter** (Standard only; Lite left it to Standard): `?country=US` (ISO 3166-1 alpha-2,
+  any case) on any chart, combined with the other filters, from the country of each purchase's
+  storefront (Apple's alpha-3 codes mapped with `internal/countries`, Google's region code as is;
+  purchases without one are in no country). New customers aren't tied to a country, so that chart
+  ignores the filter with a note; the status breakdown filters live from the ledger.
+  `GET /admin/v1/metrics` adds `"edition": "standard"` and `"countries"`, the countries with data.
+  The totals are kept per country in `metric_daily_country` (migration 0004), written by the same
+  rollup from the same in-memory totals, rather than computed from the ledger on each request: a
+  chart over all history needs every earlier change (running totals), so computing it per request
+  would read the whole ledger for each of the dashboard's charts, while the stored totals make a
+  filtered chart cheaper to read than an unfiltered one. It's a separate table, not a column of
+  `metric_daily`, because each stored value is rounded and per-country values rounded separately
+  don't always add up to the rounded total, so unfiltered charts keep reading rows identical to
+  Lite's (which also move over from Lite unchanged). Like everything in both tables, it can be
+  rebuilt from the ledger at any time.
+- **Speed:** a rollup reads the ledger rows it needs, computes in memory, then writes only the
+  totals that changed (Lite deletes and re-inserts; re-inserting keys deleted in the same Postgres
+  transaction is slow). On a laptop, for a generated ledger of 98,437 transactions in 22,222
+  subscriptions over three years (`OPENPURR_PERF_TRANSACTIONS=100000 go test -run
+  TestFullRebuildOnALargeLedger -v ./internal/metrics`): the first full rollup takes about 2 s
+  (52,015 rows in `metric_daily`, 119,639 in `metric_daily_country`), a full rebuild about 0.8 s,
+  an hourly run with nothing changed about 0.1 s, and reading all 16 charts over three years by
+  month about 80 ms (40 ms with a country filter). Both tables compare text byte by byte
+  (`COLLATE "C"`), as SQLite does, which is also faster than a locale's collation.
 
 ## Tests
 
@@ -185,8 +235,8 @@ Tests that need Postgres skip without `OPENPURR_TEST_DATABASE_URL`. Each one get
 so packages run in parallel against one database. The HTTP tests mirror Lite's `sdk`, `snapshot`,
 `attributes`, `secret-keys`, `rate-limit`, `projects`, `intro-eligibility`, `notifications` and
 `apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
-snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor`, `setup-urls` and the admin parts
-of `experiments`; `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
+snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor`, `setup-urls`, the admin parts
+of `experiments`, and `metrics` (in `internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
 crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
 Developer API and push-token keys, `internal/testutil/google.go`). App Store payloads are signed
@@ -201,7 +251,12 @@ Lite's Google Play rows, subscription states, planned events, event bodies and p
 verifications; `golden-webhooks.json` holds Lite's signature headers, the request each delivery
 attempt makes, what it records, the retry schedule, and its ECB rate parsing; `golden-auth.json`
 holds Lite's password hashes, TOTP codes, encrypted authenticator secrets, base32, recovery codes
-and tokens, made from predictable random bytes so Standard can make the same ones. The tests check
+and tokens, made from predictable random bytes so Standard can make the same ones;
+`golden-metrics.json.gz` holds what Lite's chart code stores and serves for four ledgers (the
+hand-checked one of Lite's metrics test, odd edge cases, and two demo-like ledgers with trials,
+upgrades, refunds, grace periods, pauses, several currencies and Google base plans): every
+`metric_daily` row after each of 25 rollups (full, incremental, during an import), each run's
+result and state, and 592 charts as JSON and CSV. The tests check
 Standard matches them byte for byte. The `.ts` file next to each says how to regenerate it after a
 change in Lite.
 
@@ -226,9 +281,8 @@ set too) turns on:
 
 ## Not implemented yet
 
-- Charts (S6): `/admin/v1/metrics*` answer 501, and the hourly chart rollup, which goes last in
-  the job list (after the exchange rates). Imports already count backdated customers into
-  `metric_daily` once a rollup has run, as Lite does.
+- Cohort charts (project plan section 7, phase 3: subscription retention, trial conversion,
+  initial conversion, realized LTV, trial cancellation rate), which Lite leaves to Standard.
 - MCP and OAuth (S7): `/mcp`, `/oauth/*` and the dashboard's consent routes (501; the connected
   apps list is empty). Access tokens already work the way MCP will use them.
 - GCP packaging and IAP sign-in (S8), moving from Lite (S9).
@@ -312,3 +366,13 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
 - **Imports** don't stop near a daily limit (Standard has none).
 - **The inactive-customer cleanup** locks its candidates (`FOR UPDATE SKIP LOCKED`), so a customer
   a request is writing to at that moment is left for the next run.
+- **Chart requests Lite fails on:** `/metrics/{chart}?to=<not a date>` without `from` is a 400
+  (Lite's default `from` throws on the invalid date: a 500), and a chart named after an
+  `Object.prototype` member (`/metrics/constructor`) is a 404 (Lite finds the member and fails).
+- **Chart totals are written as a difference:** a rollup deletes, updates and inserts only the
+  rows that changed, where Lite deletes the range and inserts it again; the stored rows and the
+  run's `rows` count are the same. Rollups take turns under an advisory lock.
+- **Chart text columns** (`metric_daily`'s and `metric_daily_country`'s) use `COLLATE "C"`, as
+  SQLite compares text.
+- **Additions:** the country filter, `metric_daily_country`, and `edition` and `countries` in
+  `GET /admin/v1/metrics` (see Charts).
