@@ -275,3 +275,54 @@ describe("phase 2: reactivation, expansion, contraction, trials, status (a sandb
     expect(status).toEqual({ active: 2, cancelled: 1, trial: 0, grace: 1, billing_retry: 0, paused: 0, expired: 1 });
   });
 });
+
+describe("ties and missing expiries (an app of their own)", () => {
+  const edge = (over: Partial<ChartQuery> = {}) => q({ app: "edge", to: "2026-03-31", ...over });
+  const months = async (chart: string) => Object.fromEntries((await readChart(env.DB, chart, edge({ interval: "month" })))!.points.map((p) => [p.date.slice(0, 7), p.values]));
+  const day = async (chart: string, date: string, key: string) => (await readChart(env.DB, chart, edge()))!.points.find((p) => p.date === date)?.values[key];
+  // Days where the movements don't add up to the change in the running totals.
+  const mismatches = async () => {
+    const [mrr, mrrMove, subs, subsMove] = await Promise.all(["mrr", "mrr_movement", "active_subscriptions", "subscription_movement"].map((c) => readChart(env.DB, c, edge())));
+    const out: string[] = [];
+    let before = { mrr: 0, paid: 0 };
+    mrr!.points.forEach((p, i) => {
+      const now = { mrr: p.values.mrr!, paid: subs!.points[i]!.values.paid! };
+      if (Math.abs(mrrMove!.points[i]!.values.net! - (now.mrr - before.mrr)) > 0.005 || subsMove!.points[i]!.values.net !== now.paid - before.paid) out.push(p.date);
+      before = now;
+    });
+    return out;
+  };
+  const edgeTx = (t: Parameters<typeof tx>[0]) => tx({ app: "edge", updatedAt: at("2026-04-20", 13), ...t });
+
+  it("two purchases at the same moment in a chain count once: the later recorded one", async () => {
+    // T: bought twice at the same moment ($10, then $20), then renewed at $20.
+    await edgeTx({ chain: "T", bought: "2026-01-05", expires: "2026-02-05", price: 10 });
+    await edgeTx({ chain: "T", bought: "2026-01-05", expires: "2026-02-05", price: 20 });
+    await edgeTx({ chain: "T", bought: "2026-02-05", expires: "2026-03-05", price: 20 });
+    // U: the latest purchase recorded twice; still active on Mar 15.
+    await edgeTx({ chain: "U", bought: "2026-03-10", expires: "2026-04-10", price: 10 });
+    await edgeTx({ chain: "U", bought: "2026-03-10", expires: "2026-04-10", price: 10 });
+    const run = await rollupMetrics(env.DB, at("2026-04-20", 14));
+    expect(run).toMatchObject({ full: false, from: "2026-01-05" });
+
+    expect(await day("active_subscriptions", "2026-01-10", "paid")).toBe(1);
+    expect(await day("mrr", "2026-01-10", "mrr")).toBe(20);
+    expect(await day("active_subscriptions", "2026-03-15", "paid")).toBe(1); // U
+    const m = await months("subscription_movement");
+    expect(m["2026-01"]).toMatchObject({ new: 1, churned: -0, renewed: 0 });
+    expect(m["2026-02"]).toMatchObject({ new: 0, churned: -0, renewed: 1 });
+    expect(m["2026-03"]).toMatchObject({ new: 1, churned: -1, renewed: 0 }); // U starts, T ends
+    expect((await months("mrr_movement"))["2026-02"]).toMatchObject({ expansion: 0, contraction: 0, net: 0 }); // the renewal keeps the $20 terms
+    expect(await mismatches()).toEqual([]);
+
+    const r = await readChart(env.DB, "subscription_status", edge(), at("2026-03-15"));
+    expect(Object.fromEntries(r!.categories!.map((c) => [c.key, c.value]))).toMatchObject({ active: 1, expired: 1 });
+  });
+
+  it("the incremental runs match a full rebuild", async () => {
+    const snapshot = async () => Promise.all(Object.keys(CHARTS).map((c) => readChart(env.DB, c, edge(), at("2026-03-15")).then((r) => [r!.points, r!.categories])));
+    const incremental = await snapshot();
+    await rollupMetrics(env.DB, at("2026-04-20", 15), { full: true });
+    expect(await snapshot()).toEqual(incremental);
+  });
+});

@@ -8,9 +8,10 @@
 //
 // Subscriptions become time segments: each transaction gives access from its purchase until the
 // earliest of its expiry (or the end of a grace period, for the latest one), its refund or
-// revocation, and the next transaction in the same chain (renewals don't overlap). A segment
-// adds +1 to the running totals on the day it starts and -1 on the day it ends; a chart adds the
-// daily changes up from the beginning. MRR does the same with each paid segment's price
+// revocation, and the next transaction in the same chain (renewals don't overlap; purchases at the
+// same moment are taken in the order they were recorded, so only the last of them gives access).
+// A segment adds +1 to the running totals on the day it starts and -1 on the day it ends; a chart
+// adds the daily changes up from the beginning. MRR does the same with each paid segment's price
 // normalized to a month, using the billing period inferred from its length.
 //
 // Movements classify those same starts and ends, so they always add up to the running totals:
@@ -164,10 +165,14 @@ export async function rollupMetrics(db: D1Database, now: number, opts: { full?: 
                t.period_type, t.purchased_at AS start, t.expires_at, t.revoked_at, t.price_micros, t.currency,
                t.expires_at - t.purchased_at AS period_ms,
                s.grace_period_expires_at AS grace_end, s.unsubscribe_detected_at AS unsubscribed_at,
+               -- A chain is in purchase order, and purchases at the same moment in the order they
+               -- were recorded: of those, only the last gives access (the next starts at once).
                (SELECT min(n.purchased_at) FROM store_transaction n
-                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at > t.purchased_at) AS next_at,
-               (SELECT max(n.purchased_at) FROM store_transaction n
-                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at < t.purchased_at) AS prev_at,
+                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id
+                  AND (n.purchased_at > t.purchased_at OR (n.purchased_at = t.purchased_at AND n.id > t.id))) AS next_at,
+               (SELECT n.id FROM store_transaction n
+                WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at < t.purchased_at
+                ORDER BY n.purchased_at DESC, n.id DESC LIMIT 1) AS prev_id,
                ${usd("t")} AS usd
              FROM store_transaction t
              LEFT JOIN subscription_state s ON s.store = t.store AND s.original_transaction_id = t.original_transaction_id
@@ -187,7 +192,7 @@ export async function rollupMetrics(db: D1Database, now: number, opts: { full?: 
                CASE WHEN b.period_type != 'trial' AND b.usd > 0 THEN b.usd * 30.4375 / ${periodDays("b.period_ms")} ELSE 0 END AS mrr,
                CASE WHEN p.period_type != 'trial' THEN coalesce(${usd("p")}, 0) * 30.4375 / ${periodDays("p.expires_at - p.purchased_at")} ELSE 0 END AS prev_mrr
              FROM base b
-             LEFT JOIN store_transaction p ON p.store = b.store AND p.original_transaction_id = b.chain AND p.purchased_at = b.prev_at
+             LEFT JOIN store_transaction p ON p.id = b.prev_id
            ),
            ev AS (
              SELECT *, 'start' AS kind, start AS at, 1 AS dir FROM seg WHERE stop > start AND start >= ?2 AND start < ?3
@@ -685,7 +690,8 @@ async function readStatus(db: D1Database, q: ChartQuery, now: number) {
        LEFT JOIN subscription_state s ON s.store = t.store AND s.original_transaction_id = t.original_transaction_id
        WHERE t.product_type = 'subscription' AND t.expires_at >= ?2
          AND NOT EXISTS (SELECT 1 FROM store_transaction n
-                         WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id AND n.purchased_at > t.purchased_at)
+                         WHERE n.store = t.store AND n.original_transaction_id = t.original_transaction_id
+                           AND (n.purchased_at > t.purchased_at OR (n.purchased_at = t.purchased_at AND n.id > t.id)))
          AND ${dims.where.join(" AND ")}
        -- Not "status": subscription_state has a column by that name, and GROUP BY would pick it.
        GROUP BY category`,
