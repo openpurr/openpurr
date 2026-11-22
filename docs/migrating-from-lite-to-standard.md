@@ -81,6 +81,9 @@ Leave App Store Connect and Google Play alone.
 
 ## 3. Export from Lite
 
+**From here until you finish (step 8), hold off on these in Lite's dashboard, CLI and MCP:** signing out, regenerating recovery codes, renaming keys or tokens, and editing experiments. Catch-up exports don't carry them (see [Limits](#limits)). Purchases, customers, grants, attributes, new keys and revocations all carry over, so your apps and your team can keep working as usual.
+
+
 ```sh
 npx @openpurr/cli export --out lite-export
 ```
@@ -195,6 +198,15 @@ Keep Lite's D1 database for a while as a rollback point, then delete the Workers
 
 ## Limits
 
-- **Deletions don't travel in deltas,** except customers': a session signed out, recovery codes regenerated, or a Play acknowledgement completed between the export and the switch stay on Standard. Revocations (keys, tokens, grants, OAuth connections) and disabled operators do travel. Avoid team and key changes during the move, or repeat them on Standard afterwards.
-- **Changes without a timestamp** (renaming a key, editing an experiment) made between the first export and the switch aren't in a delta. Make them before you start or after you finish.
+- **A few changes don't travel in catch-up exports.** They only matter if they happen between the first export (step 3) and the last import (step 8), usually minutes to hours. If one did, here's what it means and how to fix it on Standard after you finish:
+
+  | Change on Lite during the move | What Standard has afterwards | Fix |
+  |---|---|---|
+  | An operator signed out | That session still works on Standard until it expires | Sign out again on Standard, or wait for it to expire |
+  | An operator regenerated recovery codes | The old codes work on Standard, the new ones don't | Regenerate them on Standard |
+  | A Play acknowledgement went through | Standard acknowledges the purchase again | Nothing: Google accepts it, at most a line in the log |
+  | A key or token was renamed | The old name | Rename it on Standard |
+  | An experiment was edited | The version from before the edit | Make the edit again on Standard. Check this one: a running experiment decides which offering new customers see |
+
+  Revocations (keys, tokens, grants, OAuth connections) and disabled operators do travel.
 - Forward mode adds a hop: the Worker's own time (a fraction of a millisecond of CPU) plus the network between Cloudflare and Standard.
