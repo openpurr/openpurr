@@ -546,8 +546,12 @@ func (rt *adminRouter) match(method, rest string) (*adminRoute, map[string]strin
 }
 
 // requestOrigin is this server's origin as the browser sees it: PUBLIC_URL when set, else the
-// request's scheme and host (the scheme from X-Forwarded-Proto behind a proxy that ends TLS).
+// request's scheme and host (the scheme from X-Forwarded-Proto behind a proxy that ends TLS). A
+// request forwarded by Lite (forwarded.go) has the origin its client called.
 func (s *server) requestOrigin(r *http.Request) string {
+	if f := forwardedOf(r); f != nil {
+		return f.origin
+	}
 	if s.PublicURL != "" {
 		return s.PublicURL
 	}

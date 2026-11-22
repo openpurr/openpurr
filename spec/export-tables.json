@@ -1,0 +1,32 @@
+{
+  "$comment": "The tables of an export bundle (spec/export-bundle.md), in import order (parents before children). Both editions' exporters and importers check their own lists against this file in their tests. `key`: the primary key, which is also the page order. `where`: rows outside it are never exported. `delta`: which rows a delta export takes (`:since` is the previous export's started_at_ms, `:since_day` its UTC date); \"all\" for the whole table, null when deltas leave the table out. `customer_column`: tables whose rows belong to a customer, re-sent in full for customers that changed. `optional`: columns sent as null unless the export asks for them.",
+  "version": 1,
+  "tables": [
+    { "name": "config_version", "key": ["id"], "delta": "created_at >= :since" },
+    { "name": "setting", "key": ["key"], "delta": "all" },
+    { "name": "operator", "key": ["id"], "delta": "all" },
+    { "name": "recovery_code", "key": ["operator_id", "code_hash"], "delta": "all" },
+    { "name": "session", "key": ["token_hash"], "delta": "all" },
+    { "name": "access_token", "key": ["id"], "delta": "all" },
+    { "name": "api_key", "key": ["id"], "delta": "all" },
+    { "name": "oauth_client", "key": ["id"], "delta": "all" },
+    { "name": "oauth_grant", "key": ["id"], "delta": "all" },
+    { "name": "audit_log", "key": ["id"], "delta": "at >= :since" },
+    { "name": "customer", "key": ["id"], "delta": "all" },
+    { "name": "customer_alias", "key": ["project_id", "app_user_id"], "delta": "created_at >= :since", "customer_column": "customer_id" },
+    { "name": "subscriber_attribute", "key": ["customer_id", "key"], "delta": "received_at >= :since", "customer_column": "customer_id" },
+    { "name": "store_transaction", "key": ["id"], "delta": "updated_at >= :since" },
+    { "name": "purchase_owner", "key": ["store", "original_transaction_id"], "delta": "updated_at >= :since", "customer_column": "customer_id" },
+    { "name": "subscription_state", "key": ["store", "original_transaction_id"], "delta": "updated_at >= :since" },
+    { "name": "store_notification", "key": ["store", "notification_id"], "delta": "received_at >= :since", "optional": ["payload"] },
+    { "name": "promotional_grant", "key": ["id"], "delta": "created_at >= :since OR revoked_at >= :since", "customer_column": "customer_id" },
+    { "name": "webhook_event", "key": ["id"], "delta": "created_at >= :since" },
+    { "name": "webhook_delivery", "key": ["event_id", "endpoint"], "delta": "created_at >= :since - 345600000 OR status = 'pending' OR delivered_at >= :since" },
+    { "name": "play_ack_pending", "key": ["purchase_token"], "delta": "all" },
+    { "name": "fx_rate", "key": ["currency", "date"], "delta": "date >= :since_day" },
+    { "name": "job_state", "key": ["key"], "delta": null },
+    { "name": "experiment", "key": ["id"], "delta": "all" },
+    { "name": "experiment_enrollment", "key": ["experiment_id", "app_user_id"], "delta": "enrolled_at >= :since" },
+    { "name": "metric_daily", "key": ["metric", "environment", "project_id", "app_id", "store", "product_id", "date"], "where": "metric = 'new_customers'", "delta": null }
+  ]
+}

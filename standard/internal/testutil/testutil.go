@@ -129,6 +129,8 @@ type Options struct {
 	Dashboard fs.FS
 	// IAP sign-in on, for IAPAudience, with a fake key server (Env.IAP).
 	IAP bool
+	// FORWARD_SECRET: trust requests forwarded by Lite in forward mode.
+	ForwardSecret string
 }
 
 // OperatorSecret is the tests' OPERATOR_SECRET.
@@ -229,6 +231,7 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		HTTPClient:     outbound.NewClient(opts.StoreBase),
 		ClientIPHeader: header,
 		ClientIPHops:   opts.ClientIPHops,
+		ForwardSecret:  opts.ForwardSecret,
 		Secret:         secret,
 		AppleRoots:     roots,
 		Conformance:    conf,

@@ -83,7 +83,8 @@ tofu apply -var-file=openpurr.tfvars
 Secrets are named `<name>-<SECRET>` (`name` defaults to `openpurr`). Moving from Lite? Set
 `generate_operator_secret = false`, add `google_secret_manager_secret.operator_secret` to the
 first `-target` apply, and add Lite's `OPERATOR_SECRET` as its value, so passwords and
-authenticators keep working.
+authenticators keep working. The rest of the move (export, import, verify, cutover) is in
+[Moving from Lite to Standard](migrating-from-lite-to-standard.md).
 
 The full apply takes about 15 minutes, most of it Cloud SQL. It prints the outputs, including
 `load_balancer_ip`.

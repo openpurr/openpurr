@@ -5,12 +5,13 @@ outgrow Cloudflare's free plan or need to run on GCP or AWS. It speaks the same 
 reads the same config file and uses the same table names, so the unmodified SDKs work against
 either edition and data can move from Lite to Standard later.
 
-This is milestones S1 to S8 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
+This is milestones S1 to S9 of `Specs/standard-plan.md`: the foundation, the SDK read endpoints,
 App Store purchases and notifications, Google Play purchases and notifications, webhook delivery
 with the background jobs, the back office (operator sign-in, the admin API and the dashboard),
-charts, the MCP server with its OAuth authorization server, and packaging for Google Cloud
+charts, the MCP server with its OAuth authorization server, packaging for Google Cloud
 (Cloud Run, Cloud SQL, Secret Manager, sign-in through Identity-Aware Proxy; see
-[`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md)).
+[`docs/standard-on-gcp.md`](../docs/standard-on-gcp.md)), and moving a Lite deployment here
+(see "Moving from Lite" and [`docs/migrating-from-lite-to-standard.md`](../docs/migrating-from-lite-to-standard.md)).
 It isn't ready for production use yet (see "Not implemented yet").
 
 ## Build and run
@@ -62,6 +63,7 @@ after SIGTERM; work cut short is picked up by the next server's jobs).
 | `LOG_FORMAT` | `json` (slog's `level` and `msg`) or `gcp` (Cloud Logging's `severity` and `message`). Default `gcp` on Cloud Run (when `K_SERVICE` is set), else `json`. |
 | `SHUTDOWN_TIMEOUT_SECONDS` | How long SIGTERM waits for work in progress (default 25; 8 on Cloud Run). |
 | `IAP_AUDIENCE` | Sign operators in through Google's Identity-Aware Proxy (see below): the audience IAP signs for, `/projects/<project number>/global/backendServices/<id>` behind a load balancer (several separated by commas). Off when unset. |
+| `FORWARD_SECRET` | While moving from Lite: the secret Lite's Workers send in forward mode (at least 32 characters). A request carrying it is answered as if this server were at the address the client called, with the client's IP (see "Moving from Lite"). Off when unset. |
 
 Secrets the config names (`APPLE_IAP_KEY`, `GOOGLE_SERVICE_ACCOUNT`, webhook secrets) are
 environment variables of that name, as they're Worker secrets of that name on Lite.
@@ -319,6 +321,41 @@ As on Lite (`lite/src/office/mcp.ts` and `oauth.ts`), in `internal/server/mcp.go
   and revoking are audited. The hourly `prune-oauth` job forgets old requests, grants and unused
   clients.
 
+## Moving from Lite
+
+How to move is [`docs/migrating-from-lite-to-standard.md`](../docs/migrating-from-lite-to-standard.md);
+the bundle format is [`spec/export-bundle.md`](../spec/export-bundle.md). Here, in
+`internal/migration`, `cmd/openpurr/migrate.go`, `internal/server/admin_export.go` and
+`internal/server/forwarded.go`:
+
+- **`openpurr migrate import --bundle DIR`** (with `DATABASE_URL`) loads a bundle from
+  `openpurr export`. A full bundle goes into a database without customers, purchases, operators or
+  keys (`--replace` erases them first), in one transaction: `COPY` per table in the bundle's order,
+  the identity sequences continued after the imported IDs, `metric_daily_country`, snapshots and
+  short-lived rows (`login_link`, `oauth_request`) emptied. A delta goes on top of the bundle it
+  follows (`--force`: any), with the merge rules of the spec: the newer `updated_at` wins, a
+  delivery with more attempts wins, revocations and disabled operators stick, aliases, purchase
+  owners and grants follow their customer, transactions, audit rows and config versions get this
+  database's IDs, and customers the source deleted go unless purchases or grants here still belong
+  to them. Each bundle is imported once (recorded in `job_state` as `migration_import`), and a
+  damaged file (row count or SHA-256) leaves nothing written.
+- **Rebuilt after an import:** the chart totals in full (from the ledger; `new_customers` came with
+  the bundle and is counted on from the source's last run, or from the delta's first day), and the
+  CustomerInfo snapshots of every customer, or of the changed ones after a delta, 8 at a time
+  (`--skip-snapshots` leaves them to the backfill job). `subscription_state` isn't rebuilt: it's
+  what the stores reported, so it moves with the ledger. `openpurr migrate rebuild` redoes both.
+- **The export API** (`/admin/v1/export`, `/export/tables/{table}`, `/export/customer-info`) is
+  Lite's, for owners who see every app, so `openpurr export` and `openpurr migrate verify` work
+  against Standard too (backups, moving back to Lite with `openpurr migrate sql`). Pages go up to
+  5,000 rows (Lite: 1,000).
+- **Forwarded requests:** with `FORWARD_SECRET` set, a request whose `X-Openpurr-Forwarded` header
+  matches it (compared in constant time) takes its host and origin from `X-Openpurr-Origin` (the
+  Pub/Sub audience, the dashboard's same-origin check, setup links, the OAuth issuer; ahead of
+  `PUBLIC_URL`) and its client IP from `X-Openpurr-Client-IP`. The three headers are removed from
+  every request, matching or not.
+- On a laptop, a demo-sized Lite deployment (26,214 customers, 9,306 purchases, 91,928 rows, a
+  20 MB bundle) imports in 1.6 s and rebuilds 20,226 chart rows and 26,214 snapshots in 2.9 s.
+
 ## Tests
 
 ```sh
@@ -332,8 +369,10 @@ so packages run in parallel against one database. The HTTP tests mirror Lite's `
 `apple-server-api` suites, `webhooks` (events, delivery, retries, replay), `scheduled`, `fx`, the
 snapshot backfill, `operator-auth`, `admin-api`, `import`, `doctor` (with `check_setup`),
 `setup-urls`, the admin parts of `experiments`, `mcp`, `oauth`, IAP sign-in (Standard only,
-with a fake IAP key server, `internal/testutil/iap.go`), and `metrics` (in
-`internal/metrics`); `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
+with a fake IAP key server, `internal/testutil/iap.go`), the export API and forwarded requests,
+and `metrics` (in `internal/metrics`); `internal/migration` exports a seeded database into a
+bundle, imports it and a delta (with a merge) into fresh schemas and compares every customer's
+CustomerInfo, and checks its table list against `spec/export-tables.json`; `internal/applejws` mirrors `apple-jws`, `internal/authcrypto` the credential
 crypto of `operator-auth`. The Google Play tests mirror `google-play`,
 `google-rtdn`, `google-jobs` and `store-tokens` against a fake Google (OAuth token endpoint, Play
 Developer API and push-token keys, `internal/testutil/google.go`). App Store payloads are signed
@@ -363,7 +402,8 @@ Standard matches them byte for byte. The `.ts` file next to each says how to reg
 change in Lite.
 
 The shared HTTP suite is in `../spec/conformance` (see its README); run it against a Standard
-server started in conformance mode.
+server started in conformance mode. Its `test:migration` script moves a seeded Lite to Standard end
+to end (export, import, verify, a delta, forward mode).
 
 ## Conformance mode
 
@@ -385,7 +425,6 @@ set too) turns on:
 
 - Cohort charts (project plan section 7, phase 3: subscription retention, trial conversion,
   initial conversion, realized LTV, trial cancellation rate), which Lite leaves to Standard.
-- Moving from Lite (S9).
 - Lite's free-plan usage check (`refresh-usage`, Cloudflare analytics) has no Standard counterpart.
   Running price experiments already pick the current offering on `/v1/.../offerings`.
 
@@ -474,7 +513,8 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
 - **Chart text columns** (`metric_daily`'s and `metric_daily_country`'s) use `COLLATE "C"`, as
   SQLite compares text.
 - **Additions:** the country filter, `metric_daily_country`, and `edition` and `countries` in
-  `GET /admin/v1/metrics` (see Charts).
+  `GET /admin/v1/metrics` (see Charts); `openpurr migrate` and `FORWARD_SECRET` (see Moving from
+  Lite).
 - **`get_config` before the SDK URL is set** says "not set. It's this server's address, probably
   `<origin>`; set it on the dashboard's Settings page to be sure." with that origin as `sdk_url`
   (`sdk_url_source: "guess"`): Standard serves the SDK API itself. Lite guesses the SDK Worker's

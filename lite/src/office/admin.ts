@@ -27,6 +27,7 @@ import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, require
 import { chooseProject, visibleProjects } from "./project";
 import { isOfficeLocale, OFFICE_LOCALES } from "./locales";
 import { guessSdkUrl, parseSdkUrl, storedSdkUrl } from "./setup";
+import { exportCustomerInfo, exportDenied, exportInfo, exportTable } from "./export";
 
 export const admin = new Hono<AppEnv>();
 admin.use("*", adminAuth);
@@ -769,6 +770,13 @@ admin.post("/metrics/refresh", requirePermission("read"), async (c) => {
   if (full) await auditBy(c, "metrics.rebuilt", null, { from: result.from, rows: result.rows }).run();
   return c.json({ refreshed: true, ...result, updated_at: await lastRollupAt(c.env.DB) });
 });
+
+// --- export (moving to Standard and back; see src/office/export.ts) ------------------------------
+
+admin.get("/export", (c) => exportDenied(c) ?? exportInfo(c));
+admin.post("/export", (c) => exportDenied(c) ?? exportInfo(c, (details) => auditBy(c, "data.exported", null, details)));
+admin.get("/export/customer-info", (c) => exportDenied(c) ?? exportCustomerInfo(c));
+admin.get("/export/tables/:table", (c) => exportDenied(c) ?? exportTable(c));
 
 // --- setup checks ----------------------------------------------------------------------------------
 

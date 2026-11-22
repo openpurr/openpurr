@@ -39,6 +39,23 @@ The test keys and certificates are generated on first run into `fixtures/generat
 (git-ignored); `pnpm --filter @openpurr/conformance fixtures` makes a fresh set. Restart the server
 under test afterwards, since it trusts the root and holds the keys.
 
+### Moving from Lite to Standard, end to end
+
+```sh
+MIGRATION_DATABASE_URL=postgres://localhost/openpurr_migration pnpm --filter @openpurr/conformance test:migration
+```
+
+`scripts/run-migration.mjs` boots Lite in conformance mode, builds Standard with `go build`, and
+starts Lite's two production Workers (`wrangler dev`, env `""` and `office`) in forward mode,
+pointing at the port Standard will use. `migration/lite-to-standard.test.ts` (its own vitest
+config, so the suite above never runs it) then seeds Lite through the SDK, store notifications and
+the admin API, exports with the CLI, imports with `openpurr migrate import`, starts Standard in
+conformance mode on that database, checks that `openpurr migrate verify` finds no differences and
+that keys, tokens and passwords still work, does the same with a delta (a purchase, a merge and an
+attribute after the export), and sends SDK, store-notification and admin requests through the
+forwarding Workers to Standard. It needs Go and a Postgres database it may erase. CI runs it in the
+`migration` job.
+
 ## The server side: conformance mode
 
 A server under test runs in conformance mode: Lite as the wrangler environment `conformance`,

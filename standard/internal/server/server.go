@@ -77,6 +77,10 @@ type Deps struct {
 	// trusted proxies that append to it. 0 means the first entry.
 	ClientIPHops int
 
+	// The secret a Lite deployment in forward mode sends (forwarded.go); empty means requests are
+	// never treated as forwarded.
+	ForwardSecret string
+
 	// Verifies Identity-Aware Proxy assertions (IAP_AUDIENCE); nil means IAP sign-in is off.
 	IAP *iap.Verifier
 
@@ -126,7 +130,7 @@ func New(d *Deps) http.Handler {
 	if d.Jobs != nil {
 		s.registerJobs()
 	}
-	return s.logRequests(s.recoverPanics(http.HandlerFunc(s.route)))
+	return s.acceptForwarding(s.logRequests(s.recoverPanics(http.HandlerFunc(s.route))))
 }
 
 type server struct {
@@ -298,12 +302,17 @@ func (s *server) logRequests(next http.Handler) http.Handler {
 
 // clientIP is the address rate limits count against and the audit log records.
 //
+// A request forwarded by Lite (forwarded.go) has the address Lite saw.
+//
 // With ClientIPHops = 0, the first entry of ClientIPHeader (a proxy that overwrites the header,
 // such as Cloudflare's CF-Connecting-IP). With N > 0, the Nth entry from the end of the list, for
 // proxies that append to whatever X-Forwarded-For the client sent (Google's front ends do): only
 // the entries the trusted proxies added can be believed, and a request with fewer entries than
 // that didn't come through them, so it counts as the connection's address.
 func (s *server) clientIP(r *http.Request) string {
+	if f := forwardedOf(r); f != nil && f.clientIP != "" {
+		return f.clientIP
+	}
 	if s.ClientIPHeader != "" && s.ClientIPHops > 0 {
 		var entries []string
 		for _, line := range r.Header.Values(s.ClientIPHeader) {

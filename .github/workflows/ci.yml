@@ -160,3 +160,48 @@ jobs:
       # and runs spec/conformance against it over HTTP.
       - name: Conformance suite
         run: pnpm --filter @openpurr/conformance test:lite
+
+  migration:
+    name: Moving from Lite to Standard, end to end
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: openpurr_migration
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: standard/go.mod
+          cache-dependency-path: standard/go.sum
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      # Seeds Lite (wrangler dev, local D1), exports it with the CLI, imports it with Standard's
+      # binary into the Postgres service, verifies there are no differences, imports a delta, and
+      # sends requests through Lite's Workers in forward mode (spec/conformance/scripts/run-migration.mjs).
+      - name: Migration
+        run: pnpm --filter @openpurr/conformance test:migration
+        env:
+          MIGRATION_DATABASE_URL: postgres://postgres:postgres@localhost:5432/openpurr_migration?sslmode=disable

@@ -100,6 +100,12 @@ func buildAdminRoutes() *adminRouter {
 	rt.add(get, "/settings", permRead, adminSettings)
 	rt.add(put, "/settings", permSettingsManage, adminPutSettings)
 
+	// Moving between editions (admin_export.go): owners who see every app.
+	rt.add(get, "/export", "", adminExportInfo)
+	rt.add(post, "/export", "", adminExportInfo)
+	rt.add(get, "/export/customer-info", "", adminExportCustomerInfo)
+	rt.add(get, "/export/tables/:table", "", adminExportTable)
+
 	rt.add(get, "/usage", permRead, adminUsage)
 	rt.add(post, "/usage/refresh", permRead, adminUsageRefresh)
 	return rt
