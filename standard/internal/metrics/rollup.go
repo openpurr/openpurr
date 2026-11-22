@@ -8,12 +8,13 @@
 //
 // Subscriptions become time segments: each transaction gives access from its purchase until the
 // earliest of its expiry (or the end of a grace period, for the latest one), its refund or
-// revocation, and the next transaction in the same chain (purchases at the same moment are taken
-// in the order they were recorded, so only the last of them gives access). A segment adds +1 to
-// the running totals on the day it starts and -1 on the day it ends; a chart adds the daily
-// changes up from the beginning. MRR does the same with each paid segment's price normalized to a
-// month, using the billing period inferred from its length. Movements classify those same starts
-// and ends, so they always add up to the running totals (see lite/src/metrics.ts for the rules).
+// revocation, and the next transaction in the same chain (purchases at the same moment are taken in
+// the order they were recorded, so only the last of them gives access; one with no expiry gives no
+// access and isn't part of its chain). A segment adds +1 to the running totals on the day it starts
+// and -1 on the day it ends; a chart adds the daily changes up from the beginning. MRR does the
+// same with each paid segment's price normalized to a month, using the billing period inferred from
+// its length. Movements classify those same starts and ends, so they always add up to the running
+// totals (see lite/src/metrics.ts for the rules).
 //
 // Lite does all of this in one SQL statement per kind of total. Standard reads the ledger rows
 // the statement would read and does the same arithmetic in Go, with SQLite's summation and
@@ -244,7 +245,7 @@ func rollup(ctx context.Context, tx pgx.Tx, now int64, fullAsked bool) (*RollupR
 		if err := tx.QueryRow(ctx,
 			`SELECT min(latest) FROM (
 			   SELECT max(t.purchased_at) AS latest FROM subscription_state s
-			   JOIN store_transaction t ON t.store = s.store AND t.original_transaction_id = s.original_transaction_id
+			   JOIN store_transaction t ON t.store = s.store AND t.original_transaction_id = s.original_transaction_id AND t.expires_at IS NOT NULL
 			   WHERE s.updated_at >= $1 GROUP BY s.store, s.original_transaction_id) x`, since).Scan(&subAt); err != nil {
 			return nil, err
 		}
@@ -626,22 +627,9 @@ type chainTx struct {
 	usd                                                  *float64
 }
 
-// tri is SQL's three-valued logic for the one comparison that can be NULL.
-type tri int8
-
-const (
-	triFalse tri = iota
-	triTrue
-	triNull
-)
-
-// periodDays is the days in a billing period, from a segment's length (NULL: yearly, as SQLite's
-// CASE falls through).
-func periodDays(ms *int64) float64 {
-	if ms == nil {
-		return 365.25
-	}
-	switch m := *ms; {
+// periodDays is the days in a billing period, from a segment's length.
+func periodDays(m int64) float64 {
+	switch {
 	case m < 10*Day:
 		return 7
 	case m < 45*Day:
@@ -652,14 +640,6 @@ func periodDays(ms *int64) float64 {
 		return 182.625
 	}
 	return 365.25
-}
-
-func sub(a, b *int64) *int64 {
-	if a == nil || b == nil {
-		return nil
-	}
-	d := *a - *b
-	return &d
 }
 
 const far = int64(9e15) // Lite's coalesce(x, 9e15)
@@ -747,13 +727,20 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 		// The chain is in purchase order, and purchases at the same moment in the order they were
 		// recorded: the next purchase is the one after this, and the previous one the last purchase
 		// before this one's moment (of a tie, only the last gives access: the next starts at once).
+		// Purchases with no expiry give no access, so they're skipped.
 		var nextAt *int64
-		if i+1 < len(chain) {
-			nextAt = &chain[i+1].purchasedAt
+		for j := i + 1; j < len(chain); j++ {
+			if chain[j].expiresAt != nil {
+				nextAt = &chain[j].purchasedAt
+				break
+			}
 		}
 		var p *chainTx
-		if lo := sort.Search(len(chain), func(j int) bool { return chain[j].purchasedAt >= start }); lo > 0 {
-			p = &chain[lo-1]
+		for j := sort.Search(len(chain), func(j int) bool { return chain[j].purchasedAt >= start }) - 1; j >= 0; j-- {
+			if chain[j].expiresAt != nil {
+				p = &chain[j]
+				break
+			}
 		}
 
 		end := expires
@@ -764,7 +751,7 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 		continued := nextAt != nil && *nextAt <= min(expires, orFar(b.revokedAt))
 		periodMs := expires - start
 		prod := product(b.productID, b.basePlan)
-		bDays := periodDays(&periodMs)
+		bDays := periodDays(periodMs)
 		nonTrial := b.periodType != "trial"
 		var mrr float64
 		if nonTrial && b.usd != nil && *b.usd > 0 {
@@ -773,18 +760,14 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 		country := CountryOf(store, b.storefront)
 
 		hasPrev := p != nil
-		continues := triFalse
+		continues := false
 		var prevType string
 		sameTerms := false
 		var prevMrr float64
 		if hasPrev {
 			prevType = p.periodType
-			if p.expiresAt == nil {
-				continues = triNull // min(NULL, ...) is NULL
-			} else if min(*p.expiresAt, orFar(p.revokedAt)) >= start {
-				continues = triTrue
-			}
-			pMs := sub(p.expiresAt, &p.purchasedAt)
+			continues = min(*p.expiresAt, orFar(p.revokedAt)) >= start
+			pMs := *p.expiresAt - p.purchasedAt
 			sameTerms = eqInt(p.priceMicros, b.priceMicros) && eqStr(p.currency, b.currency) &&
 				product(p.productID, p.basePlan) == prod && periodDays(pMs) == bDays
 			if p.periodType != "trial" {
@@ -799,9 +782,9 @@ func chainSegments(store string, chain []chainTx, grace, unsub *int64, lookback,
 		event := func(kind string, at int64, dir int64) {
 			as := t.both(dims{b.environment, b.app, store, prod, country, DayOf(at)})
 			isStart := kind == "start"
-			isNew := isStart && nonTrial && (!hasPrev || (continues == triTrue && prevType == "trial"))
-			isRenewal := isStart && nonTrial && continues == triTrue && prevType != "trial"
-			isReactivation := isStart && nonTrial && hasPrev && continues == triFalse
+			isNew := isStart && nonTrial && (!hasPrev || (continues && prevType == "trial"))
+			isRenewal := isStart && nonTrial && continues && prevType != "trial"
+			isReactivation := isStart && nonTrial && hasPrev && !continues
 			isChurn := kind == "end" && nonTrial && !continued
 			for _, a := range as {
 				a.activeSubs += dir

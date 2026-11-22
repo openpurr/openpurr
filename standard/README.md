@@ -181,13 +181,14 @@ As on Lite (`lite/src/metrics.ts`), in `internal/metrics`:
 
 - **Daily totals** in `metric_daily`, derived from the ledger: subscriptions become time segments
   (purchase to the earliest of expiry or grace end, refund, or the next renewal; purchases at the
-  same moment taken in the order they were recorded, so only the last gives access) that add
-  +1/-1 to the running totals (active subscriptions, trials, paid subscriptions, MRR) on the days
-  they start and end; movements (new, renewed, reactivated, churned; trials converted, expired, cancelled; MRR
-  new, reactivation, expansion, contraction, churned) classify the same starts and ends; revenue,
-  transactions, refunds, new trials and one-time purchases are per-day amounts, in USD at the
-  purchase date's rate. New customers are counted once per day and never recounted (the cleanup
-  job deletes old non-buyers).
+  same moment taken in the order they were recorded, so only the last gives access; a purchase with
+  no expiry gives none and is left out of its chain) that add +1/-1 to the running totals (active
+  subscriptions, trials, paid subscriptions, MRR) on the days they start and end; movements (new,
+  renewed, reactivated, churned; trials converted, expired, cancelled; MRR new, reactivation,
+  expansion, contraction, churned) classify the same starts and ends; revenue, transactions,
+  refunds, new trials and one-time purchases are per-day amounts, in USD at the purchase date's
+  rate. New customers are counted once per day and never recounted (the cleanup job deletes old
+  non-buyers).
 - **The rollup** runs hourly (`rollup-metrics`, after the exchange rates) and on
   `POST /admin/v1/metrics/refresh` (at most once a minute; `{"full": true}` rebuilds all history,
   owners only, audited). It recomputes from the earliest purchase date among ledger rows changed

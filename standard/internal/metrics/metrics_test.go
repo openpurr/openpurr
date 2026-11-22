@@ -526,6 +526,43 @@ func TestHandCheckedLedger(t *testing.T) {
 		}
 	})
 
+	t.Run("a purchase with no expiry gives no access, and the purchases around it are classified past it", func(t *testing.T) {
+		noexp := func(x ledgerTx) {
+			x.prod, x.updatedAt = "noexp", at("2026-04-20", 14)+60_000
+			edgeTx(x)
+		}
+		// N: a purchase with no expiry, then a subscription: new.
+		noexp(ledgerTx{chain: "N", bought: "2026-01-05", price: 5})
+		noexp(ledgerTx{chain: "N", bought: "2026-01-20", expires: "2026-02-20", price: 10})
+		// M: one with no expiry in the middle of a subscription: it neither ends M1 nor separates M3 from it.
+		noexp(ledgerTx{chain: "M", bought: "2026-01-05", expires: "2026-02-05", price: 10})
+		noexp(ledgerTx{chain: "M", bought: "2026-01-25", price: 10})
+		noexp(ledgerTx{chain: "M", bought: "2026-02-05", expires: "2026-03-05", price: 10})
+		// V: one with no expiry after the latest purchase, which is still active on Mar 15.
+		noexp(ledgerTx{chain: "V", bought: "2026-03-10", expires: "2026-04-10", price: 10})
+		noexp(ledgerTx{chain: "V", bought: "2026-03-12", price: 10})
+		if _, err := metrics.Rollup(ctx, pool, at("2026-04-20", 14)+1800_000, false); err != nil {
+			t.Fatal(err)
+		}
+
+		only := func(q *metrics.Query) { q.Product = "noexp" }
+		if got := edgeDay("active_subscriptions", "2026-01-28", "paid", only); got != 2.0 { // N2 and M1
+			t.Errorf("paid on Jan 28: %v", got)
+		}
+		m := edgeMonths("subscription_movement", only)
+		if m["2026-01-01"] != `{"new":2,"reactivated":0,"churned":0,"net":2,"renewed":0}` || // N2, M1
+			m["2026-02-01"] != `{"new":0,"reactivated":0,"churned":-1,"net":-1,"renewed":1}` || // N2 ends; M3 renews M1
+			m["2026-03-01"] != `{"new":1,"reactivated":0,"churned":-1,"net":0,"renewed":0}` { // V1 starts, M3 ends
+			t.Errorf("%v", m)
+		}
+		if got := mismatches(); len(got) != 0 {
+			t.Errorf("movements don't add up on %v", got)
+		}
+		if got := edgeStatus(only); got != status(1, 2) { // V1; N2 and M3
+			t.Errorf("%s", got)
+		}
+	})
+
 	t.Run("the incremental runs match a full rebuild", func(t *testing.T) {
 		snapshot := func() string {
 			out := ""
