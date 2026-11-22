@@ -3,6 +3,7 @@ package authcrypto
 import (
 	"encoding/hex"
 	"encoding/json"
+	"strings"
 	"testing"
 
 	"github.com/openpurr/openpurr/standard/internal/testdata"
@@ -212,5 +213,32 @@ func TestGoldenEncryptedSecretAndTokens(t *testing.T) {
 		if got := SHA256Hex(c.Input); got != c.Hex {
 			t.Errorf("sha256 %q: %s, Lite %s", c.Input, got, c.Hex)
 		}
+	}
+}
+
+// A damaged hash is a wrong password, never an error. The iteration count is plain digits from 1
+// to 100,000, as Lite reads it.
+func TestUnreadableHash(t *testing.T) {
+	secret := "test-operator-secret-0123456789abcdef"
+	stored, err := HashPassword(secret, "a long passphrase here")
+	if err != nil {
+		t.Fatal(err)
+	}
+	parts := strings.Split(stored, "$")
+	for _, iter := range []string{"abc", "0", "-5", "+20000", "1.5", "1e4", "0x4e20", "100001", " 20000", ""} {
+		bad := strings.Join([]string{parts[0], iter, parts[2], parts[3], parts[4]}, "$")
+		if ok, rehash, err := VerifyPassword(secret, "a long passphrase here", bad); ok || rehash || err != nil {
+			t.Errorf("iterations %q: ok %v rehash %v err %v", iter, ok, rehash, err)
+		}
+		if Readable(bad) {
+			t.Errorf("iterations %q read as readable", iter)
+		}
+	}
+	bad := strings.Join([]string{parts[0], parts[1], parts[2], "not base64!", parts[4]}, "$")
+	if ok, _, err := VerifyPassword(secret, "a long passphrase here", bad); ok || err != nil || Readable(bad) {
+		t.Errorf("bad salt: ok %v err %v", ok, err)
+	}
+	if !Readable(stored) {
+		t.Error("a fresh hash isn't readable")
 	}
 }

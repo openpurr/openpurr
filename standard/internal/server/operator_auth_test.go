@@ -174,6 +174,25 @@ func TestSignIn(t *testing.T) {
 		expectStatus(t, after, 200)
 	})
 
+	t.Run("answers a stored hash it can't read as a wrong password, and counts the failure", func(t *testing.T) {
+		env := tu.Start(t, tu.Options{})
+		op := env.CreateOperator(env.OwnerToken(), "owner", nil)
+		var stored string
+		env.QueryRow("SELECT password_hash FROM operator WHERE id = $1", []any{op.ID}, &stored)
+		env.Exec("UPDATE operator SET password_hash = $1 WHERE id = $2", strings.Replace(stored, "$20000$", "$lots$", 1), op.ID)
+		res, _ := env.Login(op.Email, tu.Password)
+		if res.Status != 401 || code(t, res) != "invalid_credentials" {
+			t.Fatalf("%d %s", res.Status, res.Body)
+		}
+		var failures int
+		env.QueryRow("SELECT failed_logins FROM operator WHERE id = $1", []any{op.ID}, &failures)
+		if failures != 1 {
+			t.Fatalf("failed_logins %d", failures)
+		}
+		// Changing the password from a full session doesn't fail either.
+		expectStatus(t, env.Admin("POST", "/auth/password", tu.Auth{Session: op.Session}, jsobj.New("current_password", tu.Password, "new_password", "a new long passphrase")), 401)
+	})
+
 	t.Run("rate limits sign-in attempts per IP", func(t *testing.T) {
 		limit := 3
 		env := tu.Start(t, tu.Options{IPLimit: &limit})

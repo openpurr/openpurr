@@ -217,7 +217,7 @@ func (s *server) authLogin(q *adminReq) error {
 		q.fail(http.StatusTooManyRequests, "locked", "Too many failed sign-ins. Try again in 15 minutes, or use a recovery link.")
 		return nil
 	}
-	ok, rehash, err := authcrypto.VerifyPassword(secret, password, *o.PasswordHash)
+	ok, rehash, err := s.verifyOperatorPassword(o, password)
 	if err != nil {
 		return err
 	}
@@ -321,6 +321,16 @@ func (s *server) authLogin(q *adminReq) error {
 	}
 	q.json(http.StatusOK, jsobj.New("operator", publicOperator(o), "totp_enrollment_required", required))
 	return nil
+}
+
+// verifyOperatorPassword checks o's password. A stored hash that can't be read (a damaged row) is a
+// wrong password, logged so the operator can be reset.
+func (s *server) verifyOperatorPassword(o *operator, password string) (ok, rehash bool, err error) {
+	ok, rehash, err = authcrypto.VerifyPassword(s.OperatorSecret, password, *o.PasswordHash)
+	if err == nil && !authcrypto.Readable(*o.PasswordHash) {
+		s.Log.Warn("A stored operator password hash can't be read; treating it as a wrong password. Reset the operator to set a new one.", "operator", o.ID)
+	}
+	return ok, rehash, err
 }
 
 // signInFailed counts a failed sign-in and audits it. Wrong passwords, codes and recovery codes
@@ -447,7 +457,7 @@ func (s *server) authPassword(q *adminReq) error {
 	// recovery sessions came from a one-time link, which is the proof.)
 	if sess.kind == "full" && o.PasswordHash != nil && *o.PasswordHash != "" {
 		current, _ := q.propString("current_password")
-		ok, _, err := authcrypto.VerifyPassword(s.OperatorSecret, current, *o.PasswordHash)
+		ok, _, err := s.verifyOperatorPassword(o, current)
 		if err != nil {
 			return err
 		}
@@ -605,7 +615,7 @@ func (s *server) authTOTPDisable(q *adminReq) error {
 		}
 		ok := false
 		if o.PasswordHash != nil && *o.PasswordHash != "" {
-			if ok, _, err = authcrypto.VerifyPassword(s.OperatorSecret, password, *o.PasswordHash); err != nil {
+			if ok, _, err = s.verifyOperatorPassword(o, password); err != nil {
 				return err
 			}
 		}

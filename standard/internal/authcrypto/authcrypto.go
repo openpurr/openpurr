@@ -136,6 +136,32 @@ func VerifyPassword(secret, password, stored string) (ok, rehash bool, err error
 	if err != nil {
 		return false, false, err
 	}
+	h, readable := parseHash(stored)
+	if !readable {
+		// Damaged: a wrong password, after the same CPU as a real check.
+		_, err := k.derivePassword(password, make([]byte, 16), PBKDF2Iterations)
+		return false, false, err
+	}
+	if h.pepperID != k.PepperID {
+		return false, false, nil
+	}
+	got, err := k.derivePassword(password, h.salt, h.iterations)
+	if err != nil {
+		return false, false, err
+	}
+	ok = subtle.ConstantTimeCompare(got, h.hash) == 1
+	return ok, ok && h.iterations != PBKDF2Iterations, nil
+}
+
+type storedHash struct {
+	iterations int
+	pepperID   string
+	salt, hash []byte
+}
+
+// parseHash reads pbkdf2-sha256$<iterations>$<pepper id>$<salt b64>$<hash b64>. The iteration
+// count is plain digits (Lite's reading), from 1 to maxIterations.
+func parseHash(stored string) (storedHash, bool) {
 	parts := strings.Split(stored, "$")
 	get := func(i int) string {
 		if i < len(parts) {
@@ -144,24 +170,23 @@ func VerifyPassword(secret, password, stored string) (ok, rehash bool, err error
 		return ""
 	}
 	alg, iter, pepperID, salt, hash := get(0), get(1), get(2), get(3), get(4)
-	if alg != "pbkdf2-sha256" || iter == "" || salt == "" || hash == "" {
-		return false, false, nil
-	}
-	if pepperID != k.PepperID {
-		return false, false, nil
+	if alg != "pbkdf2-sha256" || iter == "" || salt == "" || hash == "" || strings.Trim(iter, "0123456789") != "" {
+		return storedHash{}, false
 	}
 	iterations, convErr := strconv.Atoi(iter)
 	saltBytes, err1 := base64.StdEncoding.DecodeString(salt)
 	want, err2 := base64.StdEncoding.DecodeString(hash)
 	if convErr != nil || iterations < 1 || iterations > maxIterations || err1 != nil || err2 != nil {
-		return false, false, nil
+		return storedHash{}, false
 	}
-	got, err := k.derivePassword(password, saltBytes, iterations)
-	if err != nil {
-		return false, false, err
-	}
-	ok = subtle.ConstantTimeCompare(got, want) == 1
-	return ok, ok && iterations != PBKDF2Iterations, nil
+	return storedHash{iterations, pepperID, saltBytes, want}, true
+}
+
+// Readable reports whether a stored password hash is in a form VerifyPassword can check (whatever
+// secret it was made with). One that isn't is damaged: it only ever reads as a wrong password.
+func Readable(stored string) bool {
+	_, ok := parseHash(stored)
+	return ok
 }
 
 // DummyPasswordCheck spends the same CPU as a real check, so unknown emails don't answer faster.
