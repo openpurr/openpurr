@@ -27,3 +27,6 @@ lite/wrangler.deploy.json
 
 # Database exports from `pnpm db:backup`: customer data, never commit them
 lite/backups/
+
+# The Standard edition binary, when built in place
+standard/openpurr

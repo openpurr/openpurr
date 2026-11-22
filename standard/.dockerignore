@@ -1,0 +1,8 @@
+*
+!go.mod
+!go.sum
+!cmd/
+!internal/
+internal/**/*_test.go
+internal/testdata/golden.json
+internal/testdata/golden.ts

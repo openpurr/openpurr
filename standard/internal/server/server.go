@@ -1,0 +1,193 @@
+// Package server is the HTTP side of Standard: the RevenueCat-compatible SDK API under /v1, the
+// health check, and the conformance routes. Lite splits the SDK API and the back office into two
+// Workers; Standard serves both from one process (the back office arrives in a later milestone).
+package server
+
+import (
+	"context"
+	"errors"
+	"log/slog"
+	"net"
+	"net/http"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
+	"github.com/jackc/pgx/v5/pgxpool"
+
+	"github.com/openpurr/openpurr/standard/internal/clock"
+	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/jobs"
+	"github.com/openpurr/openpurr/standard/internal/jsobj"
+	"github.com/openpurr/openpurr/standard/internal/ledger"
+	"github.com/openpurr/openpurr/standard/internal/ratelimit"
+	"github.com/openpurr/openpurr/standard/internal/secretkeys"
+)
+
+// Deps are built once at startup and shared by every request.
+type Deps struct {
+	Pool   *pgxpool.Pool
+	Clock  clock.Clock
+	Config *config.Loader
+	Log    *slog.Logger
+
+	SecretKeys  *secretkeys.Verifier
+	Limiters    ratelimit.Limiters
+	Experiments *ledger.Experiments
+	Jobs        *jobs.Registry
+	Deferred    *jobs.Deferred
+
+	// The one client for outbound calls (store APIs, webhooks); rewritten in conformance mode.
+	HTTPClient *http.Client
+	// Trusted Apple roots, DER. Production: Apple Root CA G3 only.
+	AppleRoots [][]byte
+	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
+	OperatorSecret string
+	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
+	// an environment variable of that name, as Lite reads Worker secrets by name.
+	Secret func(name string) (string, bool)
+
+	// The header holding the client IP set by a trusted proxy (for example CF-Connecting-IP or
+	// X-Forwarded-For); empty means the connection's address.
+	ClientIPHeader string
+
+	// Set only in conformance mode.
+	Conformance *Conformance
+}
+
+// Conformance mode settings (OPENPURR_CONFORMANCE=1).
+type Conformance struct {
+	Token string
+	Clock *clock.Adjustable
+}
+
+// New returns the server's handler.
+func New(d *Deps) http.Handler {
+	s := &server{Deps: d}
+	return s.logRequests(s.recoverPanics(http.HandlerFunc(s.route)))
+}
+
+type server struct {
+	*Deps
+	sdkMuxOnce sync.Once
+	sdkMux     *http.ServeMux
+}
+
+var healthReport = regexp.MustCompile(`^/v1/subscribers/[^/]+/health_report_availability$`)
+
+// route dispatches by path prefix. Paths are matched as sent, without ServeMux's cleaning
+// redirects, so an odd SDK path still gets a JSON answer.
+func (s *server) route(w http.ResponseWriter, r *http.Request) {
+	path := r.URL.EscapedPath()
+	switch {
+	case path == "/healthz" && (r.Method == http.MethodGet || r.Method == http.MethodHead):
+		s.healthz(w, r)
+	// Unauthenticated, iOS DEBUG builds of the SDK only. Failures are ignored by the SDK.
+	case (r.Method == http.MethodGet || r.Method == http.MethodHead) && healthReport.MatchString(path):
+		writeJSON(w, http.StatusOK, jsobj.New("report_logs", false))
+	case strings.HasPrefix(path, "/v1/"):
+		s.sdk(w, r)
+	case s.Conformance != nil && strings.HasPrefix(path, "/__conformance/"):
+		s.conformance(w, r)
+	default:
+		writeJSON(w, http.StatusNotFound, jsobj.New("code", 0.0, "message", "Not found"))
+	}
+}
+
+func (s *server) healthz(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 3*time.Second)
+	defer cancel()
+	if err := s.Pool.Ping(ctx); err != nil {
+		s.Log.Error("health check failed", "error", err.Error())
+		writeJSON(w, http.StatusServiceUnavailable, jsobj.New("status", "unavailable"))
+		return
+	}
+	writeJSON(w, http.StatusOK, jsobj.New("status", "ok"))
+}
+
+// writeJSON answers with a JSON body serialized exactly like JSON.stringify.
+func writeJSON(w http.ResponseWriter, status int, v any) {
+	body := jsobj.StringifyBytes(v)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	_, _ = w.Write(body)
+}
+
+// internalError is the answer to anything unexpected. Android treats an error without a JSON body
+// as a connection failure, and iOS only parses error bodies served as application/json. 7110 is
+// "internal server error" in both SDKs.
+func (s *server) internalError(w http.ResponseWriter, r *http.Request, err error) {
+	if !errors.Is(err, context.Canceled) {
+		s.Log.Error("request failed", "method", r.Method, "path", r.URL.Path, "error", err.Error())
+	}
+	writeJSON(w, http.StatusInternalServerError, jsobj.New("code", 7110.0, "message", "Internal server error"))
+}
+
+func (s *server) recoverPanics(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		defer func() {
+			if rec := recover(); rec != nil {
+				if rec == http.ErrAbortHandler {
+					panic(rec)
+				}
+				s.Log.Error("panic", "method", r.Method, "path", r.URL.Path, "panic", rec)
+				writeJSON(w, http.StatusInternalServerError, jsobj.New("code", 7110.0, "message", "Internal server error"))
+			}
+		}()
+		next.ServeHTTP(w, r)
+	})
+}
+
+type statusRecorder struct {
+	http.ResponseWriter
+	status int
+}
+
+func (r *statusRecorder) WriteHeader(code int) {
+	if r.status == 0 {
+		r.status = code
+	}
+	r.ResponseWriter.WriteHeader(code)
+}
+
+func (r *statusRecorder) Write(b []byte) (int, error) {
+	if r.status == 0 {
+		r.status = http.StatusOK
+	}
+	return r.ResponseWriter.Write(b)
+}
+
+func (s *server) logRequests(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
+		rec := &statusRecorder{ResponseWriter: w}
+		next.ServeHTTP(rec, r)
+		if r.URL.Path == "/healthz" {
+			return
+		}
+		s.Log.Info("request",
+			"method", r.Method,
+			"path", r.URL.EscapedPath(),
+			"status", rec.status,
+			"ms", time.Since(start).Milliseconds(),
+			"platform", r.Header.Get("X-Platform"),
+		)
+	})
+}
+
+// clientIP is the address rate limits count against.
+func (s *server) clientIP(r *http.Request) string {
+	if s.ClientIPHeader != "" {
+		v := r.Header.Get(s.ClientIPHeader)
+		if i := strings.IndexByte(v, ','); i >= 0 {
+			v = v[:i]
+		}
+		return strings.TrimSpace(v)
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
+}

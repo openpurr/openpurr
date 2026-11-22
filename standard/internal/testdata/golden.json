@@ -1,0 +1,2584 @@
+{
+ "now": 1800000000000,
+ "renderNow": 1800000001234,
+ "testConfig": {
+  "version": 1,
+  "apps": {
+   "ios": {
+    "store": "app_store",
+    "bundle_id": "com.example.openpurr",
+    "sdk_keys": [
+     "appl_test_ios_0123456789"
+    ],
+    "products": {
+     "pro_monthly": {
+      "type": "subscription"
+     },
+     "pro_annual": {
+      "type": "subscription",
+      "subscription_group": "21000000"
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   },
+   "android": {
+    "store": "play_store",
+    "package_name": "com.example.openpurr",
+    "sdk_keys": [
+     "goog_test_android_0123456789"
+    ],
+    "allow_unverified_purchases": true,
+    "products": {
+     "pro": {
+      "type": "subscription",
+      "base_plans": [
+       "monthly",
+       "annual"
+      ]
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   }
+  },
+  "entitlements": {
+   "pro": {
+    "description": "Pro",
+    "products": {
+     "ios": [
+      "pro_monthly",
+      "pro_annual",
+      "lifetime"
+     ],
+     "android": [
+      "pro",
+      "lifetime"
+     ]
+    }
+   },
+   "annual_perks": {
+    "products": {
+     "ios": [
+      "pro_annual"
+     ],
+     "android": [
+      "pro:annual"
+     ]
+    }
+   }
+  },
+  "offerings": [
+   {
+    "id": "default",
+    "current": true,
+    "description": "Standard",
+    "metadata": {
+     "headline": "Go Pro"
+    },
+    "packages": [
+     {
+      "id": "$rc_monthly",
+      "ios": "pro_monthly",
+      "android": "pro:monthly"
+     },
+     {
+      "id": "$rc_annual",
+      "ios": "pro_annual",
+      "android": "pro:annual"
+     },
+     {
+      "id": "$rc_lifetime",
+      "ios": "lifetime",
+      "android": "lifetime"
+     }
+    ]
+   }
+  ]
+ },
+ "goldenConfig": {
+  "version": 1,
+  "apps": {
+   "ios": {
+    "store": "app_store",
+    "bundle_id": "com.example.openpurr",
+    "sdk_keys": [
+     "appl_test_ios_0123456789"
+    ],
+    "products": {
+     "2024": {
+      "type": "subscription"
+     },
+     "pro_monthly": {
+      "type": "subscription"
+     },
+     "pro_annual": {
+      "type": "subscription",
+      "subscription_group": "21000000"
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   },
+   "android": {
+    "store": "play_store",
+    "package_name": "com.example.openpurr",
+    "sdk_keys": [
+     "goog_test_android_0123456789"
+    ],
+    "allow_unverified_purchases": true,
+    "products": {
+     "pro": {
+      "type": "subscription",
+      "base_plans": [
+       "monthly",
+       "annual"
+      ]
+     },
+     "lifetime": {
+      "type": "non_consumable"
+     },
+     "coins_100": {
+      "type": "consumable"
+     }
+    }
+   }
+  },
+  "entitlements": {
+   "9": {
+    "products": {
+     "ios": [
+      "2024"
+     ]
+    }
+   },
+   "pro": {
+    "description": "Pro",
+    "products": {
+     "ios": [
+      "pro_monthly",
+      "pro_annual",
+      "lifetime"
+     ],
+     "android": [
+      "pro",
+      "lifetime"
+     ]
+    }
+   },
+   "annual_perks": {
+    "products": {
+     "ios": [
+      "pro_annual"
+     ],
+     "android": [
+      "pro:annual"
+     ]
+    }
+   }
+  },
+  "offerings": [
+   {
+    "id": "default",
+    "current": true,
+    "description": "Standard",
+    "metadata": {
+     "headline": "Go Pro"
+    },
+    "packages": [
+     {
+      "id": "$rc_monthly",
+      "ios": "pro_monthly",
+      "android": "pro:monthly"
+     },
+     {
+      "id": "$rc_annual",
+      "ios": "pro_annual",
+      "android": "pro:annual"
+     },
+     {
+      "id": "$rc_lifetime",
+      "ios": "lifetime",
+      "android": "lifetime"
+     }
+    ]
+   }
+  ]
+ },
+ "configCases": [
+  {
+   "name": "valid",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [],
+   "version": "90106411",
+   "stored": "{\"version\":2,\"projects\":{\"default\":{\"name\":\"Default\",\"apps\":{\"ios\":{\"store\":\"app_store\",\"bundle_id\":\"com.example.openpurr\",\"sdk_keys\":[\"appl_test_ios_0123456789\"],\"products\":{\"pro_monthly\":{\"type\":\"subscription\"},\"pro_annual\":{\"type\":\"subscription\",\"subscription_group\":\"21000000\"},\"lifetime\":{\"type\":\"non_consumable\"},\"coins_100\":{\"type\":\"consumable\"}}},\"android\":{\"store\":\"play_store\",\"package_name\":\"com.example.openpurr\",\"sdk_keys\":[\"goog_test_android_0123456789\"],\"allow_unverified_purchases\":true,\"products\":{\"pro\":{\"type\":\"subscription\",\"base_plans\":[\"monthly\",\"annual\"]},\"lifetime\":{\"type\":\"non_consumable\"},\"coins_100\":{\"type\":\"consumable\"}}}},\"entitlements\":{\"pro\":{\"description\":\"Pro\",\"products\":{\"ios\":[\"pro_monthly\",\"pro_annual\",\"lifetime\"],\"android\":[\"pro\",\"lifetime\"]}},\"annual_perks\":{\"products\":{\"ios\":[\"pro_annual\"],\"android\":[\"pro:annual\"]}}},\"offerings\":[{\"id\":\"default\",\"current\":true,\"description\":\"Standard\",\"metadata\":{\"headline\":\"Go Pro\"},\"packages\":[{\"id\":\"$rc_monthly\",\"ios\":\"pro_monthly\",\"android\":\"pro:monthly\"},{\"id\":\"$rc_annual\",\"ios\":\"pro_annual\",\"android\":\"pro:annual\"},{\"id\":\"$rc_lifetime\",\"ios\":\"lifetime\",\"android\":\"lifetime\"}]}]}}}",
+   "projectVersions": {
+    "default": "9e90ff48"
+   }
+  },
+  {
+   "name": "test_key",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "test_abcdefghijklmnopqrst"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "apps.ios.sdk_keys[0]: must not start with test_: the SDKs treat test_ keys as RevenueCat's simulated store"
+   ]
+  },
+  {
+   "name": "wrong_prefix",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_abcdefghijklmnopqrst"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "apps.ios.sdk_keys[0]: app_store keys must start with appl_"
+   ]
+  },
+  {
+   "name": "shared_key",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "apps.android.sdk_keys[0]: play_store keys must start with goog_"
+   ]
+  },
+  {
+   "name": "unknown_refs",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      },
+      "colour": "blue"
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime",
+        "pro_weekly"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ],
+       "tvos": [
+        "x"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:weekly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "apps.ios.colour: unknown key (expected one of: store, bundle_id, package_name, sdk_keys, products, allow_unverified_purchases, app_store_server_api, google_play_api)",
+    "entitlements.pro.products.ios[3]: pro_weekly is not a product of app ios",
+    "entitlements.pro.products.tvos[0]: unknown app tvos",
+    "offerings[0].packages[0].android: pro:weekly: base plan weekly isn't listed in pro.base_plans"
+   ]
+  },
+  {
+   "name": "dupe_bundle",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "ios2": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_second_ios_app_0000"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "apps.ios2.bundle_id: com.example.openpurr is already used by app ios"
+   ]
+  },
+  {
+   "name": "no_current",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": false,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "offerings: mark one offering as current: true"
+   ]
+  },
+  {
+   "name": "two_current",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     },
+     {
+      "id": "other",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "offerings[1].current: only one offering can be current (already default)"
+   ]
+  },
+  {
+   "name": "ios_base_plan",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "allow_unverified_purchases": true,
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly:monthly"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [
+    "entitlements.pro.products.ios[0]: pro_monthly:monthly: only Google Play subscriptions have base plans"
+   ]
+  },
+  {
+   "name": "everything_wrong",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "amazon",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "",
+      "sdk_keys": [
+       "short",
+       7,
+       "goog_abcdefghijklmnopqrst",
+       "goog_abcdefghijklmnopqrst"
+      ],
+      "allow_unverified_purchases": "yes",
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "ok",
+         "not ok"
+        ]
+       },
+       "lifetime": {
+        "type": "forever",
+        "subscription_group": 1
+       },
+       "coins_100": {
+        "type": "consumable"
+       },
+       "bad:id": "x"
+      },
+      "app_store_server_api": {
+       "issuer_id": "x"
+      },
+      "google_play_api": {
+       "service_account_secret": "lower",
+       "pubsub_push_account": "nobody",
+       "pubsub_audience": 5
+      }
+     },
+     "bad app": {
+      "store": "app_store",
+      "bundle_id": "com.x",
+      "sdk_keys": [
+       "appl_abcdefghijklmnopqrst"
+      ]
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     },
+     "bad ent": {
+      "products": {
+       "android": "pro"
+      }
+     },
+     "empty": {}
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     },
+     {
+      "id": "default",
+      "packages": []
+     },
+     {
+      "id": 5,
+      "current": true,
+      "metadata": [],
+      "packages": [
+       {
+        "id": "$a",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$a",
+        "android": 3
+       },
+       "x"
+      ]
+     },
+     "nope"
+    ],
+    "extra": 1,
+    "webhooks": [
+     {
+      "id": "a",
+      "url": "http://example.com/hook",
+      "signing_secret": "lower",
+      "environments": [
+       "prod"
+      ],
+      "events": [
+       "NOPE",
+       "RENEWAL"
+      ]
+     },
+     {
+      "id": "a",
+      "url": "not a url",
+      "authorization_secret": "OK_SECRET",
+      "events": []
+     },
+     {
+      "url": "http://localhost:8080/x"
+     },
+     "w"
+    ]
+   },
+   "problems": [
+    "extra: unknown key (expected one of: name, apps, entitlements, offerings, webhooks)",
+    "apps.ios.store: must be app_store or play_store",
+    "apps.android.package_name: required for play_store apps",
+    "apps.android.app_store_server_api: only app_store apps use the App Store Server API",
+    "apps.android.google_play_api.service_account_secret: must be a Worker secret name like GOOGLE_SERVICE_ACCOUNT (the key itself never goes here)",
+    "apps.android.google_play_api.pubsub_push_account: must be a service account email, like rtdn-push@my-project.iam.gserviceaccount.com",
+    "apps.android.google_play_api.pubsub_audience: must be a string",
+    "apps.android.allow_unverified_purchases: must be true or false",
+    "apps.android.sdk_keys[0]: must be 16–128 letters, digits or underscores",
+    "apps.android.sdk_keys[1]: must be 16–128 letters, digits or underscores",
+    "apps.android.sdk_keys[3]: already used by app android",
+    "apps.android.products.pro.base_plans: must be a list of base plan IDs",
+    "apps.android.products.lifetime.subscription_group: only App Store subscriptions have a subscription group",
+    "apps.android.products.lifetime.type: must be one of subscription, non_consumable, consumable",
+    "apps.android.products.bad:id: invalid product ID",
+    "apps.android.products.bad:id: must be a mapping, e.g. { type: subscription }",
+    "apps.bad app: app IDs may only contain letters, digits, '.', '_', '-' and '$'",
+    "entitlements.pro.products.ios[0]: unknown app ios",
+    "entitlements.pro.products.ios[1]: unknown app ios",
+    "entitlements.pro.products.ios[2]: unknown app ios",
+    "entitlements.annual_perks.products.ios[0]: unknown app ios",
+    "entitlements.annual_perks.products.android[0]: pro:annual: base plan annual isn't listed in pro.base_plans",
+    "entitlements.bad ent: invalid entitlement ID",
+    "entitlements.bad ent.products.android: must be a list of product IDs",
+    "entitlements.empty.products: map each app to the products that grant this entitlement",
+    "offerings[0].packages[0].ios: unknown app ios",
+    "offerings[0].packages[0].android: pro:monthly: base plan monthly isn't listed in pro.base_plans",
+    "offerings[0].packages[1].ios: unknown app ios",
+    "offerings[0].packages[1].android: pro:annual: base plan annual isn't listed in pro.base_plans",
+    "offerings[0].packages[2].ios: unknown app ios",
+    "offerings[1].id: duplicate offering default",
+    "offerings[1].packages: list at least one package",
+    "offerings[2].id: required",
+    "offerings[2].current: only one offering can be current (already default)",
+    "offerings[2].metadata: must be a mapping",
+    "offerings[2].packages[0].android: pro:annual: base plan annual isn't listed in pro.base_plans",
+    "offerings[2].packages[1].id: duplicate package $a",
+    "offerings[2].packages[1].android: must be a product ID",
+    "offerings[2].packages[2]: needs an id, e.g. $rc_monthly",
+    "offerings[3]: must be a mapping",
+    "webhooks[0].url: must use https (http is allowed only for localhost)",
+    "webhooks[0].environments: must list production and/or sandbox",
+    "webhooks[0].events: unknown event type NOPE",
+    "webhooks[0].signing_secret: must be a Worker secret name like WEBHOOK_SIGNING_SECRET (the secret itself never goes here)",
+    "webhooks[1].id: duplicate webhook a",
+    "webhooks[1].url: must be a full URL",
+    "webhooks[1].events: must be a list of event types",
+    "webhooks[2].id: required, e.g. backend",
+    "webhooks[3]: must be a mapping with id and url"
+   ]
+  },
+  {
+   "name": "apple_api",
+   "document": {
+    "version": 1,
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       },
+       "pro_annual": {
+        "type": "subscription",
+        "subscription_group": "21000000"
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      },
+      "app_store_server_api": {
+       "issuer_id": "57246542-96fe-1a63-e053-0824d011072a",
+       "key_id": "2X9R4HXF34",
+       "private_key_secret": null
+      }
+     },
+     "android": {
+      "store": "play_store",
+      "package_name": "com.example.openpurr",
+      "sdk_keys": [
+       "goog_test_android_0123456789"
+      ],
+      "products": {
+       "pro": {
+        "type": "subscription",
+        "base_plans": [
+         "monthly",
+         "annual"
+        ]
+       },
+       "lifetime": {
+        "type": "non_consumable"
+       },
+       "coins_100": {
+        "type": "consumable"
+       }
+      },
+      "google_play_api": {
+       "pubsub_push_account": "rtdn-push@my-project.iam.gserviceaccount.com"
+      }
+     }
+    },
+    "entitlements": {
+     "pro": {
+      "description": "Pro",
+      "products": {
+       "ios": [
+        "pro_monthly",
+        "pro_annual",
+        "lifetime"
+       ],
+       "android": [
+        "pro",
+        "lifetime"
+       ]
+      }
+     },
+     "annual_perks": {
+      "products": {
+       "ios": [
+        "pro_annual"
+       ],
+       "android": [
+        "pro:annual"
+       ]
+      }
+     }
+    },
+    "offerings": [
+     {
+      "id": "default",
+      "current": true,
+      "description": "Standard",
+      "metadata": {
+       "headline": "Go Pro"
+      },
+      "packages": [
+       {
+        "id": "$rc_monthly",
+        "ios": "pro_monthly",
+        "android": "pro:monthly"
+       },
+       {
+        "id": "$rc_annual",
+        "ios": "pro_annual",
+        "android": "pro:annual"
+       },
+       {
+        "id": "$rc_lifetime",
+        "ios": "lifetime",
+        "android": "lifetime"
+       }
+      ]
+     }
+    ]
+   },
+   "problems": [],
+   "version": "f33ad370",
+   "stored": "{\"version\":2,\"projects\":{\"default\":{\"name\":\"Default\",\"apps\":{\"ios\":{\"store\":\"app_store\",\"bundle_id\":\"com.example.openpurr\",\"sdk_keys\":[\"appl_test_ios_0123456789\"],\"products\":{\"pro_monthly\":{\"type\":\"subscription\"},\"pro_annual\":{\"type\":\"subscription\",\"subscription_group\":\"21000000\"},\"lifetime\":{\"type\":\"non_consumable\"},\"coins_100\":{\"type\":\"consumable\"}},\"app_store_server_api\":{\"issuer_id\":\"57246542-96fe-1a63-e053-0824d011072a\",\"key_id\":\"2X9R4HXF34\",\"private_key_secret\":null}},\"android\":{\"store\":\"play_store\",\"package_name\":\"com.example.openpurr\",\"sdk_keys\":[\"goog_test_android_0123456789\"],\"products\":{\"pro\":{\"type\":\"subscription\",\"base_plans\":[\"monthly\",\"annual\"]},\"lifetime\":{\"type\":\"non_consumable\"},\"coins_100\":{\"type\":\"consumable\"}},\"google_play_api\":{\"pubsub_push_account\":\"rtdn-push@my-project.iam.gserviceaccount.com\"}}},\"entitlements\":{\"pro\":{\"description\":\"Pro\",\"products\":{\"ios\":[\"pro_monthly\",\"pro_annual\",\"lifetime\"],\"android\":[\"pro\",\"lifetime\"]}},\"annual_perks\":{\"products\":{\"ios\":[\"pro_annual\"],\"android\":[\"pro:annual\"]}}},\"offerings\":[{\"id\":\"default\",\"current\":true,\"description\":\"Standard\",\"metadata\":{\"headline\":\"Go Pro\"},\"packages\":[{\"id\":\"$rc_monthly\",\"ios\":\"pro_monthly\",\"android\":\"pro:monthly\"},{\"id\":\"$rc_annual\",\"ios\":\"pro_annual\",\"android\":\"pro:annual\"},{\"id\":\"$rc_lifetime\",\"ios\":\"lifetime\",\"android\":\"lifetime\"}]}]}}}",
+   "projectVersions": {
+    "default": "a2b9b08f"
+   }
+  },
+  {
+   "name": "two_projects",
+   "document": {
+    "version": 2,
+    "projects": {
+     "rose": {
+      "name": "Rose",
+      "apps": {
+       "rose_ios": {
+        "store": "app_store",
+        "bundle_id": "com.example.rose",
+        "sdk_keys": [
+         "appl_rose_ios_0123456789"
+        ],
+        "products": {
+         "rose_monthly": {
+          "type": "subscription"
+         }
+        }
+       }
+      },
+      "entitlements": {
+       "pro": {
+        "products": {
+         "rose_ios": [
+          "rose_monthly"
+         ]
+        }
+       }
+      },
+      "offerings": [
+       {
+        "id": "rose_ios_default",
+        "current": true,
+        "packages": [
+         {
+          "id": "$rc_monthly",
+          "rose_ios": "rose_monthly"
+         }
+        ]
+       }
+      ]
+     },
+     "gold": {
+      "name": "Gold",
+      "apps": {
+       "gold_ios": {
+        "store": "app_store",
+        "bundle_id": "com.example.gold",
+        "sdk_keys": [
+         "appl_gold_ios_0123456789"
+        ],
+        "products": {
+         "gold_monthly": {
+          "type": "subscription"
+         }
+        }
+       }
+      },
+      "entitlements": {
+       "pro": {
+        "products": {
+         "gold_ios": [
+          "gold_monthly"
+         ]
+        }
+       }
+      },
+      "offerings": [
+       {
+        "id": "gold_ios_default",
+        "current": true,
+        "packages": [
+         {
+          "id": "$rc_monthly",
+          "gold_ios": "gold_monthly"
+         }
+        ]
+       }
+      ]
+     }
+    }
+   },
+   "problems": [],
+   "version": "d9c125be",
+   "stored": "{\"version\":2,\"projects\":{\"rose\":{\"name\":\"Rose\",\"apps\":{\"rose_ios\":{\"store\":\"app_store\",\"bundle_id\":\"com.example.rose\",\"sdk_keys\":[\"appl_rose_ios_0123456789\"],\"products\":{\"rose_monthly\":{\"type\":\"subscription\"}}}},\"entitlements\":{\"pro\":{\"products\":{\"rose_ios\":[\"rose_monthly\"]}}},\"offerings\":[{\"id\":\"rose_ios_default\",\"current\":true,\"packages\":[{\"id\":\"$rc_monthly\",\"rose_ios\":\"rose_monthly\"}]}]},\"gold\":{\"name\":\"Gold\",\"apps\":{\"gold_ios\":{\"store\":\"app_store\",\"bundle_id\":\"com.example.gold\",\"sdk_keys\":[\"appl_gold_ios_0123456789\"],\"products\":{\"gold_monthly\":{\"type\":\"subscription\"}}}},\"entitlements\":{\"pro\":{\"products\":{\"gold_ios\":[\"gold_monthly\"]}}},\"offerings\":[{\"id\":\"gold_ios_default\",\"current\":true,\"packages\":[{\"id\":\"$rc_monthly\",\"gold_ios\":\"gold_monthly\"}]}]}}}",
+   "projectVersions": {
+    "rose": "802cfe14",
+    "gold": "345e1c8a"
+   }
+  },
+  {
+   "name": "empty",
+   "document": {
+    "version": 2,
+    "projects": {}
+   },
+   "problems": [],
+   "version": "4def804d",
+   "stored": "{\"version\":2,\"projects\":{}}",
+   "projectVersions": {}
+  },
+  {
+   "name": "bad_projects",
+   "document": {
+    "version": 2,
+    "projects": {
+     "Not OK": {},
+     "rose": {
+      "name": "",
+      "apps": []
+     },
+     "gold": 5
+    }
+   },
+   "problems": [
+    "projects.Not OK: project IDs are 1–50 lowercase letters, digits, '_' and '-' (got Not OK)",
+    "projects.rose.name: must be a name of 1–100 characters",
+    "projects.rose.apps: must be a mapping of app IDs to apps",
+    "projects.gold: must be a mapping"
+   ]
+  },
+  {
+   "name": "version_3",
+   "document": {
+    "version": 3,
+    "projects": {},
+    "other": true
+   },
+   "problems": [
+    "version: must be 2 (or 1, the single-project file)",
+    "other: unknown key (expected one of: version, projects)"
+   ]
+  },
+  {
+   "name": "not_a_mapping",
+   "document": [
+    1,
+    2
+   ],
+   "problems": [
+    "the config must be a mapping"
+   ]
+  }
+ ],
+ "customerInfoCases": [
+  {
+   "name": "empty",
+   "appUserId": "$RCAnonymousID:0123456789abcdef0123456789abcdef",
+   "customer": null,
+   "transactions": [],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"$RCAnonymousID:0123456789abcdef0123456789abcdef\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-15T08:00:00Z\",\"subscriptions\":{},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{},\"subscriber_attributes\":{}},\"management\":[]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"$RCAnonymousID:0123456789abcdef0123456789abcdef\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-15T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":null,\"subscriptions\":{},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "furthest_expiry",
+   "appUserId": "u1",
+   "customer": {
+    "id": "c1",
+    "projectId": "default",
+    "appUserId": "u1",
+    "firstSeen": 1792224000000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1003",
+     "original_transaction_id": "1003",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1800864000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1004",
+     "original_transaction_id": "1004",
+     "product_id": "pro_annual",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1825920000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 49990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u1\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-10-17T08:00:00Z\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1003\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1004\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":49.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1800864000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_annual\",\"end\":1825920000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u1\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-10-17T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1003\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1004\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":49.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "lifetime_wins",
+   "appUserId": "u2",
+   "customer": {
+    "id": "c2",
+    "projectId": "default",
+    "appUserId": "u2",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1005",
+     "original_transaction_id": "1005",
+     "product_id": "pro_annual",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1825920000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1006",
+     "original_transaction_id": "1006",
+     "product_id": "lifetime",
+     "base_plan_id": null,
+     "product_type": "non_consumable",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": null,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 99990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1007",
+     "original_transaction_id": "1007",
+     "product_id": "coins_100",
+     "base_plan_id": null,
+     "product_type": "consumable",
+     "purchased_at": 1799827200000,
+     "original_purchased_at": 1799827200000,
+     "expires_at": null,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": null,
+     "currency": null,
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1008",
+     "original_transaction_id": "1008",
+     "product_id": "coins_100",
+     "base_plan_id": null,
+     "product_type": "consumable",
+     "purchased_at": 1799568000000,
+     "original_purchased_at": 1799568000000,
+     "expires_at": null,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u2\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1005\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{\"lifetime\":[{\"id\":\"1006\",\"store_transaction_id\":\"1006\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":99.99,\"currency\":\"USD\"}}],\"coins_100\":[{\"id\":\"1008\",\"store_transaction_id\":\"1008\",\"purchase_date\":\"2027-01-10T08:00:00Z\",\"original_purchase_date\":\"2027-01-10T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":0.99,\"currency\":\"USD\"}},{\"id\":\"1007\",\"store_transaction_id\":\"1007\",\"purchase_date\":\"2027-01-13T08:00:00Z\",\"original_purchase_date\":\"2027-01-13T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true}]},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_annual\",\"end\":1825920000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u2\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1005\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{\"lifetime\":[{\"id\":\"1006\",\"store_transaction_id\":\"1006\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":99.99,\"currency\":\"USD\"}}],\"coins_100\":[{\"id\":\"1008\",\"store_transaction_id\":\"1008\",\"purchase_date\":\"2027-01-10T08:00:00Z\",\"original_purchase_date\":\"2027-01-10T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":0.99,\"currency\":\"USD\"}},{\"id\":\"1007\",\"store_transaction_id\":\"1007\",\"purchase_date\":\"2027-01-13T08:00:00Z\",\"original_purchase_date\":\"2027-01-13T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true}]},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "refunds",
+   "appUserId": "u3",
+   "customer": {
+    "id": "c3",
+    "projectId": "default",
+    "appUserId": "u3",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1009",
+     "original_transaction_id": "1009",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799568000000,
+     "original_purchased_at": 1799568000000,
+     "expires_at": 1802160000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": 1799740800000,
+     "revocation_reason": "0",
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1010",
+     "original_transaction_id": "1010",
+     "product_id": "lifetime",
+     "base_plan_id": null,
+     "product_type": "non_consumable",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": null,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": 1799913600000,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u3\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-10T08:00:00Z\",\"original_purchase_date\":\"2027-01-10T08:00:00Z\",\"expires_date\":\"2027-01-12T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1009\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":\"2027-01-12T08:00:00Z\",\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-01-12T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-10T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u3\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":null,\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-10T08:00:00Z\",\"original_purchase_date\":\"2027-01-10T08:00:00Z\",\"expires_date\":\"2027-01-12T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1009\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":\"2027-01-12T08:00:00Z\",\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-01-12T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-10T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "grace_and_status",
+   "appUserId": "u4",
+   "customer": {
+    "id": "c4",
+    "projectId": "default",
+    "appUserId": "u4",
+    "firstSeen": 1796544000000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1000",
+     "original_transaction_id": "1000",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1797321600000,
+     "original_purchased_at": 1797321600000,
+     "expires_at": 1799913600000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1002",
+     "original_transaction_id": "1002",
+     "product_id": "pro_annual",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1808640000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 49990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "android",
+     "store": "play_store",
+     "environment": "sandbox",
+     "transaction_id": "GPA.1",
+     "original_transaction_id": "token-1",
+     "product_id": "pro",
+     "base_plan_id": "monthly",
+     "product_type": "subscription",
+     "purchased_at": 1797321600000,
+     "original_purchased_at": 1797321600000,
+     "expires_at": 1799913600000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [
+    {
+     "store": "app_store",
+     "original_transaction_id": "1000",
+     "status": 4,
+     "auto_renew": 1,
+     "auto_renew_product_id": "pro_monthly",
+     "unsubscribe_detected_at": null,
+     "billing_issue_detected_at": 1799913600123,
+     "grace_period_expires_at": 1800432000000,
+     "auto_resume_at": null
+    },
+    {
+     "store": "app_store",
+     "original_transaction_id": "1002",
+     "status": 1,
+     "auto_renew": 0,
+     "auto_renew_product_id": "pro_annual",
+     "unsubscribe_detected_at": 1799827200999,
+     "billing_issue_detected_at": null,
+     "grace_period_expires_at": null,
+     "auto_resume_at": null
+    },
+    {
+     "store": "play_store",
+     "original_transaction_id": "token-1",
+     "status": 2,
+     "auto_renew": 1,
+     "auto_renew_product_id": "pro",
+     "unsubscribe_detected_at": null,
+     "billing_issue_detected_at": null,
+     "grace_period_expires_at": null,
+     "auto_resume_at": 1801728000000
+    }
+   ],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u4\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-12-06T08:00:00Z\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2026-12-15T08:00:00Z\",\"original_purchase_date\":\"2026-12-15T08:00:00Z\",\"expires_date\":\"2027-01-20T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1000\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":\"2027-01-14T08:00:00Z\",\"grace_period_expires_date\":\"2027-01-20T08:00:00Z\",\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-04-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1002\",\"unsubscribe_detected_at\":\"2027-01-13T08:00:00Z\",\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":49.99,\"currency\":\"USD\"}},\"pro\":{\"purchase_date\":\"2026-12-15T08:00:00Z\",\"original_purchase_date\":\"2026-12-15T08:00:00Z\",\"expires_date\":\"2027-01-14T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.1\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":\"2027-02-04T08:00:00Z\",\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"monthly\"}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-04-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-04-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1800432000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_annual\",\"end\":1808640000000},{\"store\":\"play_store\",\"app_id\":\"android\",\"product_id\":\"pro\",\"end\":1799913600000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u4\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-12-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2026-12-15T08:00:00Z\",\"original_purchase_date\":\"2026-12-15T08:00:00Z\",\"expires_date\":\"2027-01-20T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1000\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":\"2027-01-14T08:00:00Z\",\"grace_period_expires_date\":\"2027-01-20T08:00:00Z\",\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-04-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1002\",\"unsubscribe_detected_at\":\"2027-01-13T08:00:00Z\",\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":49.99,\"currency\":\"USD\"}},\"pro\":{\"purchase_date\":\"2026-12-15T08:00:00Z\",\"original_purchase_date\":\"2026-12-15T08:00:00Z\",\"expires_date\":\"2027-01-14T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.1\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":\"2027-02-04T08:00:00Z\",\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"monthly\"}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-04-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-04-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "upgraded",
+   "appUserId": "u5",
+   "customer": {
+    "id": "c5",
+    "projectId": "default",
+    "appUserId": "u5",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1011",
+     "original_transaction_id": "1011",
+     "product_id": "pro_annual",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1825920000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 1,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1012",
+     "original_transaction_id": "1012",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1801728000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u5\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1011\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-02-04T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1012\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-02-04T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_annual\",\"end\":1825920000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1801728000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u5\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"pro_annual\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1011\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-02-04T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1012\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-02-04T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "google_base_plan",
+   "appUserId": "u6",
+   "customer": {
+    "id": "c6",
+    "projectId": "default",
+    "appUserId": "u6",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "android",
+     "store": "play_store",
+     "environment": "production",
+     "transaction_id": "GPA.2",
+     "original_transaction_id": "token-2",
+     "product_id": "pro",
+     "base_plan_id": "annual",
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1825920000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1014",
+     "original_transaction_id": "1014",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1834560000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "requestStore": "play_store",
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u6\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.2\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"annual\"},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2028-02-19T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1014\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2028-02-19T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"play_store\",\"app_id\":\"android\",\"product_id\":\"pro\",\"end\":1825920000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1834560000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u6\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://play.google.com/store/account/subscriptions?sku=pro&package=com.example.openpurr\",\"subscriptions\":{\"pro\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.2\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"annual\"},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2028-02-19T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1014\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2028-02-19T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "google_base_plan_ios_request",
+   "appUserId": "u6",
+   "customer": {
+    "id": "c6",
+    "projectId": "default",
+    "appUserId": "u6",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "android",
+     "store": "play_store",
+     "environment": "sandbox",
+     "transaction_id": "GPA.3",
+     "original_transaction_id": "token-3",
+     "product_id": "pro",
+     "base_plan_id": "annual",
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1825920000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "requestStore": "app_store",
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u6\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.3\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"annual\"}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"play_store\",\"app_id\":\"android\",\"product_id\":\"pro\",\"end\":1825920000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u6\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://play.google.com/store/account/subscriptions?sku=pro&package=com.example.openpurr\",\"subscriptions\":{\"pro\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-11-11T08:00:00Z\",\"store\":\"play_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"GPA.3\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"},\"product_plan_identifier\":\"annual\"}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"},\"annual_perks\":{\"expires_date\":\"2027-11-11T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"product_plan_identifier\":\"annual\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "grants",
+   "appUserId": "u7",
+   "customer": {
+    "id": "c7",
+    "projectId": "default",
+    "appUserId": "u7",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1016",
+     "original_transaction_id": "1016",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1800864000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "grants": [
+    {
+     "id": "grant_1017",
+     "entitlement_id": "pro",
+     "duration": "yearly",
+     "starts_at": 1799913600000,
+     "expires_at": 1831536000500,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": null,
+     "revoked_by": null
+    },
+    {
+     "id": "grant_1018",
+     "entitlement_id": "annual_perks",
+     "duration": "lifetime",
+     "starts_at": 1799913600000,
+     "expires_at": null,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": null,
+     "revoked_by": null
+    },
+    {
+     "id": "grant_1019",
+     "entitlement_id": "pro",
+     "duration": "weekly",
+     "starts_at": 1799913600000,
+     "expires_at": 1800604800000,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": null,
+     "revoked_by": null
+    },
+    {
+     "id": "grant_1020",
+     "entitlement_id": "pro",
+     "duration": "monthly",
+     "starts_at": 1799913600000,
+     "expires_at": 1802505600000,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": 1800000000000,
+     "revoked_by": "x"
+    },
+    {
+     "id": "grant_1021",
+     "entitlement_id": "nonexistent",
+     "duration": "monthly",
+     "starts_at": 1799913600000,
+     "expires_at": 1802505600000,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": null,
+     "revoked_by": null
+    }
+   ],
+   "states": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u7\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1016\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"rc_promo_pro_weekly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-22T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1019\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null},\"rc_promo_pro_yearly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2028-01-15T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1017\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null},\"rc_promo_annual_perks_lifetime\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":null,\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1018\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2028-01-15T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"rc_promo_pro_yearly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"rc_promo_annual_perks_lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1800864000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u7\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1016\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"rc_promo_pro_weekly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-22T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1019\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null},\"rc_promo_pro_yearly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2028-01-15T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1017\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null},\"rc_promo_annual_perks_lifetime\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":null,\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1018\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2028-01-15T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"rc_promo_pro_yearly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"annual_perks\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"rc_promo_annual_perks_lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "grant_shorter_than_purchase",
+   "appUserId": "u8",
+   "customer": {
+    "id": "c8",
+    "projectId": "default",
+    "appUserId": "u8",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1022",
+     "original_transaction_id": "1022",
+     "product_id": "lifetime",
+     "base_plan_id": null,
+     "product_type": "non_consumable",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": null,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "grants": [
+    {
+     "id": "grant_1023",
+     "entitlement_id": "pro",
+     "duration": "weekly",
+     "starts_at": 1799913600000,
+     "expires_at": 1800604800000,
+     "note": null,
+     "granted_by": "owner@example.com",
+     "source": "dashboard",
+     "created_at": 1799913600000,
+     "revoked_at": null,
+     "revoked_by": null
+    }
+   ],
+   "states": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u8\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"rc_promo_pro_weekly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-22T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1023\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null}},\"non_subscriptions\":{\"lifetime\":[{\"id\":\"1022\",\"store_transaction_id\":\"1022\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}]},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u8\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":null,\"subscriptions\":{\"rc_promo_pro_weekly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-22T08:00:00Z\",\"store\":\"promotional\",\"is_sandbox\":false,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"grant_1023\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null}},\"non_subscriptions\":{\"lifetime\":[{\"id\":\"1022\",\"store_transaction_id\":\"1022\",\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}]},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":null,\"grace_period_expires_date\":null,\"product_identifier\":\"lifetime\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "numeric_keys",
+   "appUserId": "u9",
+   "customer": {
+    "id": "c9",
+    "projectId": "default",
+    "appUserId": "u9",
+    "firstSeen": 1799222400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1024",
+     "original_transaction_id": "1024",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1800864000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1025",
+     "original_transaction_id": "1025",
+     "product_id": "2024",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1799913600000,
+     "original_purchased_at": 1799913600000,
+     "expires_at": 1801728000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 1234567,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u9\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"subscriptions\":{\"2024\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-02-04T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1025\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":1.234567,\"currency\":\"USD\"}},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1024\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"9\":{\"expires_date\":\"2027-02-04T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"2024\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"pro\":{\"expires_date\":\"2027-01-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1800864000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"2024\",\"end\":1801728000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u9\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2027-01-06T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":\"https://apps.apple.com/account/subscriptions\",\"subscriptions\":{\"2024\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-02-04T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1025\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":1.234567,\"currency\":\"USD\"}},\"pro_monthly\":{\"purchase_date\":\"2027-01-14T08:00:00Z\",\"original_purchase_date\":\"2027-01-14T08:00:00Z\",\"expires_date\":\"2027-01-25T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1024\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"9\":{\"expires_date\":\"2027-02-04T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"2024\",\"purchase_date\":\"2027-01-14T08:00:00Z\"},\"pro\":{\"expires_date\":\"2027-01-25T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2027-01-14T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  },
+  {
+   "name": "ties_and_expired",
+   "appUserId": "u10",
+   "customer": {
+    "id": "c10",
+    "projectId": "default",
+    "appUserId": "u10",
+    "firstSeen": 1791446400000
+   },
+   "transactions": [
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1026",
+     "original_transaction_id": "1026",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1794816000000,
+     "original_purchased_at": 1794816000000,
+     "expires_at": 1797408000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "sandbox",
+     "transaction_id": "1027",
+     "original_transaction_id": "1027",
+     "product_id": "pro_monthly",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1794902400000,
+     "original_purchased_at": 1794902400000,
+     "expires_at": 1797408000000,
+     "period_type": "normal",
+     "ownership_type": "PURCHASED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    },
+    {
+     "app_id": "ios",
+     "store": "app_store",
+     "environment": "production",
+     "transaction_id": "1028",
+     "original_transaction_id": "1028",
+     "product_id": "pro_annual",
+     "base_plan_id": null,
+     "product_type": "subscription",
+     "purchased_at": 1792224000000,
+     "original_purchased_at": 1792224000000,
+     "expires_at": 1797408000000,
+     "period_type": "trial",
+     "ownership_type": "FAMILY_SHARED",
+     "price_micros": 9990000,
+     "currency": "USD",
+     "storefront": "USA",
+     "revoked_at": null,
+     "revocation_reason": null,
+     "is_upgraded": 0,
+     "verified": 1,
+     "subscription_group": null
+    }
+   ],
+   "states": [],
+   "grants": [],
+   "snapshot": "{\"subscriber\":{\"original_app_user_id\":\"u10\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-10-08T08:00:00Z\",\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2026-11-17T08:00:00Z\",\"original_purchase_date\":\"2026-11-17T08:00:00Z\",\"expires_date\":\"2026-12-16T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1027\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2026-10-17T08:00:00Z\",\"original_purchase_date\":\"2026-10-17T08:00:00Z\",\"expires_date\":\"2026-12-16T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":false,\"period_type\":\"trial\",\"ownership_type\":\"FAMILY_SHARED\",\"store_transaction_id\":\"1028\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2026-12-16T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2026-11-17T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2026-12-16T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2026-10-17T08:00:00Z\"}},\"subscriber_attributes\":{}},\"management\":[{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_monthly\",\"end\":1797408000000},{\"store\":\"app_store\",\"app_id\":\"ios\",\"product_id\":\"pro_annual\",\"end\":1797408000000}]}",
+   "rendered": "{\"request_date\":\"2027-01-15T08:00:01Z\",\"request_date_ms\":1800000001234,\"subscriber\":{\"original_app_user_id\":\"u10\",\"original_application_version\":null,\"original_purchase_date\":null,\"first_seen\":\"2026-10-08T08:00:00Z\",\"last_seen\":\"2027-01-15T08:00:01Z\",\"management_url\":null,\"subscriptions\":{\"pro_monthly\":{\"purchase_date\":\"2026-11-17T08:00:00Z\",\"original_purchase_date\":\"2026-11-17T08:00:00Z\",\"expires_date\":\"2026-12-16T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":true,\"period_type\":\"normal\",\"ownership_type\":\"PURCHASED\",\"store_transaction_id\":\"1027\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}},\"pro_annual\":{\"purchase_date\":\"2026-10-17T08:00:00Z\",\"original_purchase_date\":\"2026-10-17T08:00:00Z\",\"expires_date\":\"2026-12-16T08:00:00Z\",\"store\":\"app_store\",\"is_sandbox\":false,\"period_type\":\"trial\",\"ownership_type\":\"FAMILY_SHARED\",\"store_transaction_id\":\"1028\",\"unsubscribe_detected_at\":null,\"billing_issues_detected_at\":null,\"grace_period_expires_date\":null,\"refunded_at\":null,\"auto_resume_date\":null,\"price\":{\"amount\":9.99,\"currency\":\"USD\"}}},\"non_subscriptions\":{},\"other_purchases\":{},\"entitlements\":{\"pro\":{\"expires_date\":\"2026-12-16T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_monthly\",\"purchase_date\":\"2026-11-17T08:00:00Z\"},\"annual_perks\":{\"expires_date\":\"2026-12-16T08:00:00Z\",\"grace_period_expires_date\":null,\"product_identifier\":\"pro_annual\",\"purchase_date\":\"2026-10-17T08:00:00Z\"}},\"subscriber_attributes\":{}}}"
+  }
+ ]
+}
