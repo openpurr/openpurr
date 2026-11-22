@@ -57,6 +57,7 @@ func TestGooglePushAuthentication(t *testing.T) {
 			"not base64url":  parts[0] + "." + parts[1] + ".%%%",
 			"not a JWT":      "abc",
 			"malformed JSON": "e30." + strings.TrimRight(parts[1], "=") + "x." + parts[2],
+			"null header":    "bnVsbA." + parts[1] + ".AAAA",
 		}
 		for name, token := range cases {
 			if res := env.PostGoogleNotification(test, tu.NotifyOptions{Token: token}); res.Status != 401 {
