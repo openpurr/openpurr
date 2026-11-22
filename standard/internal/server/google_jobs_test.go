@@ -36,7 +36,7 @@ func TestGooglePlayJobs(t *testing.T) {
 		for _, j := range env.Deps.Jobs.Jobs() {
 			names = append(names, j.Name)
 		}
-		if strings.Join(names, ",") != "retry-play-acknowledgements,poll-play-voided-purchases" {
+		if !strings.HasSuffix(strings.Join(names, ","), ",retry-play-acknowledgements,poll-play-voided-purchases") {
 			t.Errorf("%v", names)
 		}
 	})

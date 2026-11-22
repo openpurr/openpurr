@@ -27,7 +27,7 @@ func TestMigrationsApplyOnceEvenConcurrently(t *testing.T) {
 		}
 	}
 	var n int
-	if err := pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&n); err != nil || n != 2 {
+	if err := pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&n); err != nil || n != 3 {
 		t.Fatal(n, err)
 	}
 }
@@ -66,7 +66,7 @@ func TestTruncateKeepsMigrations(t *testing.T) {
 	var customers, migrations int
 	_ = pool.QueryRow(ctx, "SELECT count(*) FROM customer").Scan(&customers)
 	_ = pool.QueryRow(ctx, "SELECT count(*) FROM "+db.MigrationsTable).Scan(&migrations)
-	if customers != 0 || migrations != 2 {
+	if customers != 0 || migrations != 3 {
 		t.Fatal(customers, migrations)
 	}
 }

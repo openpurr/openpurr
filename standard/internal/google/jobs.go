@@ -222,6 +222,20 @@ func pollApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, app *c
 	if err != nil {
 		return 0, err
 	}
+	// The first delivery attempt, after the commit (awaited, as Lite does in this job).
+	if env.Deliver != nil {
+		var ids []string
+		for _, r := range refunds {
+			if r.event != nil {
+				ids = append(ids, r.event.ID)
+			}
+		}
+		if len(ids) > 0 {
+			if err := env.Deliver(ctx, ids, now); err != nil {
+				return processed, err
+			}
+		}
+	}
 	for _, id := range owners {
 		if _, err := customerinfo.Refresh(ctx, pool, cfg, id, env.Now()); err != nil {
 			return 0, err

@@ -517,6 +517,7 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 	if err != nil {
 		return "", err
 	}
+	s.deliverLater(q.config, events)
 
 	// Customers who lost a purchase get fresh snapshots in the background.
 	cfg := q.config

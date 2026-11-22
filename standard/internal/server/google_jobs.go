@@ -11,7 +11,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 )
 
-func (s *server) registerJobs() {
+func (s *server) registerGoogleJobs() {
 	s.Jobs.Register(jobs.Job{Name: "retry-play-acknowledgements", Every: time.Hour, Run: func(ctx context.Context, now int64) error {
 		cfg, err := s.Config.Get(ctx)
 		if err != nil {

@@ -49,7 +49,15 @@ func (s *server) googleNotification(w http.ResponseWriter, r *http.Request) {
 
 // googleEnv is what the google package needs from the server.
 func (s *server) googleEnv() google.Env {
-	return google.Env{Secret: s.Secret, HTTP: s.HTTPClient, Tokens: s.GoogleTokens, Now: s.Clock.Now, Log: s.Log}
+	return google.Env{Secret: s.Secret, HTTP: s.HTTPClient, Tokens: s.GoogleTokens, Now: s.Clock.Now, Log: s.Log,
+		Deliver: func(ctx context.Context, ids []string, now int64) error {
+			cfg, err := s.Config.Get(ctx)
+			if err != nil {
+				return err
+			}
+			_, err = s.Webhooks.DeliverNow(ctx, cfg, ids, now)
+			return err
+		}}
 }
 
 // defaultAudience is the push endpoint's URL, the audience Pub/Sub uses unless the config names
@@ -338,6 +346,7 @@ func (s *server) handleGoogleNotification(w http.ResponseWriter, r *http.Request
 	if err != nil {
 		return err
 	}
+	s.deliverLater(all, events)
 
 	if owner != nil {
 		ownerID := owner.ID
