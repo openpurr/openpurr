@@ -6,10 +6,14 @@
 //	PORT                         port to listen on (default 8080)
 //	OPENPURR_CONFIG              openpurr.config.yaml imported on first start (optional)
 //	OPERATOR_SECRET              back-office secret, at least 32 random characters
+//	PUBLIC_URL                   the server's public origin, for setup links (default: each request's)
 //	RATE_LIMIT_IP_PER_MINUTE     SDK requests per client IP per minute (default 300; 0 = off)
 //	RATE_LIMIT_USER_PER_MINUTE   SDK requests per app user per minute (default 60; 0 = off)
 //	CLIENT_IP_HEADER             header with the client IP set by your proxy (default: the connection)
 //	LOG_LEVEL                    debug, info (default), warn or error
+//
+// `openpurr admin ...` manages operators straight in the database (create, login-link, list,
+// require-totp); see admin.go.
 //
 // Conformance mode, for the test suite in spec/ only:
 //
@@ -52,6 +56,9 @@ const configMaxAgeMs = 60_000
 const shutdownTimeout = 25 * time.Second
 
 func main() {
+	if len(os.Args) > 1 && os.Args[1] == "admin" {
+		os.Exit(runAdmin(os.Args[2:], os.Stdout, os.Stderr))
+	}
 	log := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{Level: logLevel(os.Getenv("LOG_LEVEL"))}))
 	slog.SetDefault(log)
 	if err := run(log); err != nil {
@@ -107,6 +114,11 @@ func run(log *slog.Logger) error {
 	operatorSecret := os.Getenv("OPERATOR_SECRET")
 	if operatorSecret != "" && len(operatorSecret) < 32 {
 		return errors.New("OPERATOR_SECRET must be at least 32 random characters")
+	}
+
+	publicURL := strings.TrimRight(os.Getenv("PUBLIC_URL"), "/")
+	if publicURL != "" && !strings.HasPrefix(publicURL, "https://") && !strings.HasPrefix(publicURL, "http://") {
+		return errors.New("PUBLIC_URL must be an origin such as https://purchases.example.com")
 	}
 
 	// Conformance mode: refused unless a token guards its routes.
@@ -192,6 +204,7 @@ func run(log *slog.Logger) error {
 		HTTPClient:     outbound.NewClient(storeBase),
 		AppleRoots:     appleRoots,
 		OperatorSecret: operatorSecret,
+		PublicURL:      publicURL,
 		Secret:         os.LookupEnv,
 		ClientIPHeader: os.Getenv("CLIENT_IP_HEADER"),
 		Conformance:    conformance,

@@ -166,3 +166,13 @@ func Truncate(ctx context.Context, pool *pgxpool.Pool) error {
 	_, err = pool.Exec(ctx, "TRUNCATE "+strings.Join(quoted, ", ")+" RESTART IDENTITY CASCADE")
 	return err
 }
+
+// LatestMigration is the newest migration this build has (the setup checks compare it with the
+// database's).
+func LatestMigration() string {
+	all, err := migrations()
+	if err != nil || len(all) == 0 {
+		return ""
+	}
+	return all[len(all)-1].version
+}

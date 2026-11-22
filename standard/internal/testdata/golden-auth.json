@@ -1,0 +1,392 @@
+{
+  "secret": "golden-operator-secret-0123456789abcdef",
+  "otherSecret": "another-operator-secret-0123456789abcdef",
+  "pepperId": "42be1d58",
+  "iterations": 20000,
+  "hashes": [
+    {
+      "password": "a long test passphrase",
+      "iterations": 20000,
+      "randomStart": 0,
+      "hash": "pbkdf2-sha256$20000$42be1d58$AQIDBAUGBwgJCgsMDQ4PEA==$Ey0GHMKERVazjhJd0EEqKwhthn0RgoB/DEvrdp51FAQ="
+    },
+    {
+      "password": "correct horse battery staple",
+      "iterations": 20000,
+      "randomStart": 16,
+      "hash": "pbkdf2-sha256$20000$42be1d58$ERITFBUWFxgZGhscHR4fIA==$yRS2VeIhotW53hvd3LbLGDUoElpHfmu88MqTCrIROAw="
+    },
+    {
+      "password": "ünïcödé pässwörd ✓",
+      "iterations": 20000,
+      "randomStart": 32,
+      "hash": "pbkdf2-sha256$20000$42be1d58$ISIjJCUmJygpKissLS4vMA==$b2XVqafoECU0qMQ5NLCS+FLVeacDZlyQSpTjHh3vhm0="
+    },
+    {
+      "password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "iterations": 20000,
+      "randomStart": 48,
+      "hash": "pbkdf2-sha256$20000$42be1d58$MTIzNDU2Nzg5Ojs8PT4/QA==$RaWfbiofk/ibtKSCnFpO3CEKjLjw9q7Sxwd08M7R46Y="
+    },
+    {
+      "password": "an old hashed passphrase",
+      "iterations": 1000,
+      "randomStart": 64,
+      "hash": "pbkdf2-sha256$1000$42be1d58$QUJDREVGR0hJSktMTU5PUA==$jtGd/BcaxRjJ7vSoyxz5E9TtyfImRiDY62DeCjOFvik="
+    }
+  ],
+  "verifyCases": [
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$AQIDBAUGBwgJCgsMDQ4PEA==$Ey0GHMKERVazjhJd0EEqKwhthn0RgoB/DEvrdp51FAQ=",
+      "password": "a long test passphrase",
+      "ok": true,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$AQIDBAUGBwgJCgsMDQ4PEA==$Ey0GHMKERVazjhJd0EEqKwhthn0RgoB/DEvrdp51FAQ=",
+      "password": "a long test passphrase ",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$AQIDBAUGBwgJCgsMDQ4PEA==$Ey0GHMKERVazjhJd0EEqKwhthn0RgoB/DEvrdp51FAQ=",
+      "password": "wrong",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ERITFBUWFxgZGhscHR4fIA==$yRS2VeIhotW53hvd3LbLGDUoElpHfmu88MqTCrIROAw=",
+      "password": "correct horse battery staple",
+      "ok": true,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ERITFBUWFxgZGhscHR4fIA==$yRS2VeIhotW53hvd3LbLGDUoElpHfmu88MqTCrIROAw=",
+      "password": "correct horse battery staple ",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ERITFBUWFxgZGhscHR4fIA==$yRS2VeIhotW53hvd3LbLGDUoElpHfmu88MqTCrIROAw=",
+      "password": "wrong",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ISIjJCUmJygpKissLS4vMA==$b2XVqafoECU0qMQ5NLCS+FLVeacDZlyQSpTjHh3vhm0=",
+      "password": "ünïcödé pässwörd ✓",
+      "ok": true,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ISIjJCUmJygpKissLS4vMA==$b2XVqafoECU0qMQ5NLCS+FLVeacDZlyQSpTjHh3vhm0=",
+      "password": "ünïcödé pässwörd ✓ ",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$ISIjJCUmJygpKissLS4vMA==$b2XVqafoECU0qMQ5NLCS+FLVeacDZlyQSpTjHh3vhm0=",
+      "password": "wrong",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$MTIzNDU2Nzg5Ojs8PT4/QA==$RaWfbiofk/ibtKSCnFpO3CEKjLjw9q7Sxwd08M7R46Y=",
+      "password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+      "ok": true,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$MTIzNDU2Nzg5Ojs8PT4/QA==$RaWfbiofk/ibtKSCnFpO3CEKjLjw9q7Sxwd08M7R46Y=",
+      "password": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx ",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$42be1d58$MTIzNDU2Nzg5Ojs8PT4/QA==$RaWfbiofk/ibtKSCnFpO3CEKjLjw9q7Sxwd08M7R46Y=",
+      "password": "wrong",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$1000$42be1d58$QUJDREVGR0hJSktMTU5PUA==$jtGd/BcaxRjJ7vSoyxz5E9TtyfImRiDY62DeCjOFvik=",
+      "password": "an old hashed passphrase",
+      "ok": true,
+      "rehash": true
+    },
+    {
+      "stored": "pbkdf2-sha256$1000$42be1d58$QUJDREVGR0hJSktMTU5PUA==$jtGd/BcaxRjJ7vSoyxz5E9TtyfImRiDY62DeCjOFvik=",
+      "password": "an old hashed passphrase ",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$1000$42be1d58$QUJDREVGR0hJSktMTU5PUA==$jtGd/BcaxRjJ7vSoyxz5E9TtyfImRiDY62DeCjOFvik=",
+      "password": "wrong",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$20000$63bca3d6$UVJTVFVWV1hZWltcXV5fYA==$2kudEDfN/KS7xhM0aicDEHYIHG02L2d9Vzn/ANwtQ1o=",
+      "password": "a long test passphrase",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "",
+      "password": "anything at all",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "bcrypt$1$x$y$z",
+      "password": "anything at all",
+      "ok": false,
+      "rehash": false
+    },
+    {
+      "stored": "pbkdf2-sha256$$x$y$z",
+      "password": "anything at all",
+      "ok": false,
+      "rehash": false
+    }
+  ],
+  "totpSecretHex": "0b30557a9fc4e90e33587da2c7ec11365b80a5ca",
+  "codes": [
+    {
+      "step": 0,
+      "code": "925393"
+    },
+    {
+      "step": 1,
+      "code": "682185"
+    },
+    {
+      "step": 59,
+      "code": "942590"
+    },
+    {
+      "step": 1000000,
+      "code": "112053"
+    },
+    {
+      "step": 59999999,
+      "code": "106765"
+    },
+    {
+      "step": 60000000,
+      "code": "426442"
+    }
+  ],
+  "rfcCodes": [
+    {
+      "step": 1,
+      "code": "287082"
+    },
+    {
+      "step": 37037036,
+      "code": "081804"
+    },
+    {
+      "step": 37037037,
+      "code": "050471"
+    },
+    {
+      "step": 41152263,
+      "code": "005924"
+    },
+    {
+      "step": 66666666,
+      "code": "279037"
+    },
+    {
+      "step": 666666666,
+      "code": "353130"
+    }
+  ],
+  "verifyTotpCases": [
+    {
+      "code": "426442",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": 60000000
+    },
+    {
+      "code": "106765",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": 59999999
+    },
+    {
+      "code": "900394",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": 60000001
+    },
+    {
+      "code": "908288",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": null
+    },
+    {
+      "code": "426442",
+      "lastStep": 60000000,
+      "now": 1800000015000,
+      "step": null
+    },
+    {
+      "code": "900394",
+      "lastStep": 60000000,
+      "now": 1800000015000,
+      "step": 60000001
+    },
+    {
+      "code": "12345",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": null
+    },
+    {
+      "code": "1234567",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": null
+    },
+    {
+      "code": "abcdef",
+      "lastStep": null,
+      "now": 1800000015000,
+      "step": null
+    }
+  ],
+  "base32": [
+    {
+      "hex": "",
+      "encoded": ""
+    },
+    {
+      "hex": "00",
+      "encoded": "AA"
+    },
+    {
+      "hex": "ff",
+      "encoded": "74"
+    },
+    {
+      "hex": "0102030405",
+      "encoded": "AEBAGBAF"
+    },
+    {
+      "hex": "0b30557a9fc4e90e33587da2c7ec11365b80a5ca",
+      "encoded": "BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK"
+    },
+    {
+      "hex": "3132333435363738393031323334353637383930",
+      "encoded": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ"
+    }
+  ],
+  "base32Decoded": [
+    {
+      "input": "JBSWY3DP",
+      "hex": "48656c6c6f"
+    },
+    {
+      "input": "jbswy3dp",
+      "hex": "48656c6c6f"
+    },
+    {
+      "input": "JBSW Y3DP",
+      "hex": "48656c6c6f"
+    },
+    {
+      "input": "JBSW-Y3DP====",
+      "hex": "48656c6c6f"
+    },
+    {
+      "input": "GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ",
+      "hex": "3132333435363738393031323334353637383930"
+    }
+  ],
+  "encrypted": {
+    "randomStart": 96,
+    "stored": "v1:YWJjZGVmZ2hpamts:m1iVE9zRfTZhsep8+LjOyMN90RD6ATcDfa0RbFSetwGjH9xu",
+    "rawHex": "0b30557a9fc4e90e33587da2c7ec11365b80a5ca"
+  },
+  "randomToken": {
+    "randomStart": 108,
+    "token": "bW5vcHFyc3R1dnd4eXp7fH1-f4CBgoOEhYaHiImKi4w"
+  },
+  "recoveryCodes": {
+    "randomStart": 140,
+    "codes": [
+      "uvwx-yz23",
+      "4567-89ab",
+      "cdef-ghjk",
+      "mnpq-rstu",
+      "vwxy-z234",
+      "5678-9abc",
+      "defg-hjkm",
+      "npqr-stuv",
+      "wxyz-2345",
+      "6789-abcd"
+    ]
+  },
+  "normalized": [
+    {
+      "input": "k7m2-9qpd",
+      "output": "k7m2-9qpd"
+    },
+    {
+      "input": "K7M2 9QPD",
+      "output": "k7m2-9qpd"
+    },
+    {
+      "input": "k7m29qpd",
+      "output": "k7m2-9qpd"
+    },
+    {
+      "input": " k7m2_9qpd ",
+      "output": "k7m2-9qpd"
+    },
+    {
+      "input": "k7m2-9qp",
+      "output": "k7m29qp"
+    },
+    {
+      "input": "K7M2-9QPD-X",
+      "output": "k7m29qpdx"
+    }
+  ],
+  "otpauth": [
+    {
+      "account": "owner@example.com",
+      "secret": "BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK",
+      "uri": "otpauth://totp/openpurr%3Aowner%40example.com?secret=BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK&issuer=openpurr&algorithm=SHA1&digits=6&period=30"
+    },
+    {
+      "account": "Jane Doe+tag@example.com",
+      "secret": "BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK",
+      "uri": "otpauth://totp/openpurr%3AJane%20Doe%2Btag%40example.com?secret=BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK&issuer=openpurr&algorithm=SHA1&digits=6&period=30"
+    },
+    {
+      "account": "a&b=c@example.com",
+      "secret": "BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK",
+      "uri": "otpauth://totp/openpurr%3Aa%26b%3Dc%40example.com?secret=BMYFK6U7YTUQ4M2YPWRMP3ARGZNYBJOK&issuer=openpurr&algorithm=SHA1&digits=6&period=30"
+    }
+  ],
+  "sha256": [
+    {
+      "input": "",
+      "hex": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "input": "pat_abc",
+      "hex": "28d38ed101bae184d6a39ab52ee9f7f1d56698cdb256b10670bc37577ccad3d2"
+    },
+    {
+      "input": "ünïcödé",
+      "hex": "b09ad3e278dfb341468394a32f732467e2245b4b2876c3e15e0aaf1aa5ac242a"
+    }
+  ]
+}

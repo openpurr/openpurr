@@ -1,5 +1,5 @@
-// Package testdata holds golden.json, golden-apple.json, golden-google.json and
-// golden-webhooks.json, generated from Lite's own code by the .ts files of the same names, so tests
+// Package testdata holds golden.json, golden-apple.json, golden-google.json, golden-webhooks.json
+// and golden-auth.json, generated from Lite's own code by the .ts files of the same names, so tests
 // can check that Standard produces the same output byte for byte.
 package testdata
 
@@ -31,6 +31,12 @@ var GoldenGoogle []byte
 //
 //go:embed golden-webhooks.json
 var GoldenWebhooks []byte
+
+// GoldenAuth is golden-auth.json: Lite's operator password hashes, TOTP codes, encrypted TOTP
+// secrets, base32 and recovery codes (golden-auth.ts says how to regenerate it).
+//
+//go:embed golden-auth.json
+var GoldenAuth []byte
 
 // Golden is golden.json.
 type Golden struct {
