@@ -1,7 +1,8 @@
 name: Release
 
 # Cuts a release when a version bump lands on main: tags the commit vX.Y.Z, creates the GitHub
-# release with the notes from releases/vX.Y.Z.md, and publishes the CLI (cli/) to npm.
+# release with the notes from releases/vX.Y.Z.md, publishes the CLI (cli/) to npm, and pushes the
+# Standard edition's image to ghcr.io (standard-image.yml).
 #
 # cli/package.json's version is the release version. To release, open a PR that sets it to X.Y.Z
 # and adds releases/vX.Y.Z.md (the release notes, in Markdown), and merge it. If the tag already
@@ -112,6 +113,18 @@ jobs:
           gh release create "$TAG" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
             --title "$TAG" --notes-file "releases/$TAG.md" "$kind"
           echo "::notice::Released $TAG: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/releases/tag/$TAG"
+
+  # The Standard edition's image on ghcr.io (standard-image.yml). Called from here because the
+  # release, created with this workflow's token, doesn't trigger other workflows.
+  publish-standard-image:
+    name: Build and publish the Standard image
+    needs: release
+    permissions:
+      contents: read
+      packages: write
+    uses: ./.github/workflows/standard-image.yml
+    with:
+      tag: ${{ needs.release.outputs.tag }}
 
   publish-cli:
     name: Test and publish the CLI to npm

@@ -1,0 +1,110 @@
+name: Standard image
+
+# Builds the Standard edition's container image (standard/Dockerfile, built from the repository
+# root) for linux/amd64 and linux/arm64 and pushes it to the GitHub Container Registry as
+# ghcr.io/<owner>/openpurr-standard:<version>, plus :latest for a release that isn't a pre-release.
+#
+# Release (release.yml) calls it for each release tag: a release created with the workflow's own
+# token doesn't trigger other workflows, so it can't listen for the tag itself. Run it by hand
+# (Actions → Standard image → Run workflow) with a tag to publish or re-publish one. It needs no
+# secrets: GITHUB_TOKEN may write this repository's packages. Make the package public once
+# (Packages → openpurr-standard → Package settings) so Cloud Run and others can pull it.
+
+on:
+  workflow_call:
+    inputs:
+      tag:
+        description: The release tag to build, such as v0.3.0.
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: The release tag to build, such as v0.3.0.
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: standard-image-${{ inputs.tag }}
+  cancel-in-progress: false
+
+jobs:
+  image:
+    name: Build and push ghcr.io/…/openpurr-standard
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write # push to ghcr.io
+    steps:
+      - name: Work out the image's tags
+        id: plan
+        env:
+          TAG: ${{ inputs.tag }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$'; then
+            echo "::error::tag must look like v1.2.3 or v1.2.3-beta.1 (got '$TAG')."
+            exit 1
+          fi
+          version=${TAG#v}
+          image="ghcr.io/$(printf '%s' "$OWNER" | tr '[:upper:]' '[:lower:]')/openpurr-standard"
+          tags="$image:$version"
+          if ! printf '%s' "$version" | grep -q -- '-'; then tags="$tags,$image:latest"; fi
+          {
+            echo "version=$version"
+            echo "image=$image"
+            echo "tags=$tags"
+          } >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+          persist-credentials: false
+
+      - uses: docker/setup-qemu-action@v3
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ github.token }}
+
+      - name: Check whether it's already pushed
+        id: exists
+        env:
+          IMAGE: ${{ steps.plan.outputs.image }}:${{ steps.plan.outputs.version }}
+        run: |
+          if docker buildx imagetools inspect "$IMAGE" > /dev/null 2>&1; then
+            echo "::notice::$IMAGE is already on ghcr.io; nothing to push. Delete that version first to rebuild it."
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build and push
+        if: steps.exists.outputs.pushed != 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: standard/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.plan.outputs.tags }}
+          labels: |
+            org.opencontainers.image.title=openpurr Standard
+            org.opencontainers.image.description=The openpurr Standard edition server (Go, Postgres)
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.version=${{ steps.plan.outputs.version }}
+            org.opencontainers.image.licenses=Apache-2.0
+          provenance: mode=max
+          sbom: true
+
+      - name: Done
+        if: steps.exists.outputs.pushed != 'true'
+        env:
+          TAGS: ${{ steps.plan.outputs.tags }}
+        run: echo "::notice::Pushed $TAGS"
