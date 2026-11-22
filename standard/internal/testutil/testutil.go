@@ -1,7 +1,7 @@
 // Package testutil sets up tests that need Postgres: a fresh schema per test with the migrations
 // applied, a server wired like production with a fixed clock, and helpers that call it the way
-// the SDKs do and write ledger rows directly (purchases can't be posted until the receipt
-// endpoint exists).
+// the SDKs do, sign App Store payloads with a test chain (apple.go), and write ledger rows
+// directly.
 //
 // Tests that need Postgres skip unless OPENPURR_TEST_DATABASE_URL is set.
 package testutil
@@ -111,6 +111,10 @@ type Options struct {
 	StoreBase string
 	// The client IP header (default CF-Connecting-IP, as in Lite's tests).
 	ClientIPHeader string
+	// Secrets by name (APPLE_IAP_KEY...), instead of the environment.
+	Secrets map[string]string
+	// Trusted Apple roots; the test chain's root when nil.
+	AppleRoots [][]byte
 }
 
 // countingLimiter allows `max` requests per key, forever (lite/test/helpers.ts appWithRateLimits).
@@ -160,6 +164,17 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 	if header == "" {
 		header = "CF-Connecting-IP"
 	}
+	roots := opts.AppleRoots
+	if roots == nil {
+		roots = [][]byte{AppleFixtures().RootDER}
+	}
+	secret := os.LookupEnv
+	if opts.Secrets != nil {
+		secret = func(name string) (string, bool) {
+			v, ok := opts.Secrets[name]
+			return v, ok
+		}
+	}
 	loader := config.NewLoader(pool, serverClock, 60_000, seed, Quiet)
 	env.Loader = loader
 	env.Deps = &server.Deps{
@@ -174,7 +189,8 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		Deferred:       jobs.NewDeferred(Quiet),
 		HTTPClient:     outbound.NewClient(opts.StoreBase),
 		ClientIPHeader: header,
-		Secret:         os.LookupEnv,
+		Secret:         secret,
+		AppleRoots:     roots,
 		Conformance:    conf,
 	}
 	env.Server = httptest.NewServer(server.New(env.Deps))
@@ -325,7 +341,7 @@ func Ms(v int64) *int64 { return &v }
 func Str(v string) *string { return &v }
 
 // Purchase writes a transaction owned by the customer of appUserID (created if needed), the way
-// the receipt endpoint will, and drops their snapshot. It returns the customer ID.
+// the receipt endpoint does, and drops their snapshot. It returns the customer ID.
 func (e *Env) Purchase(projectID, appUserID string, tx Tx) string {
 	e.T.Helper()
 	ctx := context.Background()

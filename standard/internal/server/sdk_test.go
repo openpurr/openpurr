@@ -2,7 +2,7 @@ package server_test
 
 // Drives the SDK API the way the SDKs do (headers and bodies per spec/sdk-wire-contract.md) and
 // checks every response against the keys each platform requires. Mirrors lite/test/sdk.test.ts;
-// purchases are written to the ledger directly until the receipt endpoint exists.
+// these tests write purchases to the ledger directly, and receipts_test.go posts them.
 
 import (
 	"net/url"
@@ -217,22 +217,6 @@ func TestStartupCalls(t *testing.T) {
 			}
 		}
 	})
-}
-
-func TestReceiptsAreNotRecordedYet(t *testing.T) {
-	env := tu.Start(t, tu.Options{})
-	res := env.Call("/v1/receipts", tu.CallOptions{Body: jsobj.New("app_user_id", "u1")})
-	if res.Status != 400 || prop(res.JSON(t), "code") != 7226.0 {
-		t.Fatalf("%d %s", res.Status, res.Body)
-	}
-	// A 5xx keeps the purchase queued on the device until purchases are supported.
-	res = env.Call("/v1/receipts", tu.CallOptions{Body: jsobj.New("app_user_id", "u1", "fetch_token", "eyJ.x.y")})
-	if res.Status != 503 || prop(res.JSON(t), "code") != 7110.0 {
-		t.Fatalf("%d %s", res.Status, res.Body)
-	}
-	if env.Count("customer") != 0 {
-		t.Fatal("nothing should be written")
-	}
 }
 
 func TestCustomerInfoFromTheLedger(t *testing.T) {

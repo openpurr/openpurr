@@ -358,20 +358,6 @@ func (s *server) serverCustomerInfo(q *sdkRequest) error {
 	return nil
 }
 
-// POST /v1/receipts. Recording purchases arrives with the App Store and Google Play milestones;
-// until then a well-formed receipt gets a 5xx, which keeps the purchase queued on the device
-// (spec/sdk-wire-contract.md, rule 4).
-func (s *server) postReceipt(q *sdkRequest) error {
-	user, _ := q.prop("app_user_id")
-	token, _ := q.prop("fetch_token")
-	if !truthy(user) || !truthy(token) {
-		sdkError(q.w, http.StatusBadRequest, codeBadRequest, "app_user_id and fetch_token are required.")
-		return nil
-	}
-	sdkError(q.w, http.StatusServiceUnavailable, codeInternalServerError, "This openpurr Standard server can't record purchases yet; the purchase will be retried.")
-	return nil
-}
-
 // truthy is JavaScript's truthiness.
 func truthy(v any) bool {
 	switch x := v.(type) {
