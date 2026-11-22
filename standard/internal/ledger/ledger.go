@@ -266,6 +266,7 @@ func MergeCustomers(ctx context.Context, tx DB, from, into string) error {
 	}{
 		{"UPDATE customer_alias SET customer_id = $1 WHERE customer_id = $2", []any{into, from}},
 		{"UPDATE purchase_owner SET customer_id = $1 WHERE customer_id = $2", []any{into, from}},
+		{"UPDATE promotional_grant SET customer_id = $1 WHERE customer_id = $2", []any{into, from}},
 		// Attributes merge too; for a key both have, the more recently set value wins.
 		{`INSERT INTO subscriber_attribute (customer_id, key, value, updated_at, received_at)
 		  SELECT $1, key, value, updated_at, received_at FROM subscriber_attribute WHERE customer_id = $2

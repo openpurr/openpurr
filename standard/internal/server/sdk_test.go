@@ -10,6 +10,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/openpurr/openpurr/standard/internal/customerinfo"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
@@ -389,6 +390,19 @@ func TestCustomersAndLogIn(t *testing.T) {
 		// The anonymous customer is gone; its ID now points at the account.
 		if env.CustomerID("default", anon) != env.CustomerID("default", "existing@example") {
 			t.Fatal("anonymous ID not moved")
+		}
+	})
+
+	t.Run("logIn moves an anonymous user's promotional grants to the account", func(t *testing.T) {
+		env.Purchase("default", "grant-account", tu.Tx{ProductID: "coins_100", ProductType: "consumable"})
+		anon := "$RCAnonymousID:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee"
+		env.Purchase("default", anon, tu.Tx{ProductID: "coins_100", ProductType: "consumable"})
+		now := time.Now().UnixMilli()
+		env.Exec(`INSERT INTO promotional_grant (id, customer_id, entitlement_id, duration, starts_at, expires_at, source, created_at)
+			VALUES ('grant-1', $1, 'pro', 'weekly', $2, $3, 'api', $2)`, env.CustomerID("default", anon), now, now+7*86_400_000)
+		res := env.Call("/v1/subscribers/identify", tu.CallOptions{Body: jsobj.New("app_user_id", anon, "new_app_user_id", "grant-account")})
+		if res.Status != 200 || prop(res.JSON(t), "subscriber", "entitlements", "pro", "product_identifier") != "rc_promo_pro_weekly" {
+			t.Fatalf("%d %s", res.Status, res.Body)
 		}
 	})
 
