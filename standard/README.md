@@ -373,7 +373,7 @@ set too) turns on:
 - `POST /__conformance/reset`, `/jobs` and `/clock`, guarded by `Authorization: Bearer
   $CONFORMANCE_TOKEN` (404 otherwise), as specified in `../spec/conformance/README.md`;
 - a clock the suite can move, read by everything that uses the time;
-- outbound requests to the store, Google, ECB and Cloudflare hosts sent to
+- outbound requests to the store, Google (including IAP's keys on www.gstatic.com), ECB and Cloudflare hosts sent to
   `CONFORMANCE_STORE_BASE` instead;
 - `CONFORMANCE_APPLE_ROOT_B64` trusted instead of Apple Root CA G3;
 - no rate limits, no background job loop (`/__conformance/jobs` runs every job at once, slot or
