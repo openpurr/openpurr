@@ -72,6 +72,16 @@ describe("forward mode", () => {
     expect(res.headers.get("location")).toBe("https://elsewhere.example/cb?code=1");
   });
 
+  it("keeps the export API on the back office, for the final delta", async () => {
+    const seen = captureFetch();
+    const res = await officeWorker.fetch!(new Request("https://office.example.com/admin/v1/export/tables/customer") as any, { ...env, ...FORWARD }, createExecutionContext());
+    expect(res.status).toBe(401); // answered here: no token
+    expect(seen).toHaveLength(0);
+    // The SDK Worker has no export API: everything goes.
+    await sdkWorker.fetch!(new Request("https://purchases.example.com/admin/v1/export") as any, { ...env, ...FORWARD }, createExecutionContext());
+    expect(seen).toHaveLength(1);
+  });
+
   it("stops the back office's scheduled jobs", async () => {
     const seen = captureFetch();
     const ctx = createExecutionContext();
