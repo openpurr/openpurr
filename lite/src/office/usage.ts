@@ -16,6 +16,9 @@
 
 import type { Env } from "../env";
 
+/** Which server this is, in the settings and usage reports: Standard, which has no such limits, says "standard". */
+export const EDITION = "lite";
+
 export const LIMITS = {
   workers_requests: 100_000,
   d1_rows_read: 5_000_000,

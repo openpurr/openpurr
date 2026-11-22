@@ -19,7 +19,7 @@ import { audit, type Operator, publicOperator, requireTotpForEveryone } from "./
 import { BadInput, searchCustomers } from "./customers";
 import { type Actor, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
 import { runChecks, summarize } from "./doctor";
-import { assessUsage, cloudflarePlan, type Plan, readUsage, refreshUsage, usageConfigured } from "./usage";
+import { assessUsage, cloudflarePlan, EDITION, type Plan, readUsage, refreshUsage, usageConfigured } from "./usage";
 import { ImportError, importRow, type ImportRow } from "./import";
 import { decideRequest, listGrants, pendingRequest, revokeGrantFor } from "./oauth";
 import { randomToken, sha256Hex } from "./auth-crypto";
@@ -915,7 +915,8 @@ admin.post("/config/versions/:id/restore", requirePermission("config:manage"), a
 async function settingsOf(c: Ctx) {
   const [requireTotp, plan, sdkUrl] = await Promise.all([requireTotpForEveryone(c.env.DB), cloudflarePlan(c.env.DB), storedSdkUrl(c.env.DB)]);
   // sdk_url is what was set (null if nothing); sdk_url_guess is the workers.dev guess shown until then.
-  return { require_totp: requireTotp, cloudflare_plan: plan, sdk_url: sdkUrl, sdk_url_guess: guessSdkUrl(new URL(c.req.url).origin) };
+  // edition tells the shared dashboard which server it's on (Standard says "standard").
+  return { require_totp: requireTotp, cloudflare_plan: plan, sdk_url: sdkUrl, sdk_url_guess: guessSdkUrl(new URL(c.req.url).origin), edition: EDITION };
 }
 
 admin.get("/settings", requirePermission("read"), async (c) => c.json(await settingsOf(c)));
@@ -967,6 +968,7 @@ async function usageReport(c: Ctx) {
     error: snapshot?.error ?? null,
     error_at: snapshot?.errorAt ?? null,
     metrics: assessUsage(snapshot, plan),
+    edition: EDITION,
   };
 }
 

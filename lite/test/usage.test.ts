@@ -160,7 +160,7 @@ describe("judging usage", () => {
 describe("usage in the admin API and the setup checks", () => {
   it("reports usage, and says how to turn it on when there's no token", async () => {
     const off = await admin("GET", "/usage", { env: { ...env, OPERATOR_SECRET: SECRET } });
-    expect(off.body).toMatchObject({ configured: false, plan: "free", updated_at: null });
+    expect(off.body).toMatchObject({ configured: false, plan: "free", updated_at: null, edition: "lite" });
     const check = (await admin("GET", "/doctor", { env: { ...env, OPERATOR_SECRET: SECRET } })).body.checks.find((c: { id: string }) => c.id === "usage");
     expect(check).toMatchObject({ status: "info", fix: expect.stringContaining("wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office") });
   });

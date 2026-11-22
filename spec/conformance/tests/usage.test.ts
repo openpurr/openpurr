@@ -18,7 +18,7 @@ describeEdition("lite", "usage in the admin API and the setup checks", () => {
   itEdition("lite", "reports usage, and says how to turn it on when there's no token", async () => {
     const off = await admin("GET", "/usage");
     expect(off.status).toBe(200);
-    expect(off.body).toMatchObject({ configured: false, plan: "free", updated_at: null });
+    expect(off.body).toMatchObject({ configured: false, plan: "free", updated_at: null, edition: "lite" });
     expect(off.body.metrics.map((m: { metric: string }) => m.metric)).toEqual(["workers_requests", "d1_rows_read", "d1_rows_written"]);
     expect(await usageCheck()).toMatchObject({ status: "info", fix: expect.stringContaining("wrangler secret put CLOUDFLARE_ANALYTICS_TOKEN --env office") });
   });
