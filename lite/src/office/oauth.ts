@@ -140,6 +140,12 @@ interface Client {
 
 class ClientError extends Error {}
 
+/** The first `max` UTF-16 code units of `s`, dropping a character that would be cut in half. */
+function truncate(s: string, max: number) {
+  const t = s.slice(0, max);
+  return /[\uD800-\uDBFF]$/.test(t) ? t.slice(0, -1) : t;
+}
+
 /** A Client ID Metadata Document URL: HTTPS with a path, a real host name (no IPs or localhost). */
 function metadataUrl(clientId: string) {
   let u: URL;
@@ -175,8 +181,8 @@ async function fetchMetadataDocument(c: Ctx, url: URL): Promise<Client> {
   if (doc.client_id !== url.toString()) throw new ClientError("The client's metadata document has a different client_id than its URL.");
   const redirects = Array.isArray(doc.redirect_uris) ? doc.redirect_uris.filter(validRedirect) : [];
   if (!redirects.length) throw new ClientError("The client's metadata document has no usable redirect_uris (HTTPS or localhost).");
-  const name = typeof doc.client_name === "string" && doc.client_name.trim() ? doc.client_name.trim().slice(0, 100) : url.hostname;
-  const clientUri = typeof doc.client_uri === "string" && doc.client_uri.startsWith("https://") ? doc.client_uri.slice(0, 500) : null;
+  const name = typeof doc.client_name === "string" && doc.client_name.trim() ? truncate(doc.client_name.trim(), 100) : url.hostname;
+  const clientUri = typeof doc.client_uri === "string" && doc.client_uri.startsWith("https://") ? truncate(doc.client_uri, 500) : null;
   return { id: url.toString(), kind: "metadata_document", name, client_uri: clientUri, redirect_uris: redirects };
 }
 
@@ -240,8 +246,8 @@ oauth.post("/register", async (c) => {
   if (!Array.isArray(grantTypes) || !grantTypes.every((g) => g === "authorization_code" || g === "refresh_token")) {
     return oauthError(c, "invalid_client_metadata", "grant_types may only include authorization_code and refresh_token.");
   }
-  const name = typeof b.client_name === "string" && b.client_name.trim() ? b.client_name.trim().slice(0, 100) : "Unnamed MCP client";
-  const clientUri = typeof b.client_uri === "string" && b.client_uri.startsWith("https://") ? b.client_uri.slice(0, 500) : null;
+  const name = typeof b.client_name === "string" && b.client_name.trim() ? truncate(b.client_name.trim(), 100) : "Unnamed MCP client";
+  const clientUri = typeof b.client_uri === "string" && b.client_uri.startsWith("https://") ? truncate(b.client_uri, 500) : null;
   const id = `opc_${randomToken()}`;
   const now = Date.now();
   await c.env.DB.prepare("INSERT INTO oauth_client (id, kind, name, client_uri, redirect_uris, created_at) VALUES (?, 'registered', ?, ?, ?, ?)")

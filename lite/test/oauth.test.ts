@@ -282,6 +282,21 @@ describe("the authorization code flow", () => {
     expect((await request(`/admin/v1/oauth/requests/${id2}`, { session: viewer.session })).status).toBe(404);
   });
 
+  it("shortens a long client name or URI without splitting a character", async () => {
+    const name = `${"a".repeat(99)}\u{1F63A}b`; // the cat straddles the 100-code-unit limit
+    const uri = `https://client.example/${"p".repeat(476)}\u{1F63A}`; // and the 500 one
+    const reg = await jsonOf(await register({ client_name: name, client_uri: uri }));
+    expect(reg.client_name).toBe("a".repeat(99));
+    expect(reg.client_uri).toBe(uri.slice(0, 499));
+    metadataDoc = { client_id: "https://client.example/oauth/long.json", client_name: name, client_uri: uri, redirect_uris: [CALLBACK] };
+    const owner = await signedIn("owner");
+    const start = await request(authorizeUrl("https://client.example/oauth/long.json", (await pkce()).challenge));
+    const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+    expect((await jsonOf(await request(`/admin/v1/oauth/requests/${id}`, { session: owner.session }))).client).toMatchObject({ name: "a".repeat(99), uri: uri.slice(0, 499) });
+    // Short enough: kept whole.
+    expect((await jsonOf(await register({ client_name: `${"a".repeat(98)}\u{1F63A}` }))).client_name).toBe(`${"a".repeat(98)}\u{1F63A}`);
+  });
+
   it("refuses bad requests", async () => {
     const { client_id: clientId } = await jsonOf(await register());
     const { challenge } = await pkce();
