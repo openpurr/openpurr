@@ -73,6 +73,8 @@ describe("push authentication", () => {
     const [h, p] = good.split(".");
     expect((await g.notify(test, { token: `${h}.${p}.AAAA` })).status).toBe(401);
     expect((await g.notify(test, { token: `${h}.${p}.%%%` })).status).toBe(401);
+    // A header that decodes to null (JSON, but not an object).
+    expect((await g.notify(test, { token: `${btoa("null")}.${p}.AAAA` })).status).toBe(401);
     expect(PUSH_ACCOUNT).toMatch(/@/);
   });
 
