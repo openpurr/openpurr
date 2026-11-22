@@ -21,6 +21,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/applereceipt"
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/customerinfo"
+	"github.com/openpurr/openpurr/standard/internal/google"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
 	"github.com/openpurr/openpurr/standard/internal/webhooks"
@@ -44,6 +45,11 @@ type receipt struct {
 	states       []ledger.StateUpdate
 	// The transaction the device posted, when there is exactly one.
 	postedTransactionID string
+	// Google Play: a purchase still to acknowledge, the purchase token this one replaces ("" for
+	// none), and the client that verified it.
+	ack      *google.Ack
+	replaces string
+	google   *google.Client
 }
 
 func (s *server) postReceipt(q *sdkRequest) error {
@@ -66,7 +72,7 @@ func (s *server) postReceipt(q *sdkRequest) error {
 		restore, _ := q.prop("is_restore")
 		result, failure, err = s.appleReceipt(q, tokenStr, truthy(restore))
 	} else {
-		result, failure = s.googleReceipt(q, token)
+		result, failure, err = s.googleReceipt(q, token)
 	}
 	if err != nil {
 		return err
@@ -81,9 +87,17 @@ func (s *server) postReceipt(q *sdkRequest) error {
 	rawAttrs, defined := q.prop("attributes")
 	updates, _ := ledger.ParseAttributes(rawAttrs, defined, q.now)
 	appUserID := idString(user)
-	customerID, err := s.recordForCustomer(q, appUserID, result.transactions, result.states, updates)
+	customerID, err := s.recordForCustomer(q, appUserID, result.transactions, result.states, updates, result.replaces)
 	if err != nil {
 		return err
+	}
+	// Google Play: acknowledge after recording, so a failure here never loses the purchase.
+	if result.ack != nil {
+		client, ack := result.google, *result.ack
+		s.Deferred.Go("acknowledge Play purchase", func(ctx context.Context) error {
+			_, err := google.Acknowledge(ctx, s.Pool, client, app.ID, ack, s.Clock.Now())
+			return err
+		})
 	}
 
 	// Rebuild the snapshot now and answer with it, so the device gets exactly what reads will serve.
@@ -219,10 +233,9 @@ func (s *server) storeKit1Receipt(q *sdkRequest, receiptBase64 string) (*receipt
 	return &receipt{transactions: sync.Transactions, states: sync.States}, nil, nil
 }
 
-// googleReceipt is the part of Lite's Google Play receipt handling that needs no Play Developer
-// API: the product check and unverified development purchases. Verifying with Google arrives with
-// the Google Play milestone; until then such purchases stay queued on the device (5xx).
-func (s *server) googleReceipt(q *sdkRequest, token any) (*receipt, *receiptFailure) {
+// googleReceipt verifies a Google Play purchase with the Play Developer API, or, for apps that
+// allow it in development, records it unverified.
+func (s *server) googleReceipt(q *sdkRequest, token any) (*receipt, *receiptFailure, error) {
 	app := q.app
 	ref, _ := q.prop("platform_product_ids")
 	var first any
@@ -240,17 +253,46 @@ func (s *server) googleReceipt(q *sdkRequest, token any) (*receipt, *receiptFail
 	product := app.Products[productID]
 	if product == nil {
 		// 5xx, not 4xx: a missing product is a config mistake, and the purchase must not be lost.
-		return nil, &receiptFailure{http.StatusInternalServerError, codeInternalServerError, "Product " + productID + " is not in the config."}
+		return nil, &receiptFailure{http.StatusInternalServerError, codeInternalServerError, "Product " + productID + " is not in the config."}, nil
 	}
+	tokenStr := jsobj.String(token, true)
+
 	if app.GooglePlayAPI != nil {
-		return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, "This openpurr Standard server can't verify Google Play purchases yet; the purchase will be retried."}
+		client, err := google.ClientFor(app, s.googleEnv())
+		if err != nil {
+			return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, err.Error()}, nil
+		}
+		p, err := google.VerifyPurchase(q.r.Context(), client, app, tokenStr, productID, q.now, s.Log)
+		if err != nil {
+			var apiErr *google.APIError
+			var pending *google.PendingError
+			var mapping *google.MappingError
+			switch {
+			case errors.As(err, &apiErr) && apiErr.NotFound():
+				// Google doesn't know the token: not a real purchase of this app, so let the device drop it.
+				return nil, &receiptFailure{http.StatusBadRequest, codeInvalidReceipt, "Google Play doesn't recognize this purchase."}, nil
+			case errors.As(err, &apiErr) && apiErr.Retryable():
+				return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, "Google Play is unavailable; try again later."}, nil
+			case errors.As(err, &apiErr):
+				s.Log.Error("Google Play Developer API error", "error", err.Error())
+				return nil, &receiptFailure{http.StatusInternalServerError, codeInternalServerError, "Google Play Developer API error " + itoa(apiErr.Status) + "; check the service account's access."}, nil
+			case errors.As(err, &pending):
+				// Pending purchases aren't paid yet; keep them on the device.
+				return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, err.Error()}, nil
+			case errors.As(err, &mapping):
+				return nil, &receiptFailure{http.StatusInternalServerError, codeInternalServerError, err.Error()}, nil
+			}
+			return nil, nil, err
+		}
+		return &receipt{transactions: p.Transactions, states: p.States, postedTransactionID: p.PostedTransactionID,
+			ack: p.Ack, replaces: p.Replaces, google: client}, nil, nil
 	}
+
 	if !app.AllowUnverifiedPurchases {
 		// 5xx keeps the purchase on the device until the operator configures google_play_api.
-		return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, "App " + app.ID + " has no google_play_api in the config, so Play purchases can't be verified."}
+		return nil, &receiptFailure{http.StatusServiceUnavailable, codeInternalServerError, "App " + app.ID + " has no google_play_api in the config, so Play purchases can't be verified."}, nil
 	}
 	now := q.now
-	tokenStr := jsobj.String(token, true)
 	// Development only (allow_unverified_purchases): nothing here is checked with Google.
 	row := ledger.NewTransaction{Source: "sdk"}
 	t := &row.Transaction
@@ -273,13 +315,16 @@ func (s *server) googleReceipt(q *sdkRequest, token any) (*receipt, *receiptFail
 	}
 	t.PeriodType = "normal"
 	t.OwnershipType = "PURCHASED"
-	return &receipt{transactions: []ledger.NewTransaction{row}, postedTransactionID: row.TransactionID}, nil
+	return &receipt{transactions: []ledger.NewTransaction{row}, postedTransactionID: row.TransactionID}, nil, nil
 }
 
 // recordForCustomer writes transactions and status for the customer who posted them, applying
 // RevenueCat's default restore behavior ("transfer to new App User ID") per purchase chain: a chain
 // owned by an anonymous user merges that user in; a chain owned by a named user transfers.
-func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions []ledger.NewTransaction, states []ledger.StateUpdate, attributes *ledger.Updates) (string, error) {
+//
+// replaces is the Play purchase token a new one replaces ("" for none): its chain is marked
+// upgraded in the same transaction.
+func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions []ledger.NewTransaction, states []ledger.StateUpdate, attributes *ledger.Updates, replaces string) (string, error) {
 	ctx := q.r.Context()
 	project := q.project
 	now := q.now
@@ -447,6 +492,15 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 		}
 		if attributes.Len() > 0 {
 			if err := ledger.WriteAttributes(ctx, tx, customer.ID, attributes, now); err != nil {
+				return err
+			}
+		}
+		if replaces != "" {
+			if err := google.MarkReplaced(ctx, tx, replaces); err != nil {
+				return err
+			}
+			// Lite leaves this to the owner's next write when someone else owns the replaced chain.
+			if err := customerinfo.InvalidateOwner(ctx, tx, "play_store", replaces); err != nil {
 				return err
 			}
 		}

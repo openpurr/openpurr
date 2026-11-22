@@ -20,6 +20,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/applejws"
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/google"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
@@ -48,6 +49,9 @@ type Deps struct {
 	JWS *applejws.Verifier
 	// App Store Server API bearer tokens; made by New when nil.
 	AppleTokens *apple.Tokens
+	// Google service-account access tokens and Google's ID token keys; made by New when nil.
+	GoogleTokens *google.Tokens
+	GoogleKeys   *google.Keys
 	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
 	OperatorSecret string
 	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
@@ -76,6 +80,12 @@ func New(d *Deps) http.Handler {
 	if d.AppleTokens == nil {
 		d.AppleTokens = apple.NewTokens(d.Clock.Now)
 	}
+	if d.GoogleTokens == nil {
+		d.GoogleTokens = google.NewTokens(d.Clock.Now)
+	}
+	if d.GoogleKeys == nil {
+		d.GoogleKeys = google.NewKeys(d.Clock.Now, d.HTTPClient)
+	}
 	s := &server{Deps: d}
 	return s.logRequests(s.recoverPanics(http.HandlerFunc(s.route)))
 }
@@ -103,6 +113,9 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		s.settleInConformance()
 	case path == "/notifications/apple":
 		s.appleNotification(w, r)
+		s.settleInConformance()
+	case path == "/notifications/google":
+		s.googleNotification(w, r)
 		s.settleInConformance()
 	case s.Conformance != nil && strings.HasPrefix(path, "/__conformance/"):
 		s.conformance(w, r)
