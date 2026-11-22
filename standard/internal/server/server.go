@@ -23,6 +23,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/fx"
 	"github.com/openpurr/openpurr/standard/internal/google"
+	"github.com/openpurr/openpurr/standard/internal/iap"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
@@ -72,6 +73,9 @@ type Deps struct {
 	// The header holding the client IP set by a trusted proxy (for example CF-Connecting-IP or
 	// X-Forwarded-For); empty means the connection's address.
 	ClientIPHeader string
+
+	// Verifies Identity-Aware Proxy assertions (IAP_AUDIENCE); nil means IAP sign-in is off.
+	IAP *iap.Verifier
 
 	// Fetches OAuth Client ID Metadata Documents; NewMetadataClient() when nil.
 	MetadataClient *http.Client
@@ -127,6 +131,10 @@ type server struct {
 	dash       *dashboard
 	sdkMuxOnce sync.Once
 	sdkMux     *http.ServeMux
+
+	// Unknown emails' IAP sign-ins, last audited (iap.go).
+	iapMu       sync.Mutex
+	iapFailures map[string]int64
 }
 
 var healthReport = regexp.MustCompile(`^/v1/subscribers/[^/]+/health_report_availability$`)

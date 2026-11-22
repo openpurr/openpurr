@@ -19,6 +19,7 @@ var RewrittenHosts = []string{
 	"www.googleapis.com",
 	"www.ecb.europa.eu",
 	"api.cloudflare.com",
+	"www.gstatic.com", // IAP's signing keys
 }
 
 // NewClient returns the outbound client. With a non-empty storeBase (conformance mode), requests

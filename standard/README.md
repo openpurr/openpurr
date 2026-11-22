@@ -52,6 +52,7 @@ rebuilds) finish, and stops, within 25 seconds.
 | `RATE_LIMIT_USER_PER_MINUTE` | SDK requests per app user per minute (default 60, 0 = off). |
 | `CLIENT_IP_HEADER` | The header your load balancer puts the client IP in (for example `X-Forwarded-For` or `CF-Connecting-IP`). Without it, the connection's address is used. Only set it behind a proxy that overwrites the header. |
 | `LOG_LEVEL` | `debug`, `info` (default), `warn` or `error`. |
+| `IAP_AUDIENCE` | Sign operators in through Google's Identity-Aware Proxy (see below): the audience IAP signs for, `/projects/<project number>/global/backendServices/<id>` behind a load balancer (several separated by commas). Off when unset. |
 
 Secrets the config names (`APPLE_IAP_KEY`, `GOOGLE_SERVICE_ACCOUNT`, webhook secrets) are
 environment variables of that name, as they're Worker secrets of that name on Lite.
@@ -176,6 +177,40 @@ As on Lite (`lite/src/office`), with the same tables, so operators, tokens and s
   The usage report has no metrics (Standard has no Cloudflare daily limits) and
   `POST /admin/v1/usage/refresh` answers 400. The dashboard doesn't read the edition yet; until it
   does, it shows "Lite" and the usage card's Cloudflare text.
+
+### Identity-Aware Proxy
+
+Standard's counterpart to Lite's planned Cloudflare Access sign-in (project plan section 8.2), in
+`internal/iap` and `internal/server/iap.go`. With `IAP_AUDIENCE` set, an operator whose request
+reaches the dashboard through Google Cloud's Identity-Aware Proxy is signed in as the active
+operator with the same email:
+
+- **Every request is checked.** The `x-goog-iap-jwt-assertion` JWT is verified each time: ES256
+  against IAP's keys (`https://www.gstatic.com/iap/verify/public_key-jwk`, cached as long as
+  Google's `Cache-Control` says, fetched again for an unknown key at most once a minute), issuer
+  `https://cloud.google.com/iap`, the configured audience, expiry and issue time (30 seconds of
+  skew, read from the server's clock), and a plain email (Identity Platform identities are
+  refused). The header's presence is never trusted. There's no session: removing someone from IAP,
+  or disabling the operator, takes effect on their next request.
+- **An additional way in, not a replacement.** Personal access tokens and session cookies come
+  first and work as before; a missing, invalid or unknown assertion is no IAP identity at all, so
+  password sign-in and `openpurr admin login-link` still work and the owner can't be locked out.
+- **The dashboard's API only** (`/admin/v1`, including `/admin/v1/auth/me`, which answers
+  `"session": "iap"`). The SDK API, store notifications, `/mcp`, `/oauth` and `/.well-known` never
+  read the header. Writes still need the dashboard's `Origin`. The role and app limits apply as
+  for any sign-in.
+- **Two-step sign-in** is the Google account's: openpurr's authenticator codes belong to password
+  sign-in, so "require two-step sign-in" doesn't block an IAP sign-in. Enforce 2-Step Verification
+  for the accounts IAP admits (Google Workspace or Cloud Identity admin console).
+- **Audited** as `auth.login` with `{"via":"iap"}` when an operator is first seen through IAP and
+  then at most once an hour; an email with no operator as `auth.login_failed`
+  (`{"reason":"unknown","via":"iap"}`) at most once an hour. Invalid assertions are logged.
+- **The setup checks** (`/admin/v1/doctor`) say whether this request's assertion passed, and why
+  not (usually the audience), and notice requests that come through IAP while `IAP_AUDIENCE` isn't
+  set. They also warn when the SDK URL is a `*.run.app` address: apps should use a domain you own.
+
+`infra/gcp` puts IAP in front of `/admin` on a load balancer and sets `IAP_AUDIENCE`; see
+`../docs/standard-on-gcp.md`.
 
 ## Charts
 

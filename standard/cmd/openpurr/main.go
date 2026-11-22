@@ -10,6 +10,7 @@
 //	RATE_LIMIT_IP_PER_MINUTE     SDK requests per client IP per minute (default 300; 0 = off)
 //	RATE_LIMIT_USER_PER_MINUTE   SDK requests per app user per minute (default 60; 0 = off)
 //	CLIENT_IP_HEADER             header with the client IP set by your proxy (default: the connection)
+//	IAP_AUDIENCE                 sign operators in through Google's Identity-Aware Proxy (optional)
 //	LOG_LEVEL                    debug, info (default), warn or error
 //
 // `openpurr admin ...` manages operators straight in the database (create, login-link, list,
@@ -39,6 +40,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/db"
+	"github.com/openpurr/openpurr/standard/internal/iap"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
 	"github.com/openpurr/openpurr/standard/internal/outbound"
@@ -119,6 +121,11 @@ func run(log *slog.Logger) error {
 	publicURL := strings.TrimRight(os.Getenv("PUBLIC_URL"), "/")
 	if publicURL != "" && !strings.HasPrefix(publicURL, "https://") && !strings.HasPrefix(publicURL, "http://") {
 		return errors.New("PUBLIC_URL must be an origin such as https://purchases.example.com")
+	}
+
+	iapAudiences, err := iap.ParseAudiences(os.Getenv("IAP_AUDIENCE"))
+	if err != nil {
+		return err
 	}
 
 	// Conformance mode: refused unless a token guards its routes.
@@ -208,6 +215,11 @@ func run(log *slog.Logger) error {
 		Secret:         os.LookupEnv,
 		ClientIPHeader: os.Getenv("CLIENT_IP_HEADER"),
 		Conformance:    conformance,
+	}
+
+	if len(iapAudiences) > 0 {
+		deps.IAP = iap.New(iapAudiences, clk.Now, deps.HTTPClient)
+		log.Info("sign-in through Identity-Aware Proxy is on", "audiences", strings.Join(iapAudiences, ","))
 	}
 
 	handler := server.New(deps) // registers the periodic jobs

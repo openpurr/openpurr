@@ -164,8 +164,23 @@ func (s *server) adminAuthenticate(q *adminReq) bool {
 		return false
 	}
 	if sess == nil || sess.kind == "setup" {
-		q.fail(http.StatusUnauthorized, "signed_out", "Sign in, or send a personal access token.")
-		return false
+		// Signed in by Identity-Aware Proxy, for this request only (iap.go).
+		o, err := s.iapOperator(q.ctx, r, q.now)
+		if err != nil {
+			q.internal(err)
+			return false
+		}
+		if o == nil {
+			q.fail(http.StatusUnauthorized, "signed_out", "Sign in, or send a personal access token.")
+			return false
+		}
+		if r.Method != http.MethodGet && r.Method != http.MethodHead && !s.sameOrigin(r) {
+			q.fail(http.StatusForbidden, "bad_origin", "Requests must come from the openpurr dashboard.")
+			return false
+		}
+		// Two-step sign-in is IAP's (the Google account's), not openpurr's: see iap.go.
+		q.p = principalOf(o, "iap", nil, nil)
+		return true
 	}
 	if r.Method != http.MethodGet && r.Method != http.MethodHead && !s.sameOrigin(r) {
 		q.fail(http.StatusForbidden, "bad_origin", "Requests must come from the openpurr dashboard.")
