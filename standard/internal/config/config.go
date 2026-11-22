@@ -104,12 +104,16 @@ type Entitlement struct {
 	Description string
 	// Per app: product references.
 	Products map[string][]ProductRef
+	// The apps of Products in document order (Lite's Map order).
+	ProductApps []string
 }
 
 type Package struct {
 	ID string
 	// Per app: product reference, as in entitlements.
 	Products map[string]ProductRef
+	// The apps of Products in document order (Lite's Map order).
+	ProductApps []string
 }
 
 type Offering struct {
@@ -650,6 +654,9 @@ func parseProject(projectID string, raw *jsobj.Object, prefix string, g *globals
 					resolved = append(resolved, ref)
 				}
 			}
+			if _, dup := ent.Products[appID]; !dup {
+				ent.ProductApps = append(ent.ProductApps, appID)
+			}
 			ent.Products[appID] = resolved
 		}
 		if !prodIsObj || prodObj == nil {
@@ -734,6 +741,9 @@ func parseProject(projectID string, raw *jsobj.Object, prefix string, g *globals
 				}
 				refV, _ := p.Get(appID)
 				if ref, ok := productRef(appID, refV, pat+"."+appID); ok {
+					if _, dup := pkg.Products[appID]; !dup {
+						pkg.ProductApps = append(pkg.ProductApps, appID)
+					}
 					pkg.Products[appID] = ref
 				}
 			}
