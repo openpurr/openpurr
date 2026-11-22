@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"slices"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -301,6 +302,56 @@ func TestOAuthCodeFlow(t *testing.T) {
 		wg.Wait()
 		if ok.Load() != 1 {
 			t.Errorf("%d refreshes succeeded", ok.Load())
+		}
+	})
+
+	t.Run("approving and refreshing keep each scope once", func(t *testing.T) {
+		clientID := e.register().Get(t, "client_id").(string)
+		owner := e.CreateOperator(e.owner, "owner", nil)
+		verifier, challenge := pkce()
+		code := e.approvedCode(clientID, owner.Session, challenge, "write:grants", "read", "write:grants", "read")
+		tokens := expectStatus(t, e.exchange("grant_type", "authorization_code", "code", code, "client_id", clientID, "code_verifier", verifier), 200)
+		if tokens.Get(t, "scope") != "write:grants read" {
+			t.Errorf("%s", tokens.Body)
+		}
+		narrowed := expectStatus(t, e.exchange("grant_type", "refresh_token", "refresh_token", tokens.Get(t, "refresh_token").(string), "client_id", clientID, "scope", "read read"), 200)
+		if narrowed.Get(t, "scope") != "read" {
+			t.Errorf("%s", narrowed.Body)
+		}
+	})
+
+	t.Run("one decision per request: a deny racing an approval or another deny gets a 404", func(t *testing.T) {
+		clientID := e.register().Get(t, "client_id").(string)
+		owner := e.CreateOperator(e.owner, "owner", nil)
+		for _, pair := range [][2]string{{"approve", "deny"}, {"deny", "approve"}, {"deny", "deny"}} {
+			verifier, challenge := pkce()
+			id := e.startAuthorize(clientID, challenge)
+			before := e.Count("audit_log WHERE action IN ('oauth.authorized', 'oauth.denied')")
+			var wg sync.WaitGroup
+			results := make([]*tu.Response, 2)
+			for i, decision := range pair {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					results[i] = e.Admin("POST", "/oauth/requests/"+id+"/"+decision, tu.Auth{Session: owner.Session}, jsobj.New())
+				}()
+			}
+			wg.Wait()
+			statuses := []int{results[0].Status, results[1].Status}
+			slices.Sort(statuses)
+			if statuses[0] != 200 || statuses[1] != 404 {
+				t.Fatalf("%v: statuses %v", pair, statuses)
+			}
+			if n := e.Count("audit_log WHERE action IN ('oauth.authorized', 'oauth.denied')") - before; n != 1 {
+				t.Errorf("%v: %d audit rows", pair, n)
+			}
+			// When the approval won, its code still works.
+			for i, decision := range pair {
+				if decision == "approve" && results[i].Status == 200 {
+					back, _ := url.Parse(results[i].Get(t, "redirect").(string))
+					expectStatus(t, e.exchange("grant_type", "authorization_code", "code", back.Query().Get("code"), "client_id", clientID, "code_verifier", verifier), 200)
+				}
+			}
 		}
 	})
 

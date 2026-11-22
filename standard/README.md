@@ -432,13 +432,7 @@ On purpose, or because Postgres and Go aren't D1 and Workers:
 - **Ties in MCP and OAuth lists** (aliases with the same creation time, webhook deliveries with the
   same time, experiments created at the same moment, connected apps approved at the same moment)
   are ordered by ID, where SQLite leaves them in row order.
-- **Codes and refresh tokens used twice at once.** Exchanging a code locks its request row, so of
-  two simultaneous exchanges one gets tokens and the other is the reuse that ends them; a refresh
-  rotates only if the token is still the current one, so of two simultaneous refreshes one wins
-  (on Lite both could). Approving a request that was approved a moment earlier answers 404 rather
-  than a code that won't work.
 - **Client ID Metadata Documents** are fetched only from public addresses (the host's addresses
   are checked when connecting, so a client_id can't point this server at its own network), with no
-  redirects and a 64 KB limit counted in bytes. A document that is JSON `null` is refused as having
-  the wrong client_id (Lite answers 500). Workers' `fetch` can't reach a private network; a
+  redirects and a 64 KB limit counted in bytes. Workers' `fetch` can't reach a private network; a
   server in a VPC can.

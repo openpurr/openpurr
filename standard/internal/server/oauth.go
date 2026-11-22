@@ -894,7 +894,7 @@ func (s *server) oauthToken(w http.ResponseWriter, r *http.Request) {
 		if p["scope"] != "" {
 			var narrower []string
 			for _, sc := range strings.FieldsFunc(p["scope"], isJSSpace) {
-				if contains(scopes, sc) {
+				if contains(scopes, sc) && !contains(narrower, sc) {
 					narrower = append(narrower, sc)
 				}
 			}
@@ -1076,16 +1076,25 @@ func adminOAuthDecide(q *adminReq) {
 	kv = append(kv, "iss", q.s.requestOrigin(q.r))
 	op := q.p.op
 	if decision == "deny" {
+		// Only a request not yet decided can be denied, so a deny racing an approval (or another
+		// deny) can't remove the approved request; the loser gets a 404, as on Lite.
+		deleted := false
 		err := q.tx(func(tx pgx.Tx) error {
-			if _, err := tx.Exec(q.ctx, "DELETE FROM oauth_request WHERE id = $1", id); err != nil {
+			tag, err := tx.Exec(q.ctx, "DELETE FROM oauth_request WHERE id = $1 AND code_hash IS NULL", id)
+			if err != nil || tag.RowsAffected() == 0 {
 				return err
 			}
+			deleted = true
 			e := operatorAudit(op, "oauth.denied", q.ip())
 			e.target = &clientName
 			return writeAudit(q.ctx, tx, q.now, e)
 		})
 		if err != nil {
 			q.internal(err)
+			return
+		}
+		if !deleted {
+			q.notFound(oauthRequestGone)
 			return
 		}
 		q.json(http.StatusOK, jsobj.New("redirect", withParams(redirectURI, append(kv, "error", "access_denied")...)))
@@ -1113,7 +1122,7 @@ func adminOAuthDecide(q *adminReq) {
 	}
 	var scopes []string
 	for _, sc := range chosen {
-		if contains(allowed, sc) {
+		if contains(allowed, sc) && !contains(scopes, sc) { // each scope once, in the order given
 			scopes = append(scopes, sc)
 		}
 	}
