@@ -480,3 +480,40 @@ describe("dashboard language", () => {
     expect((await api("PATCH", "/me", { token: pat }, { body: { locale: "zh-tw" }, origin: null })).body.operator.locale).toBe("zh-tw");
   });
 });
+
+describe("page sizes", () => {
+  // SQLite reads LIMIT -1 as no limit at all: a whole-table read. A negative (or zero, or
+  // fractional below one) limit is the route's largest page instead, as on Standard.
+  const filler = (sql: string, n: number) => env.DB.prepare(`WITH RECURSIVE i(x) AS (SELECT 1 UNION ALL SELECT x + 1 FROM i WHERE x < ${n}) ${sql}`);
+
+  it("clamps a negative limit on the audit log, deliveries and config history to the largest page", async () => {
+    const owner = await operator("owner");
+    const tag = crypto.randomUUID();
+    const now = Date.now();
+    await filler(`INSERT INTO audit_log (at, source, action) SELECT ${now}, 'system', 'test.filler' FROM i`, 510).run();
+    await filler(`INSERT INTO webhook_event (id, dedupe_key, type, app_id, environment, body, created_at) SELECT '${tag}-' || x, '${tag}-' || x, 'TEST', 'ios', 'sandbox', '{}', ${now} FROM i`, 210).run();
+    await filler(`INSERT INTO webhook_delivery (event_id, endpoint, status, created_at) SELECT '${tag}-' || x, 'test', 'failed', ${now} FROM i`, 210).run();
+    const current = (await api("GET", "/config", { session: owner.session })).body;
+    await filler("INSERT INTO config_version (document, created_at, created_by, note) SELECT ?, ?, 'test', 'filler' FROM i", 210)
+      .bind(JSON.stringify(current.document), now)
+      .run();
+
+    for (const limit of ["-1", "-500", "0.5"]) {
+      const audit = await api("GET", `/audit?limit=${limit}`, { session: owner.session });
+      expect(audit.status).toBe(200);
+      expect(audit.body.entries).toHaveLength(500);
+      expect(audit.body.next_before).toBe(audit.body.entries.at(-1).id);
+      const deliveries = await api("GET", `/webhooks/deliveries?limit=${limit}`, { session: owner.session });
+      expect(deliveries.status).toBe(200);
+      expect(deliveries.body.deliveries).toHaveLength(200);
+      const versions = await api("GET", `/config/versions?limit=${limit}`, { session: owner.session });
+      expect(versions.status).toBe(200);
+      expect(versions.body.versions).toHaveLength(200);
+    }
+    // In range, and fractions, still work as before.
+    expect((await api("GET", "/audit?limit=3", { session: owner.session })).body.entries).toHaveLength(3);
+    expect((await api("GET", "/audit?limit=2.7", { session: owner.session })).body.entries).toHaveLength(2);
+    expect((await api("GET", "/webhooks/deliveries?limit=1000", { session: owner.session })).body.deliveries).toHaveLength(200);
+    expect((await api("GET", "/config/versions?limit=abc", { session: owner.session })).body.versions).toHaveLength(50);
+  });
+});
