@@ -389,6 +389,20 @@ describe("promotional grants", () => {
     expect((await api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", expires_at: "2001-01-01" } })).status).toBe(400);
   });
 
+  it("refuses a note that isn't text with a 400", async () => {
+    const user = `grant-note-${crypto.randomUUID()}`;
+    await postAppleTransaction(user, { productId: "coins_100", type: "Consumable", expiresDate: undefined }); // makes the customer
+    const dev = await operator("developer");
+    const grant = (note: unknown) => api("POST", `/customers/${encodeURIComponent(user)}/grants`, { session: dev.session }, { body: { entitlement_id: "pro", duration: "weekly", note } });
+    for (const note of [5, true, { text: "hi" }, ["hi"]]) {
+      const res = await grant(note);
+      expect(res.status).toBe(400);
+      expect(res.body).toEqual({ code: "bad_request", message: "note must be text." });
+    }
+    expect((await grant(null)).body.grant.note).toBeNull();
+    expect((await grant(" ok ")).body.grant.note).toBe("ok");
+  });
+
   it("moves an anonymous user's grants to the account on logIn", async () => {
     const anon = `$RCAnonymousID:${crypto.randomUUID().replaceAll("-", "")}`;
     const account = `grant-account-${crypto.randomUUID()}`;

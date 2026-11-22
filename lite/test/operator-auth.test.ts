@@ -81,6 +81,15 @@ describe("credential crypto", () => {
     expect(await verifyPassword(SECRET, "a long passphrase here", old)).toEqual({ ok: true, rehash: true });
   });
 
+  it("treats a stored hash it can't read as a wrong password instead of throwing", async () => {
+    const stored = await hashPassword(SECRET, "a long passphrase here");
+    const [alg, , pepper, salt, hash] = stored.split("$");
+    for (const iterations of ["abc", "0", "-5", "1.5", "1e4", "0x4e20", "100001", ""]) {
+      expect(await verifyPassword(SECRET, "a long passphrase here", [alg, iterations, pepper, salt, hash].join("$"))).toEqual({ ok: false, rehash: false });
+    }
+    expect(await verifyPassword(SECRET, "a long passphrase here", [alg, "20000", pepper, "not base64!", hash].join("$"))).toEqual({ ok: false, rehash: false });
+  });
+
   it("computes RFC 6238 TOTP codes (the RFC's SHA-1 test vectors)", async () => {
     const secret = new TextEncoder().encode("12345678901234567890");
     expect(await totpCode(secret, Math.floor(59 / 30))).toBe("287082"); // 94287082
@@ -168,6 +177,20 @@ describe("sign-in", () => {
     const recovered = await req("/link", { body: { token } });
     expect(recovered.body.session).toBe("recovery");
     expect((await req("/login", { body: { email: op.email, password: op.password } })).res.status).toBe(200);
+  });
+
+  it("answers a stored hash it can't read as a wrong password, and counts the failure", async () => {
+    const op = await signedUp();
+    // The operator's real hash, with an iteration count that isn't a number.
+    const real = await hashPassword(SECRET, op.password);
+    await env.DB.prepare("UPDATE operator SET password_hash = ? WHERE id = ?").bind(real.replace("$20000$", "$lots$"), op.id).run();
+    const res = await req("/login", { body: { email: op.email, password: op.password } });
+    expect(res.res.status).toBe(401);
+    expect(res.body.code).toBe("invalid_credentials");
+    const row = await env.DB.prepare("SELECT failed_logins FROM operator WHERE id = ?").bind(op.id).first<{ failed_logins: number }>();
+    expect(row!.failed_logins).toBe(1);
+    // Changing the password from a full session doesn't throw either.
+    expect((await req("/password", { body: { current_password: op.password, new_password: "a new long passphrase" }, cookie: op.session })).res.status).toBe(401);
   });
 
   it("rate limits sign-in attempts per IP", async () => {
