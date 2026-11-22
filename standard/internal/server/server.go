@@ -73,6 +73,9 @@ type Deps struct {
 	// X-Forwarded-For); empty means the connection's address.
 	ClientIPHeader string
 
+	// Fetches OAuth Client ID Metadata Documents; NewMetadataClient() when nil.
+	MetadataClient *http.Client
+
 	// The dashboard's files; the embedded copy of lite/office-ui when nil.
 	Dashboard fs.FS
 
@@ -105,6 +108,9 @@ func New(d *Deps) http.Handler {
 	}
 	if d.FX == nil {
 		d.FX = fx.ECB
+	}
+	if d.MetadataClient == nil {
+		d.MetadataClient = NewMetadataClient()
 	}
 	if d.Dashboard == nil {
 		d.Dashboard = officeui.FS()
@@ -151,6 +157,14 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		s.settleInConformance()
 	case path == "/admin/v1" || strings.HasPrefix(path, "/admin/v1/"):
 		s.admin(w, r)
+		s.settleInConformance()
+	case path == "/mcp":
+		s.mcp(w, r)
+		s.settleInConformance()
+	case strings.HasPrefix(path, "/.well-known/"):
+		s.wellKnown(w, r)
+	case path == "/oauth" || strings.HasPrefix(path, "/oauth/"):
+		s.oauth(w, r)
 		s.settleInConformance()
 	case (r.Method == http.MethodGet || r.Method == http.MethodHead) && s.serveDashboard(w, r):
 	default:

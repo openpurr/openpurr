@@ -77,11 +77,11 @@ func buildAdminRoutes() *adminRouter {
 	rt.add(get, "/metrics/:chart", permRead, adminChart)
 	rt.add(post, "/metrics/refresh", permRead, adminRefreshMetrics)
 
-	// The OAuth consent screen arrives with S7 (MCP).
-	rt.add(get, "/oauth/requests/:id", "", notYet("Connecting MCP clients"))
-	rt.add(post, "/oauth/requests/:id/:decision", "", notYet("Connecting MCP clients"))
+	// OAuth: the consent screen and connected apps (oauth.go).
+	rt.add(get, "/oauth/requests/:id", "", adminOAuthRequest)
+	rt.add(post, "/oauth/requests/:id/:decision", "", adminOAuthDecide)
 	rt.add(get, "/oauth/grants", "", adminOAuthGrants)
-	rt.add(post, "/oauth/grants/:id/revoke", "", notYet("Connecting MCP clients"))
+	rt.add(post, "/oauth/grants/:id/revoke", "", adminRevokeOAuthGrant)
 
 	rt.add(get, "/doctor", permRead, adminDoctor)
 
@@ -103,13 +103,6 @@ func buildAdminRoutes() *adminRouter {
 	rt.add(get, "/usage", permRead, adminUsage)
 	rt.add(post, "/usage/refresh", permRead, adminUsageRefresh)
 	return rt
-}
-
-// notYet answers routes of later milestones.
-func notYet(what string) func(q *adminReq) {
-	return func(q *adminReq) {
-		q.fail(http.StatusNotImplemented, "not_implemented", what+" aren't in openpurr Standard yet.")
-	}
 }
 
 // admin serves /admin/v1/* (except the sign-in routes).
@@ -890,13 +883,6 @@ func adminExpireSecretKey(q *adminReq) {
 		return
 	}
 	q.json(http.StatusOK, jsobj.New("expires_at", float64(at)))
-}
-
-// --- OAuth (S7) ----------------------------------------------------------------------------------
-
-// adminOAuthGrants lists connected MCP clients: none until MCP and OAuth arrive.
-func adminOAuthGrants(q *adminReq) {
-	q.json(http.StatusOK, jsobj.New("grants", []any{}))
 }
 
 // --- webhooks ------------------------------------------------------------------------------------

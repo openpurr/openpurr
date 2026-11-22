@@ -533,7 +533,7 @@ type grantActor struct {
 }
 
 func (q *adminReq) actor() grantActor {
-	return grantActor{email: q.p.op.Email, operatorID: q.p.op.ID, source: q.p.source(), tokenID: q.p.tokenID, ip: q.ip()}
+	return grantActor{email: q.p.op.Email, operatorID: q.p.op.ID, source: q.source(), tokenID: q.p.tokenID, ip: q.ip()}
 }
 
 func (a grantActor) audit(action, target string, details *jsobj.Object) auditEntry {
