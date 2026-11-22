@@ -285,6 +285,7 @@ func (s *server) handleAppleNotification(w http.ResponseWriter, r *http.Request)
 	if err != nil {
 		return err
 	}
+	s.deliverLater(all, events)
 	// Rebuild the owner's snapshot in the background; until then, reads compute it.
 	if chain != "" {
 		s.Deferred.Go("refresh snapshot", func(ctx context.Context) error {

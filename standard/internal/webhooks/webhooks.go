@@ -1,7 +1,7 @@
-// Package webhooks records outbound webhook events: RevenueCat-shaped events for the endpoints in
-// the config, written to webhook_event and webhook_delivery in the same transaction as the ledger
-// change that caused them, so an event exists exactly when its change does. A port of the enqueue
-// side of lite/src/webhooks.ts; delivery, signing and retries arrive with the job loop.
+// Package webhooks records and delivers outbound webhook events (lite/src/webhooks.ts):
+// RevenueCat-shaped events for the endpoints in the config, written to webhook_event and
+// webhook_delivery in the same transaction as the ledger change that caused them, so an event
+// exists exactly when its change does. Delivery is in delivery.go.
 //
 // Body: {"api_version": "1.0", "event": {...}}, with RevenueCat's field names. `price` is in USD,
 // converted at the purchase date's exchange rate; it's null for currencies without a rate.

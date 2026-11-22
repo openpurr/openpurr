@@ -2,7 +2,7 @@ package server_test
 
 // Which webhook events App Store receipts and notifications record, and their bodies. Mirrors the
 // App Store parts of lite/test/webhooks.test.ts, checked on webhook_event and webhook_delivery
-// (delivery itself arrives with the job loop).
+// (webhook_delivery_test.go covers delivery).
 
 import (
 	"context"
@@ -56,7 +56,7 @@ func eventTypes(t *testing.T, env *tu.Env) []string {
 }
 
 func TestWebhookEventsFromReceipts(t *testing.T) {
-	t.Run("a RevenueCat-shaped INITIAL_PURCHASE with a pending delivery", func(t *testing.T) {
+	t.Run("a RevenueCat-shaped INITIAL_PURCHASE with a delivery", func(t *testing.T) {
 		env := tu.Start(t, tu.Options{Config: withWebhook()})
 		now := env.Clock.Now()
 		tx := tu.Transaction(now, tu.Fields{"productId": "pro_annual", "expiresDate": now + 365*tu.Day})
@@ -81,13 +81,15 @@ func TestWebhookEventsFromReceipts(t *testing.T) {
 		if !regexp.MustCompile(`^[0-9a-f-]{36}$`).MatchString(id) {
 			t.Errorf("id %q", id)
 		}
-		var endpoint, status string
+		// The first attempt ran after the response, and found the secrets unset (these tests don't
+		// set them): it's retried in 5 minutes.
+		var endpoint, status, lastError string
 		var attempts int
 		var next int64
-		err := env.Pool.QueryRow(context.Background(), "SELECT endpoint, status, attempts, next_attempt_at FROM webhook_delivery WHERE event_id = $1", id).
-			Scan(&endpoint, &status, &attempts, &next)
-		if err != nil || endpoint != "backend" || status != "pending" || attempts != 0 || next != now+5*60_000 {
-			t.Errorf("delivery %s %s %d %d %v", endpoint, status, attempts, next, err)
+		err := env.Pool.QueryRow(context.Background(), "SELECT endpoint, status, attempts, next_attempt_at, last_error FROM webhook_delivery WHERE event_id = $1", id).
+			Scan(&endpoint, &status, &attempts, &next, &lastError)
+		if err != nil || endpoint != "backend" || status != "pending" || attempts != 1 || next != now+5*60_000 || lastError != "Secret WEBHOOK_AUTH isn't set" {
+			t.Errorf("delivery %s %s %d %d %q %v", endpoint, status, attempts, next, lastError, err)
 		}
 	})
 

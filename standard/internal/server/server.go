@@ -20,12 +20,14 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/applejws"
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
+	"github.com/openpurr/openpurr/standard/internal/fx"
 	"github.com/openpurr/openpurr/standard/internal/google"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
 	"github.com/openpurr/openpurr/standard/internal/ratelimit"
 	"github.com/openpurr/openpurr/standard/internal/secretkeys"
+	"github.com/openpurr/openpurr/standard/internal/webhooks"
 )
 
 // Deps are built once at startup and shared by every request.
@@ -52,6 +54,10 @@ type Deps struct {
 	// Google service-account access tokens and Google's ID token keys; made by New when nil.
 	GoogleTokens *google.Tokens
 	GoogleKeys   *google.Keys
+	// Sends webhook deliveries; made by New when nil.
+	Webhooks *webhooks.Deliverer
+	// Exchange rates; the European Central Bank when nil.
+	FX fx.Provider
 	// Back-office secret (operator passwords, TOTP); used from the back-office milestone on.
 	OperatorSecret string
 	// Secret looks up a secret the config names (APPLE_IAP_KEY, a webhook signing secret...):
@@ -85,6 +91,12 @@ func New(d *Deps) http.Handler {
 	}
 	if d.GoogleKeys == nil {
 		d.GoogleKeys = google.NewKeys(d.Clock.Now, d.HTTPClient)
+	}
+	if d.Webhooks == nil {
+		d.Webhooks = &webhooks.Deliverer{DB: d.Pool, HTTP: d.HTTPClient, Secret: d.Secret, Now: d.Clock.Now, Log: d.Log}
+	}
+	if d.FX == nil {
+		d.FX = fx.ECB
 	}
 	s := &server{Deps: d}
 	if d.Jobs != nil {
@@ -133,6 +145,25 @@ func (s *server) settleInConformance() {
 	if s.Conformance != nil {
 		s.Deferred.Wait()
 	}
+}
+
+// deliverLater makes the first delivery attempt of events just written, after the response
+// (Lite's waitUntil(deliverNow(...))). Deliveries to one endpoint go one after another, each
+// bounded by webhooks.Timeout, so the time limit grows with the number of events.
+func (s *server) deliverLater(cfg *config.Config, events []*webhooks.Prepared) {
+	var ids []string
+	for _, e := range events {
+		if e != nil {
+			ids = append(ids, e.ID)
+		}
+	}
+	if len(ids) == 0 {
+		return
+	}
+	s.Deferred.GoFor("deliver webhooks", time.Duration(len(ids)+1)*webhooks.Timeout, func(ctx context.Context) error {
+		_, err := s.Webhooks.DeliverNow(ctx, cfg, ids, s.Clock.Now())
+		return err
+	})
 }
 
 func (s *server) healthz(w http.ResponseWriter, r *http.Request) {

@@ -1,0 +1,1266 @@
+{
+ "now": 1800000000000,
+ "signNow": 1800000123456,
+ "retryDelaysMs": [
+  300000,
+  600000,
+  2700000,
+  7200000,
+  10800000,
+  21600000,
+  43200000,
+  86400000,
+  86400000
+ ],
+ "retriesPerRun": 20,
+ "config": {
+  "version": 2,
+  "projects": {
+   "default": {
+    "apps": {
+     "ios": {
+      "store": "app_store",
+      "bundle_id": "com.example.openpurr",
+      "sdk_keys": [
+       "appl_test_ios_0123456789"
+      ],
+      "products": {
+       "pro_monthly": {
+        "type": "subscription"
+       }
+      }
+     }
+    },
+    "entitlements": {},
+    "offerings": [],
+    "webhooks": [
+     {
+      "id": "both",
+      "url": "https://hooks.example.com/both",
+      "authorization_secret": "HOOK_AUTH",
+      "signing_secret": "HOOK_SIGNING"
+     },
+     {
+      "id": "signed",
+      "url": "https://hooks.example.com/signed",
+      "signing_secret": "HOOK_SIGNING"
+     },
+     {
+      "id": "auth",
+      "url": "https://hooks.example.com/auth",
+      "authorization_secret": "HOOK_AUTH"
+     },
+     {
+      "id": "plain",
+      "url": "https://hooks.example.com/plain"
+     },
+     {
+      "id": "rotating",
+      "url": "https://hooks.example.com/rotating",
+      "signing_secret": "HOOK_ROTATING"
+     },
+     {
+      "id": "no-auth",
+      "url": "https://hooks.example.com/no-auth",
+      "authorization_secret": "UNSET_AUTH",
+      "signing_secret": "HOOK_SIGNING"
+     },
+     {
+      "id": "no-signing",
+      "url": "https://hooks.example.com/no-signing",
+      "signing_secret": "UNSET_SIGNING"
+     },
+     {
+      "id": "empty-keys",
+      "url": "https://hooks.example.com/empty-keys",
+      "signing_secret": "HOOK_COMMAS"
+     }
+    ]
+   }
+  }
+ },
+ "secrets": {
+  "HOOK_AUTH": "Bearer hook-secret-123",
+  "HOOK_SIGNING": "whsec_test_signing_key",
+  "HOOK_ROTATING": " old-key, new-key ,",
+  "HOOK_COMMAS": " , ,",
+  "UNSET_SIGNING": ""
+ },
+ "signatures": [
+  {
+   "secrets": [
+    "whsec_test_signing_key"
+   ],
+   "body": "{}",
+   "nowMs": 1700000000000,
+   "header": "t=1700000000,v1=75df82bbc429f4850ce5286a05dbe809477d5b848c0e30166758cd27d2808b55"
+  },
+  {
+   "secrets": [
+    "old-key",
+    "new-key"
+   ],
+   "body": "{}",
+   "nowMs": 1700000000000,
+   "header": "t=1700000000,v1=7a70f339d2a6772d1fb9c1ab6b6e4905c48d370e94b2b29a26f67e759070104b,v1=eb4ae97f36e71b2eed3fb6ad16c4901b9308a51561d915f24ed1a9d3e5a49a95"
+  },
+  {
+   "secrets": [
+    "k"
+   ],
+   "body": "{\"a\":\"é ✓ 😀\",\"b\":[1,2.5,null]}",
+   "nowMs": 1800000000999,
+   "header": "t=1800000000,v1=0d3dce109bda416022e23a3a5d4e8a5ce665cacc149d776f68e785ac8715b8f9"
+  },
+  {
+   "secrets": [],
+   "body": "{}",
+   "nowMs": 1800000000000,
+   "header": "t=1800000000"
+  },
+  {
+   "secrets": [
+    "ключ"
+   ],
+   "body": "",
+   "nowMs": 999,
+   "header": "t=0,v1=ed44a6f6f076cd5cb88c9cca90ca5784b5fdd52ad625d92a3f4246be258a7a5b"
+  }
+ ],
+ "delivery": [
+  {
+   "name": "delivered, with Authorization and a signature",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-both-0",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=33e0c0afb30dd4817d21732232dacf98f3d18613b04fcad7b294ac080a1689ff"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     200,
+     1800000000000,
+     "evt-both-0",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "signed only",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-signed-0",
+     "app_id": "ios",
+     "endpoint": "signed",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-signed-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/signed": {
+     "status": 204
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/signed",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=3e8fce03d63f1380a326e62c6ada82b4d897bdf936f71611e835abd08e74ab08"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-signed-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     204,
+     1800000000000,
+     "evt-signed-0",
+     "signed"
+    ]
+   ]
+  },
+  {
+   "name": "Authorization only",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-auth-0",
+     "app_id": "ios",
+     "endpoint": "auth",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-auth-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/auth",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-auth-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     200,
+     1800000000000,
+     "evt-auth-0",
+     "auth"
+    ]
+   ]
+  },
+  {
+   "name": "neither",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-plain-0",
+     "app_id": "ios",
+     "endpoint": "plain",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-plain-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/plain",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-plain-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     200,
+     1800000000000,
+     "evt-plain-0",
+     "plain"
+    ]
+   ]
+  },
+  {
+   "name": "two keys during a rotation",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-rotating-0",
+     "app_id": "ios",
+     "endpoint": "rotating",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-rotating-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/rotating",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=86f69448f4ec01e7648ac4b283500d8af9a214309ce9acb6265a728726d4d136,v1=fbf73c3b4f6e1889e3fc4cf672cbe3589c24a4024447765364c840e44e0b7cf0"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-rotating-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     200,
+     1800000000000,
+     "evt-rotating-0",
+     "rotating"
+    ]
+   ]
+  },
+  {
+   "name": "a signing secret of only commas",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-empty-keys-0",
+     "app_id": "ios",
+     "endpoint": "empty-keys",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-empty-keys-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/empty-keys",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "x-revenuecat-webhook-signature": "t=1800000123"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-empty-keys-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     1,
+     200,
+     1800000000000,
+     "evt-empty-keys-0",
+     "empty-keys"
+    ]
+   ]
+  },
+  {
+   "name": "the Authorization secret isn't set",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-no-auth-0",
+     "app_id": "ios",
+     "endpoint": "no-auth",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-no-auth-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [],
+   "updates": [
+    [
+     "pending",
+     1,
+     0,
+     "Worker secret UNSET_AUTH isn't set",
+     1800000300000,
+     "evt-no-auth-0",
+     "no-auth"
+    ]
+   ]
+  },
+  {
+   "name": "the signing secret is empty",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-no-signing-0",
+     "app_id": "ios",
+     "endpoint": "no-signing",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-no-signing-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [],
+   "updates": [
+    [
+     "pending",
+     1,
+     0,
+     "Worker secret UNSET_SIGNING isn't set",
+     1800000300000,
+     "evt-no-signing-0",
+     "no-signing"
+    ]
+   ]
+  },
+  {
+   "name": "an endpoint no longer configured",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-gone-0",
+     "app_id": "ios",
+     "endpoint": "gone",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-gone-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [],
+   "updates": [
+    [
+     "failed",
+     1,
+     0,
+     "endpoint no longer configured",
+     null,
+     "evt-gone-0",
+     "gone"
+    ]
+   ]
+  },
+  {
+   "name": "an app no longer configured",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-old-app",
+     "app_id": "old-app",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-old-app\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [],
+   "updates": [
+    [
+     "failed",
+     1,
+     0,
+     "endpoint no longer configured",
+     null,
+     "evt-old-app",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "HTTP 500",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-both-0",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 500
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=33e0c0afb30dd4817d21732232dacf98f3d18613b04fcad7b294ac080a1689ff"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     1,
+     500,
+     "HTTP 500",
+     1800000300000,
+     "evt-both-0",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "HTTP 404",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-both-0",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 404
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=33e0c0afb30dd4817d21732232dacf98f3d18613b04fcad7b294ac080a1689ff"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     1,
+     404,
+     "HTTP 404",
+     1800000300000,
+     "evt-both-0",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "a network error",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-both-0",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "throw": "connection refused"
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=33e0c0afb30dd4817d21732232dacf98f3d18613b04fcad7b294ac080a1689ff"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     1,
+     0,
+     "connection refused",
+     1800000300000,
+     "evt-both-0",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "a long error is cut to 500 characters",
+   "kind": "now",
+   "rows": [
+    {
+     "event_id": "evt-both-0",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 0,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "throw": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀😀"
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=33e0c0afb30dd4817d21732232dacf98f3d18613b04fcad7b294ac080a1689ff"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-0\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     1,
+     0,
+     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx😀",
+     1800000300000,
+     "evt-both-0",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 1 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-1",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 1,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-1\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=ac0d77b0a92bd99cf178ddc91ad4e28b17058651efa7c27c557986743abcf43c"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-1\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     2,
+     503,
+     "HTTP 503",
+     1800000600000,
+     "evt-both-1",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 2 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-2",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 2,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-2\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=f0e3bd21253a4678ebb92f257bd33fb78104b78f4b54b6259b9d654fe9b25f1a"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-2\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     3,
+     503,
+     "HTTP 503",
+     1800002700000,
+     "evt-both-2",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 3 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-3",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 3,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-3\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=b0dff2b77edac1012227672b48aeefd34c02b95f52e2a11f5befdcc0a8213bd8"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-3\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     4,
+     503,
+     "HTTP 503",
+     1800007200000,
+     "evt-both-3",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 4 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-4",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 4,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-4\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=198037732827239dc7f8efaf14ade9cf1d5ee39b234ff4c8cbb6c64e65c2b0ae"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-4\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     5,
+     503,
+     "HTTP 503",
+     1800010800000,
+     "evt-both-4",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 5 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-5",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 5,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-5\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=8001f6c3f20a8c8ee9df35312a61f7ba2043e236feec5f1b5f5e36688121e94b"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-5\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     6,
+     503,
+     "HTTP 503",
+     1800021600000,
+     "evt-both-5",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 6 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-6",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 6,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-6\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=7d47638c98442be979ac793f1d5d3102fc25092a6ff0b5da1fe7d9e6e6d66f00"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-6\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     7,
+     503,
+     "HTTP 503",
+     1800043200000,
+     "evt-both-6",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 7 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-7",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 7,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-7\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=5b6b90fef9ceb3692b1d4227b2ea2fe86747a193575a56eccc4fb7a6f78e2e23"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-7\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     8,
+     503,
+     "HTTP 503",
+     1800086400000,
+     "evt-both-7",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 8 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-8",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 8,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-8\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=e29d537387ad14e753bb7992f66bd743496976c58d76b708d8d9ce1a5519857b"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-8\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "pending",
+     9,
+     503,
+     "HTTP 503",
+     1800086400000,
+     "evt-both-8",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "retry after 9 failed attempts",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-9",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 9,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-9\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/both": {
+     "status": 503
+    }
+   },
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=05552ee24dca3303a8f8953578f48dae9d16d917424a3f14259b67743254b50f"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-9\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     "failed",
+     10,
+     503,
+     "HTTP 503",
+     null,
+     "evt-both-9",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "a retry that succeeds",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-3",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 3,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-3\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {},
+   "attempted": 1,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=b0dff2b77edac1012227672b48aeefd34c02b95f52e2a11f5befdcc0a8213bd8"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-3\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     4,
+     200,
+     1800000000000,
+     "evt-both-3",
+     "both"
+    ]
+   ]
+  },
+  {
+   "name": "several deliveries at once",
+   "kind": "retry",
+   "rows": [
+    {
+     "event_id": "evt-both-1",
+     "app_id": "ios",
+     "endpoint": "both",
+     "attempts": 1,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-1\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    },
+    {
+     "event_id": "evt-plain-2",
+     "app_id": "ios",
+     "endpoint": "plain",
+     "attempts": 2,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-plain-2\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    },
+    {
+     "event_id": "evt-gone-1",
+     "app_id": "ios",
+     "endpoint": "gone",
+     "attempts": 1,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-gone-1\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    },
+    {
+     "event_id": "evt-signed-9",
+     "app_id": "ios",
+     "endpoint": "signed",
+     "attempts": 9,
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-signed-9\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "answers": {
+    "https://hooks.example.com/plain": {
+     "status": 502
+    },
+    "https://hooks.example.com/signed": {
+     "status": 400
+    }
+   },
+   "attempted": 4,
+   "requests": [
+    {
+     "url": "https://hooks.example.com/plain",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-plain-2\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    },
+    {
+     "url": "https://hooks.example.com/both",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "authorization": "Bearer hook-secret-123",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=ac0d77b0a92bd99cf178ddc91ad4e28b17058651efa7c27c557986743abcf43c"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-both-1\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    },
+    {
+     "url": "https://hooks.example.com/signed",
+     "method": "POST",
+     "headers": {
+      "content-type": "application/json",
+      "user-agent": "openpurr-webhooks",
+      "x-revenuecat-webhook-signature": "t=1800000123,v1=8e58be67b66e3f2867e966452d19185f9ff66908d7e0261527ed70c8971685c5"
+     },
+     "body": "{\"api_version\":\"1.0\",\"event\":{\"id\":\"evt-signed-9\",\"type\":\"INITIAL_PURCHASE\",\"app_id\":\"ios\",\"note\":\"é ✓ 😀\"}}"
+    }
+   ],
+   "updates": [
+    [
+     2,
+     200,
+     1800000000000,
+     "evt-both-1",
+     "both"
+    ],
+    [
+     "pending",
+     3,
+     502,
+     "HTTP 502",
+     1800002700000,
+     "evt-plain-2",
+     "plain"
+    ],
+    [
+     "failed",
+     2,
+     0,
+     "endpoint no longer configured",
+     null,
+     "evt-gone-1",
+     "gone"
+    ],
+    [
+     "failed",
+     10,
+     400,
+     "HTTP 400",
+     null,
+     "evt-signed-9",
+     "signed"
+    ]
+   ]
+  }
+ ],
+ "ecb": [
+  {
+   "name": "one day",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\"><gesmes:subject>Reference rates</gesmes:subject><Cube><Cube time='2026-11-18'>\n\t<Cube currency='USD' rate='1.25'/>\n\t<Cube currency='JPY' rate='175'/>\n\t<Cube currency='GBP' rate='0.85'/>\n</Cube></Cube></gesmes:Envelope>",
+   "days": [
+    {
+     "date": "2026-11-18",
+     "perUsd": {
+      "EUR": 0.8,
+      "USD": 1,
+      "JPY": 140,
+      "GBP": 0.6799999999999999
+     }
+    }
+   ]
+  },
+  {
+   "name": "ECB's daily file",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\">\n\t<gesmes:subject>Reference rates</gesmes:subject>\n\t<Cube>\n\t\t<Cube time=\"2026-11-20\">\n\t\t\t<Cube currency=\"USD\" rate=\"1.0543\"/>\n\t\t\t<Cube currency=\"JPY\" rate=\"163.12\"/>\n\t\t\t<Cube currency=\"BGN\" rate=\"1.9558\"/>\n\t\t\t<Cube currency=\"CZK\" rate=\"25.272\"/>\n\t\t\t<Cube currency=\"DKK\" rate=\"7.4589\"/>\n\t\t\t<Cube currency=\"GBP\" rate=\"0.83283\"/>\n\t\t\t<Cube currency=\"HUF\" rate=\"410.43\"/>\n\t\t\t<Cube currency=\"IDR\" rate=\"16759.46\"/>\n\t\t\t<Cube currency=\"KRW\" rate=\"1474.86\"/>\n\t\t</Cube>\n\t</Cube>\n</gesmes:Envelope>",
+   "days": [
+    {
+     "date": "2026-11-20",
+     "perUsd": {
+      "EUR": 0.9484966328369534,
+      "USD": 1,
+      "JPY": 154.71877074836385,
+      "BGN": 1.8550697145025135,
+      "CZK": 23.970406905055484,
+      "DKK": 7.0747415346675515,
+      "GBP": 0.7899364507255999,
+      "HUF": 389.2914730152708,
+      "IDR": 15896.291378165606,
+      "KRW": 1398.899743905909
+     }
+    }
+   ]
+  },
+  {
+   "name": "several days, newest first",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\"><gesmes:subject>Reference rates</gesmes:subject><Cube><Cube time='2026-11-20'>\n\t<Cube currency='USD' rate='1.0543'/>\n\t<Cube currency='CHF' rate='0.9312'/>\n</Cube><Cube time='2026-11-19'>\n\t<Cube currency='USD' rate='1.0512'/>\n\t<Cube currency='CHF' rate='0.9301'/>\n\t<Cube currency='EUR' rate='2'/>\n</Cube><Cube time='2026-11-18'>\n\t<Cube currency='JPY' rate='175'/>\n</Cube></Cube></gesmes:Envelope>",
+   "days": [
+    {
+     "date": "2026-11-20",
+     "perUsd": {
+      "EUR": 0.9484966328369534,
+      "USD": 1,
+      "CHF": 0.883240064497771
+     }
+    },
+    {
+     "date": "2026-11-19",
+     "perUsd": {
+      "EUR": 1.9025875190258754,
+      "USD": 1,
+      "CHF": 0.8847983257229833
+     }
+    }
+   ]
+  },
+  {
+   "name": "malformed rates",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\"><gesmes:subject>Reference rates</gesmes:subject><Cube><Cube time='2026-11-18'>\n\t<Cube currency='USD' rate='1'/>\n\t<Cube currency='XYZ' rate='0'/>\n\t<Cube currency='ABC' rate='1.2.3'/>\n\t<Cube currency='DEF' rate='5.'/>\n\t<Cube currency='GHI' rate='.5'/>\n\t<Cube currency='JKL' rate='.'/>\n</Cube></Cube></gesmes:Envelope>",
+   "days": [
+    {
+     "date": "2026-11-18",
+     "perUsd": {
+      "EUR": 1,
+      "USD": 1,
+      "DEF": 5,
+      "GHI": 0.5
+     }
+    }
+   ]
+  },
+  {
+   "name": "a repeated currency",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\"><gesmes:subject>Reference rates</gesmes:subject><Cube><Cube time='2026-11-18'>\n\t<Cube currency='USD' rate='1.1'/>\n\t<Cube currency='GBP' rate='0.8'/>\n\t<Cube currency='gbp' rate='1'/>\n\t<Cube currency='GBP' rate='1'/>\n</Cube></Cube></gesmes:Envelope>",
+   "days": [
+    {
+     "date": "2026-11-18",
+     "perUsd": {
+      "EUR": 0.9090909090909091,
+      "USD": 1,
+      "GBP": 0.9090909090909091
+     }
+    }
+   ]
+  },
+  {
+   "name": "no USD",
+   "xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><gesmes:Envelope xmlns:gesmes=\"http://www.gesmes.org/xml/2002-08-01\" xmlns=\"http://www.ecb.int/vocabulary/2002-08-01/eurofxref\"><gesmes:subject>Reference rates</gesmes:subject><Cube><Cube time='2026-11-18'>\n\t<Cube currency='JPY' rate='175'/>\n</Cube></Cube></gesmes:Envelope>",
+   "days": []
+  },
+  {
+   "name": "nothing",
+   "xml": "<html>Service unavailable</html>",
+   "days": []
+  }
+ ]
+}

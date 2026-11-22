@@ -57,6 +57,8 @@ type Env struct {
 	Tokens *Tokens
 	Now    func() int64
 	Log    *slog.Logger
+	// Deliver makes the first delivery attempt of webhook events just written (nil: none).
+	Deliver func(ctx context.Context, eventIDs []string, now int64) error
 }
 
 // ClientFor is the Play Developer API client for an app, or a NotConfiguredError saying what's

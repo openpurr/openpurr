@@ -26,6 +26,7 @@ import (
 	"github.com/openpurr/openpurr/standard/internal/clock"
 	"github.com/openpurr/openpurr/standard/internal/config"
 	"github.com/openpurr/openpurr/standard/internal/db"
+	"github.com/openpurr/openpurr/standard/internal/fx"
 	"github.com/openpurr/openpurr/standard/internal/jobs"
 	"github.com/openpurr/openpurr/standard/internal/jsobj"
 	"github.com/openpurr/openpurr/standard/internal/ledger"
@@ -115,6 +116,19 @@ type Options struct {
 	Secrets map[string]string
 	// Trusted Apple roots; the test chain's root when nil.
 	AppleRoots [][]byte
+	// Exchange rates for the refresh-exchange-rates job; none when nil (tests don't fetch the ECB).
+	FX fx.Provider
+}
+
+// NoRates is an exchange-rate provider that never has any.
+type NoRates struct{}
+
+func (NoRates) Name() string { return "none" }
+func (NoRates) Latest(context.Context, *http.Client) ([]fx.DailyRates, error) {
+	return nil, nil
+}
+func (NoRates) History(context.Context, *http.Client) ([]fx.DailyRates, error) {
+	return nil, nil
 }
 
 // countingLimiter allows `max` requests per key, forever (lite/test/helpers.ts appWithRateLimits).
@@ -175,6 +189,10 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 			return v, ok
 		}
 	}
+	rates := opts.FX
+	if rates == nil {
+		rates = NoRates{}
+	}
 	loader := config.NewLoader(pool, serverClock, 60_000, seed, Quiet)
 	env.Loader = loader
 	env.Deps = &server.Deps{
@@ -192,6 +210,7 @@ func StartOn(t testing.TB, pool *pgxpool.Pool, opts Options) *Env {
 		Secret:         secret,
 		AppleRoots:     roots,
 		Conformance:    conf,
+		FX:             rates,
 	}
 	env.Server = httptest.NewServer(server.New(env.Deps))
 	t.Cleanup(env.Server.Close)
