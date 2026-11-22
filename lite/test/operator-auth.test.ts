@@ -222,6 +222,42 @@ describe("two-step sign-in (TOTP)", () => {
     expect(both.filter((r) => r.session)).toHaveLength(1);
   });
 
+  /** A six-digit code that isn't valid right now (nor one step either side). */
+  async function wrongCode(secret: Uint8Array) {
+    const step = Math.floor(Date.now() / 30_000);
+    const valid = await Promise.all([step - 1, step, step + 1, step + 2].map((s) => totpCode(secret, s)));
+    for (let i = 0; ; i++) {
+      const code = String(i).padStart(6, "0");
+      if (!valid.includes(code)) return code;
+    }
+  }
+
+  it("locks the account after 10 wrong codes, as after 10 wrong passwords", async () => {
+    const op = await enrolled();
+    const wrong = await wrongCode(op.secret);
+    for (let i = 0; i < 10; i++) {
+      expect((await req("/login", { body: { email: op.email, password: op.password, code: wrong } })).body.code).toBe("invalid_code");
+    }
+    const next = await totpCode(op.secret, Math.floor(Date.now() / 30_000) + 1);
+    const locked = await req("/login", { body: { email: op.email, password: op.password, code: next } });
+    expect(locked.res.status).toBe(429);
+    expect(locked.body.code).toBe("locked");
+    const last = await env.DB.prepare("SELECT details FROM audit_log WHERE operator_id = ? AND action = 'auth.login_failed' ORDER BY id DESC").bind(op.id).first<{ details: string }>();
+    expect(JSON.parse(last!.details)).toEqual({ reason: "totp", failures: 10 });
+  });
+
+  it("counts wrong passwords, codes and recovery codes together toward the lockout", async () => {
+    const op = await enrolled();
+    const wrong = await wrongCode(op.secret);
+    for (let i = 0; i < 4; i++) await req("/login", { body: { email: op.email, password: `wrong password ${i}` } });
+    for (let i = 0; i < 3; i++) await req("/login", { body: { email: op.email, password: op.password, code: wrong } });
+    for (let i = 0; i < 3; i++) {
+      expect((await req("/login", { body: { email: op.email, password: op.password, recovery_code: `zzzz-zzz${i}` } })).body.code).toBe("invalid_code");
+    }
+    const locked = await req("/login", { body: { email: op.email, password: op.password, recovery_code: op.recoveryCodes[0] } });
+    expect(locked.body.code).toBe("locked");
+  });
+
   it("accepts each recovery code once instead of a TOTP code", async () => {
     const op = await enrolled();
     const code = op.recoveryCodes[0]!.toUpperCase().replace("-", " ");

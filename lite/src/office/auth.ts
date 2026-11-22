@@ -6,7 +6,8 @@
 //
 // Sign-in rules (plan section 8.2):
 //   - the same answer, with the same CPU cost, for an unknown email and a wrong password;
-//   - rate limits per IP and per email, plus a 15-minute lockout after 10 failures in a row;
+//   - rate limits per IP and per email, plus a 15-minute lockout after 10 failures in a row
+//     (wrong passwords, authenticator codes and recovery codes alike);
 //   - TOTP when the operator has enabled it (or a one-time recovery code instead);
 //   - setup links (24 h) let a new operator set a password; recovery links (15 min) sign in once.
 //     Both are created by scripts/admin.mjs with the deployment's own credentials.
@@ -161,6 +162,24 @@ async function startSession(c: Ctx, operatorId: string, kind: SessionInfo["kind"
 
 const ip = (c: Ctx) => c.req.header("cf-connecting-ip") ?? null;
 
+/**
+ * Counts a failed sign-in and audits it. Wrong passwords, codes and recovery codes count together,
+ * and the 10th in a row locks the account for 15 minutes. One UPDATE, so failures at the same
+ * moment all count.
+ */
+async function signInFailed(db: D1Database, operator: Operator, reason: "password" | "totp" | "recovery_code", clientIp: string | null) {
+  const now = Date.now();
+  const row = await db
+    .prepare(
+      `UPDATE operator SET failed_logins = failed_logins + 1,
+         locked_until = CASE WHEN failed_logins + 1 >= ? THEN ? ELSE locked_until END
+       WHERE id = ? RETURNING failed_logins`,
+    )
+    .bind(LOCKOUT_AFTER, now + LOCKOUT_MS, operator.id)
+    .first<{ failed_logins: number }>();
+  await audit(db, { operator, action: "auth.login_failed", details: { reason, failures: row?.failed_logins ?? operator.failed_logins + 1 }, ip: clientIp }).run();
+}
+
 export const auth = new Hono<AppEnv>();
 
 // Every write here needs a same-origin request (login included: no cross-site sign-in forms).
@@ -201,15 +220,7 @@ auth.post("/login", async (c) => {
   }
   const { ok, rehash } = await verifyPassword(secret, password, operator.password_hash);
   if (!ok) {
-    const failures = operator.failed_logins + 1;
-    await db.batch([
-      db.prepare("UPDATE operator SET failed_logins = ?, locked_until = ? WHERE id = ?").bind(
-        failures,
-        failures >= LOCKOUT_AFTER ? Date.now() + LOCKOUT_MS : operator.locked_until,
-        operator.id,
-      ),
-      audit(db, { operator, action: "auth.login_failed", details: { reason: "password", failures }, ip: clientIp }),
-    ]);
+    await signInFailed(db, operator, "password", clientIp);
     return invalid();
   }
 
@@ -230,10 +241,7 @@ auth.post("/login", async (c) => {
         if (!claimed.meta.changes) step = null;
       }
       if (step === null) {
-        await db.batch([
-          db.prepare("UPDATE operator SET failed_logins = failed_logins + 1 WHERE id = ?").bind(operator.id),
-          audit(db, { operator, action: "auth.login_failed", details: { reason: "totp" }, ip: clientIp }),
-        ]);
+        await signInFailed(db, operator, "totp", clientIp);
         return fail(c, 401, "invalid_code", "That code didn't work. Check your authenticator app's time and try again.");
       }
     } else {
@@ -242,7 +250,7 @@ auth.post("/login", async (c) => {
         .bind(Date.now(), operator.id, await sha256Hex(recovery))
         .run();
       if (!used.meta.changes) {
-        await audit(db, { operator, action: "auth.login_failed", details: { reason: "recovery_code" }, ip: clientIp }).run();
+        await signInFailed(db, operator, "recovery_code", clientIp);
         return fail(c, 401, "invalid_code", "That recovery code isn't valid or was already used.");
       }
       writes.push(audit(db, { operator, action: "auth.recovery_code_used", ip: clientIp }));
