@@ -158,6 +158,7 @@ export const ja: Dict = {
       colOp: "openpurr Lite（月額）",
       colSaved: "年間の節約額",
       methodSummary: "試算の方法",
+      pricingLink: "RevenueCat の 1% は何に使われている？→",
       method: [
         "RevenueCat: Pro プランの定価で、$2,500 以上の月間追跡収益の 1%。追跡収益には年額プランや買い切りの購入が支払った月にまとめて計上されるため、MRR より大きくなることがあります。大規模なアカウントは Enterprise 価格を交渉できます。",
         "openpurr Lite: Cloudflare の Workers と D1 の料金。1 日あたりのアクティブユーザー 1 人につき、月間収益を約 $1.50、SDK リクエストを 1 日約 10 回と仮定しています。この前提だと、無料プランの 1 日 100,000 リクエストで、余裕を持って月間収益約 {paidFrom} までまかなえます。それを超えると Workers Paid で計算します。月 $5 に加え、1,000 万リクエストを超えた分は 100 万リクエストごとに $0.30 です。",

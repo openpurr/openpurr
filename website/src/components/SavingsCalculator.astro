@@ -8,6 +8,7 @@
 // for the initial revenue, the chart and the table still show; only the slider needs it.
 import { fill, langTag, t, type Locale } from "../i18n";
 import { LEVELS, PRICES_CHECKED, SLIDER, paidPlanFrom, savings } from "../savings";
+import { PRICING_PAGE } from "../consts";
 
 interface Props {
   locale: Locale;
@@ -176,6 +177,7 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
       {s.method.map((m) => <li>{fill(m, { paidFrom: money(paidPlanFrom()), date })}</li>)}
     </ul>
   </details>
+  <p class="pricing-link"><a href={PRICING_PAGE} hreflang={locale === "en" ? undefined : "en"}>{s.pricingLink}</a></p>
 </div>
 
   </div>
@@ -308,6 +310,11 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
 </script>
 
 <style>
+  .pricing-link {
+    margin-top: 14px;
+    font-weight: 600;
+  }
+
   .calc {
     --rc: var(--wip);
     padding: 32px;

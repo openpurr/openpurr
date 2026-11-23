@@ -1,13 +1,15 @@
 // The sitemap, built with the site. Add each new page here. A page that exists in several languages
 // lists each version with xhtml:link alternates, as Google asks for translated pages.
 import type { APIRoute } from "astro";
-import { MIGRATION_PAGE, MIGRATION_UPDATED } from "../consts";
+import { MIGRATION_PAGE, MIGRATION_UPDATED, PRICING_PAGE } from "../consts";
+import { SOURCES_CHECKED } from "../one-percent";
 import { allLocales, langTag, type Alternates, type Locale } from "../i18n";
 
 /** lastmod only where it's kept accurate (Google ignores it once it's been wrong). */
 const PAGES: { path: string; alternates?: Alternates; lastmod?: string }[] = [
   { path: "/", alternates: allLocales("/") },
   { path: MIGRATION_PAGE, alternates: allLocales(MIGRATION_PAGE), lastmod: MIGRATION_UPDATED },
+  { path: PRICING_PAGE, lastmod: SOURCES_CHECKED },
   { path: "/privacy/" },
 ];
 

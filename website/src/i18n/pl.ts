@@ -162,6 +162,7 @@ export const pl: Dict = {
       colOp: "openpurr Lite, miesięcznie",
       colSaved: "Oszczędność rocznie",
       methodSummary: "Jak to liczymy",
+      pricingLink: "Na co idzie 1% RevenueCat? →",
       method: [
         "RevenueCat: cena katalogowa planu Pro, 1% śledzonych przychodów miesięcznych od 2500 USD. Śledzone przychody liczą plany roczne i zakupy jednorazowe w miesiącu płatności, więc mogą być wyższe niż MRR. Duzi klienci mogą negocjować ceny Enterprise.",
         "openpurr Lite: ceny Cloudflare za Workers i D1. Zakładamy około 1,50 USD przychodu miesięcznego i około 10 zapytań SDK dziennie na dziennie aktywnego użytkownika. Przy takich założeniach 100 000 zapytań dziennie w darmowym planie wystarcza do około {paidFrom} przychodu miesięcznego, z zapasem. Powyżej liczymy Workers Paid: 5 USD miesięcznie plus 0,30 USD za każdy milion zapytań ponad 10 milionów.",
