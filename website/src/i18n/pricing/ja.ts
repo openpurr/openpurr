@@ -10,7 +10,6 @@ export const pricingJa: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat の料金",
-    eyebrow: "あなたの 1% の行き先",
     headline: "払っているのは、サーバー代ではない。",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "評価額 {valuation} の会社に払っている。",

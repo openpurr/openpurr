@@ -10,7 +10,6 @@ export const pricingKo: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat 가격",
-    eyebrow: "내 1%가 가는 곳",
     headline: "서버 비용을 내는 게 아닙니다.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "기업가치 {valuation}짜리 회사에 돈을 대고 있습니다.",

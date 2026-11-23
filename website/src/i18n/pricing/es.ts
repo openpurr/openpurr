@@ -10,7 +10,6 @@ export const pricingEs: PricingDict = {
   },
   hero: {
     crumb: "Precios de RevenueCat",
-    eyebrow: "A dónde va tu 1 %",
     headline: "No estás pagando servidores.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Estás pagando una empresa valorada en {valuation}.",

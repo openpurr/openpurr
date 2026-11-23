@@ -10,7 +10,6 @@ export const pricingHi: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat pricing",
-    eyebrow: "आपका 1% कहाँ जाता है",
     headline: "आप servers के पैसे नहीं दे रहे।",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "आप {valuation} की company के पैसे दे रहे हैं।",
