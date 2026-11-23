@@ -10,6 +10,7 @@ export const pricingId: PricingDict = {
   },
   hero: {
     crumb: "Harga RevenueCat",
+    eyebrow: "Ke mana 1% Anda pergi",
     headline: "Anda tidak membayar server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Anda membayar perusahaan senilai {valuation}.",

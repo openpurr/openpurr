@@ -10,6 +10,7 @@ export const pricingNl: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat-prijzen",
+    eyebrow: "Waar je 1% naartoe gaat",
     headline: "Je betaalt niet voor servers.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Je betaalt voor een bedrijf van {valuation}.",

@@ -10,6 +10,7 @@ export const pricingVi: PricingDict = {
   },
   hero: {
     crumb: "Giá RevenueCat",
+    eyebrow: "1% của bạn đi đâu",
     headline: "Bạn không trả tiền cho server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Bạn đang nuôi một công ty trị giá {valuation}.",

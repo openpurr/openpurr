@@ -10,6 +10,7 @@ export const pricingAr: PricingDict = {
   },
   hero: {
     crumb: "تسعير RevenueCat",
+    eyebrow: "أين تذهب نسبة 1%",
     headline: "أنت لا تدفع ثمن الخوادم.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "أنت تدفع ثمن شركة قيمتها {valuation}.",

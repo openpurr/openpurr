@@ -10,6 +10,7 @@ export const pricingZhTw: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat 定價",
+    eyebrow: "你的 1% 去了哪裡",
     headline: "你付的不是伺服器的錢。",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "你在養一家估值 {valuation} 的公司。",

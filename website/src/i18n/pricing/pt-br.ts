@@ -10,6 +10,7 @@ export const pricingPtBr: PricingDict = {
   },
   hero: {
     crumb: "Preço do RevenueCat",
+    eyebrow: "Para onde vai o seu 1%",
     headline: "Você não está pagando por servidores.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Está pagando por uma empresa de {valuation}.",

@@ -158,6 +158,7 @@ const enHref = locale === "en" ? undefined : "en";
             <li aria-current="page">{p.hero.crumb}</li>
           </ol>
         </nav>
+        <span class="eyebrow">{p.hero.eyebrow}</span>
         <h1>{p.hero.headline} <span class="accent">{fill(p.hero.headlineAccent, { valuation: big(VALUATION_2025) })}</span></h1>
         <p class="lede">{fill(p.hero.lede, { threshold: money(RC.threshold) })}</p>
         <p class="updated" set:html={fill(p.hero.updated, { date: `<time datetime="${SOURCES_CHECKED}">${checked}</time>` })} />
@@ -329,14 +330,14 @@ const enHref = locale === "en" ? undefined : "en";
 
 <style>
   .onepct {
-    --c0: color-mix(in srgb, var(--ink) 88%, var(--bg));
-    --c1: color-mix(in srgb, var(--ink) 72%, var(--bg));
-    --c2: color-mix(in srgb, var(--ink) 58%, var(--bg));
-    --c3: color-mix(in srgb, var(--ink) 80%, var(--bg));
-    --c4: color-mix(in srgb, var(--ink) 64%, var(--bg));
-    --c5: color-mix(in srgb, var(--ink) 50%, var(--bg));
-    --c6: color-mix(in srgb, var(--ink) 42%, var(--bg));
-    --c7: color-mix(in srgb, var(--ink) 34%, var(--bg));
+    --c0: #7050e8;
+    --c1: #8d72f0;
+    --c2: #a894f5;
+    --c3: #5a3dd6;
+    --c4: #c2b4f8;
+    --c5: #4a2fc0;
+    --c6: #b3a2ff;
+    --c7: #2f1f8f;
   }
   .hero {
     padding-bottom: 32px;
@@ -365,10 +366,13 @@ const enHref = locale === "en" ? undefined : "en";
     color: var(--muted);
   }
   .answer {
-    margin-top: 40px;
+    margin-top: 32px;
     max-width: 760px;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    border-inline-start: 4px solid var(--purple);
+    border-radius: var(--radius);
+    background: var(--card);
   }
   .answer h2 {
     font-size: 1.15rem;
@@ -415,7 +419,7 @@ const enHref = locale === "en" ? undefined : "en";
   .faq summary::after {
     content: "+";
     float: inline-end;
-    color: var(--muted);
+    color: var(--purple);
     font-weight: 700;
   }
   .faq details[open] summary::after {
@@ -434,8 +438,7 @@ const enHref = locale === "en" ? undefined : "en";
     margin-bottom: 18px;
   }
   .accent {
-    display: block;
-    color: var(--muted);
+    color: var(--purple);
   }
   .calc-section {
     padding-top: 0;
@@ -462,7 +465,7 @@ const enHref = locale === "en" ? undefined : "en";
   input[type="range"] {
     width: 100%;
     margin: 14px 0 26px;
-    accent-color: var(--ink);
+    accent-color: var(--purple);
   }
   .fee {
     display: grid;
@@ -490,7 +493,7 @@ const enHref = locale === "en" ? undefined : "en";
   .stack {
     display: flex;
     height: 28px;
-    border-radius: 2px;
+    border-radius: 8px;
     overflow: hidden;
     margin: 26px 0 10px;
     gap: 2px;
@@ -537,18 +540,21 @@ const enHref = locale === "en" ? undefined : "en";
   .dot {
     width: 10px;
     height: 10px;
+    border-radius: 3px;
     flex: none;
     display: inline-block;
   }
   .bar {
     height: 8px;
-    background: var(--line);
+    background: var(--purple-soft);
+    border-radius: 99px;
     margin: 6px 0 4px;
     overflow: hidden;
   }
   .bar i {
     display: block;
     height: 100%;
+    border-radius: 99px;
     transform-origin: left;
     transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
@@ -568,10 +574,12 @@ const enHref = locale === "en" ? undefined : "en";
   .c6 { background: var(--c6); }
   .c7 { background: var(--c7); }
   .owners {
-    margin-top: 40px;
+    margin-top: 32px;
     max-width: 760px;
-    padding-top: 24px;
-    border-top: 1px solid var(--line);
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
   }
   .owners h2 {
     font-size: 1.3rem;
@@ -589,8 +597,8 @@ const enHref = locale === "en" ? undefined : "en";
   .own-bar {
     position: relative;
     height: 40px;
-    border-radius: 2px;
-    background: var(--line);
+    border-radius: 10px;
+    background: var(--purple-soft);
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -625,10 +633,15 @@ const enHref = locale === "en" ? undefined : "en";
     margin: 14px 0 0;
     display: flex;
     flex-wrap: wrap;
-    column-gap: 14px;
-    row-gap: 4px;
+    gap: 8px;
+  }
+  .investors li {
+    font-size: 0.85rem;
     font-weight: 600;
-    color: var(--ink);
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: var(--ink);
+    color: var(--bg);
   }
   .rounds {
     width: 100%;
@@ -648,12 +661,13 @@ const enHref = locale === "en" ? undefined : "en";
     display: block;
     margin-top: 6px;
     font-size: 1.25rem;
-    color: var(--ink);
+    color: var(--purple);
   }
   .punch {
-    margin-top: 28px;
-    padding-top: 18px;
-    border-top: 1px solid var(--line);
+    margin-top: 24px;
+    padding: 16px 18px;
+    border-radius: 12px;
+    background: var(--purple-soft);
     color: var(--text);
   }
   .punch b {
@@ -694,7 +708,7 @@ const enHref = locale === "en" ? undefined : "en";
   .assumptions summary {
     cursor: pointer;
     font-weight: 600;
-    color: var(--ink);
+    color: var(--purple);
   }
   .assumptions table {
     width: 100%;

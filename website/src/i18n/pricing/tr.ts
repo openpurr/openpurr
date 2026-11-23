@@ -10,6 +10,7 @@ export const pricingTr: PricingDict = {
   },
   hero: {
     crumb: "RevenueCat fiyatları",
+    eyebrow: "%1'iniz nereye gidiyor",
     headline: "Sunuculara para ödemiyorsunuz.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "{valuation} değerinde bir şirkete ödüyorsunuz.",

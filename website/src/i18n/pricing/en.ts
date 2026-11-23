@@ -17,6 +17,7 @@ export const pricingEn = {
   },
   hero: {
     crumb: "RevenueCat pricing",
+    eyebrow: "Where your 1% goes",
     headline: "You're not paying for servers.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "You're paying for a {valuation} company.",
