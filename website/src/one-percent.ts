@@ -65,26 +65,24 @@ export const VALUATION_2025 = 500_000_000;
  */
 export const LOADED = 1.3;
 
+/** Teams by key; their names and where each salary comes from are in i18n/pricing (`teams`). */
 export interface Team {
   key: string;
-  name: string;
   /** People in this function (our assumption; they add up to HEADCOUNT.used). */
   people: number;
   /** Typical base salary in USD, from public postings. */
   salary: number;
-  /** Where the salary figure comes from. */
-  basis: string;
 }
 
 export const TEAMS: Team[] = [
-  { key: "eng", name: "Engineering", people: 50, salary: 210_000, basis: "Senior SDK engineer posting, $212K" },
-  { key: "product", name: "Product, design and data", people: 15, salary: 225_000, basis: "Senior product manager postings, $230K; senior data scientist, $220K" },
-  { key: "sales", name: "Sales", people: 14, salary: 200_000, basis: "Head of Sales posting, $363K; senior sales engineer, $200K; product expert, $133K" },
-  { key: "growth", name: "Marketing and growth", people: 16, salary: 200_000, basis: "Head of Customer Growth posting, $259K; CRO designer, $205K; product marketing, $168K" },
-  { key: "support", name: "Customer success and support", people: 16, salary: 135_000, basis: "Developer support engineer posting, $118K" },
-  { key: "community", name: "Developer relations and community", people: 9, salary: 180_000, basis: "The postings' overall median, about $215K, discounted for a mix of levels" },
-  { key: "ops", name: "Operations, finance and people", people: 22, salary: 170_000, basis: "Sales and operations specialist posting, $167K; Head of People, $280K" },
-  { key: "exec", name: "Executives", people: 8, salary: 350_000, basis: "Above the Head of Sales posting ($363K) for some, below for others" },
+  { key: "eng", people: 50, salary: 210_000 },
+  { key: "product", people: 15, salary: 225_000 },
+  { key: "sales", people: 14, salary: 200_000 },
+  { key: "growth", people: 16, salary: 200_000 },
+  { key: "support", people: 16, salary: 135_000 },
+  { key: "community", people: 9, salary: 180_000 },
+  { key: "ops", people: 22, salary: 170_000 },
+  { key: "exec", people: 8, salary: 350_000 },
 ];
 
 /** Yearly cost of each team, loaded. */
@@ -98,15 +96,16 @@ export const shareOf = (t: Team) => teamCost(t) / TOTAL_TEAM_COST;
 export const WORKDAYS = 230;
 export const engineerDayCost = () => (TEAMS.find((t) => t.key === "eng")!.salary * LOADED) / WORKDAYS;
 
+/** The sources, in the order of i18n/pricing's `sources.items` labels. */
 export const SOURCES = [
-  { label: "RevenueCat pricing: 1% of monthly tracked revenue from $2,500", url: "https://www.revenuecat.com/pricing/" },
-  { label: "RevenueCat's job board, with pay ranges (Ashby)", url: "https://jobs.ashbyhq.com/revenuecat" },
-  { label: "Earlier RevenueCat postings with pay (Greenhouse)", url: "https://job-boards.greenhouse.io/revenuecat" },
-  { label: "TechCrunch: RevenueCat raises $50M, bringing its total to $100M (May 2025)", url: "https://techcrunch.com/2025/05/22/revenuecat-raises-50m-as-it-expands-beyond-mobile-app-monetization" },
-  { label: "TechCrunch: the $40M Series B, led by Y Combinator's Continuity Fund, at a $300M valuation (2021)", url: "https://techcrunch.com/?p=2157127" },
-  { label: "TechCrunch: a $12M Series C led by Adjacent (2024)", url: "https://techcrunch.com/2024/04/25/revenuecat-raises-12m-series-c-as-it-expands-its-subscription-management-to-the-web/" },
-  { label: "SaaStr: the 2018 seed at a $7M valuation, and the rounds since", url: "https://www.saastr.com/how-saastr-fund-backed-revenuecat-went-from-a-1-5m-round-at-7m-valuation-in-2018-to-500m-today" },
-  { label: "Multiples.vc: about $30M revenue and a $500M valuation at the 2025 round (estimates)", url: "https://multiples.vc/private-comps/revenuecat" },
-  { label: "Headcount estimates: TipRanks (185)", url: "https://www.tipranks.com/private-companies/revenuecat" },
-  { label: "Headcount estimates: TrueUp (130)", url: "https://trueup.io/co/revenuecat" },
+  { url: "https://www.revenuecat.com/pricing/" },
+  { url: "https://jobs.ashbyhq.com/revenuecat" },
+  { url: "https://job-boards.greenhouse.io/revenuecat" },
+  { url: "https://techcrunch.com/2025/05/22/revenuecat-raises-50m-as-it-expands-beyond-mobile-app-monetization" },
+  { url: "https://techcrunch.com/?p=2157127" },
+  { url: "https://techcrunch.com/2024/04/25/revenuecat-raises-12m-series-c-as-it-expands-its-subscription-management-to-the-web/" },
+  { url: "https://www.saastr.com/how-saastr-fund-backed-revenuecat-went-from-a-1-5m-round-at-7m-valuation-in-2018-to-500m-today" },
+  { url: "https://multiples.vc/private-comps/revenuecat" },
+  { url: "https://www.tipranks.com/private-companies/revenuecat" },
+  { url: "https://trueup.io/co/revenuecat" },
 ];
