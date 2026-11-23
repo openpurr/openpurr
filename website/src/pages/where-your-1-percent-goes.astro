@@ -14,7 +14,9 @@ import {
   FUNDING_USD,
   HEADCOUNT,
   INVESTOR_OWNERSHIP,
+  INVESTORS,
   REVENUE_2025,
+  ROUNDS,
   VALUATION_2025,
   LOADED,
   shareOf,
@@ -46,16 +48,17 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
 
 <Base
   title="Where your 1% goes · openpurr"
-  description="RevenueCat charges 1% of your revenue. The servers for your app cost a fraction of that. An interactive estimate of what the rest pays for, from public figures."
+  description="RevenueCat takes 1% of your revenue. The servers behind your app cost a rounding error. See what the rest pays for: payroll, sales, and venture investors."
 >
   <article class="onepct" data-model={JSON.stringify(model)}>
     <section class="hero">
       <div class="wrap">
         <span class="eyebrow">Where your 1% goes</span>
-        <h1>The servers cost almost nothing. <span class="accent">You're paying for the company.</span></h1>
+        <h1>You're not paying for servers. <span class="accent">You're paying for a ${VALUATION_2025 / 1e6} million company.</span></h1>
         <p class="lede">
-          RevenueCat charges 1% of all your tracked revenue once you pass {money(RC.threshold)} a month. Here's an estimate of
-          what that 1% pays for, at your revenue, from public figures.
+          RevenueCat takes 1% of all your tracked revenue once you pass {money(RC.threshold)} a month, and the bill grows every time
+          you do. The servers behind your app cost a rounding error. The rest pays for the company: its
+          payroll, its sales team, and its investors' return.
         </p>
       </div>
     </section>
@@ -71,11 +74,11 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
 
           <div class="fee" id="fee-line">
             <div>
-              <span class="k">You pay RevenueCat</span>
+              <span class="k">RevenueCat takes</span>
               <strong data-out="fee">{money(fee)}</strong><span class="per">a year</span>
             </div>
             <div>
-              <span class="k">The servers for your app cost</span>
+              <span class="k">The servers actually cost</span>
               <strong class="ok" data-out="infra">{money(infra)}</strong><span class="per">a year</span>
             </div>
           </div>
@@ -85,8 +88,8 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
             {TEAMS.map((t, i) => <i class={`seg c${i}`} data-seg={t.key} style={`flex-grow:${(rest / fee) * shareOf(t)}`} title={t.name}></i>)}
           </div>
           <p class="stack-note">
-            <span class="dot infra"></span> Servers: <b data-out="infraPct">{((infra / fee) * 100).toFixed(1)}%</b> of what you pay.
-            The other <b data-out="restPct">{((rest / fee) * 100).toFixed(1)}%</b> pays for these teams:
+            <span class="dot infra"></span> Servers: <b data-out="infraPct">{((infra / fee) * 100).toFixed(1)}%</b>. Everything else,{" "}
+            <b data-out="restPct">{((rest / fee) * 100).toFixed(1)}%</b>, pays for their teams:
           </p>
 
           <ul class="teams">
@@ -112,27 +115,31 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
           </ul>
 
           <div class="owners">
-            <h3>And who owns what it builds</h3>
+            <h3>And more than half of it builds someone else's exit</h3>
             <div class="own-bar" role="img" aria-label={`Venture investors own about ${Math.round(INVESTOR_OWNERSHIP * 100)}% of RevenueCat, our estimate`}>
               <i class="vc" data-own style={`transform:scaleX(${INVESTOR_OWNERSHIP})`}></i>
               <span class="own-l">Venture investors · about {Math.round(INVESTOR_OWNERSHIP * 100)}%</span>
               <span class="own-r">Founders and employees</span>
             </div>
             <p>
-              Investors put in about ${FUNDING_USD / 1e6} million. They don't take a cut of each payment; they own an estimated half of
-              the company, so half of what your fees build is theirs: today's profit and tomorrow's sale. In ownership terms, that's
-              about <b data-out="vc">{money(fee * INVESTOR_OWNERSHIP)}</b> of what you pay each year.
+              Venture investors have put about ${FUNDING_USD / 1e6} million into RevenueCat across five rounds, and by the
+              reported valuations they own more than half of it. They don't need a cut of each payment. Every fee you pay makes the
+              company they own worth more, and they collect when it sells. In ownership terms, about <b data-out="vc">{money(fee * INVESTOR_OWNERSHIP)}</b>{" "}
+              of what you pay each year is building their return.
             </p>
+            <ul class="investors" aria-label="RevenueCat's investors">
+              {INVESTORS.map((n) => <li>{n}</li>)}
+            </ul>
           </div>
 
           <p class="punch">
-            Your 1% buys about <b data-out="days">{Math.round(rest / engineerDayCost())}</b> engineer-days a year at RevenueCat.
-            Running it yourself costs <b data-out="infra2">{money(infra)}</b>.
+            Your 1% buys about <b data-out="days">{Math.round(rest / engineerDayCost())}</b> engineer-days a year at RevenueCat. Running
+            the same job yourself costs <b data-out="infra2">{money(infra)}</b>. <strong>Keep the other <span data-out="keep">{money(fee - infra)}</span>.</strong>
           </p>
         </div>
 
         <div class="cta">
-          <a class="btn btn-primary" href="/#savings">See what you'd keep with openpurr →</a>
+          <a class="btn btn-primary" href="/#savings">Keep your 1% →</a>
           <a class="btn btn-ghost" href={REPO_URL}>openpurr on GitHub</a>
         </div>
       </div>
@@ -140,12 +147,11 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
 
     <section class="alt">
       <div class="wrap narrow">
-        <h2>Fair's fair</h2>
+        <h2>Yes, they do more</h2>
         <p>
-          RevenueCat builds a lot more than a purchase backend: paywalls, experiments, integrations, a support team and a
-          company you can call. Those teams are real work, and some apps want all of it. The point of this page is narrower:
-          the part of the job openpurr does, validating purchases and keeping subscriptions current, needs servers that cost
-          a few dollars a month, not a share of everything you'll ever earn.
+          RevenueCat builds more than a purchase backend: paywalls, experiments, integrations, a support line. If you use all of
+          it, maybe it's worth it to you. If what you need is purchases validated and subscriptions kept current, you're handing
+          over a share of everything you'll ever earn for a job that runs on a few dollars of servers a month.
         </p>
 
         <h2>How we estimate this</h2>
@@ -166,10 +172,25 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
             The part of your fee that isn't servers is split in proportion to those costs.
           </li>
           <li>
-            <b>Investors:</b> about ${FUNDING_USD / 1e6} million raised across four rounds. The 2025 round was reported at a
-            ${VALUATION_2025 / 1e6} million valuation with about ${REVENUE_2025 / 1e6} million in yearly revenue, close to break-even.
-            Ownership isn't public; {Math.round(INVESTOR_OWNERSHIP * 100)}% is our estimate for a company four rounds in. Their share
-            is of what the company is worth, not a line in its costs, which is why it's shown separately.
+            <b>Investors:</b> five rounds from 2018 to 2025, about ${FUNDING_USD / 1e6} million in all. Ownership isn't public, so we
+            compound it from the reported valuations: each round's investors get the amount divided by the post-money valuation, and
+            everyone before is diluted by the same share. That gives about {Math.round(INVESTOR_OWNERSHIP * 100)}%. Option pools and Y
+            Combinator's accelerator stake aren't counted. Their share is of what the company is worth, not a line in its costs,
+            which is why it's shown separately. At the 2025 round, the company was reported at about ${REVENUE_2025 / 1e6} million
+            in yearly revenue, close to break-even.
+            <table class="rounds">
+              <thead><tr><th>Round</th><th>Raised</th><th>Valuation</th><th>Led by</th></tr></thead>
+              <tbody>
+                {ROUNDS.map((r) => (
+                  <tr>
+                    <td>{r.name}, {r.year}</td>
+                    <td>{`$${r.amount / 1e6}M`}</td>
+                    <td>{r.post ? `$${r.post / 1e6}M` : "not reported"}</td>
+                    <td>{r.lead ?? "not reported"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </li>
           <li><b>Not affiliated:</b> openpurr isn't affiliated with RevenueCat. These are our estimates, not RevenueCat's figures.</li>
         </ul>
@@ -411,6 +432,42 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
   .own-r {
     color: var(--muted);
   }
+  .investors {
+    list-style: none;
+    padding: 0;
+    margin: 14px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .investors li {
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .rounds {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 0.9rem;
+    display: block;
+    overflow-x: auto;
+  }
+  .rounds th,
+  .rounds td {
+    text-align: start;
+    padding: 6px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .punch strong {
+    display: block;
+    margin-top: 6px;
+    font-size: 1.25rem;
+    color: var(--purple);
+  }
   .punch {
     margin-top: 24px;
     padding: 16px 18px;
@@ -543,6 +600,7 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
       tween("infra2", infra, (n) => usd.format(Math.round(n)));
       tween("days", rest / model.engineerDay, (n) => String(Math.round(n)));
       tween("vc", fee * model.investors, (n) => usd.format(Math.round(n)));
+      tween("keep", fee - infra, (n) => usd.format(Math.round(n)));
       out("infraPct").textContent = `${((infra / fee) * 100).toFixed(1)}%`;
       out("restPct").textContent = `${((rest / fee) * 100).toFixed(1)}%`;
       root.querySelector<HTMLElement>('[data-seg="infra"]')!.style.flexGrow = String(Math.max(infra / fee, 0.004));
