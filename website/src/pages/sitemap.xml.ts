@@ -9,7 +9,7 @@ import { allLocales, langTag, type Alternates, type Locale } from "../i18n";
 const PAGES: { path: string; alternates?: Alternates; lastmod?: string }[] = [
   { path: "/", alternates: allLocales("/") },
   { path: MIGRATION_PAGE, alternates: allLocales(MIGRATION_PAGE), lastmod: MIGRATION_UPDATED },
-  { path: PRICING_PAGE, lastmod: SOURCES_CHECKED },
+  { path: PRICING_PAGE, alternates: allLocales(PRICING_PAGE), lastmod: SOURCES_CHECKED },
   { path: "/privacy/" },
 ];
 

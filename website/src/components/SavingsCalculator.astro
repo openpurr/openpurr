@@ -6,7 +6,7 @@
 //
 // The cost model is ../savings.ts, shared with the READMEs' table. Without JavaScript, the figures
 // for the initial revenue, the chart and the table still show; only the slider needs it.
-import { fill, langTag, t, type Locale } from "../i18n";
+import { fill, langTag, localePath, t, type Locale } from "../i18n";
 import { LEVELS, PRICES_CHECKED, SLIDER, paidPlanFrom, savings } from "../savings";
 import { PRICING_PAGE } from "../consts";
 
@@ -177,7 +177,7 @@ const client = { perMonth: s.perMonth, free: s.free, paid: s.paid };
       {s.method.map((m) => <li>{fill(m, { paidFrom: money(paidPlanFrom()), date })}</li>)}
     </ul>
   </details>
-  <p class="pricing-link"><a href={PRICING_PAGE} hreflang={locale === "en" ? undefined : "en"}>{s.pricingLink}</a></p>
+  <p class="pricing-link"><a href={localePath(locale, PRICING_PAGE)}>{s.pricingLink}</a></p>
 </div>
 
   </div>
