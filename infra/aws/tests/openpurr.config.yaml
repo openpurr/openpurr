@@ -1,0 +1,3 @@
+# A placeholder config for tests/plan.tftest.hcl: the module only stores it.
+version: 2
+apps: []
