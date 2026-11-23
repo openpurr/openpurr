@@ -85,6 +85,10 @@ OpenTofu module in [`infra/aws`](../infra/aws). There, `DATABASE_URL` names only
 database, and the password RDS manages and rotates comes in as `PGPASSWORD` (with `PGUSER`), which
 pgx reads for what the URL leaves out.
 
+To run it on DigitalOcean (App Platform and Managed PostgreSQL, your domain with a certificate App
+Platform manages), see [`docs/standard-on-digitalocean.md`](../docs/standard-on-digitalocean.md)
+and the OpenTofu module in [`infra/digitalocean`](../infra/digitalocean).
+
 ## App Store
 
 As on Lite:

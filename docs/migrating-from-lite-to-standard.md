@@ -79,6 +79,8 @@ Follow [Standard on Google Cloud](standard-on-gcp.md), with these differences:
 
 Leave App Store Connect and Google Play alone.
 
+On DigitalOcean, follow [Standard on DigitalOcean](standard-on-digitalocean.md) with the same differences: before the first apply, set `generate_operator_secret = false` and add `FORWARD_SECRET` to `secrets`, then fill `OPERATOR_SECRET` (Lite's) and `FORWARD_SECRET` in the control panel. For step 4, add your address to `db_trusted_ips` and use the cluster's connection string (`postgresql://doadmin:<password>@<host>:25060/openpurr?sslmode=require`) directly, without a proxy or `--network host`.
+
 ## 3. Export from Lite
 
 **From here until you finish (step 8), hold off on these in Lite's dashboard, CLI and MCP:** signing out, regenerating recovery codes, renaming keys or tokens, and editing experiments. Catch-up exports don't carry them (see [Limits](#limits)). Purchases, customers, grants, attributes, new keys and revocations all carry over, so your apps and your team can keep working as usual.

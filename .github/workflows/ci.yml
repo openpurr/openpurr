@@ -164,6 +164,33 @@ jobs:
       - name: Test
         run: tofu test
 
+  infra-digitalocean:
+    name: Infra DigitalOcean (OpenTofu fmt, validate, offline tests)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infra/digitalocean
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_wrapper: false
+
+      - name: Format
+        run: tofu fmt -recursive -check
+
+      # No backend and no token: providers are downloaded, nothing in DigitalOcean is touched.
+      - name: Validate
+        run: tofu init -backend=false -input=false && tofu validate
+
+      # The DigitalOcean provider is mocked (tests/*.tftest.hcl).
+      - name: Test
+        run: tofu test
+
   conformance-lite:
     name: Conformance suite against Lite
     runs-on: ubuntu-latest

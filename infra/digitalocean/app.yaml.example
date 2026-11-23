@@ -1,0 +1,107 @@
+# openpurr Standard as a plain App Platform app spec, for deploying without OpenTofu. It's what
+# the module in this directory makes, minus the database cluster: create a PostgreSQL cluster
+# first (control panel → Databases, or `doctl databases create`), add a database named openpurr
+# to it, and put the cluster's name in cluster_name below. Then:
+#
+#   cp app.yaml.example app.yaml      # edit name, region, domain, cluster_name, image tag
+#   doctl apps create --spec app.yaml
+#
+# or paste it into the control panel (Create App → ... → App Spec). Attaching the database adds the
+# app to the cluster's trusted sources when trusted sources are on; turn them on (Databases → the
+# cluster → Network Access) so nothing else can connect. See docs/standard-on-digitalocean.md.
+#
+# Secrets (type SECRET) are encrypted when first submitted, and the spec then shows their
+# ciphertext (EV[...]). Fill them in the control panel (Settings → App-Level Environment
+# Variables) rather than here, so their values never sit in a file.
+
+name: openpurr
+region: nyc
+
+# Every response is dynamic, and the dashboard shows email addresses that the edge's email
+# obfuscation would rewrite.
+disable_edge_cache: true
+disable_email_obfuscation: true
+
+domains:
+  - domain: purchases.example.com
+    type: PRIMARY
+    # zone: example.com   # if the domain's DNS is on DigitalOcean: App Platform adds the record
+
+alerts:
+  - rule: DEPLOYMENT_FAILED
+  - rule: DOMAIN_FAILED
+
+# App-level secrets. OPERATOR_SECRET is at least 32 random characters (`openssl rand -hex 24`),
+# or Lite's value when moving from Lite; the server refuses to start with this placeholder.
+envs:
+  - key: OPERATOR_SECRET
+    scope: RUN_TIME
+    type: SECRET
+    value: CHANGE-ME
+  - key: APPLE_IAP_KEY
+    scope: RUN_TIME
+    type: SECRET
+    value: ""
+  - key: GOOGLE_SERVICE_ACCOUNT
+    scope: RUN_TIME
+    type: SECRET
+    value: ""
+
+databases:
+  - name: db
+    engine: PG
+    production: true
+    cluster_name: openpurr
+    db_name: openpurr
+
+services:
+  - name: server
+    image:
+      registry_type: GHCR
+      registry: openpurr
+      repository: openpurr-standard
+      tag: "0.3.0"          # pin a version; changing it is how you upgrade
+    http_port: 8080
+    # At least 1, always: the background jobs run inside the server. apps-s-1vcpu-1gb is the
+    # smallest size that allows more than one instance.
+    instance_count: 1
+    instance_size_slug: apps-s-1vcpu-1gb
+    envs:
+      # Filled in by App Platform from the attached database when the server starts.
+      - key: DATABASE_URL
+        scope: RUN_TIME
+        value: postgresql://${db.USERNAME}:${db.PASSWORD}@${db.HOSTNAME}:${db.PORT}/${db.DATABASE}?sslmode=require&pool_max_conns=5
+      - key: PUBLIC_URL
+        scope: RUN_TIME
+        value: https://purchases.example.com
+      # App Platform's edge puts the client's address in do-connecting-ip.
+      - key: CLIENT_IP_HEADER
+        scope: RUN_TIME
+        value: do-connecting-ip
+      - key: CLIENT_IP_HOPS
+        scope: RUN_TIME
+        value: "0"
+      - key: LOG_FORMAT
+        scope: RUN_TIME
+        value: json
+      - key: SHUTDOWN_TIMEOUT_SECONDS
+        scope: RUN_TIME
+        value: "25"
+    health_check:
+      http_path: /healthz
+      initial_delay_seconds: 0
+      period_seconds: 5
+      timeout_seconds: 3
+      success_threshold: 1
+      failure_threshold: 36
+    termination:
+      drain_seconds: 15
+      grace_period_seconds: 30
+
+ingress:
+  rules:
+    - match:
+        path:
+          prefix: /
+      component:
+        name: server
