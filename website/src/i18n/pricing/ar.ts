@@ -36,7 +36,7 @@ export const pricingAr: PricingDict = {
     stackNote: "الخوادم: {servers}. وكل ما تبقّى، أي {rest}، يدفع ثمن فرقهم:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "نحو {people} شخصًا · الراتب المعتاد {salary}",
-    ownersTitle: "وأكثر من نصفه يبني صفقة خروج لغيرك",
+    ownersTitle: "نسبة 1% التي تدفعها تبني صفقة خروج لغيرك",
     /** {pct} is like "55%". */
     ownersInvestors: "مستثمرو رأس المال المغامر · نحو {pct}",
     ownersRest: "المؤسسون والموظفون",

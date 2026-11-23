@@ -36,7 +36,7 @@ export const pricingId: PricingDict = {
     stackNote: "Server: {servers}. Selebihnya, {rest}, membiayai tim mereka:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Sekitar {people} orang · gaji umum {salary}",
-    ownersTitle: "Dan lebih dari separuhnya membangun exit orang lain",
+    ownersTitle: "1% Anda membangun exit orang lain",
     /** {pct} is like "55%". */
     ownersInvestors: "Investor ventura · sekitar {pct}",
     ownersRest: "Pendiri dan karyawan",

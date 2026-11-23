@@ -163,6 +163,19 @@ const enHref = locale === "en" ? undefined : "en";
         <p class="lede">{fill(p.hero.lede, { threshold: money(RC.threshold) })}</p>
         <p class="updated" set:html={fill(p.hero.updated, { date: `<time datetime="${SOURCES_CHECKED}">${checked}</time>` })} />
 
+        <div class="owners">
+          <h2>{p.calc.ownersTitle}</h2>
+          <div class="own-bar" role="img" aria-label={fill(p.calc.ownersBarLabel, { pct })}>
+            <i class="vc" data-own style={`transform:scaleX(${INVESTOR_OWNERSHIP})`}></i>
+            <span class="own-l">{fill(p.calc.ownersInvestors, { pct })}</span>
+            <span class="own-r">{p.calc.ownersRest}</span>
+          </div>
+          <p set:html={html(p.calc.ownersText, { funding: big(FUNDING_USD), vc: out("vc", money(fee * INVESTOR_OWNERSHIP)) })} />
+          <ul class="investors" aria-label={p.calc.investorsLabel}>
+            {INVESTORS.map((n) => <li>{n}</li>)}
+          </ul>
+        </div>
+
         <div class="answer">
           <h2>{p.answer.title}</h2>
           <p set:html={html(p.answer.text, { threshold: money(RC.threshold) })} />
@@ -227,18 +240,6 @@ const enHref = locale === "en" ? undefined : "en";
             }
           </ul>
 
-          <div class="owners">
-            <h3>{p.calc.ownersTitle}</h3>
-            <div class="own-bar" role="img" aria-label={fill(p.calc.ownersBarLabel, { pct })}>
-              <i class="vc" data-own style={`transform:scaleX(${INVESTOR_OWNERSHIP})`}></i>
-              <span class="own-l">{fill(p.calc.ownersInvestors, { pct })}</span>
-              <span class="own-r">{p.calc.ownersRest}</span>
-            </div>
-            <p set:html={html(p.calc.ownersText, { funding: big(FUNDING_USD), vc: out("vc", money(fee * INVESTOR_OWNERSHIP)) })} />
-            <ul class="investors" aria-label={p.calc.investorsLabel}>
-              {INVESTORS.map((n) => <li>{n}</li>)}
-            </ul>
-          </div>
 
           <p class="punch">
             <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
@@ -573,12 +574,16 @@ const enHref = locale === "en" ? undefined : "en";
   .c6 { background: var(--c6); }
   .c7 { background: var(--c7); }
   .owners {
-    margin-top: 28px;
-    padding-top: 22px;
-    border-top: 1px solid var(--line);
+    margin-top: 32px;
+    max-width: 760px;
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--card);
   }
-  .owners h3 {
-    font-size: 1.1rem;
+  .owners h2 {
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
     margin-bottom: 12px;
   }
   .owners p {
@@ -813,6 +818,12 @@ const enHref = locale === "en" ? undefined : "en";
       for (const b of bars) b.style.transform = "scaleX(0)";
       const own = root.querySelector<HTMLElement>("[data-own]")!;
       own.style.transform = "scaleX(0)";
+      const ownSeen = new IntersectionObserver((entries) => {
+        if (!entries.some((e) => e.isIntersecting)) return;
+        ownSeen.disconnect();
+        own.style.transform = `scaleX(${model.investors})`;
+      }, { threshold: 0.5 });
+      ownSeen.observe(own);
       const seen = new IntersectionObserver((entries) => {
         if (!entries.some((e) => e.isIntersecting)) return;
         seen.disconnect();
@@ -820,7 +831,6 @@ const enHref = locale === "en" ? undefined : "en";
           const b = root.querySelector<HTMLElement>(`[data-bar="${t.key}"]`)!;
           b.style.transform = `scaleX(${t.share / maxShare})`;
         }
-        own.style.transform = `scaleX(${model.investors})`;
         const start = performance.now();
         const sweep = (now: number) => {
           const p = Math.max(0, Math.min(1, (now - start) / 1400));

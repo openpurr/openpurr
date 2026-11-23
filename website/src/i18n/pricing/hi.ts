@@ -36,7 +36,7 @@ export const pricingHi: PricingDict = {
     stackNote: "Servers: {servers}। बाक़ी सब, {rest}, उनकी teams पर जाता है:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "लगभग {people} लोग · आम salary {salary}",
-    ownersTitle: "और इसका आधे से ज़्यादा हिस्सा किसी और का exit बना रहा है",
+    ownersTitle: "आपका 1% किसी और का exit बना रहा है",
     /** {pct} is like "55%". */
     ownersInvestors: "VC investors · लगभग {pct}",
     ownersRest: "Founders और employees",

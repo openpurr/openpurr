@@ -36,7 +36,7 @@ export const pricingJa: PricingDict = {
     stackNote: "サーバーは {servers}。残りの {rest} は各チームの費用です：",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "約 {people} 人 · 標準的な給与 {salary}",
-    ownersTitle: "そして半分以上は、他人のエグジットのために",
+    ownersTitle: "あなたの 1% が、他人のエグジットを作る",
     /** {pct} is like "55%". */
     ownersInvestors: "ベンチャー投資家 · 約 {pct}",
     ownersRest: "創業者と従業員",

@@ -36,7 +36,7 @@ export const pricingPtBr: PricingDict = {
     stackNote: "Servidores: {servers}. Todo o resto, {rest}, paga as equipes deles:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Cerca de {people} pessoas · salário típico de {salary}",
-    ownersTitle: "E mais da metade disso engorda o exit de outra pessoa",
+    ownersTitle: "Seu 1% engorda o exit de outra pessoa",
     /** {pct} is like "55%". */
     ownersInvestors: "Investidores de risco · cerca de {pct}",
     ownersRest: "Fundadores e funcionários",

@@ -43,7 +43,8 @@ export const pricingEn = {
     stackNote: "Servers: {servers}. Everything else, {rest}, pays for their teams:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "About {people} people · typical salary {salary}",
-    ownersTitle: "And more than half of it builds someone else's exit",
+    /** Near the top of the page, under the intro. */
+    ownersTitle: "Your 1% builds someone else's exit",
     /** {pct} is like "55%". */
     ownersInvestors: "Venture investors · about {pct}",
     ownersRest: "Founders and employees",

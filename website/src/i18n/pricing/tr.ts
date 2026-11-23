@@ -36,7 +36,7 @@ export const pricingTr: PricingDict = {
     stackNote: "Sunucular: {servers}. Geri kalan her şey, yani {rest}, ekiplerine gidiyor:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Yaklaşık {people} kişi · tipik maaş {salary}",
-    ownersTitle: "Üstelik yarısından fazlası başkasının exit'ini büyütüyor",
+    ownersTitle: "%1'iniz başkasının exit'ini büyütüyor",
     /** {pct} is like "55%". */
     ownersInvestors: "Risk sermayesi yatırımcıları · yaklaşık {pct}",
     ownersRest: "Kurucular ve çalışanlar",

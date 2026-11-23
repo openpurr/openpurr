@@ -36,7 +36,7 @@ export const pricingKo: PricingDict = {
     stackNote: "서버: {servers}. 나머지 {rest}는 그들의 팀에 들어갑니다:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "약 {people}명 · 일반적인 연봉 {salary}",
-    ownersTitle: "그리고 절반 이상은 남의 엑시트를 만듭니다",
+    ownersTitle: "내 1%가 남의 엑시트를 만듭니다",
     /** {pct} is like "55%". */
     ownersInvestors: "벤처 투자자 · 약 {pct}",
     ownersRest: "창업자와 직원",
