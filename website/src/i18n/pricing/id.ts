@@ -107,6 +107,8 @@ export const pricingId: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Tim:</b> fungsi pekerjaan, bukan orang. Kami mengasumsikan {used} orang (perkiraan publik berkisar dari {low} hingga {high}) dan membaginya ke berbagai fungsi sendiri. Gaji diambil dari lowongan kerja publik RevenueCat yang mencantumkan gaji; biaya tiap tim adalah jumlah orang × gaji × {loaded} untuk pajak, tunjangan, dan peralatan, tanpa ekuitas. Bagian biaya Anda yang bukan untuk server dibagi sesuai proporsi biaya tersebut.",
+    split:
+      "<b>Mengapa penjualan dan pertumbuhan melebihi engineering:</b> pada {date}, papan lowongan RevenueCat mencantumkan {open} posisi terbuka: {gtm} di penjualan, pemasaran, dan pertumbuhan, serta {eng} di core engineering. Perusahaan di tahap ini sedang membangun go-to-market, dan lowongan Head of Sales barunya adalah yang bergaji tertinggi di papan tersebut.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investor:</b> lima putaran dari 2018 hingga 2025, total sekitar {funding}. Kepemilikan tidak dipublikasikan, jadi kami menghitungnya bertahap dari valuasi yang dilaporkan: investor tiap putaran mendapat jumlah investasi dibagi valuasi post-money, dan semua pemegang saham sebelumnya terdilusi dengan porsi yang sama. Hasilnya sekitar {pct}. Option pool dan saham akselerator Y Combinator tidak dihitung. Porsi mereka adalah bagian dari nilai perusahaan, bukan pos dalam biayanya, karena itu ditampilkan terpisah. Pada putaran 2025, perusahaan dilaporkan berpendapatan tahunan sekitar {revenue}, mendekati titik impas.",

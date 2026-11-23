@@ -107,6 +107,8 @@ export const pricingHi: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Teams:</b> job functions, लोग नहीं। हम {used} लोग मानते हैं (public अनुमान {low} से {high} तक हैं) और उन्हें functions में ख़ुद बाँटते हैं। Salaries RevenueCat की public job postings से ली गई हैं, जिनमें pay लिखा होता है; हर team का ख़र्च = लोग × salary × {loaded}, taxes, benefits और equipment के लिए, equity के बिना। आपकी fee का जो हिस्सा servers पर नहीं जाता, वह इन्हीं ख़र्चों के अनुपात में बाँटा गया है।",
+    split:
+      "<b>Sales और growth में engineering से ज़्यादा लोग क्यों:</b> {date} को RevenueCat के job board पर {open} खुली positions थीं: {gtm} sales, marketing और growth में, और {eng} core engineering में। इस stage की company अपना go-to-market खड़ा कर रही होती है, और इसकी नई Head of Sales posting board पर सबसे ज़्यादा pay वाली है।",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investors:</b> 2018 से 2025 तक पाँच rounds, कुल लगभग {funding}। Ownership public नहीं है, इसलिए हम इसे reported valuations से compound करते हैं: हर round के investors को रकम ÷ post-money valuation जितना हिस्सा मिलता है, और पहले वाले सभी उतने ही हिस्से से dilute होते हैं। इससे लगभग {pct} आता है। Option pools और Y Combinator के accelerator stake को नहीं गिना गया। उनका हिस्सा company की value में है, उसके ख़र्चों की कोई line नहीं, इसलिए इसे अलग दिखाया गया है। 2025 के round के समय company का सालाना revenue लगभग {revenue} बताया गया था, break-even के क़रीब।",

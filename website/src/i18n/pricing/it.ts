@@ -107,6 +107,8 @@ export const pricingIt: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Team:</b> funzioni, non persone. Ipotizziamo {used} persone (le stime pubbliche vanno da {low} a {high}) e le distribuiamo noi tra le funzioni. Gli stipendi vengono dagli annunci di lavoro pubblici di RevenueCat, che indicano la retribuzione; il costo di ogni team è persone × stipendio × {loaded} per tasse, benefit e attrezzatura, senza equity. La parte della tua quota che non va ai server è divisa in proporzione a questi costi.",
+    split:
+      "<b>Perché vendite e crescita superano l'engineering:</b> il {date}, la pagina delle offerte di lavoro di RevenueCat elencava {open} posizioni aperte: {gtm} in vendite, marketing e crescita, e {eng} nell'engineering core. Un'azienda in questa fase sta costruendo il go-to-market, e il nuovo annuncio per Head of Sales è il più pagato della pagina.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investitori:</b> cinque round dal 2018 al 2025, circa {funding} in tutto. Le quote non sono pubbliche, quindi le ricaviamo combinando le valutazioni riportate: gli investitori di ogni round ottengono l'importo diviso per la valutazione post-money, e tutti quelli precedenti vengono diluiti della stessa quota. Ne risulta circa il {pct}. Non contiamo i pool di opzioni né la quota dell'acceleratore Y Combinator. La loro quota riguarda il valore dell'azienda, non una voce di costo, per questo la mostriamo a parte. Al round del 2025, secondo la stampa, l'azienda aveva circa {revenue} di ricavi annuali, vicino al pareggio.",

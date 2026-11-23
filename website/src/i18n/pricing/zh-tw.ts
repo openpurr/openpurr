@@ -107,6 +107,8 @@ export const pricingZhTw: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>團隊：</b>依職能劃分，而不是具體的人。我們假設共 {used} 人（公開估計在 {low} 到 {high} 人之間），並自行分配到各職能。薪資來自 RevenueCat 標明薪酬的公開職缺；每個團隊的成本 = 人數 × 薪資 × {loaded}（稅費、福利和設備），不含股權。你的費用中伺服器以外的部分，依這些成本的比例分攤。",
+    split:
+      "<b>為什麼業務和成長職缺多於工程：</b>{date} 當天，RevenueCat 的徵才頁面共列出 {open} 個職缺：業務、行銷和成長 {gtm} 個，核心工程 {eng} 個。處於這個階段的公司正在擴建市場推廣（go-to-market）團隊，新開出的 Head of Sales 職缺是頁面上薪資最高的。",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>投資人：</b>2018 年至 2025 年共五輪，總計約 {funding}。持股比例並未公開，因此我們根據報導的估值逐輪推算：每輪投資人取得的比例為投資金額除以投後估值，先前所有股東按同一比例被稀釋。由此得出約 {pct}。員工認股權池和 Y Combinator 的加速器股份未計入。他們的份額是公司價值的一部分，而不是成本中的一項，所以另外列出。據報導，在 2025 年那輪募資時，公司年營收約 {revenue}，接近損益兩平。",

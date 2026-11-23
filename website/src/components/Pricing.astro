@@ -19,6 +19,7 @@ import {
   HEADCOUNT,
   INVESTOR_OWNERSHIP,
   INVESTORS,
+  JOB_BOARD,
   LOADED,
   REVENUE_2025,
   ROUNDS,
@@ -276,6 +277,7 @@ const enHref = locale === "en" ? undefined : "en";
           <li set:html={html(p.method.fee, { threshold: money(RC.threshold) })} />
           <li set:html={html(p.method.servers, { calculator: `<a href="${homePath}#savings">${p.method.calculatorLink}</a>` })} />
           <li set:html={html(p.method.teams, { used: num(HEADCOUNT.used), low: num(HEADCOUNT.low), high: num(HEADCOUNT.high), loaded: num(LOADED) })} />
+          <li set:html={html(p.method.split, { date: checked, open: num(JOB_BOARD.open), gtm: num(JOB_BOARD.gtm), eng: num(JOB_BOARD.coreEngineering) })} />
           <li>
             <Fragment set:html={html(p.method.investors, { funding: big(FUNDING_USD), pct, revenue: big(REVENUE_2025) })} />
             <table class="rounds">

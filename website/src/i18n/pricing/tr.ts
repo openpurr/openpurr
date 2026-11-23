@@ -107,6 +107,8 @@ export const pricingTr: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Ekipler:</b> kişiler değil, iş fonksiyonları. {used} kişi varsayıyoruz (kamuya açık tahminler {low} ile {high} arasında) ve onları fonksiyonlara kendimiz dağıtıyoruz. Maaşlar, RevenueCat'in maaş bilgisi içeren herkese açık iş ilanlarından geliyor; her ekibin maliyeti vergiler, yan haklar ve ekipman için kişi × maaş × {loaded}, hisse hariç. Ücretinizin sunuculara gitmeyen kısmı bu maliyetlerle orantılı olarak bölünüyor.",
+    split:
+      "<b>Satış ve büyüme ekipleri neden mühendislikten büyük:</b> {date} tarihinde RevenueCat'in iş ilanı sayfasında toplam {open} açık pozisyon vardı: satış, pazarlama ve büyüme alanında {gtm} pozisyon, çekirdek mühendislikte {eng} pozisyon. Bu aşamadaki bir şirket pazara açılma (go-to-market) ekibini büyütüyor ve yeni Head of Sales ilanı sayfadaki en yüksek maaşlı ilan.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Yatırımcılar:</b> 2018–2025 arasında beş tur, toplamda yaklaşık {funding}. Hisse dağılımı açıklanmıyor, bu yüzden açıklanan değerlemelerden hesaplıyoruz: her turun yatırımcıları, tutarın post-money değerlemeye bölümü kadar pay alır ve öncekilerin hepsi aynı oranda sulanır. Sonuç yaklaşık {pct}. Opsiyon havuzları ve Y Combinator'ın hızlandırıcı payı hesaba katılmıyor. Yatırımcıların payı şirketin maliyetlerinde bir kalem değil, şirketin değerinden bir pay; bu yüzden ayrı gösteriliyor. 2025 turunda şirketin yıllık gelirinin yaklaşık {revenue} olduğu ve başa baş noktasına yakın olduğu bildirildi.",

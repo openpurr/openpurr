@@ -107,6 +107,8 @@ export const pricingNl: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Teams:</b> functies, geen personen. We gaan uit van {used} mensen (openbare schattingen lopen van {low} tot {high}) en verdelen ze zelf over de functies. De salarissen komen uit de openbare vacatures van RevenueCat, die het salaris vermelden; de kosten van elk team zijn mensen × salaris × {loaded} voor belastingen, secundaire arbeidsvoorwaarden en apparatuur, zonder aandelen. Het deel van je kosten dat niet naar servers gaat, wordt naar verhouding van die kosten verdeeld.",
+    split:
+      "<b>Waarom sales en groei groter zijn dan engineering:</b> op {date} stonden er op de vacaturepagina van RevenueCat {open} openstaande functies: {gtm} in sales, marketing en groei, en {eng} in core engineering. Een bedrijf in deze fase bouwt zijn go-to-market uit, en de nieuwe vacature voor Head of Sales is de best betaalde op de pagina.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investeerders:</b> vijf rondes van 2018 tot 2025, samen ongeveer {funding}. Het eigendom is niet openbaar, dus rekenen we het door vanuit de gerapporteerde waarderingen: de investeerders van elke ronde krijgen het bedrag gedeeld door de post-money-waardering, en iedereen van daarvoor verwatert met hetzelfde aandeel. Dat komt uit op ongeveer {pct}. Optiepools en het belang van accelerator Y Combinator tellen niet mee. Hun aandeel gaat over wat het bedrijf waard is, niet over een kostenpost, en staat daarom apart. Bij de ronde van 2025 had het bedrijf volgens berichten ongeveer {revenue} jaaromzet en draaide het bijna quitte.",

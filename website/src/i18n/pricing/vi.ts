@@ -107,6 +107,8 @@ export const pricingVi: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Các đội:</b> là chức năng công việc, không phải từng người. Chúng tôi giả định {used} người (các ước tính công khai từ {low} đến {high}) và tự phân bổ họ vào các chức năng. Mức lương lấy từ các tin tuyển dụng công khai của RevenueCat, có ghi mức lương; chi phí mỗi đội là số người × lương × {loaded} cho thuế, phúc lợi và thiết bị, chưa tính cổ phần. Phần phí của bạn không dành cho server được chia theo tỷ lệ các chi phí đó.",
+    split:
+      "<b>Vì sao bán hàng và tăng trưởng đông hơn kỹ thuật:</b> vào {date}, trang tuyển dụng của RevenueCat có {open} vị trí đang tuyển: {gtm} ở bán hàng, marketing và tăng trưởng, và {eng} ở kỹ thuật lõi. Một công ty ở giai đoạn này đang xây dựng bộ máy go-to-market, và tin tuyển Head of Sales mới là vị trí lương cao nhất trên trang.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Nhà đầu tư:</b> năm vòng từ 2018 đến 2025, tổng cộng khoảng {funding}. Tỷ lệ sở hữu không được công bố, nên chúng tôi cộng dồn từ các mức định giá được báo cáo: nhà đầu tư mỗi vòng nhận phần bằng số tiền chia cho định giá post-money, và mọi người trước đó bị pha loãng theo cùng tỷ lệ. Kết quả là khoảng {pct}. Chưa tính quỹ quyền chọn cổ phiếu (option pool) và phần cổ phần của chương trình tăng tốc Y Combinator. Phần của họ là một phần giá trị công ty, không phải một khoản chi phí, nên được hiển thị riêng. Ở vòng 2025, công ty được báo cáo có doanh thu hằng năm khoảng {revenue}, gần hòa vốn.",

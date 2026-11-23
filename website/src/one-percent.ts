@@ -65,6 +65,12 @@ export const VALUATION_2025 = 500_000_000;
  */
 export const LOADED = 1.3;
 
+/**
+ * What RevenueCat's job board listed when we checked: why the split leans to sales, marketing and
+ * growth (a Series C company building out go-to-market) rather than engineering.
+ */
+export const JOB_BOARD = { open: 10, gtm: 4, coreEngineering: 0 };
+
 /** Teams by key; their names and where each salary comes from are in i18n/pricing (`teams`). */
 export interface Team {
   key: string;
@@ -74,14 +80,15 @@ export interface Team {
   salary: number;
 }
 
+// Go-to-market teams first: at its stage, that is where most of the money goes.
 export const TEAMS: Team[] = [
-  { key: "eng", people: 50, salary: 210_000 },
-  { key: "product", people: 15, salary: 225_000 },
-  { key: "sales", people: 14, salary: 200_000 },
-  { key: "growth", people: 16, salary: 200_000 },
-  { key: "support", people: 16, salary: 135_000 },
-  { key: "community", people: 9, salary: 180_000 },
-  { key: "ops", people: 22, salary: 170_000 },
+  { key: "growth", people: 30, salary: 200_000 },
+  { key: "sales", people: 26, salary: 200_000 },
+  { key: "community", people: 8, salary: 180_000 },
+  { key: "eng", people: 36, salary: 210_000 },
+  { key: "product", people: 12, salary: 225_000 },
+  { key: "support", people: 14, salary: 135_000 },
+  { key: "ops", people: 16, salary: 170_000 },
   { key: "exec", people: 8, salary: 350_000 },
 ];
 

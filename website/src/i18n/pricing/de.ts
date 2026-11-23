@@ -107,6 +107,8 @@ export const pricingDe: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Teams:</b> Funktionen, keine Personen. Wir nehmen {used} Personen an (öffentliche Schätzungen reichen von {low} bis {high}) und verteilen sie selbst auf die Funktionen. Die Gehälter stammen aus den öffentlichen Stellenanzeigen von RevenueCat, die das Gehalt nennen; die Kosten eines Teams sind Personen × Gehalt × {loaded} für Steuern, Sozialleistungen und Ausstattung, ohne Aktienbeteiligung. Der Teil deiner Gebühr, der nicht auf Server entfällt, wird im Verhältnis dieser Kosten aufgeteilt.",
+    split:
+      "<b>Warum Vertrieb und Wachstum das Engineering überwiegen:</b> Am {date} listete die Jobbörse von RevenueCat {open} offene Stellen: {gtm} in Vertrieb, Marketing und Growth und {eng} im Kern-Engineering. Ein Unternehmen in dieser Phase baut seinen Go-to-Market aus, und die neue Stelle als Head of Sales ist die bestbezahlte Anzeige auf der Jobbörse.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investoren:</b> fünf Runden von 2018 bis 2025, insgesamt etwa {funding}. Die Anteile sind nicht öffentlich, also berechnen wir sie aus den gemeldeten Bewertungen: Die Investoren jeder Runde erhalten den Betrag geteilt durch die Post-Money-Bewertung, und alle vorherigen werden um denselben Anteil verwässert. Das ergibt etwa {pct}. Optionspools und die Beteiligung des Y Combinator Accelerators sind nicht eingerechnet. Ihr Anteil bezieht sich auf den Wert des Unternehmens, nicht auf einen Kostenposten, deshalb zeigen wir ihn getrennt. Bei der Runde 2025 lag der Jahresumsatz laut Berichten bei etwa {revenue}, nahe der Gewinnschwelle.",

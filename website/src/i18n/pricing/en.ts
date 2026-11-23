@@ -114,6 +114,9 @@ export const pricingEn = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Teams:</b> job functions, not people. We assume {used} people (public estimates range from {low} to {high}) and split them across functions ourselves. Salaries come from RevenueCat's public job postings, which list pay; each team's cost is people × salary × {loaded} for taxes, benefits and equipment, without equity. The part of your fee that isn't servers is split in proportion to those costs.",
+    /** HTML. Why the split leans to go-to-market. {date} is the date checked; {open}, {gtm} and {eng} are numbers of job openings. */
+    split:
+      "<b>Why sales and growth outnumber engineering:</b> on {date}, RevenueCat's job board listed {open} open roles: {gtm} in sales, marketing and growth, and {eng} in core engineering. A company at its stage is building out go-to-market, and its new Head of Sales is the highest-paid posting on the board.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investors:</b> five rounds from 2018 to 2025, about {funding} in all. Ownership isn't public, so we compound it from the reported valuations: each round's investors get the amount divided by the post-money valuation, and everyone before is diluted by the same share. That gives about {pct}. Option pools and Y Combinator's accelerator stake aren't counted. Their share is of what the company is worth, not a line in its costs, which is why it's shown separately. At the 2025 round, the company was reported at about {revenue} in yearly revenue, close to break-even.",

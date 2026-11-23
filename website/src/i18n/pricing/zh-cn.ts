@@ -107,6 +107,8 @@ export const pricingZhCn: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>团队：</b>按职能划分，而非具体的人。我们假设共 {used} 人（公开估算在 {low} 到 {high} 人之间），并自行分配到各职能。薪资来自 RevenueCat 标明薪酬的公开招聘职位；每个团队的成本 = 人数 × 薪资 × {loaded}（税费、福利和设备），不含股权。你的费用中服务器以外的部分，按这些成本的比例分摊。",
+    split:
+      "<b>为什么销售和增长岗位多于工程：</b>{date} 当天，RevenueCat 的招聘页面共列出 {open} 个空缺职位：销售、市场和增长 {gtm} 个，核心工程 {eng} 个。处于这一阶段的公司正在扩建市场推广（go-to-market）团队，新发布的 Head of Sales 职位是页面上薪酬最高的。",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>投资人：</b>2018 年至 2025 年共五轮，总计约 {funding}。持股比例并未公开，因此我们根据报道的估值逐轮推算：每轮投资人获得的比例为投资额除以投后估值，此前所有股东按同一比例被稀释。由此得出约 {pct}。期权池和 Y Combinator 的加速器股份未计入。他们的份额是公司价值的一部分，而不是成本中的一项，所以单独列出。据报道，在 2025 年那轮融资时，公司年收入约 {revenue}，接近盈亏平衡。",

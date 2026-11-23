@@ -107,6 +107,8 @@ export const pricingPtBr: PricingDict = {
     /** HTML. {used}, {low}, {high} are headcounts; {loaded} is "1.3". */
     teams:
       "<b>Equipes:</b> funções, não pessoas. Supomos {used} pessoas (as estimativas públicas vão de {low} a {high}) e nós mesmos as distribuímos entre as funções. Os salários vêm das vagas públicas do RevenueCat, que informam a remuneração; o custo de cada equipe é pessoas × salário × {loaded} para impostos, benefícios e equipamentos, sem equity. A parte da sua taxa que não vai para servidores é dividida na proporção desses custos.",
+    split:
+      "<b>Por que vendas e crescimento superam engenharia:</b> em {date}, a página de vagas do RevenueCat listava {open} vagas abertas: {gtm} em vendas, marketing e crescimento, e {eng} em engenharia central. Uma empresa nesse estágio está montando seu go-to-market, e a nova vaga de Head of Sales é a mais bem paga da página.",
     /** HTML. {funding} "$100 million", {pct} like "55%", {revenue} "$30 million". */
     investors:
       "<b>Investidores:</b> cinco rodadas de 2018 a 2025, cerca de {funding} no total. A participação não é pública, então a calculamos compondo as avaliações divulgadas: os investidores de cada rodada ficam com o valor dividido pela avaliação post-money, e todos os anteriores são diluídos na mesma proporção. Isso dá cerca de {pct}. Option pools e a participação da aceleradora Y Combinator não entram na conta. A fatia deles é do valor da empresa, não uma linha nos custos, por isso aparece separada. Na rodada de 2025, a empresa tinha, segundo a imprensa, cerca de {revenue} de receita anual, perto do break-even.",
