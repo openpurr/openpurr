@@ -158,6 +158,7 @@ export const es: Dict = {
       colOp: "openpurr Lite, al mes",
       colSaved: "Ahorro al año",
       methodSummary: "Cómo lo calculamos",
+      pricingLink: "¿A dónde va el 1 % de RevenueCat? →",
       method: [
         "RevenueCat: el precio de lista del plan Pro, el 1 % de los ingresos mensuales registrados a partir de 2500 $. Los ingresos registrados cuentan los planes anuales y las compras únicas en el mes en que se pagan, así que pueden superar el MRR. Las cuentas grandes pueden negociar precios Enterprise.",
         "openpurr Lite: los precios de Cloudflare para Workers y D1. Suponemos unos 1,50 $ de ingresos mensuales y unas 10 peticiones del SDK al día por usuario activo diario. Así, las 100 000 peticiones diarias del plan gratuito cubren hasta unos {paidFrom} de ingresos mensuales, con margen. Por encima contamos Workers Paid: 5 $ al mes, más 0,30 $ por cada millón de peticiones por encima de 10 millones.",

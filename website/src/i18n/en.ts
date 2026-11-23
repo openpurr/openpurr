@@ -170,6 +170,8 @@ export const en = {
       colOp: "openpurr Lite, monthly",
       colSaved: "Saved per year",
       methodSummary: "How we estimate this",
+      /** A link to the (English) page on what RevenueCat's 1% pays for. Ends with an arrow in the reading direction. */
+      pricingLink: "Where does RevenueCat's 1% go? →",
       method: [
         "RevenueCat: the Pro plan's list price, 1% of monthly tracked revenue from $2,500. Tracked revenue counts annual plans and one-time purchases in the month they're paid, so it can be higher than MRR. Large accounts can negotiate Enterprise pricing.",
         "openpurr Lite: Cloudflare's prices for Workers and D1. We assume about $1.50 of monthly revenue and about 10 SDK requests a day per daily active user. On that basis the free plan's 100,000 requests a day cover up to about {paidFrom} of monthly revenue, with room to spare. Above that we count Workers Paid: $5 a month, plus $0.30 per million requests over 10 million.",

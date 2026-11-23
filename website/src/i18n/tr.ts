@@ -162,6 +162,7 @@ export const tr: Dict = {
       colOp: "openpurr Lite, aylık",
       colSaved: "Yıllık tasarruf",
       methodSummary: "Nasıl hesaplıyoruz",
+      pricingLink: "RevenueCat'in %1'i nereye gidiyor? →",
       method: [
         "RevenueCat: Pro planın liste fiyatı, 2.500 $'dan itibaren aylık izlenen gelirin %1'i. İzlenen gelir, yıllık planları ve tek seferlik satın almaları ödendikleri ayda sayar; bu yüzden MRR'den yüksek olabilir. Büyük hesaplar Enterprise fiyatı için pazarlık yapabilir.",
         "openpurr Lite: Cloudflare'in Workers ve D1 fiyatları. Günlük aktif kullanıcı başına yaklaşık 1,50 $ aylık gelir ve günde yaklaşık 10 SDK isteği varsayıyoruz. Buna göre ücretsiz planın günlük 100.000 isteği, payı da bırakarak yaklaşık {paidFrom} aylık gelire kadar yeter. Bunun üzerinde Workers Paid'i sayıyoruz: ayda 5 $, artı 10 milyonun üzerindeki her milyon istek için 0,30 $.",

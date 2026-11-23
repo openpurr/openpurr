@@ -1,5 +1,5 @@
 ---
-// "Where your 1% goes": what RevenueCat's revenue share pays for, as an interactive estimate. Pick a
+// "Where your 1% goes" (/revenuecat-pricing/): what RevenueCat's revenue share pays for, as an interactive estimate. Pick a
 // monthly revenue; the page shows your yearly fee, what the servers for an app your size cost on
 // Cloudflare (the savings model in ../savings.ts), and how the rest splits across RevenueCat's
 // teams by job function (../one-percent.ts). No people are named, and no one's pay is shown: teams
@@ -7,8 +7,8 @@
 //
 // Without JavaScript the figures for the initial revenue still show; the slider and motion need it.
 import Base from "../layouts/Base.astro";
-import { REPO_URL } from "../consts";
-import { openpurrCost, revenueCatCost, RC } from "../savings";
+import { PRICING_PAGE, REPO_URL } from "../consts";
+import { LEVELS, openpurrCost, revenueCatCost, RC } from "../savings";
 import {
   engineerDayCost,
   FUNDING_USD,
@@ -44,15 +44,95 @@ const model = {
   slider: SLIDER,
 };
 const maxShare = Math.max(...TEAMS.map(shareOf));
+const pct = Math.round(INVESTOR_OWNERSHIP * 100);
+
+// Answers in plain sentences: shown in the FAQ, and the same text in the FAQPage structured data.
+const faq = [
+  {
+    q: "How much does RevenueCat cost?",
+    a: `RevenueCat's Pro plan is free below ${money(RC.threshold)} of monthly tracked revenue. From there it costs 1% of all of it, not just the part above ${money(RC.threshold)}: ${money(revenueCatCost(10_000) * 12)} a year for an app making $10,000 a month, ${money(revenueCatCost(100_000) * 12)} a year at $100,000 a month. Large accounts can negotiate Enterprise pricing.`,
+  },
+  {
+    q: "What does RevenueCat's 1% fee pay for?",
+    a: `Mostly the company. The servers behind a typical app cost a few dollars a month to run: ${money(openpurrCost(25_000).cost * 12)} a year for an app making $25,000 a month, against ${money(revenueCatCost(25_000) * 12)} in fees. The rest pays for a team of about ${HEADCOUNT.used} people, including engineering, sales, marketing and executives, and builds value for the company's investors.`,
+  },
+  {
+    q: "Who owns RevenueCat?",
+    a: `RevenueCat has raised about $${FUNDING_USD / 1e6} million from venture investors in five rounds, including ${INVESTORS.slice(0, -1).join(", ")} and ${INVESTORS.at(-1)}. Compounding the reported round valuations, investors own an estimated ${pct}% of the company. The rest belongs to its founders and employees.`,
+  },
+  {
+    q: "How much is RevenueCat worth?",
+    a: `RevenueCat was reported at a $${VALUATION_2025 / 1e6} million valuation when it raised its $50 million Series C in 2025, with about $${REVENUE_2025 / 1e6} million in yearly revenue at the time. These are press and analyst figures, not company disclosures.`,
+  },
+  {
+    q: "Is there a RevenueCat alternative without a revenue share?",
+    a: "Yes. openpurr is a free, open-source, self-hosted backend that works with the official RevenueCat Purchases SDK. You set the SDK's proxy URL to your own server and keep your purchase code. It runs on Cloudflare's free plan for small apps, with no revenue share and no per-transaction fees.",
+  },
+];
+
+const site = Astro.site!.href.replace(/\/$/, "");
+const pageUrl = `${site}${PRICING_PAGE}`;
+const headline = `You're not paying for servers. You're paying for a $${VALUATION_2025 / 1e6} million company.`;
+const description =
+  "RevenueCat charges 1% of your revenue. The servers behind your app cost a rounding error. See what the rest pays for: payroll, sales and venture investors.";
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${pageUrl}#article`,
+      headline,
+      description,
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      image: `${site}/og-revenuecat-pricing.png`,
+      inLanguage: "en",
+      datePublished: SOURCES_CHECKED,
+      dateModified: SOURCES_CHECKED,
+      author: { "@id": `${site}/#organization` },
+      publisher: { "@id": `${site}/#organization` },
+      about: [
+        { "@type": "Organization", name: "RevenueCat", sameAs: "https://www.revenuecat.com" },
+        { "@type": "SoftwareApplication", "@id": `${site}/#software`, name: "openpurr", url: `${site}/` },
+      ],
+      citation: SOURCES.map((s) => s.url),
+    },
+    { "@type": "Organization", "@id": `${site}/#organization`, name: "openpurr", url: `${site}/`, logo: `${site}/icon-192.png`, sameAs: [REPO_URL] },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "openpurr", item: `${site}/` },
+        { "@type": "ListItem", position: 2, name: "RevenueCat pricing", item: pageUrl },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      inLanguage: "en",
+      mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
+    },
+  ],
+};
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 ---
 
 <Base
-  title="Where your 1% goes · openpurr"
-  description="RevenueCat takes 1% of your revenue. The servers behind your app cost a rounding error. See what the rest pays for: payroll, sales, and venture investors."
+  title="RevenueCat pricing: where your 1% actually goes · openpurr"
+  description={description}
+  ogType="article"
+  ogImage="/og-revenuecat-pricing.png"
+  ogImageAlt="RevenueCat takes 1% of your revenue; the servers cost a rounding error. What the rest pays for."
 >
+  <script type="application/ld+json" set:html={jsonLdText} />
   <article class="onepct" data-model={JSON.stringify(model)}>
     <section class="hero">
       <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href="/">openpurr</a></li>
+            <li aria-current="page">RevenueCat pricing</li>
+          </ol>
+        </nav>
         <span class="eyebrow">Where your 1% goes</span>
         <h1>You're not paying for servers. <span class="accent">You're paying for a ${VALUATION_2025 / 1e6} million company.</span></h1>
         <p class="lede">
@@ -60,6 +140,23 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
           you do. The servers behind your app cost a rounding error. The rest pays for the company: its
           payroll, its sales team, and its investors' return.
         </p>
+        <p class="updated">Updated <time datetime={SOURCES_CHECKED}>{checked}</time> · Estimates from public figures</p>
+
+        <div class="answer">
+          <h2>RevenueCat pricing in one line</h2>
+          <p>
+            Free below {money(RC.threshold)} of monthly tracked revenue, then <strong>1% of all of it</strong>. What that comes to in a
+            year, next to what the servers for the same app cost:
+          </p>
+          <table>
+            <thead><tr><th scope="col">Monthly revenue</th><th scope="col">RevenueCat, per year</th><th scope="col">Servers, per year</th></tr></thead>
+            <tbody>
+              {LEVELS.map((l) => (
+                <tr><th scope="row">{money(l)}</th><td>{money(revenueCatCost(l) * 12)}</td><td>{money(openpurrCost(l).cost * 12)}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
 
@@ -141,6 +238,20 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
         <div class="cta">
           <a class="btn btn-primary" href="/#savings">Keep your 1% →</a>
           <a class="btn btn-ghost" href={REPO_URL}>openpurr on GitHub</a>
+        </div>
+      </div>
+    </section>
+
+    <section id="faq">
+      <div class="wrap narrow">
+        <h2>Questions people ask</h2>
+        <div class="faq">
+          {faq.map(({ q, a }) => (
+            <details>
+              <summary><h3>{q}</h3></summary>
+              <p>{a}</p>
+            </details>
+          ))}
         </div>
       </div>
     </section>
@@ -238,6 +349,94 @@ const maxShare = Math.max(...TEAMS.map(shareOf));
   }
   .hero {
     padding-bottom: 32px;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 22px;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .crumbs li + li::before {
+    content: "/";
+    margin-inline-end: 6px;
+    opacity: 0.6;
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .updated {
+    margin: 16px 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .answer {
+    margin-top: 32px;
+    max-width: 760px;
+    padding: 22px 26px;
+    border: 1px solid var(--line);
+    border-inline-start: 4px solid var(--purple);
+    border-radius: var(--radius);
+    background: var(--card);
+  }
+  .answer h2 {
+    font-size: 1.15rem;
+    margin-bottom: 6px;
+  }
+  .answer p {
+    color: var(--text);
+  }
+  .answer table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 12px;
+    font-size: 0.92rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .answer th,
+  .answer td {
+    text-align: end;
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+  }
+  .answer th:first-child {
+    text-align: start;
+  }
+  .answer td:last-child {
+    color: var(--ok);
+    font-weight: 600;
+  }
+  .faq details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary h3 {
+    display: inline;
+    font-size: 1.05rem;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary::after {
+    content: "+";
+    float: inline-end;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .faq details[open] summary::after {
+    content: "–";
+  }
+  .faq p {
+    margin-top: 10px;
+    color: var(--text);
+    line-height: 1.6;
   }
   .hero h1 {
     font-size: clamp(2.1rem, 5vw, 3.4rem);

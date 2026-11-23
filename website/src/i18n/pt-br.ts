@@ -158,6 +158,7 @@ export const ptBr: Dict = {
       colOp: "openpurr Lite, por mês",
       colSaved: "Economia por ano",
       methodSummary: "Como estimamos",
+      pricingLink: "Para onde vai o 1% do RevenueCat? →",
       method: [
         "RevenueCat: o preço de tabela do plano Pro, 1% da receita mensal rastreada a partir de US$ 2.500. A receita rastreada conta planos anuais e compras únicas no mês em que são pagos, então pode ser maior que o MRR. Contas grandes podem negociar preços Enterprise.",
         "openpurr Lite: os preços da Cloudflare para Workers e D1. Supomos cerca de US$ 1,50 de receita mensal e cerca de 10 requisições do SDK por dia por usuário ativo diário. Assim, as 100.000 requisições por dia do plano gratuito cobrem até cerca de {paidFrom} de receita mensal, com folga. Acima disso, contamos o Workers Paid: US$ 5 por mês, mais US$ 0,30 por milhão de requisições acima de 10 milhões.",

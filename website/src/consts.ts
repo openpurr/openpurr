@@ -5,6 +5,8 @@ export const MIGRATION_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-re
 export const MIGRATION_PAGE = "/migrate-from-revenuecat/";
 /** When the migration page last changed in substance: shown on it, and in its structured data and the sitemap. */
 export const MIGRATION_UPDATED = "2026-11-21";
+/** The "Where your 1% goes" page: what RevenueCat's pricing pays for. */
+export const PRICING_PAGE = "/revenuecat-pricing/";
 /** The guide for moving from Adapty (in the repo). */
 export const ADAPTY_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-adapty.md`;
 export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;

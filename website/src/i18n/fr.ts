@@ -163,6 +163,7 @@ export const fr: Dict = {
       colOp: "openpurr Lite, par mois",
       colSaved: "Économie par an",
       methodSummary: "Comment nous l'estimons",
+      pricingLink: "Où va le 1 % de RevenueCat ? →",
       method: [
         "RevenueCat : le prix catalogue de l'offre Pro, 1 % des revenus mensuels suivis à partir de 2 500 $. Les revenus suivis comptent les abonnements annuels et les achats uniques le mois de leur paiement, ils peuvent donc dépasser le MRR. Les gros comptes peuvent négocier un tarif Enterprise.",
         "openpurr Lite : les tarifs de Cloudflare pour Workers et D1. Nous supposons environ 1,50 $ de revenus mensuels et environ 10 requêtes SDK par jour par utilisateur actif quotidien. Les 100 000 requêtes par jour de l'offre gratuite couvrent alors jusqu'à environ {paidFrom} de revenus mensuels, avec de la marge. Au-delà, nous comptons Workers Paid : 5 $ par mois, plus 0,30 $ par million de requêtes au-delà de 10 millions.",

@@ -162,6 +162,7 @@ export const nl: Dict = {
       colOp: "openpurr Lite, per maand",
       colSaved: "Bespaard per jaar",
       methodSummary: "Hoe we dit schatten",
+      pricingLink: "Waar gaat de 1% van RevenueCat naartoe? →",
       method: [
         "RevenueCat: de lijstprijs van het Pro-abonnement, 1% van de maandelijks bijgehouden omzet vanaf $ 2.500. Bijgehouden omzet telt jaarabonnementen en eenmalige aankopen in de maand waarin ze betaald worden, dus die kan hoger zijn dan de MRR. Grote klanten kunnen over Enterprise-prijzen onderhandelen.",
         "openpurr Lite: de prijzen van Cloudflare voor Workers en D1. We gaan uit van ongeveer $ 1,50 maandomzet en ongeveer 10 SDK-verzoeken per dag per dagelijks actieve gebruiker. Daarmee dekken de 100.000 verzoeken per dag van het gratis abonnement tot ongeveer {paidFrom} maandomzet, met ruimte over. Daarboven rekenen we met Workers Paid: $ 5 per maand, plus $ 0,30 per miljoen verzoeken boven de 10 miljoen.",
