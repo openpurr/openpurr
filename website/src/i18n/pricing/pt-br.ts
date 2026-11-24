@@ -44,6 +44,7 @@ export const pricingPtBr: PricingDict = {
     ceoLink: "Seu 1% também paga as redes sociais do CEO: cerca de {perDay} posts por dia no X, todo dia.",
     ceoLinkLabel: "Veja os números →",
     ownersTitle: "Seu 1% engorda o exit de outra pessoa",
+    ownersPunch: "Você paga 1% para o 1%.",
     /** {pct} is like "55%". */
     ownersInvestors: "Investidores de risco - cerca de {pct}",
     ownersRest: "Fundadores e funcionários",
@@ -58,6 +59,31 @@ export const pricingPtBr: PricingDict = {
     keep: "Fique com os outros {keep}.",
     ctaKeep: "Fique com o seu 1% →",
     ctaGithub: "openpurr no GitHub",
+  },
+  receipts: {
+    title: "O que o seu 1% compra quando fica com você",
+    note: "Preços aproximados, em dólares americanos, para um desenvolvedor solo nos EUA.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "Seu 1%, com você",
+    /** {revenue} is like "$10,000". */
+    revenue: "Receita do app {revenue}/mês",
+    year: "1% por ano",
+    total: "Total",
+    change: "Troco",
+    /** {zero} is "$0.00". */
+    shareLine: "Participação na receita: {zero}",
+    thanks: "Obrigado por ficar com ele",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} vídeos de criadores (UGC)",
+      ugcCampaign: "Campanha com criadores, {n} vídeos",
+      ira: "Previdência privada (IRA)",
+      k401: "Aporte Solo 401(k)",
+      health: "Plano de saúde, {n} meses",
+      weekend: "Um fim de semana fora",
+      vacation: "Uma semana de férias",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Engenharia", basis: "Vaga de engenheiro sênior de SDK, US$ 212 mil" },

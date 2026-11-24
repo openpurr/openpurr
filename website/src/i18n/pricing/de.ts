@@ -44,6 +44,7 @@ export const pricingDe: PricingDict = {
     ceoLink: "Deine 1 % bezahlen auch die Social-Media-Zeit des CEO: etwa {perDay} Posts am Tag auf X, jeden Tag.",
     ceoLinkLabel: "Zu den Zahlen →",
     ownersTitle: "Deine 1 % finanzieren den Exit anderer Leute",
+    ownersPunch: "Du zahlst 1 % an die oberen 1 %.",
     /** {pct} is like "55%". */
     ownersInvestors: "Risikokapitalgeber - etwa {pct}",
     ownersRest: "Gründer und Mitarbeitende",
@@ -58,6 +59,31 @@ export const pricingDe: PricingDict = {
     keep: "Behalte die restlichen {keep}.",
     ctaKeep: "Behalte deine 1 % →",
     ctaGithub: "openpurr auf GitHub",
+  },
+  receipts: {
+    title: "Was deine 1 % kaufen, wenn du sie behältst",
+    note: "Grobe Preise in US-Dollar, für Solo-Entwickler in den USA.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "Deine 1 %, behalten",
+    /** {revenue} is like "$10,000". */
+    revenue: "App-Umsatz {revenue}/Monat",
+    year: "1 % im Jahr",
+    total: "Summe",
+    change: "Rückgeld",
+    /** {zero} is "$0.00". */
+    shareLine: "Umsatzbeteiligung: {zero}",
+    thanks: "Danke fürs Behalten",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} Creator-Videos (UGC-Ads)",
+      ugcCampaign: "Creator-Kampagne, {n} Videos",
+      ira: "Altersvorsorge (IRA)",
+      k401: "Solo-401(k)-Beitrag",
+      health: "Krankenversicherung, {n} Monate",
+      weekend: "Ein Wochenende weg",
+      vacation: "Eine Woche Urlaub",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Engineering", basis: "Stellenanzeige Senior SDK Engineer, 212.000 $" },

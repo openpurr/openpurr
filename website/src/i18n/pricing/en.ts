@@ -56,6 +56,8 @@ export const pricingEn = {
     ceoLinkLabel: "See the numbers →",
     /** Near the top of the page, under the intro. */
     ownersTitle: "Your 1% builds someone else's exit",
+    /** Under the heading, in large type. "The 1%" as in the richest 1%. */
+    ownersPunch: "You're paying 1% to the 1%.",
     /** {pct} is like "55%". */
     ownersInvestors: "Venture investors - about {pct}",
     ownersRest: "Founders and employees",
@@ -70,6 +72,32 @@ export const pricingEn = {
     keep: "Keep the other {keep}.",
     ctaKeep: "Keep your 1% →",
     ctaGithub: "openpurr on GitHub",
+  },
+  receipts: {
+    /** Under the calculator's closing line. */
+    title: "What your 1% buys when you keep it",
+    note: "Rough prices, in US dollars, for a solo developer in the US.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "Your 1%, kept",
+    /** {revenue} is like "$10,000". */
+    revenue: "App revenue {revenue}/mo",
+    year: "1% a year",
+    total: "Total",
+    change: "Change",
+    /** {zero} is "$0.00". */
+    shareLine: "Revenue share: {zero}",
+    thanks: "Thank you for keeping it",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} creator videos (UGC ads)",
+      ugcCampaign: "Creator campaign, {n} videos",
+      ira: "IRA contribution",
+      k401: "Solo 401(k) contribution",
+      health: "Health insurance, {n} months",
+      weekend: "A weekend away",
+      vacation: "A week of vacation",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Engineering", basis: "Senior SDK engineer posting, $212K" },

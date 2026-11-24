@@ -44,6 +44,7 @@ export const pricingAr: PricingDict = {
     ceoLink: "ونسبة 1% التي تدفعها تدفع أيضًا ثمن نشاط الرئيس التنفيذي على مواقع التواصل: نحو {perDay} منشور يوميًا على X، كل يوم.",
     ceoLinkLabel: "شاهد الأرقام ←",
     ownersTitle: "نسبة 1% التي تدفعها تبني صفقة خروج لغيرك",
+    ownersPunch: "أنت تدفع 1% لأغنى 1%.",
     /** {pct} is like "55%". */
     ownersInvestors: "مستثمرو رأس المال المغامر - نحو {pct}",
     ownersRest: "المؤسسون والموظفون",
@@ -58,6 +59,31 @@ export const pricingAr: PricingDict = {
     keep: "واحتفظ بالباقي: {keep}.",
     ctaKeep: "احتفظ بنسبة 1% لنفسك ←",
     ctaGithub: "openpurr على GitHub",
+  },
+  receipts: {
+    title: "ماذا تشتري نسبة 1% حين تحتفظ بها",
+    note: "أسعار تقريبية بالدولار الأمريكي، لمطوّر مستقل في الولايات المتحدة.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "نسبة 1%، باقية معك",
+    /** {revenue} is like "$10,000". */
+    revenue: "إيرادات التطبيق {revenue}/شهر",
+    year: "1% سنويًا",
+    total: "الإجمالي",
+    change: "الباقي",
+    /** {zero} is "$0.00". */
+    shareLine: "حصة الإيرادات: {zero}",
+    thanks: "شكرًا لاحتفاظك بها",
+    /** {n} is a number. */
+    items: {
+      ugc: "فيديوهات صنّاع محتوى (UGC): {n}",
+      ugcCampaign: "حملة صنّاع محتوى، فيديوهات: {n}",
+      ira: "ادخار للتقاعد (IRA)",
+      k401: "مساهمة Solo 401(k)",
+      health: "تأمين صحي، عدد الأشهر: {n}",
+      weekend: "عطلة نهاية أسبوع",
+      vacation: "أسبوع إجازة",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "الهندسة", basis: "إعلان وظيفة مهندس SDK أول، 212 ألف دولار" },

@@ -44,6 +44,7 @@ export const pricingKo: PricingDict = {
     ceoLink: "내 1%는 CEO의 소셜 미디어 비용이기도 합니다. X에 하루 약 {perDay}개, 매일 올라옵니다.",
     ceoLinkLabel: "숫자 보기 →",
     ownersTitle: "내 1%가 남의 엑시트를 만듭니다",
+    ownersPunch: "상위 1%에게 1%를 내고 있습니다.",
     /** {pct} is like "55%". */
     ownersInvestors: "벤처 투자자 - 약 {pct}",
     ownersRest: "창업자와 직원",
@@ -58,6 +59,31 @@ export const pricingKo: PricingDict = {
     keep: "나머지 {keep}, 그대로 지키세요.",
     ctaKeep: "내 1% 지키기 →",
     ctaGithub: "GitHub에서 openpurr 보기",
+  },
+  receipts: {
+    title: "1%를 지키면 살 수 있는 것들",
+    note: "대략적인 가격(미국 달러), 미국 1인 개발자 기준.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "지켜 낸 내 1%",
+    /** {revenue} is like "$10,000". */
+    revenue: "앱 매출 {revenue}/월",
+    year: "연간 1%",
+    total: "합계",
+    change: "거스름돈",
+    /** {zero} is "$0.00". */
+    shareLine: "수익 배분: {zero}",
+    thanks: "지켜 주셔서 감사합니다",
+    /** {n} is a number. */
+    items: {
+      ugc: "크리에이터 영상 {n}편 (UGC 광고)",
+      ugcCampaign: "크리에이터 캠페인, 영상 {n}편",
+      ira: "개인 연금 (IRA)",
+      k401: "Solo 401(k) 납입",
+      health: "건강보험 {n}개월",
+      weekend: "주말 여행",
+      vacation: "일주일 휴가",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "엔지니어링", basis: "시니어 SDK 엔지니어 채용 공고, $21.2만" },

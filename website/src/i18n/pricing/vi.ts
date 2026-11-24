@@ -44,6 +44,7 @@ export const pricingVi: PricingDict = {
     ceoLink: "1% của bạn cũng trả cho mạng xã hội của CEO: khoảng {perDay} bài mỗi ngày trên X, ngày nào cũng vậy.",
     ceoLinkLabel: "Xem số liệu →",
     ownersTitle: "1% của bạn đang xây thương vụ exit cho người khác",
+    ownersPunch: "Bạn đang trả 1% cho nhóm 1% giàu nhất.",
     /** {pct} is like "55%". */
     ownersInvestors: "Nhà đầu tư mạo hiểm - khoảng {pct}",
     ownersRest: "Nhà sáng lập và nhân viên",
@@ -58,6 +59,31 @@ export const pricingVi: PricingDict = {
     keep: "Giữ lại {keep} còn lại.",
     ctaKeep: "Giữ lại 1% của bạn →",
     ctaGithub: "openpurr trên GitHub",
+  },
+  receipts: {
+    title: "1% giữ lại mua được gì cho bạn",
+    note: "Giá ước tính, bằng đô la Mỹ, cho một developer làm một mình ở Mỹ.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "1% của bạn, giữ lại",
+    /** {revenue} is like "$10,000". */
+    revenue: "Doanh thu ứng dụng {revenue}/tháng",
+    year: "1% mỗi năm",
+    total: "Tổng cộng",
+    change: "Tiền thừa",
+    /** {zero} is "$0.00". */
+    shareLine: "Chia sẻ doanh thu: {zero}",
+    thanks: "Cảm ơn bạn đã giữ lại",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} video nhà sáng tạo (UGC)",
+      ugcCampaign: "Chiến dịch nhà sáng tạo, {n} video",
+      ira: "Tiết kiệm hưu trí (IRA)",
+      k401: "Đóng góp Solo 401(k)",
+      health: "Bảo hiểm y tế, {n} tháng",
+      weekend: "Một chuyến đi cuối tuần",
+      vacation: "Một tuần nghỉ dưỡng",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Kỹ thuật", basis: "Tin tuyển senior SDK engineer, 212K $" },
