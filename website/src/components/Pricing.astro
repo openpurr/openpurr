@@ -185,14 +185,16 @@ const enHref = locale === "en" ? undefined : "en";
         <div class="answer">
           <h2>{p.answer.title}</h2>
           <p set:html={html(p.answer.text, { threshold: money(RC.threshold) })} />
-          <table>
-            <thead><tr><th scope="col">{p.answer.colRevenue}</th><th scope="col">{p.answer.colFee}</th><th scope="col">{p.answer.colServers}</th></tr></thead>
-            <tbody>
-              {LEVELS.map((l) => (
-                <tr><th scope="row">{money(l)}</th><td>{money(revenueCatCost(l) * 12)}</td><td>{money(openpurrCost(l).cost * 12)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th scope="col">{p.answer.colRevenue}</th><th scope="col">{p.answer.colFee}</th><th scope="col">{p.answer.colServers}</th></tr></thead>
+              <tbody>
+                {LEVELS.map((l) => (
+                  <tr><th scope="row">{money(l)}</th><td>{money(revenueCatCost(l) * 12)}</td><td>{money(openpurrCost(l).cost * 12)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -306,6 +308,7 @@ const enHref = locale === "en" ? undefined : "en";
           <li set:html={html(p.method.split, { date: checked, open: num(JOB_BOARD.open), gtm: num(JOB_BOARD.gtm), eng: num(JOB_BOARD.coreEngineering) })} />
           <li>
             <Fragment set:html={html(p.method.investors, { funding: big(FUNDING_USD), pct, revenue: big(REVENUE_2025) })} />
+            <div class="table-scroll">
             <table class="rounds">
               <thead><tr><th>{p.method.colRound}</th><th>{p.method.colRaised}</th><th>{p.method.colValuation}</th><th>{p.method.colLead}</th></tr></thead>
               <tbody>
@@ -319,12 +322,14 @@ const enHref = locale === "en" ? undefined : "en";
                 ))}
               </tbody>
             </table>
+            </div>
           </li>
           <li set:html={p.method.affiliation} />
         </ul>
 
         <details class="assumptions">
           <summary>{p.method.assumptions}</summary>
+          <div class="table-scroll">
           <table>
             <thead><tr><th>{p.method.colTeam}</th><th>{p.method.colPeople}</th><th>{p.method.colSalary}</th><th>{p.method.colCost}</th><th>{p.method.colBasis}</th></tr></thead>
             <tbody>
@@ -341,6 +346,7 @@ const enHref = locale === "en" ? undefined : "en";
               }
             </tbody>
           </table>
+          </div>
         </details>
 
         <h2>{p.sources.title}</h2>
@@ -667,13 +673,19 @@ const enHref = locale === "en" ? undefined : "en";
     background: var(--ink);
     color: var(--bg);
   }
+  .table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .method > li {
+    min-width: 0;
+  }
   .rounds {
     width: 100%;
     border-collapse: collapse;
     margin-top: 12px;
     font-size: 0.9rem;
-    display: block;
-    overflow-x: auto;
   }
   .rounds th,
   .rounds td {
@@ -831,8 +843,6 @@ const enHref = locale === "en" ? undefined : "en";
     border-collapse: collapse;
     margin-top: 12px;
     font-size: 0.9rem;
-    display: block;
-    overflow-x: auto;
   }
   .assumptions th,
   .assumptions td {
