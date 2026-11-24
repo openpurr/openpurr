@@ -13,6 +13,7 @@ import { CEO_PAGE, ISSUES_URL, PRICING_PAGE, REPO_URL } from "../consts";
 import xCeo from "../data/x-ceo.json";
 import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
 import { tp } from "../i18n/pricing";
+import { tc } from "../i18n/ceo";
 import { LEVELS, openpurrCost, revenueCatCost, RC } from "../savings";
 import {
   engineerDayCost,
@@ -67,6 +68,7 @@ const html = (s: string, vars: Record<string, string>) => fill(s, vars);
 const SLIDER = { min: 2_500, max: 250_000, initial: 25_000 };
 const pos = (v: number) => Math.log(v / SLIDER.min) / Math.log(SLIDER.max / SLIDER.min);
 const homePath = localePath(locale, "/");
+const ceoMaxHours = Math.max(...xCeo.perDay.map((d) => d.hours));
 const ceoPerDay = nf({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(xCeo.posts / xCeo.days);
 const pagePath = localePath(locale, PRICING_PAGE);
 
@@ -245,13 +247,25 @@ const enHref = locale === "en" ? undefined : "en";
           </ul>
 
 
-          <p class="swag">{p.calc.swag}</p>
-          <figure class="swag-post">
-            <img src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
-            <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
-            <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
-          </figure>
-          <p class="ceo-link">{fill(p.calc.ceoLink, { perDay: ceoPerDay })} <a href={localePath(locale, CEO_PAGE)}>{p.calc.ceoLinkLabel}</a></p>
+          <div class="extras">
+            <div class="extra">
+              <p class="extra-title">{p.calc.swag}</p>
+              <figure class="swag-post">
+                <img src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
+                <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
+                <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
+              </figure>
+            </div>
+            <a class="extra extra-ceo" href={localePath(locale, CEO_PAGE)}>
+              <span class="ceo-num">{ceoPerDay}</span>
+              <span class="ceo-unit">{tc(locale).stats.perDay}</span>
+              <span class="ceo-cal" aria-hidden="true">
+                {xCeo.perDay.map((d) => <i class={`h${Math.min(4, Math.ceil((d.hours / ceoMaxHours) * 4))}`} />)}
+              </span>
+              <span class="extra-title">{fill(p.calc.ceoLink, { perDay: ceoPerDay })}</span>
+              <span class="ceo-more">{p.calc.ceoLinkLabel}</span>
+            </a>
+          </div>
           <p class="punch">
             <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
@@ -669,47 +683,111 @@ const enHref = locale === "en" ? undefined : "en";
   }
   .punch strong {
     display: block;
-    margin-top: 6px;
-    font-size: 1.25rem;
-    color: var(--purple);
+    margin-top: 8px;
+    font-size: clamp(1.5rem, 3.5vw, 2rem);
+    letter-spacing: -0.02em;
+    color: var(--bg);
   }
-  .swag {
-    margin-top: 20px;
-    color: var(--text);
-    font-weight: 600;
+  .extras {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .extra {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg);
+  }
+  .extra-title {
+    display: block;
+    margin: 0;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.4;
   }
   .swag-post {
     margin: 14px 0 0;
     display: grid;
-    grid-template-columns: 1fr 120px;
-    gap: 10px;
+    grid-template-columns: 1fr 72px;
+    gap: 8px;
     align-items: start;
   }
   .swag-post img {
     width: 100%;
     height: auto;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 8px;
   }
   .swag-post figcaption {
     grid-column: 1 / -1;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     color: var(--muted);
   }
-  .ceo-link {
-    margin-top: 16px;
+  .extra-ceo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: inherit;
+    background: var(--purple-soft);
+    border-color: transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .extra-ceo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgba(60, 40, 140, 0.45);
+  }
+  .ceo-num {
+    font-size: clamp(2.6rem, 6vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--purple-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .ceo-unit {
     font-weight: 600;
-    color: var(--ink);
+    color: var(--muted);
+  }
+  .ceo-cal {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    gap: 3px;
+    margin: 8px 0 6px;
+  }
+  .ceo-cal i {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--purple) 12%, var(--bg));
+  }
+  .ceo-cal .h1 { background: color-mix(in srgb, var(--purple) 35%, var(--bg)); }
+  .ceo-cal .h2 { background: color-mix(in srgb, var(--purple) 60%, var(--bg)); }
+  .ceo-cal .h3 { background: color-mix(in srgb, var(--purple) 82%, var(--bg)); }
+  .ceo-cal .h4 { background: var(--purple-strong); }
+  .ceo-more {
+    margin-top: auto;
+    padding-top: 6px;
+    font-weight: 700;
+    color: var(--purple-strong);
+  }
+  @media (max-width: 760px) {
+    .extras {
+      grid-template-columns: 1fr;
+    }
   }
   .punch {
-    margin-top: 24px;
-    padding: 16px 18px;
-    border-radius: 12px;
-    background: var(--purple-soft);
-    color: var(--text);
+    margin-top: 32px;
+    padding: 24px 26px;
+    border-radius: 14px;
+    background: var(--ink);
+    color: color-mix(in srgb, var(--bg) 78%, var(--ink));
   }
   .punch b {
-    color: var(--ink);
+    color: var(--bg);
     font-variant-numeric: tabular-nums;
   }
   .cta {
