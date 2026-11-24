@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingNl: PricingDict = {
   meta: {
-    title: "RevenueCat-prijzen: waar je 1% écht naartoe gaat · openpurr",
+    title: "RevenueCat-prijzen: waar je 1% écht naartoe gaat - openpurr",
     description:
       "RevenueCat rekent 1% van je omzet. De servers achter je app kosten een schijntje. Zie waar de rest naartoe gaat: salarissen, sales en durfinvesteerders.",
     ogImageAlt: "RevenueCat neemt 1% van je omzet; de servers kosten een schijntje. Hier gaat de rest naartoe.",
@@ -16,7 +16,7 @@ export const pricingNl: PricingDict = {
     headlineAccent: "Je betaalt voor een bedrijf van {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat neemt 1% van al je bijgehouden omzet zodra je boven {threshold} per maand komt, en de rekening groeit met elke stap die je zet. De servers achter je app kosten een schijntje. De rest betaalt het bedrijf: de salarissen, het salesteam en het rendement van de investeerders.",
-    updated: "Bijgewerkt op {date} · Schattingen op basis van openbare cijfers",
+    updated: "Bijgewerkt op {date} - Schattingen op basis van openbare cijfers",
   },
   answer: {
     title: "RevenueCat-prijzen in één zin",
@@ -35,7 +35,7 @@ export const pricingNl: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Servers: {servers}. Al het andere, {rest}, gaat naar hun teams:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Ongeveer {people} mensen · gangbaar salaris {salary}",
+    teamMeta: "Ongeveer {people} mensen - gangbaar salaris {salary}",
     swag: "Ook op de rekening: oplichtende RevenueCat-skateboards voor het team. Jouw 1% betaalt dat ook.",
     swagPostAlt: "Post van een RevenueCat-medewerker op X: ‘Mijn RevenueCat-skateboard is gisteren aangekomen! Hier is een link om je eigen gratis RevenueCat-skateboard te claimen’, met een link naar de vacaturepagina van RevenueCat",
     swagPhotoAlt: "Een oplichtend RevenueCat-skateboard",
@@ -43,7 +43,7 @@ export const pricingNl: PricingDict = {
     swagLink: "Bekijk de post",
     ownersTitle: "Je 1% bouwt aan de exit van een ander",
     /** {pct} is like "55%". */
-    ownersInvestors: "Durfinvesteerders · ongeveer {pct}",
+    ownersInvestors: "Durfinvesteerders - ongeveer {pct}",
     ownersRest: "Oprichters en medewerkers",
     ownersBarLabel: "Durfinvesteerders bezitten ongeveer {pct} van RevenueCat, volgens onze schatting",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

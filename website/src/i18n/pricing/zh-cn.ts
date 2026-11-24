@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingZhCn: PricingDict = {
   meta: {
-    title: "RevenueCat 定价：你的 1% 去哪了 · openpurr",
+    title: "RevenueCat 定价：你的 1% 去哪了 - openpurr",
     description:
       "RevenueCat 抽走你 1% 的收入，服务器成本却几乎可以忽略。剩下的钱去了哪里：工资、销售和风险投资人。",
     ogImageAlt: "RevenueCat 抽走你 1% 的收入，服务器成本却微不足道。剩下的钱花在了哪里？",
@@ -16,7 +16,7 @@ export const pricingZhCn: PricingDict = {
     headlineAccent: "你在供养一家估值 {valuation} 的公司。",
     /** {threshold} is "$2,500". */
     lede: "每月跟踪收入超过 {threshold} 后，RevenueCat 就抽走全部跟踪收入的 1%，而且你每增长一次，账单就跟着涨一次。支撑你 App 的服务器成本微不足道。剩下的钱养的是这家公司：它的工资、它的销售团队，还有它的投资人的回报。",
-    updated: "更新于 {date} · 基于公开数据估算",
+    updated: "更新于 {date} - 基于公开数据估算",
   },
   answer: {
     title: "一句话看懂 RevenueCat 定价",
@@ -35,7 +35,7 @@ export const pricingZhCn: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "服务器：{servers}。其余 {rest} 都花在他们的团队上：",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "约 {people} 人 · 典型薪资 {salary}",
+    teamMeta: "约 {people} 人 - 典型薪资 {salary}",
     swag: "账单里还有：给团队发的发光 RevenueCat 滑板。这些也由你的 1% 买单。",
     swagPostAlt: "一名 RevenueCat 员工在 X 上的帖子：“我的 RevenueCat 滑板昨天到了！这是领取你自己的免费 RevenueCat 滑板的链接”，链接指向 RevenueCat 的招聘页面",
     swagPhotoAlt: "一块发光的 RevenueCat 滑板",
@@ -43,7 +43,7 @@ export const pricingZhCn: PricingDict = {
     swagLink: "查看帖子",
     ownersTitle: "你的 1%，在为别人的退出铺路",
     /** {pct} is like "55%". */
-    ownersInvestors: "风险投资人 · 约 {pct}",
+    ownersInvestors: "风险投资人 - 约 {pct}",
     ownersRest: "创始人和员工",
     ownersBarLabel: "风险投资人持有 RevenueCat 约 {pct} 的股份（我们的估算）",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

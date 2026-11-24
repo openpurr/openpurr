@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingKo: PricingDict = {
   meta: {
-    title: "RevenueCat 가격: 내 1%는 어디로 · openpurr",
+    title: "RevenueCat 가격: 내 1%는 어디로 - openpurr",
     description:
       "RevenueCat은 매출의 1%를 가져갑니다. 서버 비용은 푼돈입니다. 나머지는 급여, 영업, 벤처 투자자에게 갑니다.",
     ogImageAlt: "RevenueCat은 매출의 1%를 가져가고, 서버 비용은 푼돈입니다. 나머지는 어디에 쓰일까요?",
@@ -16,7 +16,7 @@ export const pricingKo: PricingDict = {
     headlineAccent: "기업가치 {valuation}짜리 회사에 돈을 대고 있습니다.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat은 월 추적 매출이 {threshold} 이상이 되면 그 전체의 1%를 가져가고, 매출이 늘 때마다 청구액도 커집니다. 앱을 돌리는 서버 비용은 푼돈입니다. 나머지는 회사 자체, 즉 급여와 영업팀, 그리고 투자자의 수익에 쓰입니다.",
-    updated: "{date} 업데이트 · 공개 자료 기반 추정",
+    updated: "{date} 업데이트 - 공개 자료 기반 추정",
   },
   answer: {
     title: "RevenueCat 가격 한 줄 요약",
@@ -35,7 +35,7 @@ export const pricingKo: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "서버: {servers}. 나머지 {rest}는 그들의 팀에 들어갑니다:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "약 {people}명 · 일반적인 연봉 {salary}",
+    teamMeta: "약 {people}명 - 일반적인 연봉 {salary}",
     swag: "청구서에는 이것도 있습니다. 팀에 나눠 준 빛나는 RevenueCat 스케이트보드. 그 비용도 당신의 1%가 냅니다.",
     swagPostAlt: "RevenueCat 직원의 X 게시물: “RevenueCat 스케이트보드가 어제 도착했어요! 무료 RevenueCat 스케이트보드를 받는 링크는 여기”라며 RevenueCat 채용 페이지로 연결",
     swagPhotoAlt: "빛나는 RevenueCat 스케이트보드",
@@ -43,7 +43,7 @@ export const pricingKo: PricingDict = {
     swagLink: "게시물 보기",
     ownersTitle: "내 1%가 남의 엑시트를 만듭니다",
     /** {pct} is like "55%". */
-    ownersInvestors: "벤처 투자자 · 약 {pct}",
+    ownersInvestors: "벤처 투자자 - 약 {pct}",
     ownersRest: "창업자와 직원",
     ownersBarLabel: "벤처 투자자의 RevenueCat 지분은 약 {pct} (자체 추정)",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

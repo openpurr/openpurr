@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingTr: PricingDict = {
   meta: {
-    title: "RevenueCat fiyatları: %1'iniz nereye gidiyor? · openpurr",
+    title: "RevenueCat fiyatları: %1'iniz nereye gidiyor? - openpurr",
     description:
       "RevenueCat gelirinizin %1'ini alır. Uygulamanızın sunucuları ise devede kulak. Gerisinin neye gittiğini görün: maaşlar, satış ekibi ve risk sermayedarları.",
     ogImageAlt: "RevenueCat gelirinizin %1'ini alıyor; sunucular devede kulak. Gerisi neye gidiyor?",
@@ -16,7 +16,7 @@ export const pricingTr: PricingDict = {
     headlineAccent: "{valuation} değerinde bir şirkete ödüyorsunuz.",
     /** {threshold} is "$2,500". */
     lede: "Aylık {threshold} eşiğini geçtiğiniz anda RevenueCat izlenen gelirinizin tamamının %1'ini alır ve siz büyüdükçe fatura da büyür. Uygulamanızın arkasındaki sunucular devede kulak. Gerisi şirkete gider: maaşlarına, satış ekibine ve yatırımcılarının kazancına.",
-    updated: "Güncellendi: {date} · Kamuya açık verilere dayalı tahminler",
+    updated: "Güncellendi: {date} - Kamuya açık verilere dayalı tahminler",
   },
   answer: {
     title: "Tek satırda RevenueCat fiyatları",
@@ -35,7 +35,7 @@ export const pricingTr: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Sunucular: {servers}. Geri kalan her şey, yani {rest}, ekiplerine gidiyor:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Yaklaşık {people} kişi · tipik maaş {salary}",
+    teamMeta: "Yaklaşık {people} kişi - tipik maaş {salary}",
     swag: "Faturada bu da var: ekibe ışıklı RevenueCat kaykayları. Bunu da sizin %1'iniz ödüyor.",
     swagPostAlt: "Bir RevenueCat çalışanının X gönderisi: “RevenueCat kaykayım dün geldi! Kendi ücretsiz RevenueCat kaykayını almak için bağlantı burada”; bağlantı RevenueCat'in kariyer sayfasına gidiyor",
     swagPhotoAlt: "Işıklı bir RevenueCat kaykayı",
@@ -43,7 +43,7 @@ export const pricingTr: PricingDict = {
     swagLink: "Gönderiyi gör",
     ownersTitle: "%1'iniz başkasının exit'ini büyütüyor",
     /** {pct} is like "55%". */
-    ownersInvestors: "Risk sermayesi yatırımcıları · yaklaşık {pct}",
+    ownersInvestors: "Risk sermayesi yatırımcıları - yaklaşık {pct}",
     ownersRest: "Kurucular ve çalışanlar",
     ownersBarLabel: "Tahminimize göre risk sermayesi yatırımcıları RevenueCat'te yaklaşık {pct} paya sahip",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

@@ -10,7 +10,7 @@
 
 export const pricingEn = {
   meta: {
-    title: "RevenueCat pricing: where your 1% actually goes · openpurr",
+    title: "RevenueCat pricing: where your 1% actually goes - openpurr",
     description:
       "RevenueCat charges 1% of your revenue. The servers behind your app cost a rounding error. See what the rest pays for: payroll, sales and venture investors.",
     ogImageAlt: "RevenueCat takes 1% of your revenue; the servers cost a rounding error. What the rest pays for.",
@@ -23,7 +23,7 @@ export const pricingEn = {
     headlineAccent: "You're paying for a {valuation} company.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat takes 1% of all your tracked revenue once you pass {threshold} a month, and the bill grows every time you do. The servers behind your app cost a rounding error. The rest pays for the company: its payroll, its sales team, and its investors' return.",
-    updated: "Updated {date} · Estimates from public figures",
+    updated: "Updated {date} - Estimates from public figures",
   },
   answer: {
     title: "RevenueCat pricing in one line",
@@ -42,7 +42,7 @@ export const pricingEn = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Servers: {servers}. Everything else, {rest}, pays for their teams:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "About {people} people · typical salary {salary}",
+    teamMeta: "About {people} people - typical salary {salary}",
     /** Under the team list. */
     swag: "Also on the bill: light-up RevenueCat skateboards for the team. Your 1% pays for that too.",
     /** Describes the screenshot of the post, for screen readers. */
@@ -54,7 +54,7 @@ export const pricingEn = {
     /** Near the top of the page, under the intro. */
     ownersTitle: "Your 1% builds someone else's exit",
     /** {pct} is like "55%". */
-    ownersInvestors: "Venture investors · about {pct}",
+    ownersInvestors: "Venture investors - about {pct}",
     ownersRest: "Founders and employees",
     ownersBarLabel: "Venture investors own about {pct} of RevenueCat, our estimate",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

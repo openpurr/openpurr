@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingJa: PricingDict = {
   meta: {
-    title: "RevenueCat の料金：1% の行き先 · openpurr",
+    title: "RevenueCat の料金：1% の行き先 - openpurr",
     description:
       "RevenueCat は売上の 1% を取ります。サーバー代は誤差程度。残りは給与、営業、ベンチャー投資家に消えています。",
     ogImageAlt: "RevenueCat は売上の 1% を取り、サーバー代は誤差程度。残りは何に使われているのか。",
@@ -16,7 +16,7 @@ export const pricingJa: PricingDict = {
     headlineAccent: "評価額 {valuation} の会社に払っている。",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat は、月 {threshold} を超えると追跡収益の全体から 1% を取ります。売上が伸びるたびに、請求額も増えます。アプリを支えるサーバー代は誤差程度。残りは会社そのもの、つまり給与、営業チーム、そして投資家のリターンに使われます。",
-    updated: "{date} 更新 · 公開情報からの推計",
+    updated: "{date} 更新 - 公開情報からの推計",
   },
   answer: {
     title: "RevenueCat の料金をひとことで",
@@ -35,7 +35,7 @@ export const pricingJa: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "サーバーは {servers}。残りの {rest} は各チームの費用です：",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "約 {people} 人 · 標準的な給与 {salary}",
+    teamMeta: "約 {people} 人 - 標準的な給与 {salary}",
     swag: "請求に含まれるものはまだあります。チーム向けの光る RevenueCat スケートボード。それもあなたの 1% が払っています。",
     swagPostAlt: "RevenueCat 社員の X への投稿:「RevenueCat のスケートボードが昨日届いた！無料で自分の RevenueCat スケートボードをもらうリンクはこちら」。リンク先は RevenueCat の採用ページ",
     swagPhotoAlt: "光る RevenueCat スケートボード",
@@ -43,7 +43,7 @@ export const pricingJa: PricingDict = {
     swagLink: "投稿を見る",
     ownersTitle: "あなたの 1% が、他人のエグジットを作る",
     /** {pct} is like "55%". */
-    ownersInvestors: "ベンチャー投資家 · 約 {pct}",
+    ownersInvestors: "ベンチャー投資家 - 約 {pct}",
     ownersRest: "創業者と従業員",
     ownersBarLabel: "ベンチャー投資家が保有する RevenueCat の株式は約 {pct}（私たちの推計）",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

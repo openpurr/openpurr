@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingAr: PricingDict = {
   meta: {
-    title: "تسعير RevenueCat: أين تذهب نسبة 1% فعلًا · openpurr",
+    title: "تسعير RevenueCat: أين تذهب نسبة 1% فعلًا - openpurr",
     description:
       "يأخذ RevenueCat نسبة 1% من إيراداتك، والخوادم وراء تطبيقك لا تكلّف شيئًا يُذكر. اعرف أين يذهب الباقي: الرواتب والمبيعات ومستثمرو رأس المال المغامر.",
     ogImageAlt: "يأخذ RevenueCat نسبة 1% من إيراداتك، والخوادم لا تكلّف شيئًا يُذكر. إليك أين يذهب الباقي.",
@@ -16,7 +16,7 @@ export const pricingAr: PricingDict = {
     headlineAccent: "أنت تدفع ثمن شركة قيمتها {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "يأخذ RevenueCat نسبة 1% من كل إيراداتك المتتبَّعة بمجرد أن تتجاوز {threshold} شهريًا، وتكبر الفاتورة كلما كبرت. الخوادم وراء تطبيقك لا تكلّف شيئًا يُذكر. والباقي يدفع ثمن الشركة نفسها: رواتبها، وفريق مبيعاتها، وعائد مستثمريها.",
-    updated: "آخر تحديث: {date} · تقديرات من أرقام منشورة",
+    updated: "آخر تحديث: {date} - تقديرات من أرقام منشورة",
   },
   answer: {
     title: "تسعير RevenueCat في سطر واحد",
@@ -35,7 +35,7 @@ export const pricingAr: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "الخوادم: {servers}. وكل ما تبقّى، أي {rest}، يدفع ثمن فرقهم:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "نحو {people} شخصًا · الراتب المعتاد {salary}",
+    teamMeta: "نحو {people} شخصًا - الراتب المعتاد {salary}",
     swag: "وعلى الفاتورة أيضًا: ألواح تزلج مضيئة بشعار RevenueCat للفريق. نسبة الـ 1% التي تدفعها تغطي ذلك أيضًا.",
     swagPostAlt: "منشور لموظف في RevenueCat على X: ‏«وصل لوح التزلج الخاص بي من RevenueCat أمس! إليك رابطًا لتحصل على لوحك المجاني»، والرابط يؤدي إلى صفحة الوظائف في RevenueCat",
     swagPhotoAlt: "لوح تزلج مضيء بشعار RevenueCat",
@@ -43,7 +43,7 @@ export const pricingAr: PricingDict = {
     swagLink: "عرض المنشور",
     ownersTitle: "نسبة 1% التي تدفعها تبني صفقة خروج لغيرك",
     /** {pct} is like "55%". */
-    ownersInvestors: "مستثمرو رأس المال المغامر · نحو {pct}",
+    ownersInvestors: "مستثمرو رأس المال المغامر - نحو {pct}",
     ownersRest: "المؤسسون والموظفون",
     ownersBarLabel: "يملك مستثمرو رأس المال المغامر نحو {pct} من RevenueCat، بحسب تقديرنا",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */
