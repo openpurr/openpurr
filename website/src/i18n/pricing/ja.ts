@@ -44,6 +44,7 @@ export const pricingJa: PricingDict = {
     ceoLink: "あなたの 1% は CEO の SNS 代でもあります。X に 1 日約 {perDay} 件、毎日投稿しています。",
     ceoLinkLabel: "数字を見る →",
     ownersTitle: "あなたの 1% が、他人のエグジットを作る",
+    ownersPunch: "上位 1% に、1% を払っている。",
     /** {pct} is like "55%". */
     ownersInvestors: "ベンチャー投資家 - 約 {pct}",
     ownersRest: "創業者と従業員",
@@ -58,6 +59,31 @@ export const pricingJa: PricingDict = {
     keep: "残りの {keep} は手元に。",
     ctaKeep: "1% を取り戻す →",
     ctaGithub: "GitHub で openpurr を見る",
+  },
+  receipts: {
+    title: "1% を手元に残したら、買えるもの",
+    note: "おおよその価格（米ドル）。米国の個人開発者の場合。",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "あなたの 1%、手元に",
+    /** {revenue} is like "$10,000". */
+    revenue: "アプリ売上 {revenue}／月",
+    year: "年間 1%",
+    total: "合計",
+    change: "お釣り",
+    /** {zero} is "$0.00". */
+    shareLine: "レベニューシェア：{zero}",
+    thanks: "手元に残してくれてありがとう",
+    /** {n} is a number. */
+    items: {
+      ugc: "クリエイター動画 {n} 本（UGC 広告）",
+      ugcCampaign: "クリエイター施策 {n} 本",
+      ira: "個人年金（IRA）",
+      k401: "Solo 401(k) 拠出",
+      health: "健康保険 {n} か月分",
+      weekend: "週末旅行",
+      vacation: "1 週間の休暇",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "エンジニアリング", basis: "シニア SDK エンジニアの求人、$21.2万" },

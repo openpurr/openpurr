@@ -102,6 +102,32 @@ export const shareOf = (t: Team) => teamCost(t) / TOTAL_TEAM_COST;
 /** A RevenueCat employee's public post about their company skateboard (shown as a screenshot). */
 export const SWAG_POST = { date: "2026-11-24", url: "https://x.com/drbarnard/status/2125297380887294231" };
 
+/**
+ * "What your 1% buys when you keep it": a receipt for an app at each of these monthly revenues.
+ * Each receipt adds up to that app's yearly RevenueCat fee, minus a dollar or two of change. Prices
+ * are rough, in US dollars, for a solo developer in the US; item names are in i18n/pricing
+ * (`receipts.items`), and `n` fills their {n}.
+ */
+export interface ReceiptItem {
+  key: "ugc" | "ugcCampaign" | "ira" | "k401" | "health" | "weekend" | "vacation" | "apple";
+  usd: number;
+  n?: number;
+}
+export const RECEIPTS: { revenue: number; items: ReceiptItem[] }[] = [
+  { revenue: 10_000, items: [{ key: "ugc", n: 3, usd: 600 }, { key: "ira", usd: 500 }, { key: "apple", usd: 99 }] },
+  { revenue: 25_000, items: [{ key: "ugc", n: 5, usd: 1_500 }, { key: "health", n: 2, usd: 1_000 }, { key: "weekend", usd: 400 }, { key: "apple", usd: 99 }] },
+  {
+    revenue: 100_000,
+    items: [
+      { key: "health", n: 12, usd: 6_000 },
+      { key: "ugcCampaign", n: 8, usd: 3_000 },
+      { key: "vacation", usd: 1_500 },
+      { key: "k401", usd: 1_400 },
+      { key: "apple", usd: 99 },
+    ],
+  },
+];
+
 /** The sources, in the order of i18n/pricing's `sources.items` labels. */
 export const SOURCES = [
   { url: "https://www.revenuecat.com/pricing/" },

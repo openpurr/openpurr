@@ -44,6 +44,7 @@ export const pricingZhCn: PricingDict = {
     ceoLink: "你的 1% 也在为 CEO 的社交媒体买单：每天在 X 上发帖约 {perDay} 条，天天如此。",
     ceoLinkLabel: "查看数据 →",
     ownersTitle: "你的 1%，在为别人的退出铺路",
+    ownersPunch: "你把 1% 交给了最富的 1%。",
     /** {pct} is like "55%". */
     ownersInvestors: "风险投资人 - 约 {pct}",
     ownersRest: "创始人和员工",
@@ -58,6 +59,31 @@ export const pricingZhCn: PricingDict = {
     keep: "剩下的 {keep}，留给自己。",
     ctaKeep: "留住你的 1% →",
     ctaGithub: "GitHub 上的 openpurr",
+  },
+  receipts: {
+    title: "留住 1%，能买些什么",
+    note: "粗略价格，以美元计，按美国独立开发者估算。",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "你的 1%，留住了",
+    /** {revenue} is like "$10,000". */
+    revenue: "应用收入 {revenue}/月",
+    year: "每年 1%",
+    total: "合计",
+    change: "找零",
+    /** {zero} is "$0.00". */
+    shareLine: "收入分成：{zero}",
+    thanks: "谢谢你把它留下",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} 条达人视频（UGC 广告）",
+      ugcCampaign: "达人推广，{n} 条视频",
+      ira: "个人养老金（IRA）",
+      k401: "Solo 401(k) 缴存",
+      health: "医疗保险 {n} 个月",
+      weekend: "一次周末出游",
+      vacation: "一周假期",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "工程", basis: "高级 SDK 工程师职位，21.2 万美元" },

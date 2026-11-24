@@ -44,6 +44,7 @@ export const pricingId: PricingDict = {
     ceoLink: "1% Anda juga membayar media sosial sang CEO: sekitar {perDay} postingan sehari di X, setiap hari.",
     ceoLinkLabel: "Lihat angkanya →",
     ownersTitle: "1% Anda membangun exit orang lain",
+    ownersPunch: "Anda membayar 1% kepada 1% terkaya.",
     /** {pct} is like "55%". */
     ownersInvestors: "Investor ventura - sekitar {pct}",
     ownersRest: "Pendiri dan karyawan",
@@ -58,6 +59,31 @@ export const pricingId: PricingDict = {
     keep: "Simpan {keep} sisanya.",
     ctaKeep: "Simpan 1% Anda →",
     ctaGithub: "openpurr di GitHub",
+  },
+  receipts: {
+    title: "Apa yang bisa dibeli 1% Anda jika disimpan",
+    note: "Harga kasar dalam dolar AS, untuk developer solo di AS.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "1% Anda, tetap milik Anda",
+    /** {revenue} is like "$10,000". */
+    revenue: "Pendapatan aplikasi {revenue}/bln",
+    year: "1% per tahun",
+    total: "Total",
+    change: "Kembalian",
+    /** {zero} is "$0.00". */
+    shareLine: "Bagi hasil: {zero}",
+    thanks: "Terima kasih telah menyimpannya",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} video kreator (iklan UGC)",
+      ugcCampaign: "Kampanye kreator, {n} video",
+      ira: "Dana pensiun (IRA)",
+      k401: "Setoran Solo 401(k)",
+      health: "Asuransi kesehatan, {n} bulan",
+      weekend: "Liburan akhir pekan",
+      vacation: "Liburan seminggu",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Engineering", basis: "Lowongan senior SDK engineer, $212K" },

@@ -44,6 +44,7 @@ export const pricingHi: PricingDict = {
     ceoLink: "आपका 1% CEO के social media का ख़र्च भी उठाता है: X पर रोज़ लगभग {perDay} posts, हर दिन।",
     ceoLinkLabel: "आँकड़े देखें →",
     ownersTitle: "आपका 1% किसी और का exit बना रहा है",
+    ownersPunch: "आप सबसे अमीर 1% को 1% दे रहे हैं।",
     /** {pct} is like "55%". */
     ownersInvestors: "VC investors - लगभग {pct}",
     ownersRest: "Founders और employees",
@@ -58,6 +59,31 @@ export const pricingHi: PricingDict = {
     keep: "बाक़ी {keep} अपने पास रखें।",
     ctaKeep: "अपना 1% अपने पास रखें →",
     ctaGithub: "GitHub पर openpurr",
+  },
+  receipts: {
+    title: "अपना 1% अपने पास रखें, तो क्या-क्या आएगा",
+    note: "मोटे-मोटे दाम, US dollars में, US के solo developer के लिए।",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "आपका 1%, आपके पास",
+    /** {revenue} is like "$10,000". */
+    revenue: "App revenue {revenue}/माह",
+    year: "1% प्रति वर्ष",
+    total: "कुल",
+    change: "बाक़ी",
+    /** {zero} is "$0.00". */
+    shareLine: "Revenue share: {zero}",
+    thanks: "अपने पास रखने के लिए धन्यवाद",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} creator वीडियो (UGC ads)",
+      ugcCampaign: "Creator campaign, {n} वीडियो",
+      ira: "Retirement बचत (IRA)",
+      k401: "Solo 401(k) योगदान",
+      health: "Health insurance, {n} महीने",
+      weekend: "एक weekend getaway",
+      vacation: "एक हफ़्ते की छुट्टी",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Engineering", basis: "Senior SDK engineer की job posting, $212K" },

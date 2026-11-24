@@ -44,6 +44,7 @@ export const pricingZhTw: PricingDict = {
     ceoLink: "你的 1% 也在為 CEO 的社群媒體買單：每天在 X 上發文約 {perDay} 則，天天如此。",
     ceoLinkLabel: "查看數據 →",
     ownersTitle: "你的 1%，在替別人的出場鋪路",
+    ownersPunch: "你把 1% 交給了最富有的 1%。",
     /** {pct} is like "55%". */
     ownersInvestors: "創投 - 約 {pct}",
     ownersRest: "創辦人和員工",
@@ -58,6 +59,31 @@ export const pricingZhTw: PricingDict = {
     keep: "剩下的 {keep}，留給自己。",
     ctaKeep: "留住你的 1% →",
     ctaGithub: "GitHub 上的 openpurr",
+  },
+  receipts: {
+    title: "留住 1%，能買些什麼",
+    note: "粗估價格，以美元計，以美國獨立開發者為例。",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "你的 1%，留住了",
+    /** {revenue} is like "$10,000". */
+    revenue: "App 營收 {revenue}/月",
+    year: "每年 1%",
+    total: "合計",
+    change: "找零",
+    /** {zero} is "$0.00". */
+    shareLine: "營收分成：{zero}",
+    thanks: "謝謝你把它留下",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} 支創作者影片（UGC 廣告）",
+      ugcCampaign: "創作者行銷，{n} 支影片",
+      ira: "個人退休金（IRA）",
+      k401: "Solo 401(k) 提撥",
+      health: "健康保險 {n} 個月",
+      weekend: "週末小旅行",
+      vacation: "一週假期",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "工程", basis: "資深 SDK 工程師職缺，21.2 萬美元" },

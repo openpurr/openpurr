@@ -44,6 +44,7 @@ export const pricingTr: PricingDict = {
     ceoLink: "%1'iniz CEO'nun sosyal medyasını da ödüyor: X'te günde yaklaşık {perDay} paylaşım, her gün.",
     ceoLinkLabel: "Rakamları görün →",
     ownersTitle: "%1'iniz başkasının exit'ini büyütüyor",
+    ownersPunch: "En zengin %1'e %1 ödüyorsunuz.",
     /** {pct} is like "55%". */
     ownersInvestors: "Risk sermayesi yatırımcıları - yaklaşık {pct}",
     ownersRest: "Kurucular ve çalışanlar",
@@ -58,6 +59,31 @@ export const pricingTr: PricingDict = {
     keep: "Kalan {keep} cebinizde kalsın.",
     ctaKeep: "%1'iniz sizde kalsın →",
     ctaGithub: "GitHub'da openpurr",
+  },
+  receipts: {
+    title: "%1'iniz sizde kalırsa neler alır",
+    note: "Yaklaşık fiyatlar, ABD doları cinsinden; ABD'de tek başına çalışan bir geliştirici için.",
+    /** The receipts are styled like till receipts; keep these short. */
+    header: "%1'iniz, sizde",
+    /** {revenue} is like "$10,000". */
+    revenue: "Uygulama geliri {revenue}/ay",
+    year: "Yılda %1",
+    total: "Toplam",
+    change: "Para üstü",
+    /** {zero} is "$0.00". */
+    shareLine: "Gelir payı: {zero}",
+    thanks: "Sizde tuttuğunuz için teşekkürler",
+    /** {n} is a number. */
+    items: {
+      ugc: "{n} içerik üretici videosu (UGC)",
+      ugcCampaign: "Üretici kampanyası, {n} video",
+      ira: "Bireysel emeklilik (IRA)",
+      k401: "Solo 401(k) katkısı",
+      health: "Sağlık sigortası, {n} ay",
+      weekend: "Bir hafta sonu kaçamağı",
+      vacation: "Bir haftalık tatil",
+      apple: "Apple Developer Program",
+    },
   },
   teams: {
     eng: { name: "Mühendislik", basis: "Kıdemli SDK mühendisi ilanı, 212 bin $" },
