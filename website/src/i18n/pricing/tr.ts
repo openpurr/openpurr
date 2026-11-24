@@ -36,6 +36,11 @@ export const pricingTr: PricingDict = {
     stackNote: "Sunucular: {servers}. Geri kalan her şey, yani {rest}, ekiplerine gidiyor:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Yaklaşık {people} kişi · tipik maaş {salary}",
+    swag: "Faturada bu da var: ekibe ışıklı RevenueCat kaykayları. Bunu da sizin %1'iniz ödüyor.",
+    swagPostAlt: "Bir RevenueCat çalışanının X gönderisi: “RevenueCat kaykayım dün geldi! Kendi ücretsiz RevenueCat kaykayını almak için bağlantı burada”; bağlantı RevenueCat'in kariyer sayfasına gidiyor",
+    swagPhotoAlt: "Işıklı bir RevenueCat kaykayı",
+    swagCaption: "X'te {date} tarihinde paylaşıldı. “Kendininkini al” bağlantısı kariyer sayfalarına gidiyor. {link}",
+    swagLink: "Gönderiyi gör",
     ownersTitle: "%1'iniz başkasının exit'ini büyütüyor",
     /** {pct} is like "55%". */
     ownersInvestors: "Risk sermayesi yatırımcıları · yaklaşık {pct}",

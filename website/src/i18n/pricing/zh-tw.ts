@@ -36,6 +36,11 @@ export const pricingZhTw: PricingDict = {
     stackNote: "伺服器：{servers}。其餘 {rest} 都花在他們的團隊上：",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "約 {people} 人 · 一般薪資 {salary}",
+    swag: "帳單裡還有：發給團隊的發光 RevenueCat 滑板。這些也由你的 1% 買單。",
+    swagPostAlt: "一名 RevenueCat 員工在 X 上的貼文：「我的 RevenueCat 滑板昨天到了！這是領取你自己的免費 RevenueCat 滑板的連結」，連結指向 RevenueCat 的徵才頁面",
+    swagPhotoAlt: "一塊發光的 RevenueCat 滑板",
+    swagCaption: "{date} 發布於 X。「領取你自己的」連結指向他們的徵才頁面。{link}",
+    swagLink: "查看貼文",
     ownersTitle: "你的 1%，在替別人的出場鋪路",
     /** {pct} is like "55%". */
     ownersInvestors: "創投 · 約 {pct}",

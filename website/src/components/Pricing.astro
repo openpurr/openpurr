@@ -29,6 +29,7 @@ import {
   TEAMS,
   teamCost,
   VALUATION_2025,
+  SWAG_POST,
 } from "../one-percent";
 
 interface Props {
@@ -71,6 +72,7 @@ const pagePath = localePath(locale, PRICING_PAGE);
 const fee = revenueCatCost(SLIDER.initial) * 12;
 const infra = openpurrCost(SLIDER.initial).cost * 12;
 const rest = fee - infra;
+const swagDate = new Date(`${SWAG_POST.date}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 const checked = new Date(`${SOURCES_CHECKED}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 const model = {
   teams: TEAMS.map((t) => ({ key: t.key, share: shareOf(t) })),
@@ -241,6 +243,12 @@ const enHref = locale === "en" ? undefined : "en";
           </ul>
 
 
+          <p class="swag">{p.calc.swag}</p>
+          <figure class="swag-post">
+            <img src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
+            <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
+            <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
+          </figure>
           <p class="punch">
             <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
@@ -661,6 +669,29 @@ const enHref = locale === "en" ? undefined : "en";
     margin-top: 6px;
     font-size: 1.25rem;
     color: var(--purple);
+  }
+  .swag {
+    margin-top: 20px;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .swag-post {
+    margin: 14px 0 0;
+    display: grid;
+    grid-template-columns: 1fr 120px;
+    gap: 10px;
+    align-items: start;
+  }
+  .swag-post img {
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+  }
+  .swag-post figcaption {
+    grid-column: 1 / -1;
+    font-size: 0.85rem;
+    color: var(--muted);
   }
   .punch {
     margin-top: 24px;
