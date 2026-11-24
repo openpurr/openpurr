@@ -104,7 +104,7 @@ export const WORKDAYS = 230;
 export const engineerDayCost = () => (TEAMS.find((t) => t.key === "eng")!.salary * LOADED) / WORKDAYS;
 
 /** A RevenueCat employee's public post about their company skateboard (shown as a screenshot). */
-export const SWAG_POST = { date: "2026-11-24", url: "https://x.com/drbarnard" };
+export const SWAG_POST = { date: "2026-11-24", url: "https://x.com/drbarnard/status/2125297380887294231" };
 
 /** The sources, in the order of i18n/pricing's `sources.items` labels. */
 export const SOURCES = [
