@@ -220,7 +220,7 @@ export const it: Dict = {
         },
         {
           phase: "Guidata dalla community",
-          items: ["Identità verificata degli utenti finali", "Extra di Standard per team più grandi", "Tutto ciò che chiedi nelle issue"],
+          items: ["Identità verificata degli utenti finali", "Extra di Standard per team più grandi", "App mobile per i grafici, con un avviso quando gli acquisti si fermano", "Gli stessi avvisi su Slack, Discord e Telegram", "Tutto ciò che chiedi nelle issue"],
         },
       ],
       more: "Leggi la roadmap completa (in inglese) →",

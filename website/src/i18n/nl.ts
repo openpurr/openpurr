@@ -202,7 +202,7 @@ export const nl: Dict = {
         },
         {
           phase: "Gevormd door de community",
-          items: ["Geverifieerde identiteit van eindgebruikers", "Standard-extra's voor grotere teams", "Alles waar je in issues om vraagt"],
+          items: ["Geverifieerde identiteit van eindgebruikers", "Standard-extra's voor grotere teams", "Mobiele app voor grafieken, met een melding als aankopen uitblijven", "Dezelfde meldingen in Slack, Discord en Telegram", "Alles waar je in issues om vraagt"],
         },
       ],
       more: "Lees de volledige roadmap (Engels) →",

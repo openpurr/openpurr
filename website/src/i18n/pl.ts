@@ -202,7 +202,7 @@ export const pl: Dict = {
         },
         {
           phase: "Kształtowane przez społeczność",
-          items: ["Zweryfikowana tożsamość użytkowników końcowych", "Dodatki do Standard dla większych zespołów", "Wszystko, o co poprosisz w issues"],
+          items: ["Zweryfikowana tożsamość użytkowników końcowych", "Dodatki do Standard dla większych zespołów", "Aplikacja mobilna z wykresami i alertem, gdy zakupy ustają", "Te same alerty w Slacku, Discordzie i Telegramie", "Wszystko, o co poprosisz w issues"],
         },
       ],
       more: "Przeczytaj pełną roadmapę (po angielsku) →",

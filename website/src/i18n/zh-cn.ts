@@ -197,7 +197,7 @@ export const zhCn: Dict = {
         },
         {
           phase: "由社区塑造",
-          items: ["经过验证的终端用户身份", "面向大型团队的 Standard 扩展功能", "你在 Issue 中提出的任何需求"],
+          items: ["经过验证的终端用户身份", "面向大型团队的 Standard 扩展功能", "查看图表的移动 App，购买停止时推送提醒", "同样的提醒发到 Slack、Discord 和 Telegram", "你在 Issue 中提出的任何需求"],
         },
       ],
       more: "查看完整路线图（英文）→",

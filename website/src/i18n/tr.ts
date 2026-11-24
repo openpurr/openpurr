@@ -207,7 +207,7 @@ export const tr: Dict = {
         },
         {
           phase: "Topluluğun şekillendirdiği",
-          items: ["Doğrulanmış son kullanıcı kimliği", "Daha büyük ekipler için Standard ekstraları", "Issue'larda ne isterseniz"],
+          items: ["Doğrulanmış son kullanıcı kimliği", "Daha büyük ekipler için Standard ekstraları", "Grafikler için mobil uygulama, satın almalar durunca bildirim", "Aynı bildirimler Slack, Discord ve Telegram'da", "Issue'larda ne isterseniz"],
         },
       ],
       more: "Yol haritasının tamamını okuyun (İngilizce) →",

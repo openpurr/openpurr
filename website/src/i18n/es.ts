@@ -206,7 +206,7 @@ export const es: Dict = {
         },
         {
           phase: "Definido por la comunidad",
-          items: ["Identidad verificada de los usuarios finales", "Extras de Standard para equipos grandes", "Lo que pidas en los issues"],
+          items: ["Identidad verificada de los usuarios finales", "Extras de Standard para equipos grandes", "App móvil con gráficos y un aviso cuando dejan de llegar compras", "Los mismos avisos en Slack, Discord y Telegram", "Lo que pidas en los issues"],
         },
       ],
       more: "Lee la hoja de ruta completa (en inglés) →",

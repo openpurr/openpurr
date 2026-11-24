@@ -206,7 +206,7 @@ export const ptBr: Dict = {
         },
         {
           phase: "Definido pela comunidade",
-          items: ["Identidade verificada do usuário final", "Extras do Standard para equipes maiores", "O que você pedir nas issues"],
+          items: ["Identidade verificada do usuário final", "Extras do Standard para equipes maiores", "App para celular com gráficos e alerta quando as compras param", "Os mesmos alertas no Slack, Discord e Telegram", "O que você pedir nas issues"],
         },
       ],
       more: "Leia o roadmap completo (em inglês) →",
