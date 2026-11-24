@@ -36,7 +36,7 @@ export const pricingId: PricingDict = {
     stackNote: "Server: {servers}. Selebihnya, {rest}, membiayai tim mereka:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Sekitar {people} orang · gaji umum {salary}",
-    swag: "Juga masuk tagihan: skateboard RevenueCat yang menyala untuk tim, dan semua upaya lain agar terlihat keren. 1% Anda juga membayar itu.",
+    swag: "Juga masuk tagihan: skateboard RevenueCat yang menyala untuk tim. 1% Anda juga membayar itu.",
     swagPostAlt: "Postingan karyawan RevenueCat di X: “Skateboard RevenueCat saya tiba kemarin! Ini tautan untuk mendapatkan skateboard RevenueCat gratis milikmu sendiri,” yang mengarah ke halaman lowongan RevenueCat",
     swagPhotoAlt: "Skateboard RevenueCat yang menyala",
     swagCaption: "Diposting di X, {date}. Tautan “dapatkan milikmu” mengarah ke halaman lowongan mereka. {link}",

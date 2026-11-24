@@ -36,7 +36,7 @@ export const pricingAr: PricingDict = {
     stackNote: "الخوادم: {servers}. وكل ما تبقّى، أي {rest}، يدفع ثمن فرقهم:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "نحو {people} شخصًا · الراتب المعتاد {salary}",
-    swag: "وعلى الفاتورة أيضًا: ألواح تزلج مضيئة بشعار RevenueCat للفريق، وبقية الجهد المبذول ليبدو الأمر رائعًا. نسبة الـ 1% التي تدفعها تغطي ذلك أيضًا.",
+    swag: "وعلى الفاتورة أيضًا: ألواح تزلج مضيئة بشعار RevenueCat للفريق. نسبة الـ 1% التي تدفعها تغطي ذلك أيضًا.",
     swagPostAlt: "منشور لموظف في RevenueCat على X: ‏«وصل لوح التزلج الخاص بي من RevenueCat أمس! إليك رابطًا لتحصل على لوحك المجاني»، والرابط يؤدي إلى صفحة الوظائف في RevenueCat",
     swagPhotoAlt: "لوح تزلج مضيء بشعار RevenueCat",
     swagCaption: "نُشر على X في {date}. رابط «احصل على لوحك» يؤدي إلى صفحة الوظائف لديهم. {link}",

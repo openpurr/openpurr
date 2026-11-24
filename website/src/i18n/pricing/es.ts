@@ -36,7 +36,7 @@ export const pricingEs: PricingDict = {
     stackNote: "Servidores: {servers}. Todo lo demás, {rest}, paga sus equipos:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Unas {people} personas · salario típico {salary}",
-    swag: "También en la factura: monopatines luminosos de RevenueCat para el equipo y el resto del esfuerzo por parecer cool. Tu 1 % también paga eso.",
+    swag: "También en la factura: monopatines luminosos de RevenueCat para el equipo. Tu 1 % también paga eso.",
     swagPostAlt: "Publicación de un empleado de RevenueCat en X: «¡Ayer llegó mi monopatín de RevenueCat! Aquí tienes un enlace para conseguir el tuyo gratis», con enlace a la página de empleo de RevenueCat",
     swagPhotoAlt: "Un monopatín luminoso de RevenueCat",
     swagCaption: "Publicado en X el {date}. El enlace para «conseguir el tuyo» lleva a su página de empleo. {link}",

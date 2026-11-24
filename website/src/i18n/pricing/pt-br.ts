@@ -36,7 +36,7 @@ export const pricingPtBr: PricingDict = {
     stackNote: "Servidores: {servers}. Todo o resto, {rest}, paga as equipes deles:",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Cerca de {people} pessoas · salário típico de {salary}",
-    swag: "Também na conta: skates luminosos da RevenueCat para a equipe, e todo o resto do esforço para parecer descolado. Seu 1% paga isso também.",
+    swag: "Também na conta: skates luminosos da RevenueCat para a equipe. Seu 1% paga isso também.",
     swagPostAlt: "Post de um funcionário da RevenueCat no X: “Meu skate da RevenueCat chegou ontem! Aqui está um link para pegar o seu skate grátis da RevenueCat”, com link para a página de vagas da RevenueCat",
     swagPhotoAlt: "Um skate luminoso da RevenueCat",
     swagCaption: "Publicado no X em {date}. O link para “pegar o seu” leva à página de vagas deles. {link}",
