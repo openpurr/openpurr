@@ -26,7 +26,7 @@ variable "name" {
 
 variable "image" {
   description = <<-EOT
-    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.3.0. Cloud Run
+    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.4.0. Cloud Run
     can't pull from ghcr.io itself, so a ghcr.io image is pulled through an Artifact Registry remote
     repository this module creates; an Artifact Registry or Docker Hub image is used as is. Pin a
     version: changing it is how you upgrade.

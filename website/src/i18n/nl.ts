@@ -137,10 +137,10 @@ export const nl: Dict = {
         ],
       },
       standard: {
-        badge: "Binnenkort",
+        badge: "Voor grotere portfolio's",
         price: "Je cloudrekening",
         priceNote: "verder niets",
-        items: ["Go en Postgres in containers", "GCP of AWS", "Voor grotere portfolio's van apps"],
+        items: ["Go en Postgres in containers", "GCP, AWS of DigitalOcean", "Voor elk een deploymenttemplate"],
       },
     },
     savings: {
@@ -198,7 +198,7 @@ export const nl: Dict = {
         },
         {
           phase: "Standard",
-          items: ["Go en Postgres in containers", "Eerst GCP, dan AWS", "Dezelfde conformiteitstests als Lite", "Overstap vanaf Lite zonder app-update"],
+          items: ["Go en Postgres in containers", "GCP, AWS en DigitalOcean", "Dezelfde conformiteitstests als Lite", "Overstap vanaf Lite zonder app-update"],
         },
         {
           phase: "Gevormd door de community",
@@ -253,7 +253,7 @@ export const nl: Dict = {
       },
       {
         q: "Waar worden mijn gegevens opgeslagen?",
-        a: "In je eigen database. De Lite-editie gebruikt Cloudflare D1 in je Cloudflare-account. De Standard-editie gebruikt Postgres op GCP of AWS. Je kunt de gegevens bevragen, back-uppen en exporteren, en er zit geen externe dienst tussen je app en je klanten.",
+        a: "In je eigen database. De Lite-editie gebruikt Cloudflare D1 in je Cloudflare-account. De Standard-editie gebruikt Postgres op GCP, AWS of DigitalOcean. Je kunt de gegevens bevragen, back-uppen en exporteren, en er zit geen externe dienst tussen je app en je klanten.",
       },
       {
         q: "Stuurt openpurr webhooks zoals RevenueCat?",
@@ -265,7 +265,7 @@ export const nl: Dict = {
       },
       {
         q: "Is openpurr klaar voor productie?",
-        a: "Nog niet. openpurr staat nog aan het begin: aan de Lite-editie wordt gewerkt en de Standard-editie volgt later. Volg de roadmap op GitHub en open een issue als iets belangrijk voor je is.",
+        a: "Nog niet. openpurr staat nog aan het begin: beide edities werken en doorstaan dezelfde conformiteitstests, maar ze zijn nog niet end-to-end getest met aankopen op echte apparaten. Volg de roadmap op GitHub en open een issue als iets belangrijk voor je is.",
       },
       {
         q: "Is openpurr verbonden aan RevenueCat?",

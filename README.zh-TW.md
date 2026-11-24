@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr 是獨立專案，與 RevenueCat, Inc. 沒有任何關聯，也未獲�
 | | Lite | Standard |
 |---|---|---|
 | 語言 | TypeScript | Go |
-| 執行環境 | Cloudflare Workers + D1 | GCP 或 AWS 上的容器 + Postgres |
+| 執行環境 | Cloudflare Workers + D1 | GCP、AWS 或 DigitalOcean 上的容器 + Postgres |
 | 成本 | 專為 Cloudflare 免費方案設計 | 你的雲端帳單 |
-| 適用於 | 獨立開發的 App：輕量，執行成本低 | 擁有較多 App 的團隊（即將推出） |
+| 適用於 | 獨立開發的 App：輕量，執行成本低 | 擁有較多 App 的團隊 |
 
-兩個版本都通過 `spec/` 中的同一套一致性測試。只要你的 App 指向你自己擁有的自訂網域，從 Lite 搬移到 Standard 就不必發布 App 更新。
+兩個版本都通過 `spec/` 中的同一套一致性測試。只要你的 App 指向你自己擁有的自訂網域，從 Lite 搬移到 Standard 就不必發布 App 更新。請參閱[從 Lite 搬移到 Standard](docs/migrating-from-lite-to-standard.md)（英文）。
 
 ## 和 RevenueCat 相比，你能留下多少
 
@@ -102,7 +102,7 @@ RevenueCat 的 Pro 方案在每月追蹤營收低於 2,500 美元時免費，超
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## 開始使用
 
-Lite 目前是 0.1.0，也就是第一個版本，因此在 1.0 之前可能還會有變動。要在你自己的 Cloudflare 帳號上試用（免費方案就夠了），需要 Node 22.12 或更新版本：
+openpurr 目前是 0.4.0，因此在 1.0 之前可能還會有變動。要在你自己的 Cloudflare 帳號上試用（免費方案就夠了），需要 Node 22.12 或更新版本：
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 - **每次推送時自動部署：** Fork 這個儲存庫，並把你的 Cloudflare 資訊加入為儲存庫 Secret。[`lite-deploy.yml`](.github/workflows/lite-deploy.yml) 列出了需要的項目。
 
 正在使用 Claude Code？[openpurr 外掛程式](plugin/)（英文）會帶你完成同樣的步驟，還包括 App Store Connect 和 Play Console 的設定。
+
+如要使用 Standard，請依你所用雲端平台的指南操作：[GCP](docs/standard-on-gcp.md)、[AWS](docs/standard-on-aws.md) 或 [DigitalOcean](docs/standard-on-digitalocean.md)（英文）。每份指南都使用 `infra/` 中的 OpenTofu 範本進行部署。
 
 ## 參與貢獻
 

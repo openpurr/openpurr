@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr は独立したプロジェクトであり、RevenueCat, Inc. とは提
 | | Lite | Standard |
 |---|---|---|
 | 言語 | TypeScript | Go |
-| 実行環境 | Cloudflare Workers + D1 | GCP または AWS 上のコンテナ + Postgres |
+| 実行環境 | Cloudflare Workers + D1 | GCP、AWS または DigitalOcean 上のコンテナ + Postgres |
 | 費用 | Cloudflare の無料プランに収まるよう設計 | クラウドの利用料 |
-| 対象 | 個人開発のアプリ：軽量で運用コストが低い | 多数のアプリを抱えるポートフォリオ（近日公開） |
+| 対象 | 個人開発のアプリ：軽量で運用コストが低い | 多数のアプリを抱えるポートフォリオ |
 
-どちらのエディションも、`spec/` にある同じ適合性テストスイートに合格しています。アプリの接続先が自分の所有するカスタムドメインであれば、アプリのアップデートをリリースせずに Lite から Standard へ移行できます。
+どちらのエディションも、`spec/` にある同じ適合性テストスイートに合格しています。アプリの接続先が自分の所有するカスタムドメインであれば、アプリのアップデートをリリースせずに Lite から Standard へ移行できます。詳しくは [Lite から Standard への移行](docs/migrating-from-lite-to-standard.md)（英語）を参照してください。
 
 ## RevenueCat と比べて手元に残る金額
 
@@ -102,7 +102,7 @@ RevenueCat の Pro プランは、月間の追跡収益が $2,500 未満なら�
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## はじめに
 
-Lite は最初のリリースである 0.1.0 なので、1.0 までに変更が入る可能性があります。自分の Cloudflare アカウント（無料プランで十分です）で試すには、Node 22.12 以降で次を実行します。
+openpurr は 0.4.0 なので、1.0 までに変更が入る可能性があります。自分の Cloudflare アカウント（無料プランで十分です）で試すには、Node 22.12 以降で次を実行します。
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 - **push のたびにデプロイする：** リポジトリをフォークし、Cloudflare の情報をリポジトリのシークレットとして追加します。必要な項目は [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) に記載されています。
 
 Claude Code を使っていますか？ [openpurr プラグイン](plugin/)（英語）が同じ手順に加えて、App Store Connect と Play Console の設定も案内します。
+
+Standard は、使うクラウドのガイド（[GCP](docs/standard-on-gcp.md)、[AWS](docs/standard-on-aws.md)、[DigitalOcean](docs/standard-on-digitalocean.md)、いずれも英語）に沿って導入してください。どれも `infra/` の OpenTofu テンプレートでデプロイします。
 
 ## コントリビュート
 

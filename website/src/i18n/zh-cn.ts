@@ -132,10 +132,10 @@ export const zhCn: Dict = {
         items: ["基于 Cloudflare Workers 和 D1 的 TypeScript 实现", "轻量，运行成本低", "在达到免费套餐限额前发出用量提醒"],
       },
       standard: {
-        badge: "即将推出",
+        badge: "适合多 App 团队",
         price: "你的云账单",
         priceNote: "没有其他费用",
-        items: ["容器中运行的 Go 和 Postgres", "GCP 或 AWS", "适合拥有更多 App 的团队"],
+        items: ["容器中运行的 Go 和 Postgres", "GCP、AWS 或 DigitalOcean", "每个平台都有部署模板"],
       },
     },
     savings: {
@@ -193,7 +193,7 @@ export const zhCn: Dict = {
         },
         {
           phase: "Standard",
-          items: ["容器中运行的 Go 和 Postgres", "先支持 GCP，再支持 AWS", "与 Lite 使用同一套一致性测试", "从 Lite 迁移无需更新 App"],
+          items: ["容器中运行的 Go 和 Postgres", "GCP、AWS 和 DigitalOcean", "与 Lite 使用同一套一致性测试", "从 Lite 迁移无需更新 App"],
         },
         {
           phase: "由社区塑造",
@@ -248,7 +248,7 @@ export const zhCn: Dict = {
       },
       {
         q: "我的数据存储在哪里？",
-        a: "存储在你自己的数据库中。Lite 版使用你 Cloudflare 账号中的 Cloudflare D1，Standard 版使用 GCP 或 AWS 上的 Postgres。你可以查询、备份和导出数据，你的 App 和客户之间没有任何外部服务。",
+        a: "存储在你自己的数据库中。Lite 版使用你 Cloudflare 账号中的 Cloudflare D1，Standard 版使用 GCP、AWS 或 DigitalOcean 上的 Postgres。你可以查询、备份和导出数据，你的 App 和客户之间没有任何外部服务。",
       },
       {
         q: "openpurr 会像 RevenueCat 一样发送 Webhook 吗？",
@@ -260,7 +260,7 @@ export const zhCn: Dict = {
       },
       {
         q: "openpurr 可以用于生产环境了吗？",
-        a: "还不行。openpurr 尚处于早期阶段：Lite 版正在开发中，Standard 版稍后推出。你可以在 GitHub 上关注路线图，如果某项功能对你很重要，欢迎提交 Issue。",
+        a: "还不行。openpurr 尚处于早期阶段：两个版本都已可用，并通过同一套一致性测试，但尚未在真实设备上用购买流程做过端到端测试。你可以在 GitHub 上关注路线图，如果某项功能对你很重要，欢迎提交 Issue。",
       },
       {
         q: "openpurr 和 RevenueCat 有关联吗？",

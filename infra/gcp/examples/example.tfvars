@@ -7,7 +7,7 @@ project_id = "my-project"
 region     = "us-central1"
 
 # Pin a version; changing it is how you upgrade.
-image = "ghcr.io/openpurr/openpurr-standard:0.3.0"
+image = "ghcr.io/openpurr/openpurr-standard:0.4.0"
 
 # A domain you own: apps, App Store Connect and Google Play use it, so you can move hosts later
 # without an app update.

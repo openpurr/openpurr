@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr एक स्वतंत्र project है। यह RevenueCat, In
 | | Lite | Standard |
 |---|---|---|
 | भाषा | TypeScript | Go |
-| कहाँ चलता है | Cloudflare Workers + D1 | GCP या AWS पर Containers + Postgres |
+| कहाँ चलता है | Cloudflare Workers + D1 | GCP, AWS या DigitalOcean पर Containers + Postgres |
 | लागत | Cloudflare के free plan में चलने के लिए बनाया गया | आपका cloud bill |
-| किसके लिए | Indie apps: हल्का और चलाने में सस्ता | Apps के बड़े portfolios (जल्द आ रहा है) |
+| किसके लिए | Indie apps: हल्का और चलाने में सस्ता | Apps के बड़े portfolios |
 
-दोनों editions `spec/` में मौजूद एक ही conformance suite पास करते हैं। अगर आपका app आपके अपने custom domain पर point करता है, तो आप app update ship किए बिना Lite से Standard पर जा सकते हैं।
+दोनों editions `spec/` में मौजूद एक ही conformance suite पास करते हैं। अगर आपका app आपके अपने custom domain पर point करता है, तो आप app update ship किए बिना Lite से Standard पर जा सकते हैं। देखें [Lite से Standard पर जाना](docs/migrating-from-lite-to-standard.md) (अंग्रेज़ी में)।
 
 ## RevenueCat की तुलना में आप कितना बचाते हैं
 
@@ -102,7 +102,7 @@ RevenueCat का Pro plan हर महीने $2,500 से कम tracked r
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## शुरुआत करें
 
-Lite अभी 0.1.0 पर है, जो इसका पहला release है, इसलिए 1.0 से पहले बदलावों की उम्मीद रखें। इसे अपने Cloudflare account पर आज़माने के लिए (free plan काफ़ी है), Node 22.12 या उसके बाद के version के साथ:
+openpurr अभी 0.4.0 पर है, इसलिए 1.0 से पहले बदलावों की उम्मीद रखें। इसे अपने Cloudflare account पर आज़माने के लिए (free plan काफ़ी है), Node 22.12 या उसके बाद के version के साथ:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 - **हर push पर deploy करें:** repo को fork करें और अपनी Cloudflare details, repository secrets के रूप में जोड़ें। [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) में इनकी सूची है।
 
 Claude Code इस्तेमाल करते हैं? [openpurr plugin](plugin/) (अंग्रेज़ी में) यही steps करवाता है, साथ में App Store Connect और Play Console का setup भी।
+
+Standard के लिए अपने cloud की guide follow करें: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) या [DigitalOcean](docs/standard-on-digitalocean.md) (अंग्रेज़ी में)। हर guide `infra/` के एक OpenTofu template से deploy करती है।
 
 ## योगदान
 

@@ -133,10 +133,10 @@ export const es: Dict = {
         items: ["TypeScript en Cloudflare Workers y D1", "Ligera y barata de ejecutar", "Alertas antes de llegar a los límites del plan gratuito"],
       },
       standard: {
-        badge: "Próximamente",
+        badge: "Para carteras más grandes",
         price: "Tu factura de la nube",
         priceNote: "nada más",
-        items: ["Go y Postgres en contenedores", "GCP o AWS", "Para carteras de apps más grandes"],
+        items: ["Go y Postgres en contenedores", "GCP, AWS o DigitalOcean", "Una plantilla de despliegue para cada una"],
       },
     },
     savings: {
@@ -202,7 +202,7 @@ export const es: Dict = {
         },
         {
           phase: "Standard",
-          items: ["Go y Postgres en contenedores", "Primero GCP, luego AWS", "La misma batería de conformidad que Lite", "Migración desde Lite sin actualizar la app"],
+          items: ["Go y Postgres en contenedores", "GCP, AWS y DigitalOcean", "La misma batería de conformidad que Lite", "Migración desde Lite sin actualizar la app"],
         },
         {
           phase: "Definido por la comunidad",
@@ -257,7 +257,7 @@ export const es: Dict = {
       },
       {
         q: "¿Dónde se guardan mis datos?",
-        a: "En tu propia base de datos. La edición Lite usa Cloudflare D1 en tu cuenta de Cloudflare. La edición Standard usa Postgres en GCP o AWS. Puedes consultarlos, respaldarlos y exportarlos, y ningún servicio externo se interpone entre tu app y tus clientes.",
+        a: "En tu propia base de datos. La edición Lite usa Cloudflare D1 en tu cuenta de Cloudflare. La edición Standard usa Postgres en GCP, AWS o DigitalOcean. Puedes consultarlos, respaldarlos y exportarlos, y ningún servicio externo se interpone entre tu app y tus clientes.",
       },
       {
         q: "¿openpurr envía webhooks como RevenueCat?",
@@ -269,7 +269,7 @@ export const es: Dict = {
       },
       {
         q: "¿Está openpurr listo para producción?",
-        a: "Todavía no. openpurr está en sus inicios: la edición Lite está en desarrollo y la edición Standard llegará más adelante. Sigue la hoja de ruta en GitHub y abre un issue si algo te importa.",
+        a: "Todavía no. openpurr está en sus inicios: las dos ediciones funcionan y pasan la misma batería de pruebas de conformidad, pero aún no se han probado de principio a fin con compras en dispositivos reales. Sigue la hoja de ruta en GitHub y abre un issue si algo te importa.",
       },
       {
         q: "¿Está openpurr afiliado a RevenueCat?",

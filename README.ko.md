@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr는 독립 프로젝트이며 RevenueCat, Inc.와 제휴하거나 그 �
 | | Lite | Standard |
 |---|---|---|
 | 언어 | TypeScript | Go |
-| 실행 환경 | Cloudflare Workers + D1 | GCP 또는 AWS의 컨테이너 + Postgres |
+| 실행 환경 | Cloudflare Workers + D1 | GCP, AWS 또는 DigitalOcean의 컨테이너 + Postgres |
 | 비용 | Cloudflare 무료 플랜에 맞게 설계 | 클라우드 요금 |
-| 대상 | 인디 앱: 가볍고 운영 비용이 저렴함 | 더 많은 앱 포트폴리오 (출시 예정) |
+| 대상 | 인디 앱: 가볍고 운영 비용이 저렴함 | 더 많은 앱 포트폴리오 |
 
-두 에디션은 `spec/`에 있는 같은 적합성 테스트 스위트를 통과합니다. 앱이 직접 소유한 커스텀 도메인을 가리키고 있다면, 앱 업데이트를 출시하지 않고도 Lite에서 Standard로 옮길 수 있습니다.
+두 에디션은 `spec/`에 있는 같은 적합성 테스트 스위트를 통과합니다. 앱이 직접 소유한 커스텀 도메인을 가리키고 있다면, 앱 업데이트를 출시하지 않고도 Lite에서 Standard로 옮길 수 있습니다. [Lite에서 Standard로 옮기기](docs/migrating-from-lite-to-standard.md)(영어)를 참고하세요.
 
 ## RevenueCat와 비교해 남는 금액
 
@@ -102,7 +102,7 @@ RevenueCat의 Pro 요금제는 월 추적 매출이 $2,500 미만이면 무료�
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## 시작하기
 
-Lite는 첫 릴리스인 0.1.0이므로 1.0 전까지 변경이 있을 수 있습니다. 내 Cloudflare 계정(무료 플랜으로 충분합니다)에서 사용해 보려면 Node 22.12 이상에서 다음을 실행하세요.
+openpurr는 현재 0.4.0이므로 1.0 전까지 변경이 있을 수 있습니다. 내 Cloudflare 계정(무료 플랜으로 충분합니다)에서 사용해 보려면 Node 22.12 이상에서 다음을 실행하세요.
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 - **push할 때마다 배포:** 저장소를 포크하고 Cloudflare 정보를 저장소 시크릿으로 추가하세요. 필요한 항목은 [`lite-deploy.yml`](.github/workflows/lite-deploy.yml)에 나와 있습니다.
 
 Claude Code를 사용하시나요? [openpurr 플러그인](plugin/)(영어)이 같은 단계와 함께 App Store Connect 및 Play Console 설정도 안내합니다.
+
+Standard는 사용하는 클라우드의 가이드를 따르세요: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) 또는 [DigitalOcean](docs/standard-on-digitalocean.md)(영어). 모두 `infra/`의 OpenTofu 템플릿으로 배포합니다.
 
 ## 기여하기
 

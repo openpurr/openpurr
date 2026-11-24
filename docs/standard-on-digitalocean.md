@@ -28,7 +28,7 @@ place of `tofu apply`.
   Store Connect and Google Play keep whatever address you give them, so with your own domain you
   can move hosts later (from Lite, between clouds) without an app update. An
   `*.ondigitalocean.app` address works for a test, not for apps you ship.
-- The image version to run, such as `ghcr.io/openpurr/openpurr-standard:0.3.0` (see the
+- The image version to run, such as `ghcr.io/openpurr/openpurr-standard:0.4.0` (see the
   [releases](https://github.com/openpurr/openpurr/releases)). App Platform pulls public GitHub
   Container Registry images directly, with no credentials and no copy in your own registry. Pin a
   version: App Platform doesn't redeploy when a GHCR tag moves, and `latest` would make the version
@@ -130,7 +130,7 @@ from Databases → `openpurr` → Connection details (user `doadmin`, database `
 
 ```sh
 docker run --rm -e DATABASE_URL='postgresql://doadmin:<password>@<host>:25060/openpurr?sslmode=require' \
-  ghcr.io/openpurr/openpurr-standard:0.3.0 admin create --email you@example.com --url https://purchases.example.com
+  ghcr.io/openpurr/openpurr-standard:0.4.0 admin create --email you@example.com --url https://purchases.example.com
 ```
 
 Remove your address from `db_trusted_ips` when you're done.

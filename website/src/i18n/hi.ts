@@ -137,10 +137,10 @@ export const hi: Dict = {
         items: ["Cloudflare Workers और D1 पर TypeScript", "हल्का और चलाने में सस्ता", "Free plan की limits तक पहुँचने से पहले usage alerts"],
       },
       standard: {
-        badge: "जल्द आ रहा है",
+        badge: "बड़े portfolios के लिए",
         price: "आपका cloud bill",
         priceNote: "बस इतना ही",
-        items: ["Containers में Go और Postgres", "GCP या AWS", "Apps के बड़े portfolios के लिए"],
+        items: ["Containers में Go और Postgres", "GCP, AWS या DigitalOcean", "हर एक के लिए deployment template"],
       },
     },
     savings: {
@@ -199,7 +199,7 @@ export const hi: Dict = {
         },
         {
           phase: "Standard",
-          items: ["Containers में Go और Postgres", "पहले GCP, फिर AWS", "Lite वाला ही conformance suite", "App update के बिना Lite से shift करें"],
+          items: ["Containers में Go और Postgres", "GCP, AWS और DigitalOcean", "Lite वाला ही conformance suite", "App update के बिना Lite से shift करें"],
         },
         {
           phase: "Community के साथ मिलकर",
@@ -254,7 +254,7 @@ export const hi: Dict = {
       },
       {
         q: "मेरा data कहाँ store होता है?",
-        a: "आपके अपने database में। Lite edition आपके Cloudflare account में Cloudflare D1 इस्तेमाल करता है। Standard edition, GCP या AWS पर Postgres इस्तेमाल करता है। आप इसे query, back up और export कर सकते हैं, और आपके app और आपके ग्राहकों के बीच कोई बाहरी service नहीं होती।",
+        a: "आपके अपने database में। Lite edition आपके Cloudflare account में Cloudflare D1 इस्तेमाल करता है। Standard edition GCP, AWS या DigitalOcean पर Postgres इस्तेमाल करता है। आप इसे query, back up और export कर सकते हैं, और आपके app और आपके ग्राहकों के बीच कोई बाहरी service नहीं होती।",
       },
       {
         q: "क्या openpurr, RevenueCat की तरह webhooks भेजता है?",
@@ -266,7 +266,7 @@ export const hi: Dict = {
       },
       {
         q: "क्या openpurr production के लिए तैयार है?",
-        a: "अभी नहीं। openpurr अभी शुरुआती दौर में है: Lite edition पर काम चल रहा है और Standard edition बाद में आएगा। GitHub पर roadmap follow करें, और अगर कोई चीज़ आपके लिए ज़रूरी है तो issue खोलें।",
+        a: "अभी नहीं। openpurr अभी शुरुआती दौर में है: दोनों editions काम करते हैं और एक ही conformance suite पास करते हैं, लेकिन असली devices पर purchases के साथ इन्हें अभी end to end test नहीं किया गया है। GitHub पर roadmap follow करें, और अगर कोई चीज़ आपके लिए ज़रूरी है तो issue खोलें।",
       },
       {
         q: "क्या openpurr, RevenueCat से जुड़ा है?",

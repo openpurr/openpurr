@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr مشروع مستقل، وهو غير تابع لشركة RevenueCat, I
 | | Lite | Standard |
 |---|---|---|
 | اللغة | TypeScript | Go |
-| يعمل على | Cloudflare Workers + D1 | حاويات + Postgres على GCP أو AWS |
+| يعمل على | Cloudflare Workers + D1 | حاويات + Postgres على GCP أو AWS أو DigitalOcean |
 | التكلفة | مصمّم ليعمل ضمن الخطة المجانية من Cloudflare | فاتورة سحابتك |
-| مناسب لـ | التطبيقات المستقلة: خفيف ومنخفض تكلفة التشغيل | محافظ التطبيقات الأكبر (قريبًا) |
+| مناسب لـ | التطبيقات المستقلة: خفيف ومنخفض تكلفة التشغيل | محافظ التطبيقات الأكبر |
 
-يجتاز الإصداران مجموعة اختبارات التوافق نفسها في `spec/`. يمكنك الانتقال من Lite إلى Standard دون إصدار تحديث للتطبيق، ما دام تطبيقك يشير إلى نطاق مخصص تملكه.
+يجتاز الإصداران مجموعة اختبارات التوافق نفسها في `spec/`. يمكنك الانتقال من Lite إلى Standard دون إصدار تحديث للتطبيق، ما دام تطبيقك يشير إلى نطاق مخصص تملكه. راجع [الانتقال من Lite إلى Standard](docs/migrating-from-lite-to-standard.md) (بالإنجليزية).
 
 ## ما تحتفظ به مقارنةً بـ RevenueCat
 
@@ -102,7 +102,7 @@ openpurr مشروع مستقل، وهو غير تابع لشركة RevenueCat, I
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## البدء
 
-إصدار Lite عند 0.1.0، وهو أول إصدار له، لذا توقّع تغييرات قبل 1.0. لتجربته على حسابك الخاص في Cloudflare (الخطة المجانية كافية)، مع Node 22.12 أو أحدث:
+openpurr عند الإصدار 0.4.0، لذا توقّع تغييرات قبل 1.0. لتجربته على حسابك الخاص في Cloudflare (الخطة المجانية كافية)، مع Node 22.12 أو أحدث:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ npx pnpm run setup      # database, both Workers, operator secret and your owner
 - **انشر مع كل push:** انسخ المستودع (fork) وأضف بيانات Cloudflare الخاصة بك بوصفها أسرارًا للمستودع (repository secrets). يسردها الملف [`lite-deploy.yml`](.github/workflows/lite-deploy.yml).
 
 هل تستخدم Claude Code؟ يرشدك [إضافة openpurr](plugin/) (بالإنجليزية) عبر الخطوات نفسها، إضافة إلى إعداد App Store Connect وPlay Console.
+
+لإصدار Standard، اتبع دليل سحابتك: [GCP](docs/standard-on-gcp.md) أو [AWS](docs/standard-on-aws.md) أو [DigitalOcean](docs/standard-on-digitalocean.md) (بالإنجليزية). يعتمد كلٌّ منها في النشر على قالب OpenTofu من `infra/`.
 
 ## المساهمة
 

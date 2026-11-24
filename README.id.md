@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr juga cocok jika Anda sudah memakai SDK RevenueCat dan ingin tetap memak
 | | Lite | Standard |
 |---|---|---|
 | Bahasa | TypeScript | Go |
-| Berjalan di | Cloudflare Workers + D1 | Container + Postgres di GCP atau AWS |
+| Berjalan di | Cloudflare Workers + D1 | Container + Postgres di GCP, AWS, atau DigitalOcean |
 | Biaya | Dirancang agar muat di paket gratis Cloudflare | Tagihan cloud Anda |
-| Untuk | Aplikasi indie: ringan dan murah dijalankan | Portofolio aplikasi yang lebih besar (segera hadir) |
+| Untuk | Aplikasi indie: ringan dan murah dijalankan | Portofolio aplikasi yang lebih besar |
 
-Kedua edisi lolos rangkaian uji kesesuaian yang sama di `spec/`. Anda bisa pindah dari Lite ke Standard tanpa merilis update aplikasi, selama aplikasi Anda mengarah ke domain kustom milik Anda.
+Kedua edisi lolos rangkaian uji kesesuaian yang sama di `spec/`. Anda bisa pindah dari Lite ke Standard tanpa merilis update aplikasi, selama aplikasi Anda mengarah ke domain kustom milik Anda: lihat [Pindah dari Lite ke Standard](docs/migrating-from-lite-to-standard.md) (bahasa Inggris).
 
 ## Yang Anda simpan dibandingkan RevenueCat
 
@@ -102,7 +102,7 @@ Atur URL proxy sebelum memanggil `configure`. Biarkan verifikasi entitlement pad
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Memulai
 
-Lite ada di versi 0.1.0, rilis pertamanya, jadi bersiaplah untuk perubahan sebelum 1.0. Untuk mencobanya di akun Cloudflare Anda sendiri (paket gratis sudah cukup), dengan Node 22.12 atau yang lebih baru:
+openpurr ada di versi 0.4.0, jadi bersiaplah untuk perubahan sebelum 1.0. Untuk mencobanya di akun Cloudflare Anda sendiri (paket gratis sudah cukup), dengan Node 22.12 atau yang lebih baru:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ Setup aman dijalankan ulang jika berhenti di tengah jalan. Di akhir, setup membe
 - **Deploy di setiap push:** fork repo ini dan tambahkan detail Cloudflare Anda sebagai repository secret. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) mencantumkan daftarnya.
 
 Memakai Claude Code? [Plugin openpurr](plugin/) (bahasa Inggris) memandu langkah yang sama, ditambah setup App Store Connect dan Play Console.
+
+Untuk Standard, ikuti panduan untuk cloud Anda: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md), atau [DigitalOcean](docs/standard-on-digitalocean.md) (bahasa Inggris). Masing-masing melakukan deployment dengan template OpenTofu dari `infra/`.
 
 ## Berkontribusi
 

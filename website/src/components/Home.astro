@@ -17,7 +17,7 @@ const h = t(locale).home;
 
 type Status = "done" | "wip" | "planned" | "later";
 // The roadmap phases in the dictionaries are in this order.
-const phaseStatus: Status[] = ["wip", "planned", "later"];
+const phaseStatus: Status[] = ["wip", "wip", "later"];
 const roadmap = h.roadmap.phases.map((p, i) => ({
   ...p,
   status: phaseStatus[i] ?? "later",
@@ -154,7 +154,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
         <div class="card edition">
           <div class="edition-head">
             <h3>Standard</h3>
-            <span class="badge muted">{h.editions.standard.badge}</span>
+            <span class="badge">{h.editions.standard.badge}</span>
           </div>
           <p class="price">{h.editions.standard.price} <span>{h.editions.standard.priceNote}</span></p>
           <ul>
@@ -472,11 +472,6 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
     border-radius: 999px;
     background: var(--purple-soft);
     color: var(--purple);
-  }
-  .badge.muted {
-    background: var(--bg-alt);
-    color: var(--muted);
-    border: 1px solid var(--line);
   }
   .price {
     font-size: 1.6rem;

@@ -60,7 +60,7 @@ services:
       registry_type: GHCR
       registry: openpurr
       repository: openpurr-standard
-      tag: "0.3.0"          # pin a version; changing it is how you upgrade
+      tag: "0.4.0"          # pin a version; changing it is how you upgrade
     http_port: 8080
     # At least 1, always: the background jobs run inside the server. apps-s-1vcpu-1gb is the
     # smallest size that allows more than one instance.

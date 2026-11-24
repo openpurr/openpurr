@@ -144,10 +144,10 @@ export const en = {
         items: ["TypeScript on Cloudflare Workers and D1", "Lightweight and cheap to run", "Usage alerts before you hit free-plan limits"],
       },
       standard: {
-        badge: "Coming soon",
+        badge: "For larger portfolios",
         price: "Your cloud bill",
         priceNote: "nothing more",
-        items: ["Go and Postgres in containers", "GCP or AWS", "For larger portfolios of apps"],
+        items: ["Go and Postgres in containers", "GCP, AWS or DigitalOcean", "A deployment template for each"],
       },
     },
     /** The savings section, after the editions. "{amount}" is a price; in method, "{paidFrom}" is a monthly revenue and "{date}" a date. */
@@ -208,7 +208,7 @@ export const en = {
         },
         {
           phase: "Standard",
-          items: ["Go and Postgres in containers", "GCP first, then AWS", "Same conformance suite as Lite", "Move from Lite with no app update"],
+          items: ["Go and Postgres in containers", "GCP, AWS and DigitalOcean", "Same conformance suite as Lite", "Move from Lite with no app update"],
         },
         {
           phase: "Shaped by the community",
@@ -263,7 +263,7 @@ export const en = {
       },
       {
         q: "Where is my data stored?",
-        a: "In your own database. The Lite edition uses Cloudflare D1 in your Cloudflare account. The Standard edition uses Postgres on GCP or AWS. You can query, back up and export it, and no outside service sits between your app and your customers.",
+        a: "In your own database. The Lite edition uses Cloudflare D1 in your Cloudflare account. The Standard edition uses Postgres on GCP, AWS or DigitalOcean. You can query, back up and export it, and no outside service sits between your app and your customers.",
       },
       {
         q: "Does openpurr send webhooks like RevenueCat does?",
@@ -275,7 +275,7 @@ export const en = {
       },
       {
         q: "Is openpurr ready for production?",
-        a: "Not yet. openpurr is early: the Lite edition is in progress and the Standard edition is coming later. Follow the roadmap on GitHub, and open an issue if something matters to you.",
+        a: "Not yet. openpurr is early: both editions work and pass the same conformance suite, but they haven't yet been tested end to end with purchases on real devices. Follow the roadmap on GitHub, and open an issue if something matters to you.",
       },
       {
         q: "Is openpurr affiliated with RevenueCat?",
