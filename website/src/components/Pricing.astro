@@ -241,6 +241,7 @@ const enHref = locale === "en" ? undefined : "en";
           </ul>
 
 
+          <p class="swag">{p.calc.swag}</p>
           <p class="punch">
             <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
@@ -661,6 +662,11 @@ const enHref = locale === "en" ? undefined : "en";
     margin-top: 6px;
     font-size: 1.25rem;
     color: var(--purple);
+  }
+  .swag {
+    margin-top: 20px;
+    color: var(--text);
+    font-weight: 600;
   }
   .punch {
     margin-top: 24px;

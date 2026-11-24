@@ -36,6 +36,7 @@ export const pricingZhCn: PricingDict = {
     stackNote: "服务器：{servers}。其余 {rest} 都花在他们的团队上：",
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "约 {people} 人 · 典型薪资 {salary}",
+    swag: "账单里还有：给团队发的发光 RevenueCat 滑板，以及为了显得很酷所做的其他一切。这些也由你的 1% 买单。",
     ownersTitle: "你的 1%，在为别人的退出铺路",
     /** {pct} is like "55%". */
     ownersInvestors: "风险投资人 · 约 {pct}",
