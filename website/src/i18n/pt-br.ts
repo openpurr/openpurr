@@ -42,6 +42,7 @@ export const ptBr: Dict = {
       lede: "Controle sua própria infraestrutura de compras, não divida nada da sua receita e não dependa de nenhum serviço comercial. Mantenha o Purchases SDK que você já usa: mude uma URL, não o seu código de compras.",
       star: "Dê uma estrela no GitHub",
       how: "Como funciona",
+      runsOn: "Roda em",
       shotAlt:
         "O painel do openpurr Lite, com 12 meses de movimentação de MRR, assinaturas ativas, churn, novos clientes, novos testes gratuitos e testes gratuitos ativos",
     },

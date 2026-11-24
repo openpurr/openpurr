@@ -42,6 +42,7 @@ export const zhCn: Dict = {
       lede: "自己掌控购买基础设施，不分出任何收入，也不依赖任何商业服务。继续使用你现有的 Purchases SDK：只需改一个 URL，不用改购买代码。",
       star: "在 GitHub 上点 Star",
       how: "工作原理",
+      runsOn: "运行于",
       shotAlt: "openpurr Lite 仪表盘，展示 12 个月的 MRR 变动、活跃订阅、流失、新客户、新增试用和活跃试用",
     },
     why: {

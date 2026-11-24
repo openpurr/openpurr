@@ -43,6 +43,7 @@ export const fr: Dict = {
       lede: "Gardez la main sur votre infrastructure d'achats, ne partagez aucune part de vos revenus et ne dépendez d'aucun service commercial. Conservez le SDK Purchases que vous utilisez déjà : changez une URL, pas votre code d'achat.",
       star: "Mettre une étoile sur GitHub",
       how: "Comment ça marche",
+      runsOn: "Fonctionne sur",
       shotAlt:
         "Le tableau de bord d'openpurr Lite, avec 12 mois d'évolution du MRR, les abonnements actifs, le churn, les nouveaux clients, les nouveaux essais et les essais en cours",
     },

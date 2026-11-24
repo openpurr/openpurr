@@ -10,6 +10,13 @@ export const PRICING_PAGE = "/revenuecat-pricing/";
 /** The guide for moving from Adapty (in the repo). */
 export const ADAPTY_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-adapty.md`;
 export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;
+/** Where each cloud's setup is explained, for the provider logos. */
+export const CLOUD_GUIDES = {
+  cloudflare: `${REPO_URL}#getting-started`,
+  gcp: `${REPO_URL}/blob/main/docs/standard-on-gcp.md`,
+  aws: `${REPO_URL}/blob/main/docs/standard-on-aws.md`,
+  digitalocean: `${REPO_URL}/blob/main/docs/standard-on-digitalocean.md`,
+} as const;
 export const ISSUES_URL = `${REPO_URL}/issues`;
 export const LICENSE_URL = `${REPO_URL}/blob/main/LICENSE`;
 export const SPONSOR_URL = "https://buymeacoffee.com/openpurr";

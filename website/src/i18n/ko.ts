@@ -42,6 +42,7 @@ export const ko: Dict = {
       lede: "결제 인프라를 직접 통제하고, 수익을 나누지 않고, 어떤 상용 서비스에도 의존하지 마세요. 지금 쓰는 Purchases SDK는 그대로 둡니다. 바꾸는 것은 결제 코드가 아니라 URL 하나입니다.",
       star: "GitHub에서 Star 하기",
       how: "작동 방식",
+      runsOn: "지원 클라우드",
       shotAlt:
         "openpurr Lite 대시보드. 12개월간의 MRR 변동, 활성 구독, 이탈, 신규 고객, 신규 체험, 활성 체험을 보여 줍니다",
     },
