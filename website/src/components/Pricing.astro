@@ -250,14 +250,14 @@ const enHref = locale === "en" ? undefined : "en";
 
 
           <div class="extras">
-            <div class="extra">
-              <p class="extra-title">{p.calc.swag}</p>
-              <figure class="swag-post">
-                <img src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
-                <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
+            <figure class="extra extra-swag">
+              <img class="swag-photo" src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
+              <div class="swag-body">
+                <p class="extra-title">{p.calc.swag}</p>
+                <img class="swag-tweet" src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
                 <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
-              </figure>
-            </div>
+              </div>
+            </figure>
             <a class="extra extra-ceo" href={localePath(locale, CEO_PAGE)}>
               <span class="ceo-num">{ceoPerDay}</span>
               <span class="ceo-unit">{tc(locale).stats.perDay}</span>
@@ -695,10 +695,11 @@ const enHref = locale === "en" ? undefined : "en";
   }
   .punch strong {
     display: block;
-    margin-top: 8px;
-    font-size: clamp(1.5rem, 3.5vw, 2rem);
-    letter-spacing: -0.02em;
-    color: var(--bg);
+    margin-top: 6px;
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
+    color: var(--ink);
   }
   .extras {
     display: grid;
@@ -721,23 +722,46 @@ const enHref = locale === "en" ? undefined : "en";
     color: var(--ink);
     line-height: 1.4;
   }
-  .swag-post {
-    margin: 14px 0 0;
+  .extra-swag {
+    margin: 0;
+    padding: 0;
     display: grid;
-    grid-template-columns: 1fr 72px;
-    gap: 8px;
-    align-items: start;
+    grid-template-columns: minmax(110px, 34%) 1fr;
+    overflow: hidden;
+    border: none;
+    background: #140e15;
+    color: #efe7ec;
   }
-  .swag-post img {
+  .swag-photo {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    object-position: 50% 60%;
+    display: block;
+  }
+  .swag-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .extra-swag .extra-title {
+    color: #fff;
+  }
+  .swag-tweet {
     width: 100%;
     height: auto;
-    border: 1px solid var(--line);
-    border-radius: 8px;
+    border-radius: 10px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 30px -12px rgba(255, 70, 60, 0.45);
   }
-  .swag-post figcaption {
-    grid-column: 1 / -1;
+  .extra-swag figcaption {
+    margin-top: auto;
     font-size: 0.8rem;
-    color: var(--muted);
+    color: #b8a9b2;
+  }
+  .extra-swag figcaption :global(a) {
+    color: #ff8a7a;
   }
   .extra-ceo {
     display: flex;
@@ -791,15 +815,20 @@ const enHref = locale === "en" ? undefined : "en";
       grid-template-columns: 1fr;
     }
   }
+  @media (max-width: 480px) {
+    .extra-swag {
+      grid-template-columns: 1fr;
+    }
+    .swag-photo {
+      height: 200px;
+    }
+  }
   .punch {
-    margin-top: 32px;
-    padding: 24px 26px;
-    border-radius: 14px;
-    background: var(--ink);
-    color: color-mix(in srgb, var(--bg) 78%, var(--ink));
+    margin-top: 40px;
+    color: var(--text);
   }
   .punch b {
-    color: var(--bg);
+    color: var(--ink);
     font-variant-numeric: tabular-nums;
   }
   .cta {
