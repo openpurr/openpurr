@@ -41,6 +41,8 @@ export const pricingZhCn: PricingDict = {
     swagPhotoAlt: "一块发光的 RevenueCat 滑板",
     swagCaption: "{date} 发布于 X。“领取你自己的”链接指向他们的招聘页面。{link}",
     swagLink: "查看帖子",
+    ceoLink: "你的 1% 也在为 CEO 的社交媒体买单：每天在 X 上发帖约 {perDay} 条，天天如此。",
+    ceoLinkLabel: "查看数据 →",
     ownersTitle: "你的 1%，在为别人的退出铺路",
     /** {pct} is like "55%". */
     ownersInvestors: "风险投资人 - 约 {pct}",

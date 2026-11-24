@@ -41,6 +41,8 @@ export const pricingHi: PricingDict = {
     swagPhotoAlt: "एक जगमगाता RevenueCat स्केटबोर्ड",
     swagCaption: "X पर {date} को पोस्ट किया गया। “अपना पाएँ” वाला लिंक उनके jobs पेज पर जाता है। {link}",
     swagLink: "पोस्ट देखें",
+    ceoLink: "आपका 1% CEO के social media का ख़र्च भी उठाता है: X पर रोज़ लगभग {perDay} posts, हर दिन।",
+    ceoLinkLabel: "आँकड़े देखें →",
     ownersTitle: "आपका 1% किसी और का exit बना रहा है",
     /** {pct} is like "55%". */
     ownersInvestors: "VC investors - लगभग {pct}",

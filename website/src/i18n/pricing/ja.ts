@@ -41,6 +41,8 @@ export const pricingJa: PricingDict = {
     swagPhotoAlt: "光る RevenueCat スケートボード",
     swagCaption: "{date} に X で投稿。「自分のをもらう」リンクの行き先は同社の採用ページ。{link}",
     swagLink: "投稿を見る",
+    ceoLink: "あなたの 1% は CEO の SNS 代でもあります。X に 1 日約 {perDay} 件、毎日投稿しています。",
+    ceoLinkLabel: "数字を見る →",
     ownersTitle: "あなたの 1% が、他人のエグジットを作る",
     /** {pct} is like "55%". */
     ownersInvestors: "ベンチャー投資家 - 約 {pct}",

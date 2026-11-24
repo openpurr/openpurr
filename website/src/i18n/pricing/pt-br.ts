@@ -41,6 +41,8 @@ export const pricingPtBr: PricingDict = {
     swagPhotoAlt: "Um skate luminoso da RevenueCat",
     swagCaption: "Publicado no X em {date}. O link para “pegar o seu” leva à página de vagas deles. {link}",
     swagLink: "Ver o post",
+    ceoLink: "Seu 1% também paga as redes sociais do CEO: cerca de {perDay} posts por dia no X, todo dia.",
+    ceoLinkLabel: "Veja os números →",
     ownersTitle: "Seu 1% engorda o exit de outra pessoa",
     /** {pct} is like "55%". */
     ownersInvestors: "Investidores de risco - cerca de {pct}",

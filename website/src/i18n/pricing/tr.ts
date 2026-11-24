@@ -41,6 +41,8 @@ export const pricingTr: PricingDict = {
     swagPhotoAlt: "Işıklı bir RevenueCat kaykayı",
     swagCaption: "X'te {date} tarihinde paylaşıldı. “Kendininkini al” bağlantısı kariyer sayfalarına gidiyor. {link}",
     swagLink: "Gönderiyi gör",
+    ceoLink: "%1'iniz CEO'nun sosyal medyasını da ödüyor: X'te günde yaklaşık {perDay} paylaşım, her gün.",
+    ceoLinkLabel: "Rakamları görün →",
     ownersTitle: "%1'iniz başkasının exit'ini büyütüyor",
     /** {pct} is like "55%". */
     ownersInvestors: "Risk sermayesi yatırımcıları - yaklaşık {pct}",

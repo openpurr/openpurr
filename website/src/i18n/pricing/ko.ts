@@ -41,6 +41,8 @@ export const pricingKo: PricingDict = {
     swagPhotoAlt: "빛나는 RevenueCat 스케이트보드",
     swagCaption: "{date} X에 게시. “직접 받기” 링크는 그들의 채용 페이지로 연결됩니다. {link}",
     swagLink: "게시물 보기",
+    ceoLink: "내 1%는 CEO의 소셜 미디어 비용이기도 합니다. X에 하루 약 {perDay}개, 매일 올라옵니다.",
+    ceoLinkLabel: "숫자 보기 →",
     ownersTitle: "내 1%가 남의 엑시트를 만듭니다",
     /** {pct} is like "55%". */
     ownersInvestors: "벤처 투자자 - 약 {pct}",

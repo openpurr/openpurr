@@ -41,6 +41,8 @@ export const pricingPl: PricingDict = {
     swagPhotoAlt: "Świecąca deskorolka RevenueCat",
     swagCaption: "Opublikowano na X, {date}. Link „odbierz własną” prowadzi do ich ofert pracy. {link}",
     swagLink: "Zobacz wpis",
+    ceoLink: "Twój 1% płaci też za social media CEO: posty na X, około {perDay} dziennie, codziennie.",
+    ceoLinkLabel: "Zobacz liczby →",
     ownersTitle: "Twój 1% buduje cudzy exit",
     /** {pct} is like "55%". */
     ownersInvestors: "Inwestorzy VC - około {pct}",

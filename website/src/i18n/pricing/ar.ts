@@ -41,6 +41,8 @@ export const pricingAr: PricingDict = {
     swagPhotoAlt: "لوح تزلج مضيء بشعار RevenueCat",
     swagCaption: "نُشر على X في {date}. رابط «احصل على لوحك» يؤدي إلى صفحة الوظائف لديهم. {link}",
     swagLink: "عرض المنشور",
+    ceoLink: "ونسبة 1% التي تدفعها تدفع أيضًا ثمن نشاط الرئيس التنفيذي على مواقع التواصل: نحو {perDay} منشور يوميًا على X، كل يوم.",
+    ceoLinkLabel: "شاهد الأرقام ←",
     ownersTitle: "نسبة 1% التي تدفعها تبني صفقة خروج لغيرك",
     /** {pct} is like "55%". */
     ownersInvestors: "مستثمرو رأس المال المغامر - نحو {pct}",

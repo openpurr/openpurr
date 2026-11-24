@@ -41,6 +41,8 @@ export const pricingFr: PricingDict = {
     swagPhotoAlt: "Un skateboard lumineux RevenueCat",
     swagCaption: "Publié sur X le {date}. Le lien « obtenir le vôtre » mène à leur page carrières. {link}",
     swagLink: "Voir la publication",
+    ceoLink: "Votre 1 % paie aussi les réseaux sociaux du CEO : environ {perDay} posts par jour sur X, tous les jours.",
+    ceoLinkLabel: "Voir les chiffres →",
     ownersTitle: "Votre 1 % finance la sortie de quelqu'un d'autre",
     /** {pct} is like "55%". */
     ownersInvestors: "Investisseurs en capital-risque - environ {pct}",
