@@ -42,6 +42,7 @@ export const id: Dict = {
       lede: "Kendalikan infrastruktur pembelian Anda sendiri, tanpa membagi pendapatan, dan tanpa bergantung pada layanan komersial. Tetap pakai Purchases SDK yang sudah Anda gunakan: cukup ganti satu URL, bukan kode pembelian Anda.",
       star: "Beri bintang di GitHub",
       how: "Cara kerjanya",
+      runsOn: "Berjalan di",
       shotAlt:
         "Dashboard openpurr Lite yang menampilkan pergerakan MRR selama 12 bulan, langganan aktif, churn, pelanggan baru, uji coba baru, dan uji coba aktif",
     },

@@ -42,6 +42,7 @@ export const tr: Dict = {
       lede: "Satın alma altyapınızı kendiniz yönetin, gelirinizden kimseye pay vermeyin ve hiçbir ticari hizmete bağımlı kalmayın. Kullandığınız Purchases SDK yerinde kalır: satın alma kodunuzu değil, tek bir URL'yi değiştirirsiniz.",
       star: "GitHub'da yıldız verin",
       how: "Nasıl çalışır",
+      runsOn: "Çalıştığı yerler",
       shotAlt:
         "openpurr Lite paneli: 12 aylık MRR hareketi, aktif abonelikler, churn, yeni müşteriler, yeni deneme süreleri ve aktif deneme süreleri",
     },

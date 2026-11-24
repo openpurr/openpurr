@@ -50,6 +50,8 @@ export const en = {
       lede: "Control your own purchase infrastructure, share none of your revenue, and depend on no commercial service. Keep the Purchases SDK you already use: change one URL, not your purchase code.",
       star: "Star on GitHub",
       how: "How it works",
+      /** Before the logos of the clouds it runs on. */
+      runsOn: "Runs on",
       shotAlt:
         "The openpurr Lite dashboard, showing 12 months of MRR movement, active subscriptions, churn, new customers, new trials and active trials",
     },

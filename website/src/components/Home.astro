@@ -5,6 +5,7 @@ import SdkSnippet from "./SdkSnippet.astro";
 import DashboardDemo from "./DashboardDemo.astro";
 import SavingsCalculator from "./SavingsCalculator.astro";
 import Faq from "./Faq.astro";
+import Providers from "./Providers.astro";
 import StructuredData from "./StructuredData.astro";
 import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
 import { allLocales, fill, t, type Locale } from "../i18n";
@@ -35,6 +36,9 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
         <div class="ctas rise" style="--d: 180ms">
           <a class="btn btn-primary" href={REPO_URL}>{h.hero.star}</a>
           <a class="btn btn-ghost" href="#how">{h.hero.how}</a>
+        </div>
+        <div class="runs rise" style="--d: 220ms">
+          <Providers label={h.hero.runsOn} />
         </div>
       </div>
       <div class="rise snippet-wrap" style="--d: 260ms">
@@ -147,6 +151,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
             <span class="badge">{h.editions.lite.badge}</span>
           </div>
           <p class="price">{h.editions.lite.price} <span>{h.editions.lite.priceNote}</span></p>
+          <div class="clouds"><Providers only={["cloudflare"]} /></div>
           <ul>
             {h.editions.lite.items.map((it) => <li>{it}</li>)}
           </ul>
@@ -157,6 +162,7 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
             <span class="badge muted">{h.editions.standard.badge}</span>
           </div>
           <p class="price">{h.editions.standard.price} <span>{h.editions.standard.priceNote}</span></p>
+          <div class="clouds"><Providers only={["gcp", "aws", "digitalocean"]} /></div>
           <ul>
             {h.editions.standard.items.map((it) => <li>{it}</li>)}
           </ul>
@@ -334,6 +340,12 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 28px;
+  }
+  .runs {
+    margin-top: 28px;
+  }
+  .clouds {
+    margin: 4px 0 18px;
   }
 
   .card p:last-child {

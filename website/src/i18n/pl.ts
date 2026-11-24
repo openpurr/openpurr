@@ -43,6 +43,7 @@ export const pl: Dict = {
       lede: "Miej kontrolę nad własną infrastrukturą zakupów, nie oddawaj części przychodów i nie uzależniaj się od żadnej komercyjnej usługi. Zostajesz przy Purchases SDK, którego już używasz: zmieniasz jeden URL, a nie kod zakupów.",
       star: "Daj gwiazdkę na GitHubie",
       how: "Jak to działa",
+      runsOn: "Działa na",
       shotAlt:
         "Panel openpurr Lite z 12 miesiącami zmian MRR, aktywnymi subskrypcjami, churnem, nowymi klientami, nowymi i aktywnymi okresami próbnymi",
     },

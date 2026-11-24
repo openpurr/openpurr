@@ -43,6 +43,7 @@ export const hi: Dict = {
       lede: "अपना purchase infrastructure ख़ुद संभालें, अपने revenue का कोई हिस्सा न दें और किसी commercial service पर निर्भर न रहें। जो Purchases SDK आप पहले से इस्तेमाल करते हैं, वही रखें: सिर्फ़ एक URL बदलें, अपना purchase code नहीं।",
       star: "GitHub पर Star करें",
       how: "यह कैसे काम करता है",
+      runsOn: "इन पर चलता है",
       shotAlt:
         "openpurr Lite का dashboard, जिसमें 12 महीनों का MRR movement, active subscriptions, churn, नए ग्राहक, नए trials और active trials दिख रहे हैं",
     },

@@ -42,6 +42,7 @@ export const nl: Dict = {
       lede: "Beheer je eigen aankoopinfrastructuur, sta geen deel van je omzet af en wees van geen enkele commerciële dienst afhankelijk. De Purchases SDK die je al gebruikt, blijft: je wijzigt één URL, niet je aankoopcode.",
       star: "Geef een ster op GitHub",
       how: "Zo werkt het",
+      runsOn: "Draait op",
       shotAlt:
         "Het dashboard van openpurr Lite, met 12 maanden MRR-verloop, actieve abonnementen, churn, nieuwe klanten, nieuwe proefperiodes en actieve proefperiodes",
     },

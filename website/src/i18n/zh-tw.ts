@@ -42,6 +42,7 @@ export const zhTw: Dict = {
       lede: "自己掌控購買基礎架構，不分出任何營收，也不依賴任何商業服務。繼續使用你現有的 Purchases SDK：只要改一個 URL，不用改購買程式碼。",
       star: "在 GitHub 上給個 Star",
       how: "運作方式",
+      runsOn: "執行於",
       shotAlt: "openpurr Lite 儀表板，顯示 12 個月的 MRR 變動、有效訂閱、流失、新客戶、新增試用和進行中的試用",
     },
     why: {

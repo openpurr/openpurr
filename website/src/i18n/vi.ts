@@ -43,6 +43,7 @@ export const vi: Dict = {
       lede: "Tự kiểm soát hạ tầng mua hàng, không chia doanh thu cho ai và không phụ thuộc vào dịch vụ thương mại nào. Giữ nguyên Purchases SDK bạn đang dùng: chỉ đổi một URL, không phải sửa code mua hàng.",
       star: "Gắn sao trên GitHub",
       how: "Cách hoạt động",
+      runsOn: "Chạy trên",
       shotAlt:
         "Dashboard của openpurr Lite, hiển thị biến động MRR trong 12 tháng, số gói đăng ký đang hoạt động, churn, khách hàng mới, lượt dùng thử mới và lượt dùng thử đang diễn ra",
     },
