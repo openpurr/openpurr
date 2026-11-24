@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingIt: PricingDict = {
   meta: {
-    title: "Prezzi RevenueCat: dove finisce davvero il tuo 1% · openpurr",
+    title: "Prezzi RevenueCat: dove finisce davvero il tuo 1% - openpurr",
     description:
       "RevenueCat si prende l'1% dei tuoi ricavi. I server dietro la tua app costano spiccioli. Ecco cosa paga il resto: stipendi, vendite e investitori.",
     ogImageAlt: "RevenueCat si prende l'1% dei tuoi ricavi; i server costano spiccioli. Cosa paga il resto.",
@@ -16,7 +16,7 @@ export const pricingIt: PricingDict = {
     headlineAccent: "Stai pagando un'azienda da {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat si prende l'1% di tutti i tuoi ricavi tracciati appena superi {threshold} al mese, e il conto cresce ogni volta che cresci tu. I server dietro la tua app costano spiccioli. Il resto paga l'azienda: i suoi stipendi, il suo team commerciale e il ritorno dei suoi investitori.",
-    updated: "Aggiornato il {date} · Stime basate su dati pubblici",
+    updated: "Aggiornato il {date} - Stime basate su dati pubblici",
   },
   answer: {
     title: "I prezzi di RevenueCat in una riga",
@@ -35,7 +35,7 @@ export const pricingIt: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Server: {servers}. Tutto il resto, {rest}, paga i loro team:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Circa {people} persone · stipendio tipico {salary}",
+    teamMeta: "Circa {people} persone - stipendio tipico {salary}",
     swag: "Sempre in conto: skateboard luminosi RevenueCat per il team. Il tuo 1% paga anche questo.",
     swagPostAlt: "Post di un dipendente di RevenueCat su X: «Il mio skateboard RevenueCat è arrivato ieri! Ecco un link per avere il tuo gratis», con link alla pagina lavora con noi di RevenueCat",
     swagPhotoAlt: "Uno skateboard luminoso RevenueCat",
@@ -43,7 +43,7 @@ export const pricingIt: PricingDict = {
     swagLink: "Vedi il post",
     ownersTitle: "Il tuo 1% costruisce l'exit di qualcun altro",
     /** {pct} is like "55%". */
-    ownersInvestors: "Investitori di venture capital · circa {pct}",
+    ownersInvestors: "Investitori di venture capital - circa {pct}",
     ownersRest: "Fondatori e dipendenti",
     ownersBarLabel: "Gli investitori di venture capital possiedono circa il {pct} di RevenueCat, secondo la nostra stima",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

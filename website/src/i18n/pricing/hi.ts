@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingHi: PricingDict = {
   meta: {
-    title: "RevenueCat pricing: आपका 1% असल में कहाँ जाता है · openpurr",
+    title: "RevenueCat pricing: आपका 1% असल में कहाँ जाता है - openpurr",
     description:
       "RevenueCat आपके revenue का 1% लेता है। आपके app के पीछे के servers का ख़र्च न के बराबर है। देखिए बाक़ी पैसा कहाँ जाता है: salaries, sales और VC investors।",
     ogImageAlt: "RevenueCat आपके revenue का 1% लेता है; servers का ख़र्च न के बराबर है। बाक़ी पैसा किसमें जाता है।",
@@ -16,7 +16,7 @@ export const pricingHi: PricingDict = {
     headlineAccent: "आप {valuation} की company के पैसे दे रहे हैं।",
     /** {threshold} is "$2,500". */
     lede: "हर महीने {threshold} पार करते ही RevenueCat आपके पूरे tracked revenue का 1% लेता है, और आप जितना बढ़ते हैं, bill भी उतना बढ़ता है। आपके app के पीछे के servers का ख़र्च न के बराबर है। बाक़ी पैसा company चलाता है: उसकी payroll, उसकी sales team और उसके investors का return।",
-    updated: "अपडेट: {date} · Public आँकड़ों पर आधारित अनुमान",
+    updated: "अपडेट: {date} - Public आँकड़ों पर आधारित अनुमान",
   },
   answer: {
     title: "RevenueCat pricing, एक line में",
@@ -35,7 +35,7 @@ export const pricingHi: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Servers: {servers}। बाक़ी सब, {rest}, उनकी teams पर जाता है:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "लगभग {people} लोग · आम salary {salary}",
+    teamMeta: "लगभग {people} लोग - आम salary {salary}",
     swag: "बिल में यह भी शामिल है: टीम के लिए जगमगाते RevenueCat स्केटबोर्ड। इसका खर्च भी आपका 1% उठाता है।",
     swagPostAlt: "X पर RevenueCat के एक कर्मचारी की पोस्ट: “मेरा RevenueCat स्केटबोर्ड कल आ गया! अपना मुफ़्त RevenueCat स्केटबोर्ड पाने का लिंक यह रहा,” और लिंक RevenueCat के jobs पेज पर जाता है",
     swagPhotoAlt: "एक जगमगाता RevenueCat स्केटबोर्ड",
@@ -43,7 +43,7 @@ export const pricingHi: PricingDict = {
     swagLink: "पोस्ट देखें",
     ownersTitle: "आपका 1% किसी और का exit बना रहा है",
     /** {pct} is like "55%". */
-    ownersInvestors: "VC investors · लगभग {pct}",
+    ownersInvestors: "VC investors - लगभग {pct}",
     ownersRest: "Founders और employees",
     ownersBarLabel: "हमारे अनुमान से RevenueCat का लगभग {pct} हिस्सा VC investors के पास है",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

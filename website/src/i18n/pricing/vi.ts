@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingVi: PricingDict = {
   meta: {
-    title: "Giá RevenueCat: 1% của bạn thực ra đi đâu · openpurr",
+    title: "Giá RevenueCat: 1% của bạn thực ra đi đâu - openpurr",
     description:
       "RevenueCat thu 1% doanh thu của bạn. Server đằng sau ứng dụng gần như chẳng tốn gì. Xem phần còn lại trả cho gì: lương, đội sales và nhà đầu tư mạo hiểm.",
     ogImageAlt: "RevenueCat lấy 1% doanh thu của bạn; server gần như chẳng tốn gì. Phần còn lại trả cho những gì.",
@@ -16,7 +16,7 @@ export const pricingVi: PricingDict = {
     headlineAccent: "Bạn đang nuôi một công ty trị giá {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat lấy 1% trên toàn bộ doanh thu được theo dõi của bạn khi vượt {threshold} mỗi tháng, và hóa đơn tăng theo mỗi bước bạn lớn lên. Server đằng sau ứng dụng gần như chẳng tốn gì. Phần còn lại trả cho chính công ty: quỹ lương, đội sales và lợi nhuận của nhà đầu tư.",
-    updated: "Cập nhật {date} · Ước tính từ số liệu công khai",
+    updated: "Cập nhật {date} - Ước tính từ số liệu công khai",
   },
   answer: {
     title: "Giá RevenueCat trong một câu",
@@ -35,7 +35,7 @@ export const pricingVi: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Server: {servers}. Toàn bộ phần còn lại, {rest}, trả cho các đội của họ:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Khoảng {people} người · lương phổ biến {salary}",
+    teamMeta: "Khoảng {people} người - lương phổ biến {salary}",
     swag: "Trong hóa đơn còn có: ván trượt RevenueCat phát sáng cho cả đội. 1% của bạn cũng trả cho những thứ đó.",
     swagPostAlt: "Bài đăng của một nhân viên RevenueCat trên X: “Ván trượt RevenueCat của tôi đã đến hôm qua! Đây là liên kết để nhận ván trượt RevenueCat miễn phí của riêng bạn”, dẫn tới trang tuyển dụng của RevenueCat",
     swagPhotoAlt: "Một ván trượt RevenueCat phát sáng",
@@ -43,7 +43,7 @@ export const pricingVi: PricingDict = {
     swagLink: "Xem bài đăng",
     ownersTitle: "1% của bạn đang xây thương vụ exit cho người khác",
     /** {pct} is like "55%". */
-    ownersInvestors: "Nhà đầu tư mạo hiểm · khoảng {pct}",
+    ownersInvestors: "Nhà đầu tư mạo hiểm - khoảng {pct}",
     ownersRest: "Nhà sáng lập và nhân viên",
     ownersBarLabel: "Nhà đầu tư mạo hiểm sở hữu khoảng {pct} RevenueCat, theo ước tính của chúng tôi",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

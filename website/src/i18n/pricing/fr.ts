@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingFr: PricingDict = {
   meta: {
-    title: "Tarifs RevenueCat : où va vraiment votre 1 % · openpurr",
+    title: "Tarifs RevenueCat : où va vraiment votre 1 % - openpurr",
     description:
       "RevenueCat prend 1 % de vos revenus. Vos serveurs coûtent une erreur d'arrondi. Le reste paie des salaires, des commerciaux et des investisseurs.",
     ogImageAlt: "RevenueCat prend 1 % de vos revenus ; les serveurs coûtent une erreur d'arrondi. Ce que paie le reste.",
@@ -16,7 +16,7 @@ export const pricingFr: PricingDict = {
     headlineAccent: "Vous payez une entreprise valorisée à {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat prend 1 % de la totalité de vos revenus suivis dès que vous dépassez {threshold} par mois, et la facture grimpe à chaque palier franchi. Les serveurs derrière votre app coûtent une erreur d'arrondi. Le reste paie l'entreprise : ses salaires, son équipe commerciale et le retour de ses investisseurs.",
-    updated: "Mis à jour le {date} · Estimations d'après des chiffres publics",
+    updated: "Mis à jour le {date} - Estimations d'après des chiffres publics",
   },
   answer: {
     title: "Les tarifs de RevenueCat en une ligne",
@@ -35,7 +35,7 @@ export const pricingFr: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Serveurs : {servers}. Tout le reste, {rest}, paie leurs équipes :",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Environ {people} personnes · salaire type {salary}",
+    teamMeta: "Environ {people} personnes - salaire type {salary}",
     swag: "Aussi sur la facture : des skateboards lumineux RevenueCat pour l'équipe. Votre 1 % paie ça aussi.",
     swagPostAlt: "Publication d'un employé de RevenueCat sur X : « Mon skateboard RevenueCat est arrivé hier ! Voici un lien pour obtenir le vôtre gratuitement », avec un lien vers la page carrières de RevenueCat",
     swagPhotoAlt: "Un skateboard lumineux RevenueCat",
@@ -43,7 +43,7 @@ export const pricingFr: PricingDict = {
     swagLink: "Voir la publication",
     ownersTitle: "Votre 1 % finance la sortie de quelqu'un d'autre",
     /** {pct} is like "55%". */
-    ownersInvestors: "Investisseurs en capital-risque · environ {pct}",
+    ownersInvestors: "Investisseurs en capital-risque - environ {pct}",
     ownersRest: "Fondateurs et salariés",
     ownersBarLabel: "Les investisseurs en capital-risque détiennent environ {pct} de RevenueCat, selon notre estimation",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */

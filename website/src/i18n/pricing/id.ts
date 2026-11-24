@@ -3,7 +3,7 @@ import type { PricingDict } from "./en";
 
 export const pricingId: PricingDict = {
   meta: {
-    title: "Harga RevenueCat: ke mana sebenarnya 1% Anda · openpurr",
+    title: "Harga RevenueCat: ke mana sebenarnya 1% Anda - openpurr",
     description:
       "RevenueCat memotong 1% pendapatan Anda. Server di balik aplikasi Anda nyaris tanpa biaya. Lihat untuk apa sisanya: gaji, tim sales, dan investor ventura.",
     ogImageAlt: "RevenueCat mengambil 1% pendapatan Anda; servernya nyaris tanpa biaya. Untuk apa sisanya.",
@@ -16,7 +16,7 @@ export const pricingId: PricingDict = {
     headlineAccent: "Anda membayar perusahaan senilai {valuation}.",
     /** {threshold} is "$2,500". */
     lede: "RevenueCat mengambil 1% dari seluruh pendapatan terlacak Anda begitu melewati {threshold} per bulan, dan tagihannya ikut naik setiap kali Anda tumbuh. Server di balik aplikasi Anda nyaris tanpa biaya. Sisanya membiayai perusahaannya: gaji karyawan, tim sales, dan imbal hasil investornya.",
-    updated: "Diperbarui {date} · Perkiraan dari data publik",
+    updated: "Diperbarui {date} - Perkiraan dari data publik",
   },
   answer: {
     title: "Harga RevenueCat dalam satu kalimat",
@@ -35,7 +35,7 @@ export const pricingId: PricingDict = {
     /** HTML. {servers} and {rest} are percentages. */
     stackNote: "Server: {servers}. Selebihnya, {rest}, membiayai tim mereka:",
     /** {people} is a number, {salary} is like "$210K". */
-    teamMeta: "Sekitar {people} orang · gaji umum {salary}",
+    teamMeta: "Sekitar {people} orang - gaji umum {salary}",
     swag: "Juga masuk tagihan: skateboard RevenueCat yang menyala untuk tim. 1% Anda juga membayar itu.",
     swagPostAlt: "Postingan karyawan RevenueCat di X: “Skateboard RevenueCat saya tiba kemarin! Ini tautan untuk mendapatkan skateboard RevenueCat gratis milikmu sendiri,” yang mengarah ke halaman lowongan RevenueCat",
     swagPhotoAlt: "Skateboard RevenueCat yang menyala",
@@ -43,7 +43,7 @@ export const pricingId: PricingDict = {
     swagLink: "Lihat postingan",
     ownersTitle: "1% Anda membangun exit orang lain",
     /** {pct} is like "55%". */
-    ownersInvestors: "Investor ventura · sekitar {pct}",
+    ownersInvestors: "Investor ventura - sekitar {pct}",
     ownersRest: "Pendiri dan karyawan",
     ownersBarLabel: "Investor ventura memiliki sekitar {pct} RevenueCat, menurut perkiraan kami",
     /** HTML. {funding} is "$100 million"; {vc} is an amount that moves with the slider. */
