@@ -142,10 +142,10 @@ export const it: Dict = {
         ],
       },
       standard: {
-        badge: "In arrivo",
+        badge: "Per portafogli più grandi",
         price: "La tua bolletta cloud",
         priceNote: "niente di più",
-        items: ["Go e Postgres in container", "GCP o AWS", "Per portafogli di app più grandi"],
+        items: ["Go e Postgres in container", "GCP, AWS o DigitalOcean", "Un template di deployment per ciascuno"],
       },
     },
     savings: {
@@ -214,7 +214,7 @@ export const it: Dict = {
           phase: "Standard",
           items: [
             "Go e Postgres in container",
-            "Prima GCP, poi AWS",
+            "GCP, AWS e DigitalOcean",
             "Stessa suite di conformità di Lite",
             "Passaggio da Lite senza aggiornare l'app",
           ],
@@ -272,7 +272,7 @@ export const it: Dict = {
       },
       {
         q: "Dove sono archiviati i miei dati?",
-        a: "Nel tuo database. L'edizione Lite usa Cloudflare D1 nel tuo account Cloudflare. L'edizione Standard usa Postgres su GCP o AWS. Puoi interrogarli, farne il backup ed esportarli, e nessun servizio esterno si mette tra la tua app e i tuoi clienti.",
+        a: "Nel tuo database. L'edizione Lite usa Cloudflare D1 nel tuo account Cloudflare. L'edizione Standard usa Postgres su GCP, AWS o DigitalOcean. Puoi interrogarli, farne il backup ed esportarli, e nessun servizio esterno si mette tra la tua app e i tuoi clienti.",
       },
       {
         q: "openpurr invia webhook come RevenueCat?",
@@ -284,7 +284,7 @@ export const it: Dict = {
       },
       {
         q: "openpurr è pronto per la produzione?",
-        a: "Non ancora. openpurr è agli inizi: l'edizione Lite è in sviluppo e l'edizione Standard arriverà più avanti. Segui la roadmap su GitHub e apri una issue se qualcosa ti sta a cuore.",
+        a: "Non ancora. openpurr è agli inizi: entrambe le edizioni funzionano e superano la stessa suite di test di conformità, ma non sono ancora state testate end-to-end con acquisti su dispositivi reali. Segui la roadmap su GitHub e apri una issue se qualcosa ti sta a cuore.",
       },
       {
         q: "openpurr è affiliato a RevenueCat?",

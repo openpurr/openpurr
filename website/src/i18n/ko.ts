@@ -134,10 +134,10 @@ export const ko: Dict = {
         items: ["Cloudflare Workers와 D1 위의 TypeScript", "가볍고 운영 비용이 저렴함", "무료 플랜 한도에 도달하기 전 사용량 알림"],
       },
       standard: {
-        badge: "출시 예정",
+        badge: "앱이 많은 팀용",
         price: "클라우드 요금만",
         priceNote: "그 외 비용 없음",
-        items: ["컨테이너에서 실행되는 Go와 Postgres", "GCP 또는 AWS", "더 많은 앱을 운영하는 팀을 위해"],
+        items: ["컨테이너에서 실행되는 Go와 Postgres", "GCP, AWS 또는 DigitalOcean", "클라우드별 배포 템플릿 제공"],
       },
     },
     savings: {
@@ -195,7 +195,7 @@ export const ko: Dict = {
         },
         {
           phase: "Standard",
-          items: ["컨테이너에서 실행되는 Go와 Postgres", "GCP 먼저, 그다음 AWS", "Lite와 같은 적합성 테스트 스위트", "앱 업데이트 없이 Lite에서 이전"],
+          items: ["컨테이너에서 실행되는 Go와 Postgres", "GCP, AWS, DigitalOcean", "Lite와 같은 적합성 테스트 스위트", "앱 업데이트 없이 Lite에서 이전"],
         },
         {
           phase: "커뮤니티와 함께 만드는 단계",
@@ -250,7 +250,7 @@ export const ko: Dict = {
       },
       {
         q: "데이터는 어디에 저장되나요?",
-        a: "내 데이터베이스에 저장됩니다. Lite 에디션은 내 Cloudflare 계정의 Cloudflare D1을 사용하고, Standard 에디션은 GCP 또는 AWS의 Postgres를 사용합니다. 데이터를 조회하고 백업하고 내보낼 수 있으며, 앱과 고객 사이에 외부 서비스가 끼어들지 않습니다.",
+        a: "내 데이터베이스에 저장됩니다. Lite 에디션은 내 Cloudflare 계정의 Cloudflare D1을 사용하고, Standard 에디션은 GCP, AWS 또는 DigitalOcean의 Postgres를 사용합니다. 데이터를 조회하고 백업하고 내보낼 수 있으며, 앱과 고객 사이에 외부 서비스가 끼어들지 않습니다.",
       },
       {
         q: "openpurr도 RevenueCat처럼 웹훅을 보내나요?",
@@ -262,7 +262,7 @@ export const ko: Dict = {
       },
       {
         q: "openpurr를 프로덕션에서 사용할 수 있나요?",
-        a: "아직은 아닙니다. openpurr는 초기 단계로, Lite 에디션은 개발 중이고 Standard 에디션은 그 이후에 나옵니다. GitHub에서 로드맵을 지켜봐 주시고, 중요한 것이 있다면 이슈를 등록해 주세요.",
+        a: "아직은 아닙니다. openpurr는 초기 단계로, 두 에디션 모두 동작하고 같은 적합성 테스트 스위트를 통과하지만, 실제 기기에서 구매까지 포함한 엔드 투 엔드 테스트는 아직 거치지 않았습니다. GitHub에서 로드맵을 지켜봐 주시고, 중요한 것이 있다면 이슈를 등록해 주세요.",
       },
       {
         q: "openpurr는 RevenueCat과 관련이 있나요?",

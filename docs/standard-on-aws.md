@@ -25,7 +25,7 @@ this in a test account first.
 - A domain you control, such as `purchases.example.com`. **The domain is the contract:** apps, App
   Store Connect and Google Play keep whatever address you give them, so with your own domain you
   can move hosts later (from Lite, between clouds) without an app update. The module requires one.
-- The image version to run, such as `ghcr.io/openpurr/openpurr-standard:0.3.0` (see the
+- The image version to run, such as `ghcr.io/openpurr/openpurr-standard:0.4.0` (see the
   [releases](https://github.com/openpurr/openpurr/releases)). Pin a version; `latest` makes
   upgrades happen by accident.
 

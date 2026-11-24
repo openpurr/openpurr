@@ -4,7 +4,7 @@ A high-level view of where openpurr is going. The order is firm, but there are n
 
 **Status key:** ✅ done · 🚧 in progress · ⏳ planned
 
-**Latest release:** [0.3.0](https://github.com/openpurr/openpurr/releases/tag/v0.3.0), which adds price experiments and the dashboard in 17 languages.
+**Latest release:** [0.4.0](https://github.com/openpurr/openpurr/releases/tag/v0.4.0), which adds the Standard edition, deployment templates for GCP, AWS and DigitalOcean, and moving from Lite to Standard.
 
 ## Phase 0: Prototype 🚧
 
@@ -39,13 +39,13 @@ The lightweight edition for indie apps: TypeScript on Cloudflare Workers and D1,
 8. ✅ **Moving from RevenueCat:** `openpurr import` brings existing customers over from RevenueCat's export, fetching each purchase from Apple and Google, and a [step-by-step guide](docs/migrating-from-revenuecat.md) covers running both backends during the switch.
 9. ✅ **Price experiments:** show customers new to the app different offerings, with `getOfferings()` and your paywall unchanged, then compare trials, conversion to paid, revenue per customer, MRR and churn per variant, with the chance that each variant beats the control. See the [guide](docs/price-experiments.md).
 
-## Standard edition (coming soon) ⏳
+## Standard edition 🚧
 
-For larger portfolios of apps: Go and Postgres in containers on your own cloud.
+For larger portfolios of apps: Go and Postgres in containers on your own cloud. Released in 0.4.0; 1.0 follows the device runs above, as for Lite.
 
-- **Same behavior:** the same API and the same behavior as Lite, checked by a shared conformance suite.
-- **Clouds:** GCP first, then AWS.
-- **Moving from Lite to Standard:** a tested migration that needs no app update, provided your app points at a custom domain you own.
+- ✅ **Same behavior:** the same API and the same behavior as Lite, checked by a shared conformance suite.
+- ✅ **Clouds:** OpenTofu templates for [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) and [DigitalOcean](docs/standard-on-digitalocean.md).
+- ✅ **Moving from Lite to Standard:** a [tested migration](docs/migrating-from-lite-to-standard.md) that needs no app update, provided your app points at a custom domain you own.
 
 ## Later ⏳
 

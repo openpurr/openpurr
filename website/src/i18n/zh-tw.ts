@@ -133,10 +133,10 @@ export const zhTw: Dict = {
         items: ["以 TypeScript 實作，執行於 Cloudflare Workers 和 D1", "輕量，執行成本低", "在達到免費方案上限前發出用量提醒"],
       },
       standard: {
-        badge: "即將推出",
+        badge: "適合多 App 團隊",
         price: "你的雲端帳單",
         priceNote: "沒有其他費用",
-        items: ["在容器中執行的 Go 和 Postgres", "GCP 或 AWS", "適合擁有較多 App 的團隊"],
+        items: ["在容器中執行的 Go 和 Postgres", "GCP、AWS 或 DigitalOcean", "每個平台都有部署範本"],
       },
     },
     savings: {
@@ -194,7 +194,7 @@ export const zhTw: Dict = {
         },
         {
           phase: "Standard",
-          items: ["在容器中執行的 Go 和 Postgres", "先支援 GCP，再支援 AWS", "與 Lite 使用同一套一致性測試", "從 Lite 搬移不必更新 App"],
+          items: ["在容器中執行的 Go 和 Postgres", "GCP、AWS 和 DigitalOcean", "與 Lite 使用同一套一致性測試", "從 Lite 搬移不必更新 App"],
         },
         {
           phase: "由社群決定",
@@ -249,7 +249,7 @@ export const zhTw: Dict = {
       },
       {
         q: "我的資料存放在哪裡？",
-        a: "存放在你自己的資料庫中。Lite 版使用你 Cloudflare 帳號中的 Cloudflare D1，Standard 版使用 GCP 或 AWS 上的 Postgres。你可以查詢、備份和匯出資料，你的 App 和客戶之間沒有任何外部服務。",
+        a: "存放在你自己的資料庫中。Lite 版使用你 Cloudflare 帳號中的 Cloudflare D1，Standard 版使用 GCP、AWS 或 DigitalOcean 上的 Postgres。你可以查詢、備份和匯出資料，你的 App 和客戶之間沒有任何外部服務。",
       },
       {
         q: "openpurr 會像 RevenueCat 一樣傳送 Webhook 嗎？",
@@ -261,7 +261,7 @@ export const zhTw: Dict = {
       },
       {
         q: "openpurr 可以用在正式環境了嗎？",
-        a: "還不行。openpurr 仍在早期階段：Lite 版正在開發中，Standard 版之後才會推出。你可以在 GitHub 上追蹤路線圖，如果某項功能對你很重要，歡迎提交 Issue。",
+        a: "還不行。openpurr 仍在早期階段：兩個版本都已可用，並通過同一套一致性測試，但尚未在真實裝置上以購買流程做過端對端測試。你可以在 GitHub 上追蹤路線圖，如果某項功能對你很重要，歡迎提交 Issue。",
       },
       {
         q: "openpurr 和 RevenueCat 有關聯嗎？",

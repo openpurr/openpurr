@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ Es passt auch gut, wenn du die RevenueCat SDKs schon nutzt und behalten willst. 
 | | Lite | Standard |
 |---|---|---|
 | Sprache | TypeScript | Go |
-| Läuft auf | Cloudflare Workers + D1 | Containern + Postgres auf GCP oder AWS |
+| Läuft auf | Cloudflare Workers + D1 | Containern + Postgres auf GCP, AWS oder DigitalOcean |
 | Kosten | Für den kostenlosen Cloudflare-Tarif ausgelegt | Deine Cloud-Rechnung |
-| Für | Indie-Apps: leichtgewichtig und günstig im Betrieb | Größere App-Portfolios (demnächst) |
+| Für | Indie-Apps: leichtgewichtig und günstig im Betrieb | Größere App-Portfolios |
 
-Beide Editionen bestehen dieselbe Konformitäts-Testsuite in `spec/`. Du kannst ohne App-Update von Lite zu Standard wechseln, solange deine App auf eine eigene Domain zeigt, die dir gehört.
+Beide Editionen bestehen dieselbe Konformitäts-Testsuite in `spec/`. Du kannst ohne App-Update von Lite zu Standard wechseln, solange deine App auf eine eigene Domain zeigt, die dir gehört: siehe [Von Lite zu Standard wechseln](docs/migrating-from-lite-to-standard.md) (Englisch).
 
 ## Was Sie im Vergleich zu RevenueCat behalten
 
@@ -102,7 +102,7 @@ Setze die Proxy-URL, bevor du `configure` aufrufst. Lass die Entitlement-Verifiz
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Erste Schritte
 
-Lite steht bei 0.1.0, dem ersten Release, rechne also mit Änderungen vor 1.0. Um es in deinem eigenen Cloudflare-Konto auszuprobieren (der kostenlose Tarif reicht), brauchst du Node 22.12 oder neuer:
+openpurr steht bei 0.4.0, rechne also mit Änderungen vor 1.0. Um es in deinem eigenen Cloudflare-Konto auszuprobieren (der kostenlose Tarif reicht), brauchst du Node 22.12 oder neuer:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ Du kannst das Setup gefahrlos erneut ausführen, falls es mittendrin abbricht. A
 - **Bei jedem Push bereitstellen:** Forke das Repo und hinterlege deine Cloudflare-Daten als Repository-Secrets. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) führt sie auf.
 
 Du nutzt Claude Code? Das [openpurr-Plugin](plugin/) (Englisch) führt durch dieselben Schritte, dazu durch die Einrichtung in App Store Connect und der Play Console.
+
+Für Standard folgst du der Anleitung für deine Cloud: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) oder [DigitalOcean](docs/standard-on-digitalocean.md) (Englisch). Jede setzt eine OpenTofu-Vorlage aus `infra/` ein.
 
 ## Mitmachen
 

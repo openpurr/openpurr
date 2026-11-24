@@ -138,10 +138,10 @@ export const tr: Dict = {
         ],
       },
       standard: {
-        badge: "Yakında",
+        badge: "Büyük portföyler için",
         price: "Bulut faturanız",
         priceNote: "fazlası değil",
-        items: ["Container'larda Go ve Postgres", "GCP veya AWS", "Daha büyük uygulama portföyleri için"],
+        items: ["Container'larda Go ve Postgres", "GCP, AWS veya DigitalOcean", "Her biri için bir dağıtım şablonu"],
       },
     },
     savings: {
@@ -201,7 +201,7 @@ export const tr: Dict = {
           phase: "Standard",
           items: [
             "Container'larda Go ve Postgres",
-            "Önce GCP, sonra AWS",
+            "GCP, AWS ve DigitalOcean",
             "Lite ile aynı uyumluluk test paketi",
             "Uygulama güncellemesi olmadan Lite'tan geçiş",
           ],
@@ -259,7 +259,7 @@ export const tr: Dict = {
       },
       {
         q: "Verilerim nerede saklanıyor?",
-        a: "Kendi veritabanınızda. Lite sürümü, Cloudflare hesabınızdaki Cloudflare D1'i kullanır. Standard sürümü GCP veya AWS üzerinde Postgres kullanır. Verilerinizi sorgulayabilir, yedekleyebilir ve dışa aktarabilirsiniz; uygulamanızla müşterileriniz arasında hiçbir dış hizmet yer almaz.",
+        a: "Kendi veritabanınızda. Lite sürümü, Cloudflare hesabınızdaki Cloudflare D1'i kullanır. Standard sürümü GCP, AWS veya DigitalOcean üzerinde Postgres kullanır. Verilerinizi sorgulayabilir, yedekleyebilir ve dışa aktarabilirsiniz; uygulamanızla müşterileriniz arasında hiçbir dış hizmet yer almaz.",
       },
       {
         q: "openpurr, RevenueCat gibi webhook gönderiyor mu?",
@@ -271,7 +271,7 @@ export const tr: Dict = {
       },
       {
         q: "openpurr canlı kullanıma hazır mı?",
-        a: "Henüz değil. openpurr erken aşamada: Lite sürümü üzerinde çalışılıyor, Standard sürümü daha sonra gelecek. Yol haritasını GitHub'da takip edin ve sizin için önemli bir şey varsa bir issue açın.",
+        a: "Henüz değil. openpurr erken aşamada: iki sürüm de çalışıyor ve aynı uyumluluk test paketinden geçiyor, ancak henüz gerçek cihazlarda satın almalarla uçtan uca test edilmedi. Yol haritasını GitHub'da takip edin ve sizin için önemli bir şey varsa bir issue açın.",
       },
       {
         q: "openpurr'ın RevenueCat ile bir bağlantısı var mı?",

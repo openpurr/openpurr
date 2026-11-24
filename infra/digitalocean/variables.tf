@@ -35,7 +35,7 @@ variable "project_id" {
 
 variable "image" {
   description = <<-EOT
-    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.3.0. App
+    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.4.0. App
     Platform pulls from GitHub Container Registry, Docker Hub (docker.io/<owner>/<repo>:<tag>) and
     DigitalOcean Container Registry (registry.digitalocean.com/<registry>/<repo>:<tag>). Pin a
     version (a tag or @sha256:...): changing it is how you upgrade.

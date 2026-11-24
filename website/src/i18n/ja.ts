@@ -134,10 +134,10 @@ export const ja: Dict = {
         items: ["Cloudflare Workers と D1 上の TypeScript", "軽量で、運用コストも低い", "無料プランの上限に達する前に使用量をお知らせ"],
       },
       standard: {
-        badge: "近日公開",
+        badge: "アプリの多いチームに",
         price: "クラウド利用料のみ",
         priceNote: "それ以外の費用はかかりません",
-        items: ["コンテナで動く Go と Postgres", "GCP または AWS", "多数のアプリを抱えるチーム向け"],
+        items: ["コンテナで動く Go と Postgres", "GCP、AWS または DigitalOcean", "それぞれにデプロイ用テンプレートを用意"],
       },
     },
     savings: {
@@ -195,7 +195,7 @@ export const ja: Dict = {
         },
         {
           phase: "Standard",
-          items: ["コンテナで動く Go と Postgres", "まず GCP、次に AWS", "Lite と同じ適合性テストスイート", "アプリを更新せずに Lite から移行"],
+          items: ["コンテナで動く Go と Postgres", "GCP、AWS、DigitalOcean", "Lite と同じ適合性テストスイート", "アプリを更新せずに Lite から移行"],
         },
         {
           phase: "コミュニティとともに",
@@ -250,7 +250,7 @@ export const ja: Dict = {
       },
       {
         q: "データはどこに保存されますか？",
-        a: "自分のデータベースに保存されます。Lite エディションは自分の Cloudflare アカウントの Cloudflare D1 を、Standard エディションは GCP または AWS 上の Postgres を使います。データはクエリ、バックアップ、エクスポートが自由にでき、アプリと顧客のあいだに外部サービスは入りません。",
+        a: "自分のデータベースに保存されます。Lite エディションは自分の Cloudflare アカウントの Cloudflare D1 を、Standard エディションは GCP、AWS または DigitalOcean 上の Postgres を使います。データはクエリ、バックアップ、エクスポートが自由にでき、アプリと顧客のあいだに外部サービスは入りません。",
       },
       {
         q: "openpurr は RevenueCat のように Webhook を送信しますか？",
@@ -262,7 +262,7 @@ export const ja: Dict = {
       },
       {
         q: "openpurr は本番環境で使えますか？",
-        a: "まだ使えません。openpurr は初期段階にあり、Lite エディションは開発中で、Standard エディションはその後に登場する予定です。GitHub でロードマップをフォローし、必要なものがあれば Issue を作成してください。",
+        a: "まだ使えません。openpurr は初期段階にあり、どちらのエディションも動作し、同じ適合性テストスイートに合格していますが、実機での購入を含むエンドツーエンドのテストはまだ行っていません。GitHub でロードマップをフォローし、必要なものがあれば Issue を作成してください。",
       },
       {
         q: "openpurr は RevenueCat と提携していますか？",

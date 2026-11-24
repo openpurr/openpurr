@@ -8,7 +8,7 @@ export const GET: APIRoute = ({ site }) => {
 
 > openpurr is a self-hosted, open-source RevenueCat alternative. It's a backend for App Store and Google Play in-app purchases and subscriptions that works with the official, unmodified RevenueCat Purchases SDK: you set the SDK's proxy URL to your own openpurr server, and the rest of your purchase code stays the same. Free under the Apache 2.0 license, with no revenue share.
 
-Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: the Lite edition is usable and in testing, and it isn't yet recommended for production. It's independent and not affiliated with RevenueCat, Inc.
+Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: both editions are usable and in testing, and they aren't yet recommended for production. It's independent and not affiliated with RevenueCat, Inc.
 
 ## What it does
 
@@ -24,7 +24,7 @@ Latest release: ${RELEASE.version} (${RELEASE.date}). openpurr is early: the Lit
 ## Editions
 
 - Lite: TypeScript on Cloudflare Workers and D1, designed to fit Cloudflare's free plan (100,000 requests a day), with usage alerts before the limits. Available now.
-- Standard: Go and Postgres in containers on GCP or AWS. Planned. Both editions pass the same conformance suite; with a custom domain, moving from Lite to Standard needs no app update.
+- Standard: Go and Postgres in containers on GCP, AWS or DigitalOcean, with an OpenTofu template for each. Available since 0.4.0. Both editions pass the same conformance suite; with a custom domain, moving from Lite to Standard needs no app update.
 
 ## Not included (for now)
 

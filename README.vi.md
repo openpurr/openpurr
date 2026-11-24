@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ openpurr cũng phù hợp nếu bạn đang dùng SDK của RevenueCat và muố
 | | Lite | Standard |
 |---|---|---|
 | Ngôn ngữ | TypeScript | Go |
-| Chạy trên | Cloudflare Workers + D1 | Container + Postgres trên GCP hoặc AWS |
+| Chạy trên | Cloudflare Workers + D1 | Container + Postgres trên GCP, AWS hoặc DigitalOcean |
 | Chi phí | Thiết kế để vừa với gói miễn phí của Cloudflare | Hóa đơn cloud của bạn |
-| Dành cho | Ứng dụng indie: gọn nhẹ và rẻ khi vận hành | Danh mục nhiều ứng dụng lớn hơn (sắp ra mắt) |
+| Dành cho | Ứng dụng indie: gọn nhẹ và rẻ khi vận hành | Danh mục nhiều ứng dụng lớn hơn |
 
-Cả hai phiên bản đều vượt qua cùng một bộ kiểm thử tương thích trong `spec/`. Bạn có thể chuyển từ Lite sang Standard mà không cần phát hành bản cập nhật ứng dụng, miễn là ứng dụng của bạn trỏ tới một tên miền riêng mà bạn sở hữu.
+Cả hai phiên bản đều vượt qua cùng một bộ kiểm thử tương thích trong `spec/`. Bạn có thể chuyển từ Lite sang Standard mà không cần phát hành bản cập nhật ứng dụng, miễn là ứng dụng của bạn trỏ tới một tên miền riêng mà bạn sở hữu. Xem [Chuyển từ Lite sang Standard](docs/migrating-from-lite-to-standard.md) (tiếng Anh).
 
 ## Số tiền bạn giữ lại so với RevenueCat
 
@@ -102,7 +102,7 @@ Ngay từ đầu, openpurr dùng các SDK chính thức, không chỉnh sửa (t
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Bắt đầu
 
-Lite đang ở phiên bản 0.1.0, bản phát hành đầu tiên, nên sẽ còn thay đổi trước bản 1.0. Để dùng thử trên tài khoản Cloudflare của riêng bạn (gói miễn phí là đủ), với Node 22.12 trở lên:
+openpurr đang ở phiên bản 0.4.0, nên sẽ còn thay đổi trước bản 1.0. Để dùng thử trên tài khoản Cloudflare của riêng bạn (gói miễn phí là đủ), với Node 22.12 trở lên:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ Có thể chạy lại bước cài đặt một cách an toàn nếu nó dừng
 - **Triển khai mỗi lần push:** fork repo và thêm thông tin Cloudflare của bạn dưới dạng repository secret. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) liệt kê các secret cần có.
 
 Bạn dùng Claude Code? [Plugin openpurr](plugin/) (tiếng Anh) hướng dẫn các bước tương tự, cùng với thiết lập App Store Connect và Play Console.
+
+Với Standard, hãy làm theo hướng dẫn cho cloud của bạn: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) hoặc [DigitalOcean](docs/standard-on-digitalocean.md) (tiếng Anh). Mỗi hướng dẫn triển khai bằng một mẫu OpenTofu trong `infra/`.
 
 ## Đóng góp
 

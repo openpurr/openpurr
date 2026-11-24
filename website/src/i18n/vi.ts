@@ -142,10 +142,10 @@ export const vi: Dict = {
         ],
       },
       standard: {
-        badge: "Sắp ra mắt",
+        badge: "Cho danh mục ứng dụng lớn",
         price: "Hóa đơn cloud của bạn",
         priceNote: "không thêm gì khác",
-        items: ["Go và Postgres trong container", "GCP hoặc AWS", "Cho danh mục nhiều ứng dụng lớn hơn"],
+        items: ["Go và Postgres trong container", "GCP, AWS hoặc DigitalOcean", "Mỗi nền tảng có một mẫu triển khai"],
       },
     },
     savings: {
@@ -205,7 +205,7 @@ export const vi: Dict = {
           phase: "Standard",
           items: [
             "Go và Postgres trong container",
-            "GCP trước, sau đó là AWS",
+            "GCP, AWS và DigitalOcean",
             "Cùng bộ kiểm thử tương thích với Lite",
             "Chuyển từ Lite mà không cần cập nhật ứng dụng",
           ],
@@ -263,7 +263,7 @@ export const vi: Dict = {
       },
       {
         q: "Dữ liệu của tôi được lưu ở đâu?",
-        a: "Dữ liệu nằm trong cơ sở dữ liệu của riêng bạn. Phiên bản Lite dùng Cloudflare D1 trong tài khoản Cloudflare của bạn. Phiên bản Standard dùng Postgres trên GCP hoặc AWS. Bạn có thể truy vấn, sao lưu và xuất dữ liệu, và không có dịch vụ bên ngoài nào đứng giữa ứng dụng của bạn và khách hàng.",
+        a: "Dữ liệu nằm trong cơ sở dữ liệu của riêng bạn. Phiên bản Lite dùng Cloudflare D1 trong tài khoản Cloudflare của bạn. Phiên bản Standard dùng Postgres trên GCP, AWS hoặc DigitalOcean. Bạn có thể truy vấn, sao lưu và xuất dữ liệu, và không có dịch vụ bên ngoài nào đứng giữa ứng dụng của bạn và khách hàng.",
       },
       {
         q: "openpurr có gửi webhook giống RevenueCat không?",
@@ -275,7 +275,7 @@ export const vi: Dict = {
       },
       {
         q: "openpurr đã sẵn sàng cho môi trường production chưa?",
-        a: "Chưa. openpurr vẫn đang ở giai đoạn đầu: phiên bản Lite đang được phát triển và phiên bản Standard sẽ ra mắt sau. Hãy theo dõi lộ trình trên GitHub, và mở một issue nếu có điều gì quan trọng với bạn.",
+        a: "Chưa. openpurr vẫn đang ở giai đoạn đầu: cả hai phiên bản đều hoạt động và vượt qua cùng một bộ kiểm thử tương thích, nhưng chưa được kiểm thử đầu cuối với giao dịch mua trên thiết bị thật. Hãy theo dõi lộ trình trên GitHub, và mở một issue nếu có điều gì quan trọng với bạn.",
       },
       {
         q: "openpurr có liên kết với RevenueCat không?",

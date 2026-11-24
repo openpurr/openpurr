@@ -26,4 +26,4 @@ export const PRIVACY_URL = "/privacy/";
 /** Where privacy requests go. Empty: the privacy page points to GitHub instead. */
 export const PRIVACY_EMAIL = "";
 /** The latest release, shown on the roadmap and in the structured data and llms.txt. Bump on each release. */
-export const RELEASE = { version: "0.3.0", date: "2026-11-22" };
+export const RELEASE = { version: "0.4.0", date: "2026-11-24" };

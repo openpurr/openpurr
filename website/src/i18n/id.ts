@@ -138,10 +138,10 @@ export const id: Dict = {
         ],
       },
       standard: {
-        badge: "Segera hadir",
+        badge: "Untuk portofolio besar",
         price: "Tagihan cloud Anda",
         priceNote: "tidak lebih",
-        items: ["Go dan Postgres dalam container", "GCP atau AWS", "Untuk portofolio aplikasi yang lebih besar"],
+        items: ["Go dan Postgres dalam container", "GCP, AWS, atau DigitalOcean", "Template deployment untuk masing-masing"],
       },
     },
     savings: {
@@ -201,7 +201,7 @@ export const id: Dict = {
           phase: "Standard",
           items: [
             "Go dan Postgres dalam container",
-            "GCP dulu, lalu AWS",
+            "GCP, AWS, dan DigitalOcean",
             "Rangkaian uji kesesuaian yang sama dengan Lite",
             "Pindah dari Lite tanpa update aplikasi",
           ],
@@ -259,7 +259,7 @@ export const id: Dict = {
       },
       {
         q: "Di mana data saya disimpan?",
-        a: "Di database Anda sendiri. Edisi Lite memakai Cloudflare D1 di akun Cloudflare Anda. Edisi Standard memakai Postgres di GCP atau AWS. Anda bisa mengkueri, mencadangkan, dan mengekspornya, dan tidak ada layanan luar di antara aplikasi Anda dan pelanggan Anda.",
+        a: "Di database Anda sendiri. Edisi Lite memakai Cloudflare D1 di akun Cloudflare Anda. Edisi Standard memakai Postgres di GCP, AWS, atau DigitalOcean. Anda bisa mengkueri, mencadangkan, dan mengekspornya, dan tidak ada layanan luar di antara aplikasi Anda dan pelanggan Anda.",
       },
       {
         q: "Apakah openpurr mengirim webhook seperti RevenueCat?",
@@ -271,7 +271,7 @@ export const id: Dict = {
       },
       {
         q: "Apakah openpurr siap untuk produksi?",
-        a: "Belum. openpurr masih tahap awal: edisi Lite sedang dikerjakan dan edisi Standard menyusul. Ikuti roadmap di GitHub, dan buka issue jika ada yang penting bagi Anda.",
+        a: "Belum. openpurr masih tahap awal: kedua edisi sudah berfungsi dan lolos rangkaian uji kesesuaian yang sama, tetapi belum diuji secara menyeluruh dengan pembelian di perangkat sungguhan. Ikuti roadmap di GitHub, dan buka issue jika ada yang penting bagi Anda.",
       },
       {
         q: "Apakah openpurr berafiliasi dengan RevenueCat?",

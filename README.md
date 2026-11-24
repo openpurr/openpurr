@@ -53,9 +53,9 @@ It's also a good fit if you already use the RevenueCat SDKs and want to keep the
 | | Lite | Standard |
 |---|---|---|
 | Language | TypeScript | Go |
-| Runs on | Cloudflare Workers + D1 | Containers + Postgres on GCP or AWS |
+| Runs on | Cloudflare Workers + D1 | Containers + Postgres on GCP, AWS or DigitalOcean |
 | Cost | Designed to fit the Cloudflare free plan | Your cloud bill |
-| For | Indie apps: lightweight and cheap to run | Larger portfolios of apps (coming soon) |
+| For | Indie apps: lightweight and cheap to run | Larger portfolios of apps |
 
 Both editions pass the same conformance suite in `spec/`. You can move from Lite to Standard without shipping an app update, as long as your app points at a custom domain you own: see [Moving from Lite to Standard](docs/migrating-from-lite-to-standard.md).
 
@@ -101,7 +101,7 @@ Set the proxy URL before calling `configure`. Leave entitlement verification at 
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -110,7 +110,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Getting started
 
-Lite is at 0.1.0, its first release, so expect changes before 1.0. To try it on your own Cloudflare account (the free plan is enough), with Node 22.12 or later:
+openpurr is at 0.4.0, so expect changes before 1.0. To try it on your own Cloudflare account (the free plan is enough), with Node 22.12 or later:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -127,6 +127,8 @@ The setup is safe to run again if it stops halfway. It ends with a link to the d
 - **Deploy on every push:** fork the repo and add your Cloudflare details as repository secrets. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) lists them.
 
 Using Claude Code? The [openpurr plugin](plugin/) walks through the same steps, plus App Store Connect and Play Console setup.
+
+For Standard, follow the guide for your cloud: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) or [DigitalOcean](docs/standard-on-digitalocean.md). Each deploys with an OpenTofu template from `infra/`.
 
 ## Contributing
 

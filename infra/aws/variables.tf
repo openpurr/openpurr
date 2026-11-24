@@ -27,7 +27,7 @@ variable "tags" {
 
 variable "image" {
   description = <<-EOT
-    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.3.0. ECS
+    The openpurr Standard container image, such as ghcr.io/openpurr/openpurr-standard:0.4.0. ECS
     pulls a public ghcr.io image directly (through the NAT gateway or the task's public IP); an ECR
     image works too (the execution role may pull from ECR). Pin a version: changing it is how you
     upgrade.

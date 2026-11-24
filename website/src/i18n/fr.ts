@@ -139,10 +139,10 @@ export const fr: Dict = {
         ],
       },
       standard: {
-        badge: "Bientôt",
+        badge: "Pour les grands portefeuilles",
         price: "Votre facture cloud",
         priceNote: "rien de plus",
-        items: ["Go et Postgres dans des conteneurs", "GCP ou AWS", "Pour les portefeuilles d'applications plus importants"],
+        items: ["Go et Postgres dans des conteneurs", "GCP, AWS ou DigitalOcean", "Un modèle de déploiement pour chacun"],
       },
     },
     savings: {
@@ -210,7 +210,7 @@ export const fr: Dict = {
           phase: "Standard",
           items: [
             "Go et Postgres dans des conteneurs",
-            "GCP d'abord, puis AWS",
+            "GCP, AWS et DigitalOcean",
             "La même suite de conformité que Lite",
             "Migration depuis Lite sans mise à jour de l'application",
           ],
@@ -268,7 +268,7 @@ export const fr: Dict = {
       },
       {
         q: "Où sont stockées mes données ?",
-        a: "Dans votre propre base de données. L'édition Lite utilise Cloudflare D1 dans votre compte Cloudflare. L'édition Standard utilise Postgres sur GCP ou AWS. Vous pouvez les interroger, les sauvegarder et les exporter, et aucun service externe ne s'interpose entre votre application et vos clients.",
+        a: "Dans votre propre base de données. L'édition Lite utilise Cloudflare D1 dans votre compte Cloudflare. L'édition Standard utilise Postgres sur GCP, AWS ou DigitalOcean. Vous pouvez les interroger, les sauvegarder et les exporter, et aucun service externe ne s'interpose entre votre application et vos clients.",
       },
       {
         q: "openpurr envoie-t-il des webhooks comme RevenueCat ?",
@@ -280,7 +280,7 @@ export const fr: Dict = {
       },
       {
         q: "openpurr est-il prêt pour la production ?",
-        a: "Pas encore. openpurr n'en est qu'à ses débuts : l'édition Lite est en cours de développement et l'édition Standard viendra plus tard. Suivez la feuille de route sur GitHub et ouvrez une issue si quelque chose compte pour vous.",
+        a: "Pas encore. openpurr n'en est qu'à ses débuts : les deux éditions fonctionnent et passent la même suite de tests de conformité, mais elles n'ont pas encore été testées de bout en bout avec des achats sur de vrais appareils. Suivez la feuille de route sur GitHub et ouvrez une issue si quelque chose compte pour vous.",
       },
       {
         q: "openpurr est-il lié à RevenueCat ?",

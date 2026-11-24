@@ -1,4 +1,4 @@
-<!-- translated-from: README.md sha256:51ff71c4d2f67d7f -->
+<!-- translated-from: README.md sha256:576cb367384b5532 -->
 <h1 align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset=".github/assets/openpurr-logo-dark.png">
@@ -54,11 +54,11 @@ Paywall oluşturucular, üçüncü taraf analiz entegrasyonları veya bir destek
 | | Lite | Standard |
 |---|---|---|
 | Dil | TypeScript | Go |
-| Çalıştığı yer | Cloudflare Workers + D1 | GCP veya AWS'de container'lar + Postgres |
+| Çalıştığı yer | Cloudflare Workers + D1 | GCP, AWS veya DigitalOcean'da container'lar + Postgres |
 | Maliyet | Cloudflare'in ücretsiz planına sığacak şekilde tasarlandı | Bulut faturanız |
-| Kimin için | Bağımsız uygulamalar: hafif ve çalıştırması ucuz | Daha büyük uygulama portföyleri (yakında) |
+| Kimin için | Bağımsız uygulamalar: hafif ve çalıştırması ucuz | Daha büyük uygulama portföyleri |
 
-İki sürüm de `spec/` içindeki aynı uyumluluk test paketinden geçer. Uygulamanız size ait özel bir alan adını gösterdiği sürece, uygulama güncellemesi yayınlamadan Lite'tan Standard'a geçebilirsiniz.
+İki sürüm de `spec/` içindeki aynı uyumluluk test paketinden geçer. Uygulamanız size ait özel bir alan adını gösterdiği sürece, uygulama güncellemesi yayınlamadan Lite'tan Standard'a geçebilirsiniz. Ayrıntılar için [Lite'tan Standard'a geçiş](docs/migrating-from-lite-to-standard.md) (İngilizce) belgesine bakın.
 
 ## RevenueCat'e kıyasla cebinizde kalan
 
@@ -102,7 +102,7 @@ Proxy URL'sini `configure` çağrısından önce ayarlayın. Erişim hakkı doğ
 ```
 spec/       language-neutral contract: OpenAPI, JSON schemas, fixtures, conformance suite
 lite/       Lite edition: lightweight, for indie apps on Cloudflare Workers (TypeScript)
-standard/   Standard edition: for larger app portfolios on AWS or GCP (Go, coming soon)
+standard/   Standard edition: for larger app portfolios on GCP, AWS or DigitalOcean (Go)
 cli/        `npx @openpurr/cli` (works with either edition)
 skills/     Claude Code plugin
 examples/   sample apps
@@ -111,7 +111,7 @@ infra/      Terraform/OpenTofu modules for GCP, AWS and DigitalOcean
 
 ## Başlarken
 
-Lite, ilk sürümü olan 0.1.0'da; bu yüzden 1.0'dan önce değişiklikler bekleyin. Kendi Cloudflare hesabınızda (ücretsiz plan yeterli), Node 22.12 veya üzeriyle denemek için:
+openpurr 0.4.0 sürümünde; bu yüzden 1.0'dan önce değişiklikler bekleyin. Kendi Cloudflare hesabınızda (ücretsiz plan yeterli), Node 22.12 veya üzeriyle denemek için:
 
 ```sh
 git clone https://github.com/openpurr/openpurr && cd openpurr
@@ -128,6 +128,8 @@ Kurulum yarıda kesilirse güvenle yeniden çalıştırılabilir. Kurulum, panel
 - **Her push'ta dağıtın:** depoyu fork'layın ve Cloudflare bilgilerinizi depo gizli değerleri (secrets) olarak ekleyin. [`lite-deploy.yml`](.github/workflows/lite-deploy.yml) bunları listeler.
 
 Claude Code mu kullanıyorsunuz? [openpurr eklentisi](plugin/) (İngilizce) aynı adımlarda, ayrıca App Store Connect ve Play Console kurulumunda size yol gösterir.
+
+Standard için bulutunuza uygun kılavuzu izleyin: [GCP](docs/standard-on-gcp.md), [AWS](docs/standard-on-aws.md) veya [DigitalOcean](docs/standard-on-digitalocean.md) (İngilizce). Her biri `infra/` içindeki bir OpenTofu şablonuyla dağıtım yapar.
 
 ## Katkıda bulunma
 
