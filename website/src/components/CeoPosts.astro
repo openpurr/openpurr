@@ -178,7 +178,8 @@ const code = (s: string) => `<code>${s}</code>`;
     </section>
 
     <section class="topic-section">
-      <div class="wrap narrow">
+      <div class="wrap">
+        <div class="narrow">
         <h2>{c.topic.title}</h2>
         <div class="topic-row">
           <span class="who">{c.topic.ceo}</span>
@@ -219,6 +220,7 @@ const code = (s: string) => `<code>${s}</code>`;
           <li set:html={fill(c.method.data, { script: `<a href="${scriptUrl}">${c.method.scriptLink}</a>` })} />
           <li set:html={c.method.affiliation} />
         </ul>
+        </div>
       </div>
     </section>
   </article>
@@ -328,6 +330,7 @@ const code = (s: string) => `<code>${s}</code>`;
   }
   .cal-section {
     padding-top: 0;
+    padding-bottom: 48px;
   }
   .cal-card {
     max-width: 900px;
@@ -389,7 +392,7 @@ const code = (s: string) => `<code>${s}</code>`;
     margin-inline-start: auto;
   }
   .topic-section {
-    padding-top: 8px;
+    padding-top: 0;
   }
   .narrow {
     max-width: 760px;
@@ -409,7 +412,7 @@ const code = (s: string) => `<code>${s}</code>`;
   }
   .topic-row {
     display: grid;
-    grid-template-columns: 9rem 1fr 3rem;
+    grid-template-columns: 12rem 1fr 3rem;
     align-items: center;
     gap: 12px;
     margin-bottom: 10px;
