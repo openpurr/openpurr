@@ -217,7 +217,7 @@ export const fr: Dict = {
         },
         {
           phase: "Façonné par la communauté",
-          items: ["Identité vérifiée des utilisateurs finaux", "Extras de Standard pour les grandes équipes", "Tout ce que vous demanderez dans les issues"],
+          items: ["Identité vérifiée des utilisateurs finaux", "Extras de Standard pour les grandes équipes", "Une app mobile pour les graphiques, avec une alerte quand les achats s'arrêtent", "Les mêmes alertes dans Slack, Discord et Telegram", "Tout ce que vous demanderez dans les issues"],
         },
       ],
       more: "Lire la feuille de route complète (en anglais) →",

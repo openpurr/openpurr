@@ -52,6 +52,8 @@ For larger portfolios of apps: Go and Postgres in containers on your own cloud.
 Ideas we expect to pick up based on demand:
 - **Verified end-user identity**, so customer data can't be read with only a guessable app user ID.
 - **Standard extras** for larger teams.
+- **Mobile app:** connects to your own deployment to view charts on the go, and sends a push notification when purchases stop coming in, often the first sign that something is broken.
+- **Slack, Discord and Telegram:** the same alerts, sent to a channel.
 
 ## Not planned for now
 

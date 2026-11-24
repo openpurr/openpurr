@@ -214,7 +214,7 @@ export const en = {
         },
         {
           phase: "Shaped by the community",
-          items: ["Verified end-user identity", "Standard extras for larger teams", "Whatever you ask for in issues"],
+          items: ["Verified end-user identity", "Standard extras for larger teams", "A mobile app for charts, with an alert when sales stop", "The same alerts in Slack, Discord and Telegram", "Whatever you ask for in issues"],
         },
       ],
       more: "Read the full roadmap →",

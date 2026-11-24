@@ -204,7 +204,7 @@ export const hi: Dict = {
         },
         {
           phase: "Community के साथ मिलकर",
-          items: ["Verified end-user identity", "बड़ी teams के लिए Standard extras", "Issues में आप जो भी माँगें"],
+          items: ["Verified end-user identity", "बड़ी teams के लिए Standard extras", "Charts के लिए mobile app, और purchases रुकने पर alert", "यही alerts Slack, Discord और Telegram में", "Issues में आप जो भी माँगें"],
         },
       ],
       more: "पूरा roadmap पढ़ें (अंग्रेज़ी में) →",

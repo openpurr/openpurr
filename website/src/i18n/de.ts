@@ -203,7 +203,7 @@ export const de: Dict = {
         },
         {
           phase: "Von der Community gestaltet",
-          items: ["Verifizierte Identität der Endnutzer", "Standard-Extras für größere Teams", "Was immer du dir in Issues wünschst"],
+          items: ["Verifizierte Identität der Endnutzer", "Standard-Extras für größere Teams", "Mobile App für Diagramme, mit Alarm, wenn keine Käufe mehr kommen", "Dieselben Alarme in Slack, Discord und Telegram", "Was immer du dir in Issues wünschst"],
         },
       ],
       more: "Die ganze Roadmap lesen (Englisch) →",

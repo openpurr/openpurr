@@ -212,7 +212,7 @@ export const vi: Dict = {
         },
         {
           phase: "Do cộng đồng định hướng",
-          items: ["Xác minh danh tính người dùng cuối", "Tính năng bổ sung của Standard cho các team lớn hơn", "Bất cứ điều gì bạn đề xuất trong issue"],
+          items: ["Xác minh danh tính người dùng cuối", "Tính năng bổ sung của Standard cho các team lớn hơn", "Ứng dụng di động xem biểu đồ, báo khi không còn giao dịch mua", "Cùng các cảnh báo đó qua Slack, Discord và Telegram", "Bất cứ điều gì bạn đề xuất trong issue"],
         },
       ],
       more: "Xem toàn bộ lộ trình (tiếng Anh) →",

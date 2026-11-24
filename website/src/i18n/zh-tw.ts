@@ -198,7 +198,7 @@ export const zhTw: Dict = {
         },
         {
           phase: "由社群決定",
-          items: ["經過驗證的終端使用者身分", "為大型團隊提供的 Standard 進階功能", "你在 Issue 中提出的任何需求"],
+          items: ["經過驗證的終端使用者身分", "為大型團隊提供的 Standard 進階功能", "查看圖表的行動 App，購買停止時推播提醒", "同樣的提醒發到 Slack、Discord 和 Telegram", "你在 Issue 中提出的任何需求"],
         },
       ],
       more: "查看完整路線圖（英文）→",

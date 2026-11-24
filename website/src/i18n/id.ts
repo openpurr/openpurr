@@ -208,7 +208,7 @@ export const id: Dict = {
         },
         {
           phase: "Dibentuk oleh komunitas",
-          items: ["Identitas pengguna akhir yang terverifikasi", "Fitur tambahan Standard untuk tim yang lebih besar", "Apa pun yang Anda minta di issue"],
+          items: ["Identitas pengguna akhir yang terverifikasi", "Fitur tambahan Standard untuk tim yang lebih besar", "Aplikasi seluler untuk grafik, dengan peringatan saat pembelian berhenti", "Peringatan yang sama di Slack, Discord, dan Telegram", "Apa pun yang Anda minta di issue"],
         },
       ],
       more: "Baca roadmap lengkapnya (bahasa Inggris) →",
