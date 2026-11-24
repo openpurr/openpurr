@@ -9,7 +9,8 @@
 //
 // Without JavaScript the figures for the initial revenue still show; the slider and motion need it.
 import Base from "../layouts/Base.astro";
-import { ISSUES_URL, PRICING_PAGE, REPO_URL } from "../consts";
+import { CEO_PAGE, ISSUES_URL, PRICING_PAGE, REPO_URL } from "../consts";
+import xCeo from "../data/x-ceo.json";
 import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
 import { tp } from "../i18n/pricing";
 import { LEVELS, openpurrCost, revenueCatCost, RC } from "../savings";
@@ -66,6 +67,7 @@ const html = (s: string, vars: Record<string, string>) => fill(s, vars);
 const SLIDER = { min: 2_500, max: 250_000, initial: 25_000 };
 const pos = (v: number) => Math.log(v / SLIDER.min) / Math.log(SLIDER.max / SLIDER.min);
 const homePath = localePath(locale, "/");
+const ceoPerDay = nf({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(xCeo.posts / xCeo.days);
 const pagePath = localePath(locale, PRICING_PAGE);
 
 // The initial figures, for the first paint and for readers without JavaScript.
@@ -249,6 +251,7 @@ const enHref = locale === "en" ? undefined : "en";
             <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
             <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
           </figure>
+          <p class="ceo-link">{fill(p.calc.ceoLink, { perDay: ceoPerDay })} <a href={localePath(locale, CEO_PAGE)}>{p.calc.ceoLinkLabel}</a></p>
           <p class="punch">
             <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
@@ -692,6 +695,11 @@ const enHref = locale === "en" ? undefined : "en";
     grid-column: 1 / -1;
     font-size: 0.85rem;
     color: var(--muted);
+  }
+  .ceo-link {
+    margin-top: 16px;
+    font-weight: 600;
+    color: var(--ink);
   }
   .punch {
     margin-top: 24px;

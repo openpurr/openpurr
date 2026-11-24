@@ -41,6 +41,8 @@ export const pricingNl: PricingDict = {
     swagPhotoAlt: "Een oplichtend RevenueCat-skateboard",
     swagCaption: "Gepost op X, {date}. De link om ‘je eigen’ te claimen gaat naar hun vacaturepagina. {link}",
     swagLink: "Bekijk de post",
+    ceoLink: "De CEO van RevenueCat post op X zo'n {perDay} keer per dag, elke dag.",
+    ceoLinkLabel: "Bekijk de cijfers →",
     ownersTitle: "Je 1% bouwt aan de exit van een ander",
     /** {pct} is like "55%". */
     ownersInvestors: "Durfinvesteerders - ongeveer {pct}",

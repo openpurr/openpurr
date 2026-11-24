@@ -41,6 +41,8 @@ export const pricingId: PricingDict = {
     swagPhotoAlt: "Skateboard RevenueCat yang menyala",
     swagCaption: "Diposting di X, {date}. Tautan “dapatkan milikmu” mengarah ke halaman lowongan mereka. {link}",
     swagLink: "Lihat postingan",
+    ceoLink: "CEO RevenueCat memposting di X sekitar {perDay} kali sehari, setiap hari.",
+    ceoLinkLabel: "Lihat angkanya →",
     ownersTitle: "1% Anda membangun exit orang lain",
     /** {pct} is like "55%". */
     ownersInvestors: "Investor ventura - sekitar {pct}",

@@ -41,6 +41,8 @@ export const pricingVi: PricingDict = {
     swagPhotoAlt: "Một ván trượt RevenueCat phát sáng",
     swagCaption: "Đăng trên X ngày {date}. Liên kết “nhận ván của riêng bạn” dẫn tới trang tuyển dụng của họ. {link}",
     swagLink: "Xem bài đăng",
+    ceoLink: "CEO của RevenueCat đăng bài trên X khoảng {perDay} lần mỗi ngày, ngày nào cũng vậy.",
+    ceoLinkLabel: "Xem số liệu →",
     ownersTitle: "1% của bạn đang xây thương vụ exit cho người khác",
     /** {pct} is like "55%". */
     ownersInvestors: "Nhà đầu tư mạo hiểm - khoảng {pct}",

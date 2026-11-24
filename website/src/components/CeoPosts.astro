@@ -1,0 +1,455 @@
+---
+// "RevenueCat's CEO on X" (/revenuecat-pricing/ceo/, /<lang>/revenuecat-pricing/ceo/): how often
+// RevenueCat's CEO posts on X, from his public posts over 90 days, with a day-by-day calendar and
+// how much of it is about RevenueCat. The counts come from scripts/x-ceo.mjs (src/data/x-ceo.json):
+// counts only, no post text. The copy is in src/i18n/ceo/.
+import Base from "../layouts/Base.astro";
+import { CEO_PAGE, PRICING_PAGE, REPO_URL } from "../consts";
+import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
+import { tc } from "../i18n/ceo";
+import { tp } from "../i18n/pricing";
+import { RC } from "../savings";
+import x from "../data/x-ceo.json";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const c = tc(locale);
+const tag = langTag(locale);
+const nf = (o: Intl.NumberFormatOptions) => new Intl.NumberFormat(`${tag}-u-nu-latn`, o);
+const num = (n: number, digits = 0) => nf({ minimumFractionDigits: digits, maximumFractionDigits: digits }).format(n);
+const pctOf = (v: number) => nf({ style: "percent", maximumFractionDigits: 0 }).format(v);
+const money = (n: number) => nf({ style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
+const date = (d: string, o: Intl.DateTimeFormatOptions = { year: "numeric", month: "long", day: "numeric" }) =>
+  new Date(`${d}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { ...o, timeZone: "UTC" });
+const list = (items: string[]) => new Intl.ListFormat(`${tag}-u-nu-latn`, { type: "disjunction" }).format(items);
+
+const handle = `@${x.handle}`;
+const base = `@${x.baseline.handle}`;
+const perDay = num(x.posts / x.days, 1);
+const hours = num(x.activeHours / x.days, 1);
+const share = x.onTopic / x.posts;
+const baseShare = x.baseline.onTopic / x.baseline.posts;
+const vars = {
+  days: num(x.days),
+  handle,
+  posts: num(x.posts),
+  perDay,
+  hours,
+  active: num(x.daysWithPosts),
+  pct: pctOf(share),
+};
+
+// The calendar: weeks as columns, Monday to Sunday down each one.
+const lead = (new Date(`${x.start}T00:00:00Z`).getUTCDay() + 6) % 7;
+const maxHours = Math.max(...x.perDay.map((d) => d.hours));
+const level = (h: number) => (h === 0 ? 0 : Math.min(4, Math.ceil((h / maxHours) * 4)));
+
+const homePath = localePath(locale, "/");
+const pricingPath = localePath(locale, PRICING_PAGE);
+const pagePath = localePath(locale, CEO_PAGE);
+const site = Astro.site!.href.replace(/\/$/, "");
+const pageUrl = `${site}${pagePath}`;
+const scriptUrl = `${REPO_URL}/blob/main/website/scripts/x-ceo.mjs`;
+const pricingCrumb = tp(locale).hero.crumb;
+const title = fill(c.meta.title, vars);
+const headline = fill(c.hero.headline, vars);
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "@id": `${pageUrl}#article`,
+      headline: `${headline} ${c.hero.headlineAccent}`,
+      description: fill(c.meta.description, vars),
+      url: pageUrl,
+      mainEntityOfPage: pageUrl,
+      image: `${site}/og-revenuecat-ceo.png`,
+      inLanguage: tag,
+      datePublished: x.checked,
+      dateModified: x.checked,
+      author: { "@id": `${site}/#organization` },
+      publisher: { "@id": `${site}/#organization` },
+      about: [
+        { "@type": "Person", name: "Jacob Eiting", jobTitle: "CEO", worksFor: { "@type": "Organization", name: "RevenueCat", sameAs: "https://www.revenuecat.com" }, sameAs: `https://x.com/${x.handle}` },
+      ],
+      citation: [`https://x.com/${x.handle}`, scriptUrl],
+    },
+    { "@type": "Organization", "@id": `${site}/#organization`, name: "openpurr", url: `${site}/`, logo: `${site}/icon-192.png`, sameAs: [REPO_URL] },
+    {
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        { "@type": "ListItem", position: 1, name: "openpurr", item: `${site}${homePath}` },
+        { "@type": "ListItem", position: 2, name: pricingCrumb, item: `${site}${pricingPath}` },
+        { "@type": "ListItem", position: 3, name: c.hero.crumb, item: pageUrl },
+      ],
+    },
+  ],
+};
+const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
+const code = (s: string) => `<code>${s}</code>`;
+---
+
+<Base
+  locale={locale}
+  alternates={allLocales(CEO_PAGE)}
+  title={title}
+  description={fill(c.meta.description, vars)}
+  ogType="article"
+  ogImage="/og-revenuecat-ceo.png"
+  ogImageAlt={c.meta.ogImageAlt}
+>
+  <script type="application/ld+json" set:html={jsonLdText} />
+  <article class="ceo">
+    <section class="hero">
+      <div class="wrap">
+        <nav class="crumbs" aria-label="Breadcrumb">
+          <ol>
+            <li><a href={homePath}>openpurr</a></li>
+            <li><a href={pricingPath}>{pricingCrumb}</a></li>
+            <li aria-current="page">{c.hero.crumb}</li>
+          </ol>
+        </nav>
+        <span class="eyebrow">{c.hero.eyebrow}</span>
+        <h1>{headline} <span class="accent">{c.hero.headlineAccent}</span></h1>
+        <p class="lede">{fill(c.hero.lede, vars)}</p>
+        <p class="updated" set:html={fill(c.hero.updated, { date: `<time datetime="${x.checked}">${date(x.checked)}</time>` })} />
+
+        <dl class="stats">
+          <div><dt>{fill(c.stats.posts, vars)}</dt><dd data-count={x.posts}>{num(x.posts)}</dd></div>
+          <div><dt>{c.stats.perDay}</dt><dd data-count={x.posts / x.days} data-digits="1">{perDay}</dd></div>
+          <div><dt>{c.stats.hours}</dt><dd data-count={x.activeHours / x.days} data-digits="1">{hours}</dd></div>
+          <div><dt>{fill(c.stats.active, vars)}</dt><dd data-count={x.daysWithPosts}>{num(x.daysWithPosts)}</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="cal-section">
+      <div class="wrap">
+        <div class="card cal-card">
+          <h2>{fill(c.calendar.title, vars)}</h2>
+          <p class="muted">{c.calendar.note}</p>
+          <div class="cal-scroll">
+            <ol class="cal" aria-label={fill(c.hero.lede, vars)}>
+              {Array.from({ length: lead }, () => <li class="pad" aria-hidden="true" />)}
+              {
+                x.perDay.map((d, i) => (
+                  <li
+                    class={`l${level(d.hours)}`}
+                    style={`--i:${i}`}
+                    title={fill(c.calendar.cell, { date: date(d.date, { month: "short", day: "numeric" }), posts: num(d.posts), hours: num(d.hours) })}
+                  />
+                ))
+              }
+            </ol>
+          </div>
+          <div class="legend" aria-hidden="true">
+            <span>{c.calendar.less}</span>
+            <i class="l0" /><i class="l1" /><i class="l2" /><i class="l3" /><i class="l4" />
+            <span>{c.calendar.more}</span>
+            <span class="range">{date(x.start, { month: "short", day: "numeric" })} - {date(x.end, { month: "short", day: "numeric" })}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="topic-section">
+      <div class="wrap narrow">
+        <h2>{c.topic.title}</h2>
+        <div class="topic-row">
+          <span class="who">{c.topic.ceo}</span>
+          <div class="tbar" role="img" aria-label={`${c.topic.ceo}: ${pctOf(share)} ${c.topic.about}`}><i style={`--w:${share}`} /></div>
+          <b>{pctOf(share)}</b>
+        </div>
+        <div class="topic-row">
+          <span class="who">{fill(c.topic.base, { base })}</span>
+          <div class="tbar" role="img" aria-label={`${fill(c.topic.base, { base })}: ${pctOf(baseShare)} ${c.topic.about}`}><i style={`--w:${baseShare}`} /></div>
+          <b>{pctOf(baseShare)}</b>
+        </div>
+        <p class="tlabel muted">{c.topic.about}</p>
+        <p set:html={fill(c.topic.text, { pct: pctOf(share), onTopic: num(x.onTopic), posts: num(x.posts), basePct: pctOf(baseShare), base })} />
+
+        <h2>{c.pays.title}</h2>
+        <p>{fill(c.pays.text, { threshold: money(RC.threshold) })} <a href={pricingPath}>{c.pays.link}</a></p>
+        <div class="cta">
+          <a class="btn btn-primary" href={`${homePath}#savings`}>{c.pays.ctaKeep}</a>
+          <a class="btn btn-ghost" href={REPO_URL}>{c.pays.ctaGithub}</a>
+        </div>
+
+        <h2>{c.method.title}</h2>
+        <ul class="method">
+          <li set:html={fill(c.method.posts, { handle: `<a href="https://x.com/${x.handle}" rel="nofollow noopener">${handle}</a>`, start: date(x.start), end: date(x.end), checked: date(x.checked) })} />
+          <li set:html={c.method.hours} />
+          <li set:html={fill(c.method.rules, { accounts: list(x.rules.accounts.map((a) => code("@" + a))), sites: list(x.rules.sites.map(code)), terms: x.rules.terms.map(code).join(", ") })} />
+          <li set:html={c.method.limits} />
+          <li set:html={fill(c.method.data, { script: `<a href="${scriptUrl}">${c.method.scriptLink}</a>` })} />
+          <li set:html={c.method.affiliation} />
+        </ul>
+      </div>
+    </section>
+  </article>
+</Base>
+
+<script>
+  // Counts the big numbers up and fills in the calendar once each scrolls into view.
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const root = document.querySelector<HTMLElement>(".ceo");
+  if (root && !reduce && "IntersectionObserver" in window) {
+    const tag = document.documentElement.lang || "en";
+    const stats = [...root.querySelectorAll<HTMLElement>("[data-count]")];
+    const cal = root.querySelector<HTMLElement>(".cal")!;
+    cal.classList.add("waiting");
+    const count = (el: HTMLElement) => {
+      const to = Number(el.dataset.count);
+      const digits = Number(el.dataset.digits ?? 0);
+      const fmt = new Intl.NumberFormat(`${tag}-u-nu-latn`, { minimumFractionDigits: digits, maximumFractionDigits: digits });
+      const t0 = performance.now();
+      const step = (now: number) => {
+        const t = Math.min(1, Math.max(0, (now - t0) / 1100));
+        el.textContent = fmt.format(to * (1 - Math.pow(1 - t, 3)));
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    };
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (!e.isIntersecting) continue;
+          io.unobserve(e.target);
+          if (e.target === cal) cal.classList.remove("waiting");
+          else count(e.target as HTMLElement);
+        }
+      },
+      { threshold: 0.4 },
+    );
+    stats.forEach((el) => io.observe(el));
+    io.observe(cal);
+  }
+</script>
+
+<style>
+  .hero {
+    padding-bottom: 24px;
+  }
+  .crumbs ol {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    list-style: none;
+    margin: 0 0 22px;
+    padding: 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .crumbs li + li::before {
+    content: "/";
+    margin-inline-end: 6px;
+    opacity: 0.6;
+  }
+  .crumbs a {
+    color: inherit;
+  }
+  .hero h1 {
+    font-size: clamp(2.1rem, 5vw, 3.4rem);
+    line-height: 1.05;
+    letter-spacing: -0.035em;
+    max-width: 860px;
+    margin-bottom: 18px;
+  }
+  .accent {
+    color: var(--purple);
+  }
+  .updated {
+    margin: 16px 0 0;
+    font-size: 0.88rem;
+    color: var(--muted);
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin: 36px 0 0;
+    max-width: 900px;
+  }
+  .stats div {
+    border-top: 1px solid var(--line);
+    padding-top: 12px;
+  }
+  .stats dt {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  .stats dd {
+    margin: 0;
+    order: -1;
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stats div {
+    display: flex;
+    flex-direction: column;
+  }
+  .cal-section {
+    padding-top: 0;
+  }
+  .cal-card {
+    max-width: 900px;
+  }
+  .cal-card h2 {
+    font-size: 1.3rem;
+    letter-spacing: -0.02em;
+  }
+  .cal-scroll {
+    overflow-x: auto;
+    margin-top: 16px;
+  }
+  .cal {
+    --size: 34px;
+    display: grid;
+    grid-template-rows: repeat(7, var(--size));
+    grid-auto-flow: column;
+    grid-auto-columns: var(--size);
+    gap: 5px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .cal li,
+  .legend i {
+    border-radius: 4px;
+    background: var(--line);
+  }
+  .cal li {
+    transition: opacity 0.35s ease, transform 0.35s ease;
+    transition-delay: calc(var(--i, 0) * 12ms);
+  }
+  .cal.waiting li:not(.pad) {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  .cal .pad {
+    background: none;
+  }
+  .l1 { background: color-mix(in srgb, var(--purple) 30%, var(--line)) !important; }
+  .l2 { background: color-mix(in srgb, var(--purple) 55%, var(--line)) !important; }
+  .l3 { background: color-mix(in srgb, var(--purple) 80%, var(--line)) !important; }
+  .l4 { background: var(--purple-strong) !important; }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .legend i {
+    width: 14px;
+    height: 14px;
+    display: inline-block;
+  }
+  .legend .range {
+    margin-inline-start: auto;
+  }
+  .topic-section {
+    padding-top: 8px;
+  }
+  .narrow {
+    max-width: 760px;
+  }
+  .narrow h2 {
+    margin: 36px 0 14px;
+    font-size: 1.5rem;
+    letter-spacing: -0.02em;
+  }
+  .narrow h2:first-child {
+    margin-top: 0;
+  }
+  .narrow p,
+  .method li {
+    color: var(--text);
+    line-height: 1.6;
+  }
+  .topic-row {
+    display: grid;
+    grid-template-columns: 9rem 1fr 3rem;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+  }
+  .topic-row .who {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .topic-row b {
+    text-align: end;
+    font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .tbar {
+    height: 14px;
+    border-radius: 99px;
+    background: var(--purple-soft);
+    overflow: hidden;
+  }
+  .tbar i {
+    display: block;
+    height: 100%;
+    width: calc(var(--w) * 100%);
+    background: var(--purple);
+    border-radius: 99px;
+  }
+  .tlabel {
+    font-size: 0.85rem;
+    margin: 0 0 14px;
+  }
+  .cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .method {
+    padding-inline-start: 20px;
+    display: grid;
+    gap: 8px;
+  }
+  .method :global(code) {
+    font-size: 0.85em;
+  }
+  .muted {
+    color: var(--muted);
+  }
+  @media (max-width: 700px) {
+    .stats {
+      grid-template-columns: 1fr 1fr;
+    }
+    .topic-row {
+      grid-template-columns: 1fr 3rem;
+    }
+    .topic-row .who {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 900px) {
+    .cal {
+      --size: 24px;
+    }
+  }
+  @media (max-width: 420px) {
+    .cal {
+      --size: 18px;
+      gap: 4px;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .cal li {
+      transition: none;
+    }
+  }
+</style>

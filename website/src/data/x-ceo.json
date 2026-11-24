@@ -1,0 +1,507 @@
+{
+  "handle": "jeiting",
+  "checked": "2026-11-24",
+  "start": "2026-08-26",
+  "end": "2026-11-23",
+  "days": 90,
+  "followers": 14476,
+  "posts": 932,
+  "replies": 647,
+  "onTopic": 75,
+  "activeHours": 485,
+  "daysWithPosts": 89,
+  "perDay": [
+    {
+      "date": "2026-08-26",
+      "posts": 5,
+      "hours": 4
+    },
+    {
+      "date": "2026-08-27",
+      "posts": 5,
+      "hours": 4
+    },
+    {
+      "date": "2026-08-28",
+      "posts": 2,
+      "hours": 1
+    },
+    {
+      "date": "2026-08-29",
+      "posts": 2,
+      "hours": 2
+    },
+    {
+      "date": "2026-08-30",
+      "posts": 2,
+      "hours": 2
+    },
+    {
+      "date": "2026-08-31",
+      "posts": 5,
+      "hours": 3
+    },
+    {
+      "date": "2026-09-01",
+      "posts": 8,
+      "hours": 5
+    },
+    {
+      "date": "2026-09-02",
+      "posts": 17,
+      "hours": 10
+    },
+    {
+      "date": "2026-09-03",
+      "posts": 4,
+      "hours": 3
+    },
+    {
+      "date": "2026-09-04",
+      "posts": 2,
+      "hours": 1
+    },
+    {
+      "date": "2026-09-05",
+      "posts": 1,
+      "hours": 1
+    },
+    {
+      "date": "2026-09-06",
+      "posts": 7,
+      "hours": 4
+    },
+    {
+      "date": "2026-09-07",
+      "posts": 2,
+      "hours": 2
+    },
+    {
+      "date": "2026-09-08",
+      "posts": 12,
+      "hours": 8
+    },
+    {
+      "date": "2026-09-09",
+      "posts": 12,
+      "hours": 6
+    },
+    {
+      "date": "2026-09-10",
+      "posts": 15,
+      "hours": 10
+    },
+    {
+      "date": "2026-09-11",
+      "posts": 14,
+      "hours": 8
+    },
+    {
+      "date": "2026-09-12",
+      "posts": 28,
+      "hours": 10
+    },
+    {
+      "date": "2026-09-13",
+      "posts": 10,
+      "hours": 5
+    },
+    {
+      "date": "2026-09-14",
+      "posts": 6,
+      "hours": 5
+    },
+    {
+      "date": "2026-09-15",
+      "posts": 14,
+      "hours": 3
+    },
+    {
+      "date": "2026-09-16",
+      "posts": 7,
+      "hours": 4
+    },
+    {
+      "date": "2026-09-17",
+      "posts": 16,
+      "hours": 8
+    },
+    {
+      "date": "2026-09-18",
+      "posts": 15,
+      "hours": 7
+    },
+    {
+      "date": "2026-09-19",
+      "posts": 6,
+      "hours": 4
+    },
+    {
+      "date": "2026-09-20",
+      "posts": 1,
+      "hours": 1
+    },
+    {
+      "date": "2026-09-21",
+      "posts": 9,
+      "hours": 5
+    },
+    {
+      "date": "2026-09-22",
+      "posts": 20,
+      "hours": 11
+    },
+    {
+      "date": "2026-09-23",
+      "posts": 14,
+      "hours": 9
+    },
+    {
+      "date": "2026-09-24",
+      "posts": 10,
+      "hours": 4
+    },
+    {
+      "date": "2026-09-25",
+      "posts": 26,
+      "hours": 9
+    },
+    {
+      "date": "2026-09-26",
+      "posts": 16,
+      "hours": 7
+    },
+    {
+      "date": "2026-09-27",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-09-28",
+      "posts": 16,
+      "hours": 7
+    },
+    {
+      "date": "2026-09-29",
+      "posts": 26,
+      "hours": 9
+    },
+    {
+      "date": "2026-09-30",
+      "posts": 9,
+      "hours": 7
+    },
+    {
+      "date": "2026-10-01",
+      "posts": 9,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-02",
+      "posts": 28,
+      "hours": 12
+    },
+    {
+      "date": "2026-10-03",
+      "posts": 9,
+      "hours": 8
+    },
+    {
+      "date": "2026-10-04",
+      "posts": 4,
+      "hours": 2
+    },
+    {
+      "date": "2026-10-05",
+      "posts": 10,
+      "hours": 5
+    },
+    {
+      "date": "2026-10-06",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-07",
+      "posts": 10,
+      "hours": 8
+    },
+    {
+      "date": "2026-10-08",
+      "posts": 5,
+      "hours": 4
+    },
+    {
+      "date": "2026-10-09",
+      "posts": 12,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-10",
+      "posts": 13,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-11",
+      "posts": 9,
+      "hours": 5
+    },
+    {
+      "date": "2026-10-12",
+      "posts": 19,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-13",
+      "posts": 16,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-14",
+      "posts": 13,
+      "hours": 8
+    },
+    {
+      "date": "2026-10-15",
+      "posts": 4,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-16",
+      "posts": 10,
+      "hours": 7
+    },
+    {
+      "date": "2026-10-17",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-18",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-19",
+      "posts": 7,
+      "hours": 4
+    },
+    {
+      "date": "2026-10-20",
+      "posts": 3,
+      "hours": 2
+    },
+    {
+      "date": "2026-10-21",
+      "posts": 4,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-22",
+      "posts": 27,
+      "hours": 9
+    },
+    {
+      "date": "2026-10-23",
+      "posts": 16,
+      "hours": 8
+    },
+    {
+      "date": "2026-10-24",
+      "posts": 6,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-25",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-10-26",
+      "posts": 18,
+      "hours": 8
+    },
+    {
+      "date": "2026-10-27",
+      "posts": 21,
+      "hours": 10
+    },
+    {
+      "date": "2026-10-28",
+      "posts": 40,
+      "hours": 12
+    },
+    {
+      "date": "2026-10-29",
+      "posts": 9,
+      "hours": 6
+    },
+    {
+      "date": "2026-10-30",
+      "posts": 6,
+      "hours": 4
+    },
+    {
+      "date": "2026-10-31",
+      "posts": 5,
+      "hours": 4
+    },
+    {
+      "date": "2026-11-01",
+      "posts": 2,
+      "hours": 1
+    },
+    {
+      "date": "2026-11-02",
+      "posts": 13,
+      "hours": 7
+    },
+    {
+      "date": "2026-11-03",
+      "posts": 5,
+      "hours": 3
+    },
+    {
+      "date": "2026-11-04",
+      "posts": 13,
+      "hours": 6
+    },
+    {
+      "date": "2026-11-05",
+      "posts": 4,
+      "hours": 4
+    },
+    {
+      "date": "2026-11-06",
+      "posts": 3,
+      "hours": 3
+    },
+    {
+      "date": "2026-11-07",
+      "posts": 4,
+      "hours": 3
+    },
+    {
+      "date": "2026-11-08",
+      "posts": 1,
+      "hours": 1
+    },
+    {
+      "date": "2026-11-09",
+      "posts": 8,
+      "hours": 5
+    },
+    {
+      "date": "2026-11-10",
+      "posts": 26,
+      "hours": 12
+    },
+    {
+      "date": "2026-11-11",
+      "posts": 21,
+      "hours": 12
+    },
+    {
+      "date": "2026-11-12",
+      "posts": 15,
+      "hours": 8
+    },
+    {
+      "date": "2026-11-13",
+      "posts": 34,
+      "hours": 11
+    },
+    {
+      "date": "2026-11-14",
+      "posts": 11,
+      "hours": 6
+    },
+    {
+      "date": "2026-11-15",
+      "posts": 2,
+      "hours": 2
+    },
+    {
+      "date": "2026-11-16",
+      "posts": 4,
+      "hours": 2
+    },
+    {
+      "date": "2026-11-17",
+      "posts": 9,
+      "hours": 7
+    },
+    {
+      "date": "2026-11-18",
+      "posts": 16,
+      "hours": 5
+    },
+    {
+      "date": "2026-11-19",
+      "posts": 16,
+      "hours": 6
+    },
+    {
+      "date": "2026-11-20",
+      "posts": 2,
+      "hours": 2
+    },
+    {
+      "date": "2026-11-21",
+      "posts": 4,
+      "hours": 4
+    },
+    {
+      "date": "2026-11-22",
+      "posts": 0,
+      "hours": 0
+    },
+    {
+      "date": "2026-11-23",
+      "posts": 7,
+      "hours": 6
+    }
+  ],
+  "baseline": {
+    "handle": "RevenueCat",
+    "posts": 290,
+    "onTopic": 132
+  },
+  "rules": {
+    "accounts": [
+      "revenuecat",
+      "subclubhq",
+      "appstorepayday"
+    ],
+    "sites": [
+      "revenuecat.com",
+      "subclub.com",
+      "rev.cat"
+    ],
+    "terms": [
+      "revenuecat",
+      "revenue cat",
+      "subscription",
+      "subscriptions",
+      "paywall",
+      "paywalls",
+      "in-app purchase",
+      "in-app purchases",
+      "iap",
+      "storekit",
+      "play billing",
+      "monetization",
+      "monetisation",
+      "mrr",
+      "arr",
+      "ltv",
+      "churn",
+      "free trial",
+      "entitlement",
+      "entitlements",
+      "app store",
+      "google play",
+      "sub club"
+    ]
+  }
+}
