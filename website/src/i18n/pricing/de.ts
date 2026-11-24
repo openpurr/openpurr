@@ -53,7 +53,7 @@ export const pricingDe: PricingDict = {
       "Risikokapitalgeber haben in fünf Runden etwa {funding} in RevenueCat gesteckt, und nach den gemeldeten Bewertungen gehört ihnen mehr als die Hälfte. Einen Anteil an jeder Zahlung brauchen sie nicht. Jede Gebühr, die du zahlst, macht ihr Unternehmen mehr wert, und beim Verkauf kassieren sie. Nach Anteilen gerechnet fließen etwa {vc} von dem, was du jedes Jahr zahlst, in ihre Rendite.",
     investorsLabel: "Die Investoren von RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "Deine 1 % kaufen bei RevenueCat etwa {days} Entwicklertage im Jahr. Denselben Job selbst zu betreiben kostet {infra}.",
+    punch: "Das kaufen deine 1 %. Denselben Job selbst zu betreiben kostet {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Behalte die restlichen {keep}.",
     ctaKeep: "Behalte deine 1 % →",

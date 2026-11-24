@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoKo: CeoDict = {
   meta: {
-    title: "RevenueCat CEO는 X에 하루 {perDay}번 글을 올립니다 - openpurr",
+    title: "RevenueCat CEO Jacob Eiting, X에 하루 {perDay}번 게시",
     description:
-      "RevenueCat CEO는 90일간 X에 {posts}번, 하루 {hours}개 시간대에 글을 올렸습니다. RevenueCat 언급은 약 {pct}. 그가 X에 쓰는 시간의 일부를 내 1%가 냅니다.",
+      "RevenueCat CEO Jacob Eiting은 90일간 X에 {posts}번, 하루 {hours}개 시간대에 글을 올렸습니다. RevenueCat 언급은 약 {pct}. 그 비용의 일부는 내 1%입니다.",
     ogImageAlt: "RevenueCat CEO는 매일 X에 하루 약 10번 글을 올립니다. 그 비용의 일부는 내 1%입니다.",
   },
   hero: {
     crumb: "X의 CEO",
     eyebrow: "내 1%가 가는 곳",
-    headline: "RevenueCat CEO는 X에 하루 {perDay}번 글을 올립니다.",
+    headline: "RevenueCat CEO Jacob Eiting은 X에 하루 {perDay}번 글을 올립니다.",
     headlineAccent: "그 비용의 일부는 내 1%입니다.",
     lede: "지난 {days}일 동안 RevenueCat CEO Jacob Eiting({handle})은 X에 {posts}번 글을 올렸습니다. 하루 약 {perDay}개를, 하루 {hours}개 시간대에 나눠, {days}일 중 {active}일 동안 올린 셈입니다.",
     updated: "{date} 업데이트 - 공개 게시물 기준 집계",
@@ -42,6 +42,27 @@ export const ceoKo: CeoDict = {
     link: "내 1%의 나머지가 어디로 가는지 보기 →",
     ctaKeep: "내 1% 지키기 →",
     ctaGithub: "GitHub에서 openpurr 보기",
+  },
+  faq: {
+    title: "자주 묻는 질문",
+    items: {
+      who: {
+        q: "RevenueCat의 CEO는 누구인가요?",
+        a: "Jacob Eiting은 RevenueCat의 공동 창업자이자 CEO입니다. X에서 {handle} 계정으로 글을 올리며, 팔로워는 약 {followers}명입니다.",
+      },
+      often: {
+        q: "RevenueCat CEO는 X에 얼마나 자주 글을 올리나요?",
+        a: "{end}까지 {days}일 동안 Jacob Eiting은 X에 {posts}번 글을 올렸습니다. 답글은 포함하고 리포스트는 제외한 수치입니다. 하루 약 {perDay}개를, 하루 {hours}개 시간대에 나눠, {days}일 중 {active}일 동안 올린 셈입니다.",
+      },
+      about: {
+        q: "RevenueCat CEO는 X에 어떤 글을 올리나요?",
+        a: "대부분 RevenueCat이 아닌 다른 이야기입니다. 저희 키워드 기준으로 그의 게시물 중 {pct}가 RevenueCat이나 그 사업을 언급하며, {base} 계정의 게시물에서는 {basePct}입니다. 기준이 놓치는 글도 있으니 {pct}는 최솟값으로 보세요.",
+      },
+      pays: {
+        q: "RevenueCat의 1% 수수료가 CEO에게도 쓰이나요?",
+        a: "일부는 그렇습니다. RevenueCat은 월 매출이 {threshold}를 넘으면 전체 매출의 1%를 가져가고, 그 돈으로 회사가 돌아가며 경영진의 보수도 거기서 나옵니다. RevenueCat은 임원 보수를 공개하지 않습니다.",
+      },
+    },
   },
   method: {
     title: "집계 방법",

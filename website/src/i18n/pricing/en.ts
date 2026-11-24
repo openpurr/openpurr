@@ -64,8 +64,8 @@ export const pricingEn = {
     ownersText:
       "Venture investors have put about {funding} into RevenueCat across five rounds, and by the reported valuations they own more than half of it. They don't need a cut of each payment. Every fee you pay makes the company they own worth more, and they collect when it sells. In ownership terms, about {vc} of what you pay each year is building their return.",
     investorsLabel: "RevenueCat's investors",
-    /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "Your 1% buys about {days} engineer-days a year at RevenueCat. Running the same job yourself costs {infra}.",
+    /** HTML. {infra} is an amount that moves with the slider. */
+    punch: "That's what your 1% buys. Running the same job yourself costs {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Keep the other {keep}.",
     ctaKeep: "Keep your 1% →",

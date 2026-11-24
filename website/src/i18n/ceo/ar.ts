@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoAr: CeoDict = {
   meta: {
-    title: "الرئيس التنفيذي لـ RevenueCat ينشر على X {perDay} مرة يوميًا - openpurr",
+    title: "الرئيس التنفيذي لـ RevenueCat، Jacob Eiting: {perDay} منشور يوميًا على X",
     description:
-      "في 90 يومًا، نشر الرئيس التنفيذي لـ RevenueCat على X {posts} مرة، موزعة على {hours} ساعة مختلفة يوميًا. نحو {pct} منها يذكر RevenueCat. ونسبة 1% التي تدفعها تساهم في دفع ثمن وقته على X.",
+      "نشر الرئيس التنفيذي لـ RevenueCat، Jacob Eiting، على X {posts} مرة في 90 يومًا، موزعة على {hours} ساعة مختلفة يوميًا. نحو {pct} منها يذكر RevenueCat. ونسبة 1% التي تدفعها تساهم في دفع ثمن ذلك.",
     ogImageAlt: "الرئيس التنفيذي لـ RevenueCat ينشر على X نحو 10 مرات يوميًا، كل يوم. ونسبة 1% التي تدفعها تساهم في دفع ثمن ذلك.",
   },
   hero: {
     crumb: "الرئيس التنفيذي على X",
     eyebrow: "أين تذهب نسبة 1%",
-    headline: "الرئيس التنفيذي لـ RevenueCat ينشر على X {perDay} مرة يوميًا.",
+    headline: "الرئيس التنفيذي لـ RevenueCat، Jacob Eiting، ينشر على X {perDay} مرة يوميًا.",
     headlineAccent: "ونسبة 1% التي تدفعها تساهم في دفع ثمن ذلك.",
     lede: "خلال آخر {days} يومًا، نشر Jacob Eiting ({handle})، الرئيس التنفيذي لـ RevenueCat، {posts} منشورًا على X. أي نحو {perDay} منشور يوميًا، موزعة على {hours} ساعة مختلفة في اليوم، في {active} من أصل {days} يومًا.",
     updated: "آخر تحديث: {date} - محسوب من منشورات علنية",
@@ -42,6 +42,27 @@ export const ceoAr: CeoDict = {
     link: "اعرف أين يذهب باقي نسبة 1% ←",
     ctaKeep: "احتفظ بنسبة 1% لنفسك ←",
     ctaGithub: "openpurr على GitHub",
+  },
+  faq: {
+    title: "أسئلة يطرحها الناس",
+    items: {
+      who: {
+        q: "من هو الرئيس التنفيذي لـ RevenueCat؟",
+        a: "Jacob Eiting هو الشريك المؤسس والرئيس التنفيذي لـ RevenueCat. ينشر على X باسم {handle}، ويتابعه هناك نحو {followers} شخص.",
+      },
+      often: {
+        q: "كم مرة ينشر الرئيس التنفيذي لـ RevenueCat على X؟",
+        a: "خلال {days} يومًا حتى {end}، نشر Jacob Eiting على X {posts} مرة، مع احتساب الردود دون إعادة النشر. أي نحو {perDay} منشور يوميًا، موزعة على {hours} ساعة مختلفة في اليوم، في {active} من أصل {days} يومًا.",
+      },
+      about: {
+        q: "عمّ ينشر الرئيس التنفيذي لـ RevenueCat على X؟",
+        a: "في الغالب عن أمور غير RevenueCat. وفق قواعد الكلمات المفتاحية التي نعتمدها، {pct} من منشوراته تذكر RevenueCat أو أعماله، مقابل {basePct} من منشورات حساب {base} نفسه. والقواعد تفوّت بعض المنشورات، لذا اعتبر {pct} حدًا أدنى.",
+      },
+      pays: {
+        q: "هل تموّل رسوم RevenueCat البالغة 1% رئيسه التنفيذي؟",
+        a: "جزئيًا. يأخذ RevenueCat نسبة 1% من كل إيراداتك بمجرد أن تتجاوز {threshold} شهريًا، وهذا المال يُشغّل الشركة، بما في ذلك ما تدفعه لقيادتها. ولا يُفصح RevenueCat عمّا يدفعه لمديريه التنفيذيين.",
+      },
+    },
   },
   method: {
     title: "كيف أحصيناها",

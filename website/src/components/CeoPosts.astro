@@ -1,5 +1,5 @@
 ---
-// "RevenueCat's CEO on X" (/revenuecat-pricing/ceo/, /<lang>/revenuecat-pricing/ceo/): how often
+// "RevenueCat's CEO on X" (/revenuecat-ceo/, /<lang>/revenuecat-ceo/): how often
 // RevenueCat's CEO posts on X, from his public posts over 90 days, with a day-by-day calendar and
 // how much of it is about RevenueCat. The counts come from scripts/x-ceo.mjs (src/data/x-ceo.json):
 // counts only, no post text. The copy is in src/i18n/ceo/.
@@ -56,6 +56,23 @@ const pricingCrumb = tp(locale).hero.crumb;
 const title = fill(c.meta.title, vars);
 const headline = fill(c.hero.headline, vars);
 
+// Answers in plain sentences: shown in the FAQ, and the same text in the FAQPage structured data.
+const fi = c.faq.items;
+const faq = [
+  { q: fi.who.q, a: fill(fi.who.a, { handle, followers: num(x.followers) }) },
+  { q: fi.often.q, a: fill(fi.often.a, { ...vars, end: date(x.end) }) },
+  { q: fi.about.q, a: fill(fi.about.a, { pct: pctOf(share), basePct: pctOf(baseShare), base }) },
+  { q: fi.pays.q, a: fill(fi.pays.a, { threshold: money(RC.threshold) }) },
+];
+const person = {
+  "@type": "Person",
+  "@id": `${site}/revenuecat-ceo/#person`,
+  name: "Jacob Eiting",
+  jobTitle: "CEO",
+  worksFor: { "@type": "Organization", name: "RevenueCat", url: "https://www.revenuecat.com" },
+  sameAs: [`https://x.com/${x.handle}`],
+};
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
@@ -72,10 +89,15 @@ const jsonLd = {
       dateModified: x.checked,
       author: { "@id": `${site}/#organization` },
       publisher: { "@id": `${site}/#organization` },
-      about: [
-        { "@type": "Person", name: "Jacob Eiting", jobTitle: "CEO", worksFor: { "@type": "Organization", name: "RevenueCat", sameAs: "https://www.revenuecat.com" }, sameAs: `https://x.com/${x.handle}` },
-      ],
+      about: { "@id": person["@id"] },
       citation: [`https://x.com/${x.handle}`, scriptUrl],
+    },
+    person,
+    {
+      "@type": "FAQPage",
+      "@id": `${pageUrl}#faq`,
+      inLanguage: tag,
+      mainEntity: faq.map(({ q, a }) => ({ "@type": "Question", name: q, acceptedAnswer: { "@type": "Answer", text: a } })),
     },
     { "@type": "Organization", "@id": `${site}/#organization`, name: "openpurr", url: `${site}/`, logo: `${site}/icon-192.png`, sameAs: [REPO_URL] },
     {
@@ -156,7 +178,8 @@ const code = (s: string) => `<code>${s}</code>`;
     </section>
 
     <section class="topic-section">
-      <div class="wrap narrow">
+      <div class="wrap">
+        <div class="narrow">
         <h2>{c.topic.title}</h2>
         <div class="topic-row">
           <span class="who">{c.topic.ceo}</span>
@@ -178,6 +201,16 @@ const code = (s: string) => `<code>${s}</code>`;
           <a class="btn btn-ghost" href={REPO_URL}>{c.pays.ctaGithub}</a>
         </div>
 
+        <h2>{c.faq.title}</h2>
+        <div class="faq">
+          {faq.map(({ q, a }) => (
+            <details>
+              <summary><h3>{q}</h3></summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </div>
+
         <h2>{c.method.title}</h2>
         <ul class="method">
           <li set:html={fill(c.method.posts, { handle: `<a href="https://x.com/${x.handle}" rel="nofollow noopener">${handle}</a>`, start: date(x.start), end: date(x.end), checked: date(x.checked) })} />
@@ -187,6 +220,7 @@ const code = (s: string) => `<code>${s}</code>`;
           <li set:html={fill(c.method.data, { script: `<a href="${scriptUrl}">${c.method.scriptLink}</a>` })} />
           <li set:html={c.method.affiliation} />
         </ul>
+        </div>
       </div>
     </section>
   </article>
@@ -296,6 +330,7 @@ const code = (s: string) => `<code>${s}</code>`;
   }
   .cal-section {
     padding-top: 0;
+    padding-bottom: 48px;
   }
   .cal-card {
     max-width: 900px;
@@ -357,7 +392,7 @@ const code = (s: string) => `<code>${s}</code>`;
     margin-inline-start: auto;
   }
   .topic-section {
-    padding-top: 8px;
+    padding-top: 0;
   }
   .narrow {
     max-width: 760px;
@@ -377,7 +412,7 @@ const code = (s: string) => `<code>${s}</code>`;
   }
   .topic-row {
     display: grid;
-    grid-template-columns: 9rem 1fr 3rem;
+    grid-template-columns: 12rem 1fr 3rem;
     align-items: center;
     gap: 12px;
     margin-bottom: 10px;
@@ -413,6 +448,33 @@ const code = (s: string) => `<code>${s}</code>`;
     flex-wrap: wrap;
     gap: 12px;
     margin-top: 20px;
+  }
+  .faq details {
+    border-bottom: 1px solid var(--line);
+    padding: 14px 0;
+  }
+  .faq summary {
+    cursor: pointer;
+    list-style: none;
+  }
+  .faq summary h3 {
+    display: inline;
+    font-size: 1.05rem;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq summary::after {
+    content: "+";
+    float: inline-end;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .faq details[open] summary::after {
+    content: "–";
+  }
+  .faq p {
+    margin-top: 10px;
   }
   .method {
     padding-inline-start: 20px;

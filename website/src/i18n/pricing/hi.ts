@@ -53,7 +53,7 @@ export const pricingHi: PricingDict = {
       "VC investors ने पाँच rounds में RevenueCat में लगभग {funding} लगाए हैं, और reported valuations के हिसाब से company का आधे से ज़्यादा हिस्सा उनका है। उन्हें हर payment में cut नहीं चाहिए। आपकी दी हुई हर fee उनकी company की value बढ़ाती है, और company बिकने पर वे कमाते हैं। Ownership के हिसाब से, आप हर साल जो देते हैं उसमें से लगभग {vc} उनका return बना रहा है।",
     investorsLabel: "RevenueCat के investors",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "आपका 1% RevenueCat में साल भर के लगभग {days} engineer-days ख़रीदता है। यही काम ख़ुद चलाने का ख़र्च {infra} है।",
+    punch: "आपका 1% यही खरीदता है। यही काम ख़ुद चलाने का ख़र्च {infra} है।",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "बाक़ी {keep} अपने पास रखें।",
     ctaKeep: "अपना 1% अपने पास रखें →",

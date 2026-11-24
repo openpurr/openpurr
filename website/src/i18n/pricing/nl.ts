@@ -53,7 +53,7 @@ export const pricingNl: PricingDict = {
       "Durfinvesteerders hebben in vijf rondes ongeveer {funding} in RevenueCat gestoken, en volgens de gerapporteerde waarderingen bezitten ze er meer dan de helft van. Ze hoeven geen deel van elke betaling. Elke vergoeding die je betaalt, maakt het bedrijf dat van hen is meer waard, en bij de verkoop cashen zij. In eigendom uitgedrukt gaat ongeveer {vc} van wat je elk jaar betaalt naar hun rendement.",
     investorsLabel: "De investeerders van RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "Je 1% koopt ongeveer {days} ontwikkelaarsdagen per jaar bij RevenueCat. Hetzelfde werk zelf draaien kost {infra}.",
+    punch: "Dat is wat je 1% koopt. Hetzelfde werk zelf draaien kost {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Houd die andere {keep} zelf.",
     ctaKeep: "Houd je 1% →",

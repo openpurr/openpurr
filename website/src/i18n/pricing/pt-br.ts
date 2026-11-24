@@ -53,7 +53,7 @@ export const pricingPtBr: PricingDict = {
       "Investidores de risco já colocaram cerca de {funding} no RevenueCat em cinco rodadas e, pelas avaliações divulgadas, são donos de mais da metade da empresa. Eles não precisam de uma fatia de cada pagamento. Cada taxa que você paga valoriza a empresa que é deles, e eles embolsam quando ela for vendida. Em termos de participação, cerca de {vc} do que você paga por ano vira retorno para eles.",
     investorsLabel: "Os investidores do RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "Seu 1% compra cerca de {days} dias de engenheiro por ano no RevenueCat. Fazer o mesmo trabalho por conta própria custa {infra}.",
+    punch: "É isso que o seu 1% compra. Rodar o mesmo trabalho por conta própria custa {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Fique com os outros {keep}.",
     ctaKeep: "Fique com o seu 1% →",

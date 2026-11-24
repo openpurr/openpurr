@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoId: CeoDict = {
   meta: {
-    title: "CEO RevenueCat posting di X {perDay} kali sehari - openpurr",
+    title: "CEO RevenueCat Jacob Eiting: {perDay} postingan sehari di X",
     description:
-      "Dalam 90 hari, CEO RevenueCat memposting {posts} kali di X, di {hours} jam berbeda per hari. Sekitar {pct} menyebut RevenueCat. 1% Anda ikut membayar waktunya di X.",
+      "CEO RevenueCat Jacob Eiting memposting {posts} kali di X dalam 90 hari, di {hours} jam berbeda per hari. Sekitar {pct} menyebut RevenueCat. 1% Anda ikut membayarnya.",
     ogImageAlt: "CEO RevenueCat posting di X sekitar 10 kali sehari, setiap hari. 1% Anda ikut membayarnya.",
   },
   hero: {
     crumb: "CEO di X",
     eyebrow: "Ke mana 1% Anda pergi",
-    headline: "CEO RevenueCat posting di X {perDay} kali sehari.",
+    headline: "CEO RevenueCat, Jacob Eiting, posting di X {perDay} kali sehari.",
     headlineAccent: "1% Anda ikut membayarnya.",
     lede: "Dalam {days} hari terakhir, CEO RevenueCat, Jacob Eiting ({handle}), memposting {posts} kali di X. Itu sekitar {perDay} postingan sehari, tersebar di {hours} jam berbeda per hari, pada {active} dari {days} hari.",
     updated: "Diperbarui {date} - Dihitung dari postingan publik",
@@ -42,6 +42,27 @@ export const ceoId: CeoDict = {
     link: "Lihat ke mana sisa 1% Anda pergi →",
     ctaKeep: "Simpan 1% Anda →",
     ctaGithub: "openpurr di GitHub",
+  },
+  faq: {
+    title: "Pertanyaan yang sering diajukan",
+    items: {
+      who: {
+        q: "Siapa CEO RevenueCat?",
+        a: "Jacob Eiting adalah salah satu pendiri sekaligus CEO RevenueCat. Ia memposting di X sebagai {handle}, dengan sekitar {followers} pengikut.",
+      },
+      often: {
+        q: "Seberapa sering CEO RevenueCat memposting di X?",
+        a: "Dalam {days} hari hingga {end}, Jacob Eiting memposting {posts} kali di X, termasuk balasan tetapi tidak termasuk repost. Itu sekitar {perDay} postingan sehari, di {hours} jam berbeda per hari, pada {active} dari {days} hari.",
+      },
+      about: {
+        q: "Apa yang diposting CEO RevenueCat di X?",
+        a: "Sebagian besar hal di luar RevenueCat. Menurut aturan kata kunci kami, {pct} postingannya menyebut RevenueCat atau bisnisnya, dibandingkan {basePct} pada postingan akun {base} sendiri. Aturan ini melewatkan sebagian postingan, jadi anggap {pct} sebagai batas bawah.",
+      },
+      pays: {
+        q: "Apakah biaya 1% RevenueCat ikut membayar CEO-nya?",
+        a: "Sebagian. RevenueCat mengambil 1% dari seluruh pendapatan Anda begitu melewati {threshold} per bulan, dan uang itu menjalankan perusahaan, termasuk gaji para pimpinannya. RevenueCat tidak memublikasikan berapa yang dibayarkan kepada para eksekutifnya.",
+      },
+    },
   },
   method: {
     title: "Cara kami menghitung",

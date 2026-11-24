@@ -53,7 +53,7 @@ export const pricingAr: PricingDict = {
       "ضخّ مستثمرو رأس المال المغامر نحو {funding} في RevenueCat عبر خمس جولات، وبحسب التقييمات المنشورة يملكون أكثر من نصف الشركة. لا يحتاجون إلى حصة من كل دفعة: كل رسم تدفعه يرفع قيمة الشركة التي يملكونها، ويقبضون حين تُباع. وبمنطق الملكية، نحو {vc} مما تدفعه كل سنة يبني عائدهم.",
     investorsLabel: "مستثمرو RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "نسبة 1% التي تدفعها تشتري نحو {days} يوم عمل لمهندس في RevenueCat كل سنة. وتشغيل المهمة نفسها بنفسك يكلّف {infra}.",
+    punch: "هذا ما تشتريه نسبة 1% التي تدفعها. وتشغيل المهمة نفسها بنفسك يكلّف {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "واحتفظ بالباقي: {keep}.",
     ctaKeep: "احتفظ بنسبة 1% لنفسك ←",

@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoHi: CeoDict = {
   meta: {
-    title: "RevenueCat के CEO X पर दिन में {perDay} बार post करते हैं - openpurr",
+    title: "RevenueCat के CEO Jacob Eiting: X पर दिन में {perDay} posts",
     description:
-      "90 दिनों में RevenueCat के CEO ने X पर {posts} बार post किया, रोज़ {hours} अलग-अलग घंटों में। लगभग {pct} में RevenueCat का ज़िक्र है। आपका 1% X पर उनके समय का ख़र्च उठाने में मदद करता है।",
+      "RevenueCat के CEO Jacob Eiting ने 90 दिनों में X पर {posts} बार post किया, रोज़ {hours} अलग-अलग घंटों में। लगभग {pct} में RevenueCat का ज़िक्र है। आपका 1% इसका ख़र्च उठाने में मदद करता है।",
     ogImageAlt: "RevenueCat के CEO X पर दिन में लगभग 10 बार post करते हैं, हर दिन। आपका 1% इसका ख़र्च उठाने में मदद करता है।",
   },
   hero: {
     crumb: "X पर CEO",
     eyebrow: "आपका 1% कहाँ जाता है",
-    headline: "RevenueCat के CEO X पर दिन में {perDay} बार post करते हैं।",
+    headline: "RevenueCat के CEO, Jacob Eiting, X पर दिन में {perDay} बार post करते हैं।",
     headlineAccent: "आपका 1% इसका ख़र्च उठाने में मदद करता है।",
     lede: "पिछले {days} दिनों में RevenueCat के CEO, Jacob Eiting ({handle}), ने X पर {posts} बार post किया। यानी दिन में लगभग {perDay} posts, जो हर दिन {hours} अलग-अलग घंटों में फैले थे, {days} में से {active} दिनों पर।",
     updated: "अपडेट: {date} - Public posts से गिना गया",
@@ -42,6 +42,27 @@ export const ceoHi: CeoDict = {
     link: "देखिए आपके 1% का बाक़ी हिस्सा कहाँ जाता है →",
     ctaKeep: "अपना 1% अपने पास रखें →",
     ctaGithub: "GitHub पर openpurr",
+  },
+  faq: {
+    title: "लोग ये सवाल पूछते हैं",
+    items: {
+      who: {
+        q: "RevenueCat के CEO कौन हैं?",
+        a: "Jacob Eiting, RevenueCat के co-founder और CEO हैं। वे X पर {handle} नाम से post करते हैं, जहाँ लगभग {followers} लोग उन्हें follow करते हैं।",
+      },
+      often: {
+        q: "RevenueCat के CEO X पर कितनी बार post करते हैं?",
+        a: "{end} तक के {days} दिनों में Jacob Eiting ने X पर {posts} बार post किया, replies गिनकर लेकिन reposts छोड़कर। यानी दिन में लगभग {perDay} posts, रोज़ {hours} अलग-अलग घंटों में, {days} में से {active} दिनों पर।",
+      },
+      about: {
+        q: "RevenueCat के CEO X पर किस बारे में post करते हैं?",
+        a: "ज़्यादातर RevenueCat के अलावा दूसरी चीज़ों के बारे में। हमारे keyword नियमों के हिसाब से उनके {pct} posts में RevenueCat या उसके business का ज़िक्र है, जबकि {base} के अपने posts में यह {basePct} है। ये नियम कुछ posts छोड़ देते हैं, इसलिए {pct} को न्यूनतम मानें।",
+      },
+      pays: {
+        q: "क्या RevenueCat की 1% fee से उसके CEO का ख़र्च भी चलता है?",
+        a: "कुछ हद तक। हर महीने {threshold} पार करते ही RevenueCat आपके पूरे revenue का 1% लेता है, और इसी पैसे से company चलती है, उसकी leadership की तनख़्वाह भी। RevenueCat यह public नहीं करता कि वह अपने executives को कितना देता है।",
+      },
+    },
   },
   method: {
     title: "हमने कैसे गिना",

@@ -53,7 +53,7 @@ export const pricingId: PricingDict = {
       "Investor ventura telah menanamkan sekitar {funding} ke RevenueCat dalam lima putaran, dan menurut valuasi yang dilaporkan mereka memiliki lebih dari separuhnya. Mereka tidak perlu potongan dari setiap pembayaran. Setiap biaya yang Anda bayar menaikkan nilai perusahaan milik mereka, dan mereka panen saat perusahaan itu dijual. Dari sisi kepemilikan, sekitar {vc} dari yang Anda bayar setiap tahun sedang membangun keuntungan mereka.",
     investorsLabel: "Investor RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "1% Anda membeli sekitar {days} hari kerja engineer per tahun di RevenueCat. Menjalankan pekerjaan yang sama sendiri cukup {infra}.",
+    punch: "Itulah yang dibeli 1% Anda. Menjalankan pekerjaan yang sama sendiri hanya {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Simpan {keep} sisanya.",
     ctaKeep: "Simpan 1% Anda →",

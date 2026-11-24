@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoTr: CeoDict = {
   meta: {
-    title: "RevenueCat CEO'su X'te günde {perDay} kez paylaşım yapıyor - openpurr",
+    title: "RevenueCat CEO'su Jacob Eiting: X'te günde {perDay} paylaşım",
     description:
-      "RevenueCat CEO'su 90 günde X'te {posts} kez paylaşım yaptı, günde {hours} farklı saatte. RevenueCat'ten bahsedenler yaklaşık {pct}. %1'iniz onun X'te geçirdiği zamanı da ödüyor.",
+      "RevenueCat CEO'su Jacob Eiting 90 günde X'te {posts} kez paylaşım yaptı, günde {hours} farklı saatte. RevenueCat'ten bahsedenler yaklaşık {pct}. %1'iniz bunun parasını da ödüyor.",
     ogImageAlt: "RevenueCat CEO'su X'te günde yaklaşık 10 kez paylaşım yapıyor, her gün. %1'iniz bunun parasını da ödüyor.",
   },
   hero: {
     crumb: "X'teki CEO",
     eyebrow: "%1'iniz nereye gidiyor",
-    headline: "RevenueCat CEO'su X'te günde {perDay} kez paylaşım yapıyor.",
+    headline: "RevenueCat CEO'su Jacob Eiting, X'te günde {perDay} kez paylaşım yapıyor.",
     headlineAccent: "%1'iniz bunun parasını da ödüyor.",
     lede: "Son {days} günde RevenueCat'in CEO'su Jacob Eiting ({handle}), X'te {posts} kez paylaşım yaptı. Bu, günde yaklaşık {perDay} paylaşım demek: her gün {hours} farklı saate yayılmış, {days} günün {active} gününde.",
     updated: "Güncellendi: {date} - Kamuya açık paylaşımlardan sayıldı",
@@ -42,6 +42,27 @@ export const ceoTr: CeoDict = {
     link: "%1'inizin geri kalanının nereye gittiğini görün →",
     ctaKeep: "%1'iniz sizde kalsın →",
     ctaGithub: "GitHub'da openpurr",
+  },
+  faq: {
+    title: "Sık sorulan sorular",
+    items: {
+      who: {
+        q: "RevenueCat'in CEO'su kim?",
+        a: "Jacob Eiting, RevenueCat'in kurucu ortağı ve CEO'su. X'te {handle} hesabıyla paylaşım yapıyor ve onu yaklaşık {followers} kişi takip ediyor.",
+      },
+      often: {
+        q: "RevenueCat'in CEO'su X'te ne sıklıkla paylaşım yapıyor?",
+        a: "{end} tarihine kadarki {days} günde Jacob Eiting X'te {posts} kez paylaşım yaptı; yanıtlar dahil, yeniden paylaşımlar hariç. Bu, günde yaklaşık {perDay} paylaşım demek: her gün {hours} farklı saatte, {days} günün {active} gününde.",
+      },
+      about: {
+        q: "RevenueCat'in CEO'su X'te ne hakkında paylaşım yapıyor?",
+        a: "Çoğunlukla RevenueCat dışındaki konular hakkında. Anahtar kelime kurallarımıza göre paylaşımlarının {pct} kadarı RevenueCat'ten ya da şirketin işinden bahsediyor; {base} hesabının kendi paylaşımlarında bu oran {basePct}. Kurallar bazı paylaşımları kaçırıyor, bu yüzden {pct} oranını bir alt sınır olarak görün.",
+      },
+      pays: {
+        q: "RevenueCat'in %1'lik ücreti CEO'suna da gidiyor mu?",
+        a: "Kısmen. Aylık {threshold} eşiğini geçtiğiniz anda RevenueCat tüm gelirinizin %1'ini alır ve şirket bu parayla döner; yönetim kadrosuna ödediği para da buna dahil. RevenueCat, üst yöneticilerine ne kadar ödediğini açıklamıyor.",
+      },
+    },
   },
   method: {
     title: "Nasıl saydık",

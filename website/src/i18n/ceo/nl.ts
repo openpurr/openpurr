@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoNl: CeoDict = {
   meta: {
-    title: "De CEO van RevenueCat post {perDay} keer per dag op X - openpurr",
+    title: "RevenueCat-CEO Jacob Eiting post {perDay} keer per dag op X",
     description:
-      "In 90 dagen postte de CEO van RevenueCat {posts} keer op X, verspreid over {hours} verschillende uren per dag. Zo'n {pct} noemt RevenueCat. Je 1% betaalt mee aan zijn tijd op X.",
+      "RevenueCat-CEO Jacob Eiting postte in 90 dagen {posts} keer op X, verspreid over {hours} verschillende uren per dag. Zo'n {pct} noemt RevenueCat. Je 1% betaalt daaraan mee.",
     ogImageAlt: "De CEO van RevenueCat post zo'n 10 keer per dag op X, elke dag. Je 1% betaalt daaraan mee.",
   },
   hero: {
     crumb: "CEO op X",
     eyebrow: "Waar je 1% naartoe gaat",
-    headline: "De CEO van RevenueCat post {perDay} keer per dag op X.",
+    headline: "De CEO van RevenueCat, Jacob Eiting, post {perDay} keer per dag op X.",
     headlineAccent: "Je 1% betaalt daaraan mee.",
     lede: "In de afgelopen {days} dagen postte de CEO van RevenueCat, Jacob Eiting ({handle}), {posts} keer op X. Dat is ongeveer {perDay} posts per dag, verspreid over {hours} verschillende uren per dag, op {active} van de {days} dagen.",
     updated: "Bijgewerkt op {date} - Geteld uit openbare posts",
@@ -42,6 +42,27 @@ export const ceoNl: CeoDict = {
     link: "Zie waar de rest van je 1% naartoe gaat →",
     ctaKeep: "Houd je 1% →",
     ctaGithub: "openpurr op GitHub",
+  },
+  faq: {
+    title: "Wat mensen vragen",
+    items: {
+      who: {
+        q: "Wie is de CEO van RevenueCat?",
+        a: "Jacob Eiting is medeoprichter en CEO van RevenueCat. Hij post op X als {handle}, waar zo'n {followers} mensen hem volgen.",
+      },
+      often: {
+        q: "Hoe vaak post de CEO van RevenueCat op X?",
+        a: "In de {days} dagen tot {end} postte Jacob Eiting {posts} keer op X, reacties meegeteld maar reposts niet. Dat is ongeveer {perDay} posts per dag, verspreid over {hours} verschillende uren per dag, op {active} van de {days} dagen.",
+      },
+      about: {
+        q: "Waarover post de CEO van RevenueCat op X?",
+        a: "Vooral over andere dingen dan RevenueCat. Volgens onze trefwoordregels noemt {pct} van zijn posts RevenueCat of het bedrijf erachter, tegenover {basePct} van de eigen posts van {base}. De regels missen sommige posts, dus zie {pct} als een ondergrens.",
+      },
+      pays: {
+        q: "Betaal je met de 1% van RevenueCat ook de CEO?",
+        a: "Deels. RevenueCat neemt 1% van al je omzet zodra je boven {threshold} per maand komt, en van dat geld draait het bedrijf, ook wat het zijn leiding betaalt. RevenueCat maakt niet bekend wat het zijn bestuurders betaalt.",
+      },
+    },
   },
   method: {
     title: "Hoe we telden",

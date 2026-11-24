@@ -53,7 +53,7 @@ export const pricingKo: PricingDict = {
       "벤처 투자자들은 다섯 차례 라운드에 걸쳐 RevenueCat에 약 {funding} 규모를 투자했고, 보도된 기업가치로 따지면 회사의 절반 이상을 소유하고 있습니다. 결제 건마다 몫을 떼어 갈 필요도 없습니다. 당신이 내는 수수료 하나하나가 그들이 소유한 회사의 가치를 끌어올리고, 회사가 팔릴 때 그들이 회수합니다. 지분으로 따지면 당신이 매년 내는 돈 중 약 {vc} 정도가 그들의 수익을 쌓고 있습니다.",
     investorsLabel: "RevenueCat의 투자자",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "당신의 1%로 사는 건 1년에 RevenueCat 엔지니어 약 {days}일 치의 일입니다. 같은 일을 직접 돌리는 데 드는 비용은 {infra}입니다.",
+    punch: "이게 당신의 1%로 사는 것입니다. 같은 일을 직접 돌리면 {infra}입니다.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "나머지 {keep}, 그대로 지키세요.",
     ctaKeep: "내 1% 지키기 →",

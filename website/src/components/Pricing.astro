@@ -13,9 +13,9 @@ import { CEO_PAGE, ISSUES_URL, PRICING_PAGE, REPO_URL } from "../consts";
 import xCeo from "../data/x-ceo.json";
 import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
 import { tp } from "../i18n/pricing";
+import { tc } from "../i18n/ceo";
 import { LEVELS, openpurrCost, revenueCatCost, RC } from "../savings";
 import {
-  engineerDayCost,
   FUNDING_USD,
   HEADCOUNT,
   INVESTOR_OWNERSHIP,
@@ -67,6 +67,7 @@ const html = (s: string, vars: Record<string, string>) => fill(s, vars);
 const SLIDER = { min: 2_500, max: 250_000, initial: 25_000 };
 const pos = (v: number) => Math.log(v / SLIDER.min) / Math.log(SLIDER.max / SLIDER.min);
 const homePath = localePath(locale, "/");
+const ceoMaxHours = Math.max(...xCeo.perDay.map((d) => d.hours));
 const ceoPerDay = nf({ minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(xCeo.posts / xCeo.days);
 const pagePath = localePath(locale, PRICING_PAGE);
 
@@ -78,7 +79,6 @@ const swagDate = new Date(`${SWAG_POST.date}T00:00:00Z`).toLocaleDateString(`${t
 const checked = new Date(`${SOURCES_CHECKED}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 const model = {
   teams: TEAMS.map((t) => ({ key: t.key, share: shareOf(t) })),
-  engineerDay: engineerDayCost(),
   investors: INVESTOR_OWNERSHIP,
   slider: SLIDER,
   tag,
@@ -183,14 +183,16 @@ const enHref = locale === "en" ? undefined : "en";
         <div class="answer">
           <h2>{p.answer.title}</h2>
           <p set:html={html(p.answer.text, { threshold: money(RC.threshold) })} />
-          <table>
-            <thead><tr><th scope="col">{p.answer.colRevenue}</th><th scope="col">{p.answer.colFee}</th><th scope="col">{p.answer.colServers}</th></tr></thead>
-            <tbody>
-              {LEVELS.map((l) => (
-                <tr><th scope="row">{money(l)}</th><td>{money(revenueCatCost(l) * 12)}</td><td>{money(openpurrCost(l).cost * 12)}</td></tr>
-              ))}
-            </tbody>
-          </table>
+          <div class="table-scroll">
+            <table>
+              <thead><tr><th scope="col">{p.answer.colRevenue}</th><th scope="col">{p.answer.colFee}</th><th scope="col">{p.answer.colServers}</th></tr></thead>
+              <tbody>
+                {LEVELS.map((l) => (
+                  <tr><th scope="row">{money(l)}</th><td>{money(revenueCatCost(l) * 12)}</td><td>{money(openpurrCost(l).cost * 12)}</td></tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -245,15 +247,27 @@ const enHref = locale === "en" ? undefined : "en";
           </ul>
 
 
-          <p class="swag">{p.calc.swag}</p>
-          <figure class="swag-post">
-            <img src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
-            <img src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
-            <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
-          </figure>
-          <p class="ceo-link">{fill(p.calc.ceoLink, { perDay: ceoPerDay })} <a href={localePath(locale, CEO_PAGE)}>{p.calc.ceoLinkLabel}</a></p>
+          <div class="extras">
+            <figure class="extra extra-swag">
+              <img class="swag-photo" src="/revenuecat-skateboard.jpg" width="371" height="700" alt={p.calc.swagPhotoAlt} loading="lazy" decoding="async" />
+              <div class="swag-body">
+                <p class="extra-title">{p.calc.swag}</p>
+                <img class="swag-tweet" src="/revenuecat-skateboard-post.jpg" width="900" height="340" alt={p.calc.swagPostAlt} loading="lazy" decoding="async" />
+                <figcaption set:html={html(p.calc.swagCaption, { date: swagDate, link: `<a href="${SWAG_POST.url}" rel="nofollow noopener">${p.calc.swagLink}</a>` })} />
+              </div>
+            </figure>
+            <a class="extra extra-ceo" href={localePath(locale, CEO_PAGE)}>
+              <span class="ceo-num">{ceoPerDay}</span>
+              <span class="ceo-unit">{tc(locale).stats.perDay}</span>
+              <span class="ceo-cal" aria-hidden="true">
+                {xCeo.perDay.map((d) => <i class={`h${Math.min(4, Math.ceil((d.hours / ceoMaxHours) * 4))}`} />)}
+              </span>
+              <span class="extra-title">{fill(p.calc.ceoLink, { perDay: ceoPerDay })}</span>
+              <span class="ceo-more">{p.calc.ceoLinkLabel}</span>
+            </a>
+          </div>
           <p class="punch">
-            <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
+            <Fragment set:html={html(p.calc.punch, { infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
           </p>
         </div>
@@ -292,6 +306,7 @@ const enHref = locale === "en" ? undefined : "en";
           <li set:html={html(p.method.split, { date: checked, open: num(JOB_BOARD.open), gtm: num(JOB_BOARD.gtm), eng: num(JOB_BOARD.coreEngineering) })} />
           <li>
             <Fragment set:html={html(p.method.investors, { funding: big(FUNDING_USD), pct, revenue: big(REVENUE_2025) })} />
+            <div class="table-scroll">
             <table class="rounds">
               <thead><tr><th>{p.method.colRound}</th><th>{p.method.colRaised}</th><th>{p.method.colValuation}</th><th>{p.method.colLead}</th></tr></thead>
               <tbody>
@@ -305,12 +320,14 @@ const enHref = locale === "en" ? undefined : "en";
                 ))}
               </tbody>
             </table>
+            </div>
           </li>
           <li set:html={p.method.affiliation} />
         </ul>
 
         <details class="assumptions">
           <summary>{p.method.assumptions}</summary>
+          <div class="table-scroll">
           <table>
             <thead><tr><th>{p.method.colTeam}</th><th>{p.method.colPeople}</th><th>{p.method.colSalary}</th><th>{p.method.colCost}</th><th>{p.method.colBasis}</th></tr></thead>
             <tbody>
@@ -327,6 +344,7 @@ const enHref = locale === "en" ? undefined : "en";
               }
             </tbody>
           </table>
+          </div>
         </details>
 
         <h2>{p.sources.title}</h2>
@@ -653,13 +671,19 @@ const enHref = locale === "en" ? undefined : "en";
     background: var(--ink);
     color: var(--bg);
   }
+  .table-scroll {
+    overflow-x: auto;
+    max-width: 100%;
+    min-width: 0;
+  }
+  .method > li {
+    min-width: 0;
+  }
   .rounds {
     width: 100%;
     border-collapse: collapse;
     margin-top: 12px;
     font-size: 0.9rem;
-    display: block;
-    overflow-x: auto;
   }
   .rounds th,
   .rounds td {
@@ -670,42 +694,135 @@ const enHref = locale === "en" ? undefined : "en";
   .punch strong {
     display: block;
     margin-top: 6px;
-    font-size: 1.25rem;
-    color: var(--purple);
-  }
-  .swag {
-    margin-top: 20px;
-    color: var(--text);
-    font-weight: 600;
-  }
-  .swag-post {
-    margin: 14px 0 0;
-    display: grid;
-    grid-template-columns: 1fr 120px;
-    gap: 10px;
-    align-items: start;
-  }
-  .swag-post img {
-    width: 100%;
-    height: auto;
-    border: 1px solid var(--line);
-    border-radius: 10px;
-  }
-  .swag-post figcaption {
-    grid-column: 1 / -1;
-    font-size: 0.85rem;
-    color: var(--muted);
-  }
-  .ceo-link {
-    margin-top: 16px;
-    font-weight: 600;
+    font-size: clamp(1.7rem, 4vw, 2.4rem);
+    line-height: 1.15;
+    letter-spacing: -0.03em;
     color: var(--ink);
   }
-  .punch {
-    margin-top: 24px;
-    padding: 16px 18px;
-    border-radius: 12px;
+  .extras {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 16px;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 1px solid var(--line);
+  }
+  .extra {
+    padding: 18px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg);
+  }
+  .extra-title {
+    display: block;
+    margin: 0;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .extra-swag {
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: minmax(110px, 34%) 1fr;
+    overflow: hidden;
+    border: none;
+    background: #140e15;
+    color: #efe7ec;
+  }
+  .swag-photo {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    object-fit: cover;
+    object-position: 50% 60%;
+    display: block;
+  }
+  .swag-body {
+    padding: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .extra-swag .extra-title {
+    color: #fff;
+  }
+  .swag-tweet {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 12px 30px -12px rgba(255, 70, 60, 0.45);
+  }
+  .extra-swag figcaption {
+    margin-top: auto;
+    font-size: 0.8rem;
+    color: #b8a9b2;
+  }
+  .extra-swag figcaption :global(a) {
+    color: #ff8a7a;
+  }
+  .extra-ceo {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-decoration: none;
+    color: inherit;
     background: var(--purple-soft);
+    border-color: transparent;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .extra-ceo:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -14px rgba(60, 40, 140, 0.45);
+  }
+  .ceo-num {
+    font-size: clamp(2.6rem, 6vw, 3.6rem);
+    font-weight: 800;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--purple-strong);
+    font-variant-numeric: tabular-nums;
+  }
+  .ceo-unit {
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .ceo-cal {
+    display: grid;
+    grid-template-columns: repeat(18, 1fr);
+    gap: 3px;
+    margin: 8px 0 6px;
+  }
+  .ceo-cal i {
+    aspect-ratio: 1;
+    border-radius: 2px;
+    background: color-mix(in srgb, var(--purple) 12%, var(--bg));
+  }
+  .ceo-cal .h1 { background: color-mix(in srgb, var(--purple) 35%, var(--bg)); }
+  .ceo-cal .h2 { background: color-mix(in srgb, var(--purple) 60%, var(--bg)); }
+  .ceo-cal .h3 { background: color-mix(in srgb, var(--purple) 82%, var(--bg)); }
+  .ceo-cal .h4 { background: var(--purple-strong); }
+  .ceo-more {
+    margin-top: auto;
+    padding-top: 6px;
+    font-weight: 700;
+    color: var(--purple-strong);
+  }
+  @media (max-width: 760px) {
+    .extras {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 480px) {
+    .extra-swag {
+      grid-template-columns: 1fr;
+    }
+    .swag-photo {
+      height: 200px;
+    }
+  }
+  .punch {
+    margin-top: 40px;
     color: var(--text);
   }
   .punch b {
@@ -753,8 +870,6 @@ const enHref = locale === "en" ? undefined : "en";
     border-collapse: collapse;
     margin-top: 12px;
     font-size: 0.9rem;
-    display: block;
-    overflow-x: auto;
   }
   .assumptions th,
   .assumptions td {
@@ -789,7 +904,6 @@ const enHref = locale === "en" ? undefined : "en";
   if (root) {
     const model = JSON.parse(root.dataset.model!) as {
       teams: { key: string; share: number }[];
-      engineerDay: number;
       investors: number;
       slider: { min: number; max: number; initial: number };
       tag: string;
@@ -834,7 +948,6 @@ const enHref = locale === "en" ? undefined : "en";
       tween("fee", fee, (n) => usd.format(Math.round(n)));
       tween("infra", infra, (n) => usd.format(Math.round(n)));
       tween("infra2", infra, (n) => usd.format(Math.round(n)));
-      tween("days", rest / model.engineerDay, (n) => num.format(Math.round(n)));
       tween("vc", fee * model.investors, (n) => usd.format(Math.round(n)));
       tween("keep", fee - infra, (n) => usd.format(Math.round(n)));
       out("infraPct").textContent = pctFmt.format(infra / fee);

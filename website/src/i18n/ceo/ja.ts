@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoJa: CeoDict = {
   meta: {
-    title: "RevenueCat の CEO は X に 1 日 {perDay} 回投稿 - openpurr",
+    title: "RevenueCat CEO の Jacob Eiting、X に 1 日 {perDay} 回投稿",
     description:
-      "RevenueCat の CEO は 90 日で X に {posts} 回投稿。1 日 {hours} の時間帯に投稿し、RevenueCat への言及は約 {pct}。X に費やす彼の時間を、あなたの 1% が支えています。",
+      "RevenueCat の CEO、Jacob Eiting は 90 日で X に {posts} 回投稿。1 日 {hours} の時間帯に投稿し、RevenueCat への言及は約 {pct}。その費用の一部は、あなたの 1% です。",
     ogImageAlt: "RevenueCat の CEO は毎日、X に 1 日約 10 回投稿しています。その費用の一部は、あなたの 1% です。",
   },
   hero: {
     crumb: "X での CEO",
     eyebrow: "あなたの 1% の行き先",
-    headline: "RevenueCat の CEO は X に 1 日 {perDay} 回投稿しています。",
+    headline: "RevenueCat の CEO、Jacob Eiting は X に 1 日 {perDay} 回投稿しています。",
     headlineAccent: "その費用の一部は、あなたの 1% です。",
     lede: "過去 {days} 日間で、RevenueCat の CEO、Jacob Eiting（{handle}）は X に {posts} 回投稿しました。1 日あたり約 {perDay} 件、1 日のうち {hours} の時間帯に分かれ、{days} 日中 {active} 日に投稿しています。",
     updated: "{date} 更新 - 公開投稿から集計",
@@ -42,6 +42,27 @@ export const ceoJa: CeoDict = {
     link: "残りの 1% の行き先を見る →",
     ctaKeep: "1% を取り戻す →",
     ctaGithub: "GitHub で openpurr を見る",
+  },
+  faq: {
+    title: "よくある質問",
+    items: {
+      who: {
+        q: "RevenueCat の CEO は誰ですか？",
+        a: "Jacob Eiting は RevenueCat の共同創業者で CEO です。X では {handle} として投稿しており、フォロワーは約 {followers} 人です。",
+      },
+      often: {
+        q: "RevenueCat の CEO は X にどれくらい投稿していますか？",
+        a: "{end} までの {days} 日間で、Jacob Eiting は X に {posts} 回投稿しました（返信を含み、リポストは除く）。1 日あたり約 {perDay} 件、1 日のうち {hours} の時間帯に分かれ、{days} 日中 {active} 日に投稿しています。",
+      },
+      about: {
+        q: "RevenueCat の CEO は X で何を投稿していますか？",
+        a: "大半は RevenueCat 以外の話題です。私たちのキーワードルールでは、彼の投稿の {pct} が RevenueCat またはその事業に触れており、{base} 自身の投稿では {basePct} です。ルールは一部の投稿を取りこぼすため、{pct} は下限と考えてください。",
+      },
+      pays: {
+        q: "RevenueCat の 1% の手数料は CEO の報酬にも使われていますか？",
+        a: "一部はそうです。RevenueCat は、月 {threshold} を超えると売上全体の 1% を取り、そのお金で会社が回っています。経営陣の報酬もそこから出ています。RevenueCat は役員報酬を公開していません。",
+      },
+    },
   },
   method: {
     title: "集計の方法",
