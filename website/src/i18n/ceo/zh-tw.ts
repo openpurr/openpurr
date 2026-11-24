@@ -5,14 +5,14 @@ export const ceoZhTw: CeoDict = {
   meta: {
     title: "RevenueCat CEO 每天在 X 上發文 {perDay} 次 - openpurr",
     description:
-      "90 天內，RevenueCat 的 CEO 在 X 上發文 {posts} 次，每天分散在 {hours} 個小時，約 {pct} 提到 RevenueCat。你的 1% 正在為他的公司買單。",
-    ogImageAlt: "RevenueCat 的 CEO 每天在 X 上發文約 10 次，天天如此。你的 1% 正在為他掌管的公司買單。",
+      "90 天內，RevenueCat 的 CEO 在 X 上發文 {posts} 次，每天分散在 {hours} 個小時，約 {pct} 提到 RevenueCat。你的 1% 也在為他在 X 上的時間買單。",
+    ogImageAlt: "RevenueCat 的 CEO 每天在 X 上發文約 10 次，天天如此。你的 1% 也在為此買單。",
   },
   hero: {
     crumb: "CEO 的 X",
     eyebrow: "你的 1% 去了哪裡",
     headline: "RevenueCat 的 CEO 每天在 X 上發文 {perDay} 次。",
-    headlineAccent: "你的 1% 正在為他掌管的公司買單。",
+    headlineAccent: "你的 1% 也在為此買單。",
     lede: "過去 {days} 天，RevenueCat 的 CEO Jacob Eiting（{handle}）在 X 上發文 {posts} 次。平均每天約 {perDay} 則，每天分散在 {hours} 個不同的小時，{days} 天中有 {active} 天發了文。",
     updated: "更新於 {date} - 根據公開貼文統計",
   },
@@ -37,8 +37,8 @@ export const ceoZhTw: CeoDict = {
     about: "與 RevenueCat 有關",
   },
   pays: {
-    title: "你的 1% 在為什麼買單",
-    text: "月營收超過 {threshold} 後，RevenueCat 就抽走你全部營收的 1%。公司靠這筆錢運轉，從伺服器到經營團隊。",
+    title: "你的 1% 也在為他的社群媒體買單",
+    text: "月營收超過 {threshold} 後，RevenueCat 就抽走你全部營收的 1%。公司靠這筆錢運轉，CEO 的薪酬也從這裡出。所以你的 1% 有一部分，花在了他每天約 {perDay} 則 X 貼文上。",
     link: "看看你 1% 的其餘部分去了哪裡 →",
     ctaKeep: "留住你的 1% →",
     ctaGithub: "GitHub 上的 openpurr",

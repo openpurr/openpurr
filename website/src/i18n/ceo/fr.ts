@@ -5,14 +5,14 @@ export const ceoFr: CeoDict = {
   meta: {
     title: "Le CEO de RevenueCat poste sur X {perDay} fois par jour - openpurr",
     description:
-      "En 90 jours, le CEO de RevenueCat a posté {posts} fois sur X, sur {hours} heures distinctes par jour. Environ {pct} parle de RevenueCat. Votre 1 % finance sa société.",
-    ogImageAlt: "Le CEO de RevenueCat poste sur X environ 10 fois par jour, tous les jours. Votre 1 % finance l'entreprise qu'il dirige.",
+      "En 90 jours, le CEO de RevenueCat a posté {posts} fois sur X, sur {hours} heures distinctes par jour. Environ {pct} parle de RevenueCat. Votre 1 % aide à payer son temps sur X.",
+    ogImageAlt: "Le CEO de RevenueCat poste sur X environ 10 fois par jour, tous les jours. Votre 1 % aide à le payer.",
   },
   hero: {
     crumb: "Le CEO sur X",
     eyebrow: "Où va votre 1 %",
     headline: "Le CEO de RevenueCat poste sur X {perDay} fois par jour.",
-    headlineAccent: "Votre 1 % finance l'entreprise qu'il dirige.",
+    headlineAccent: "Votre 1 % aide à le payer.",
     lede: "Ces {days} derniers jours, le CEO de RevenueCat, Jacob Eiting ({handle}), a posté {posts} fois sur X. Cela fait environ {perDay} posts par jour, répartis sur {hours} heures différentes par jour, {active} jours sur {days}.",
     updated: "Mis à jour le {date} - Compté à partir des posts publics",
   },
@@ -37,8 +37,8 @@ export const ceoFr: CeoDict = {
     about: "Sur RevenueCat",
   },
   pays: {
-    title: "Ce que paie votre 1 %",
-    text: "RevenueCat prend 1 % de la totalité de vos revenus dès que vous dépassez {threshold} par mois. Cet argent fait tourner l'entreprise, de ses serveurs à sa direction.",
+    title: "Votre 1 % paie aussi ses réseaux sociaux",
+    text: "RevenueCat prend 1 % de la totalité de vos revenus dès que vous dépassez {threshold} par mois. Cet argent fait tourner l'entreprise, y compris ce qu'elle verse à son CEO. Une partie de votre 1 % paie donc {perDay} posts par jour sur X.",
     link: "Voir où va le reste de votre 1 % →",
     ctaKeep: "Gardez votre 1 % →",
     ctaGithub: "openpurr sur GitHub",

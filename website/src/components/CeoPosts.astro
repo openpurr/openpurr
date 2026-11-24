@@ -172,7 +172,7 @@ const code = (s: string) => `<code>${s}</code>`;
         <p set:html={fill(c.topic.text, { pct: pctOf(share), onTopic: num(x.onTopic), posts: num(x.posts), basePct: pctOf(baseShare), base })} />
 
         <h2>{c.pays.title}</h2>
-        <p>{fill(c.pays.text, { threshold: money(RC.threshold) })} <a href={pricingPath}>{c.pays.link}</a></p>
+        <p>{fill(c.pays.text, { threshold: money(RC.threshold), perDay })} <a href={pricingPath}>{c.pays.link}</a></p>
         <div class="cta">
           <a class="btn btn-primary" href={`${homePath}#savings`}>{c.pays.ctaKeep}</a>
           <a class="btn btn-ghost" href={REPO_URL}>{c.pays.ctaGithub}</a>

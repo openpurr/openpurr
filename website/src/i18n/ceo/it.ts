@@ -5,14 +5,14 @@ export const ceoIt: CeoDict = {
   meta: {
     title: "Il CEO di RevenueCat posta su X {perDay} volte al giorno - openpurr",
     description:
-      "In 90 giorni il CEO di RevenueCat ha postato {posts} volte su X, in {hours} ore diverse al giorno. Circa il {pct} parla di RevenueCat. Il tuo 1% finanzia la sua azienda.",
-    ogImageAlt: "Il CEO di RevenueCat posta su X circa 10 volte al giorno, ogni giorno. Il tuo 1% finanzia l'azienda che guida.",
+      "In 90 giorni il CEO di RevenueCat ha postato {posts} volte su X, in {hours} ore diverse al giorno. Circa il {pct} parla di RevenueCat. Il tuo 1% aiuta a pagare il suo tempo su X.",
+    ogImageAlt: "Il CEO di RevenueCat posta su X circa 10 volte al giorno, ogni giorno. Il tuo 1% aiuta a pagarlo.",
   },
   hero: {
     crumb: "Il CEO su X",
     eyebrow: "Dove finisce il tuo 1%",
     headline: "Il CEO di RevenueCat posta su X {perDay} volte al giorno.",
-    headlineAccent: "Il tuo 1% finanzia l'azienda che guida.",
+    headlineAccent: "Il tuo 1% aiuta a pagarlo.",
     lede: "Negli ultimi {days} giorni il CEO di RevenueCat, Jacob Eiting ({handle}), ha postato {posts} volte su X. Sono circa {perDay} post al giorno, distribuiti su {hours} ore diverse al giorno, in {active} giorni su {days}.",
     updated: "Aggiornato il {date} - Conteggio dai post pubblici",
   },
@@ -37,8 +37,8 @@ export const ceoIt: CeoDict = {
     about: "Su RevenueCat",
   },
   pays: {
-    title: "Cosa paga il tuo 1%",
-    text: "RevenueCat si prende l'1% di tutti i tuoi ricavi appena superi {threshold} al mese. Con quei soldi va avanti l'azienda, dai server ai vertici.",
+    title: "Il tuo 1% paga anche i suoi social",
+    text: "RevenueCat si prende l'1% di tutti i tuoi ricavi appena superi {threshold} al mese. Con quei soldi va avanti l'azienda, compreso quello che paga al suo CEO. Quindi una parte del tuo 1% paga {perDay} post al giorno su X.",
     link: "Guarda dove finisce il resto del tuo 1% →",
     ctaKeep: "Tieniti il tuo 1% →",
     ctaGithub: "openpurr su GitHub",

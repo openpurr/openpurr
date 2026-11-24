@@ -5,14 +5,14 @@ export const ceoNl: CeoDict = {
   meta: {
     title: "De CEO van RevenueCat post {perDay} keer per dag op X - openpurr",
     description:
-      "In 90 dagen postte de CEO van RevenueCat {posts} keer op X, verspreid over {hours} verschillende uren per dag. Zo'n {pct} noemt RevenueCat. Je 1% bekostigt zijn bedrijf.",
-    ogImageAlt: "De CEO van RevenueCat post zo'n 10 keer per dag op X, elke dag. Je 1% bekostigt het bedrijf dat hij leidt.",
+      "In 90 dagen postte de CEO van RevenueCat {posts} keer op X, verspreid over {hours} verschillende uren per dag. Zo'n {pct} noemt RevenueCat. Je 1% betaalt mee aan zijn tijd op X.",
+    ogImageAlt: "De CEO van RevenueCat post zo'n 10 keer per dag op X, elke dag. Je 1% betaalt daaraan mee.",
   },
   hero: {
     crumb: "CEO op X",
     eyebrow: "Waar je 1% naartoe gaat",
     headline: "De CEO van RevenueCat post {perDay} keer per dag op X.",
-    headlineAccent: "Je 1% bekostigt het bedrijf dat hij leidt.",
+    headlineAccent: "Je 1% betaalt daaraan mee.",
     lede: "In de afgelopen {days} dagen postte de CEO van RevenueCat, Jacob Eiting ({handle}), {posts} keer op X. Dat is ongeveer {perDay} posts per dag, verspreid over {hours} verschillende uren per dag, op {active} van de {days} dagen.",
     updated: "Bijgewerkt op {date} - Geteld uit openbare posts",
   },
@@ -37,8 +37,8 @@ export const ceoNl: CeoDict = {
     about: "Over RevenueCat",
   },
   pays: {
-    title: "Wat je 1% betaalt",
-    text: "RevenueCat neemt 1% van al je omzet zodra je boven {threshold} per maand komt. Van dat geld draait het bedrijf, van de servers tot de top.",
+    title: "Je 1% betaalt ook zijn sociale media",
+    text: "RevenueCat neemt 1% van al je omzet zodra je boven {threshold} per maand komt. Van dat geld draait het bedrijf, ook wat het zijn CEO betaalt. Een deel van je 1% betaalt dus {perDay} posts per dag op X.",
     link: "Zie waar de rest van je 1% naartoe gaat →",
     ctaKeep: "Houd je 1% →",
     ctaGithub: "openpurr op GitHub",

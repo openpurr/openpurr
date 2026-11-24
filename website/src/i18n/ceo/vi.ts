@@ -5,14 +5,14 @@ export const ceoVi: CeoDict = {
   meta: {
     title: "CEO RevenueCat đăng bài trên X {perDay} lần mỗi ngày - openpurr",
     description:
-      "Trong 90 ngày, CEO RevenueCat đăng {posts} bài trên X, trong {hours} khung giờ khác nhau mỗi ngày. Khoảng {pct} nhắc đến RevenueCat. 1% của bạn trả cho công ty của ông ấy.",
-    ogImageAlt: "CEO RevenueCat đăng bài trên X khoảng 10 lần mỗi ngày, ngày nào cũng vậy. 1% của bạn trả cho công ty mà ông ấy điều hành.",
+      "Trong 90 ngày, CEO RevenueCat đăng {posts} bài trên X, trong {hours} khung giờ khác nhau mỗi ngày. Khoảng {pct} nhắc đến RevenueCat. 1% của bạn góp phần trả cho thời gian ông ấy dành cho X.",
+    ogImageAlt: "CEO RevenueCat đăng bài trên X khoảng 10 lần mỗi ngày, ngày nào cũng vậy. 1% của bạn góp phần trả cho việc đó.",
   },
   hero: {
     crumb: "CEO trên X",
     eyebrow: "1% của bạn đi đâu",
     headline: "CEO RevenueCat đăng bài trên X {perDay} lần mỗi ngày.",
-    headlineAccent: "1% của bạn trả cho công ty mà ông ấy điều hành.",
+    headlineAccent: "1% của bạn góp phần trả cho việc đó.",
     lede: "Trong {days} ngày qua, CEO của RevenueCat, Jacob Eiting ({handle}), đã đăng {posts} bài trên X. Tức khoảng {perDay} bài mỗi ngày, rải trong {hours} khung giờ khác nhau mỗi ngày, vào {active} trên {days} ngày.",
     updated: "Cập nhật {date} - Đếm từ các bài đăng công khai",
   },
@@ -37,8 +37,8 @@ export const ceoVi: CeoDict = {
     about: "Về RevenueCat",
   },
   pays: {
-    title: "1% của bạn trả cho những gì",
-    text: "RevenueCat lấy 1% trên toàn bộ doanh thu của bạn khi vượt {threshold} mỗi tháng. Số tiền đó vận hành công ty, từ server cho tới ban lãnh đạo.",
+    title: "1% của bạn cũng trả cho mạng xã hội của ông ấy",
+    text: "RevenueCat lấy 1% trên toàn bộ doanh thu của bạn khi vượt {threshold} mỗi tháng. Số tiền đó vận hành công ty, kể cả khoản trả cho CEO. Vậy một phần 1% của bạn đang trả cho {perDay} bài đăng mỗi ngày trên X.",
     link: "Xem phần còn lại trong 1% của bạn đi đâu →",
     ctaKeep: "Giữ lại 1% của bạn →",
     ctaGithub: "openpurr trên GitHub",

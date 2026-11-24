@@ -5,14 +5,14 @@ export const ceoPtBr: CeoDict = {
   meta: {
     title: "O CEO do RevenueCat posta no X {perDay} vezes por dia - openpurr",
     description:
-      "Em 90 dias, o CEO do RevenueCat postou {posts} vezes no X, em {hours} horas diferentes por dia. Cerca de {pct} cita o RevenueCat. Seu 1% banca a empresa que ele comanda.",
-    ogImageAlt: "O CEO do RevenueCat posta no X cerca de 10 vezes por dia, todo dia. Seu 1% banca a empresa que ele comanda.",
+      "Em 90 dias, o CEO do RevenueCat postou {posts} vezes no X, em {hours} horas diferentes por dia. Cerca de {pct} cita o RevenueCat. Seu 1% ajuda a pagar o tempo dele no X.",
+    ogImageAlt: "O CEO do RevenueCat posta no X cerca de 10 vezes por dia, todo dia. Seu 1% ajuda a pagar por isso.",
   },
   hero: {
     crumb: "O CEO no X",
     eyebrow: "Para onde vai o seu 1%",
     headline: "O CEO do RevenueCat posta no X {perDay} vezes por dia.",
-    headlineAccent: "Seu 1% banca a empresa que ele comanda.",
+    headlineAccent: "Seu 1% ajuda a pagar por isso.",
     lede: "Nos últimos {days} dias, o CEO do RevenueCat, Jacob Eiting ({handle}), postou {posts} vezes no X. São cerca de {perDay} posts por dia, espalhados por {hours} horas diferentes por dia, em {active} de {days} dias.",
     updated: "Atualizado em {date} - Contado a partir de posts públicos",
   },
@@ -37,8 +37,8 @@ export const ceoPtBr: CeoDict = {
     about: "Sobre o RevenueCat",
   },
   pays: {
-    title: "O que o seu 1% paga",
-    text: "O RevenueCat fica com 1% de toda a sua receita assim que você passa de {threshold} por mês. Esse dinheiro mantém a empresa, dos servidores à liderança.",
+    title: "Seu 1% também paga as redes sociais dele",
+    text: "O RevenueCat fica com 1% de toda a sua receita assim que você passa de {threshold} por mês. Esse dinheiro mantém a empresa, incluindo o que ela paga ao CEO. Então parte do seu 1% paga {perDay} posts por dia no X.",
     link: "Veja para onde vai o resto do seu 1% →",
     ctaKeep: "Fique com o seu 1% →",
     ctaGithub: "openpurr no GitHub",

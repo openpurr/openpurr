@@ -5,14 +5,14 @@ export const ceoJa: CeoDict = {
   meta: {
     title: "RevenueCat の CEO は X に 1 日 {perDay} 回投稿 - openpurr",
     description:
-      "RevenueCat の CEO は 90 日で X に {posts} 回投稿。1 日 {hours} の時間帯に投稿し、RevenueCat への言及は約 {pct}。あなたの 1% が彼の会社を支えています。",
-    ogImageAlt: "RevenueCat の CEO は毎日、X に 1 日約 10 回投稿しています。あなたの 1% が、彼の率いる会社を支えています。",
+      "RevenueCat の CEO は 90 日で X に {posts} 回投稿。1 日 {hours} の時間帯に投稿し、RevenueCat への言及は約 {pct}。X に費やす彼の時間を、あなたの 1% が支えています。",
+    ogImageAlt: "RevenueCat の CEO は毎日、X に 1 日約 10 回投稿しています。その費用の一部は、あなたの 1% です。",
   },
   hero: {
     crumb: "X での CEO",
     eyebrow: "あなたの 1% の行き先",
     headline: "RevenueCat の CEO は X に 1 日 {perDay} 回投稿しています。",
-    headlineAccent: "あなたの 1% が、彼の率いる会社を支えています。",
+    headlineAccent: "その費用の一部は、あなたの 1% です。",
     lede: "過去 {days} 日間で、RevenueCat の CEO、Jacob Eiting（{handle}）は X に {posts} 回投稿しました。1 日あたり約 {perDay} 件、1 日のうち {hours} の時間帯に分かれ、{days} 日中 {active} 日に投稿しています。",
     updated: "{date} 更新 - 公開投稿から集計",
   },
@@ -37,8 +37,8 @@ export const ceoJa: CeoDict = {
     about: "RevenueCat 関連",
   },
   pays: {
-    title: "あなたの 1% で払われているもの",
-    text: "RevenueCat は、月 {threshold} を超えると売上全体の 1% を取ります。そのお金で、サーバーから経営陣まで、会社が回っています。",
+    title: "あなたの 1% は、彼の SNS 代でもある",
+    text: "RevenueCat は、月 {threshold} を超えると売上全体の 1% を取ります。そのお金で会社が回り、CEO の報酬もそこから出ています。つまり、あなたの 1% の一部は、X への 1 日約 {perDay} 件の投稿に使われています。",
     link: "残りの 1% の行き先を見る →",
     ctaKeep: "1% を取り戻す →",
     ctaGithub: "GitHub で openpurr を見る",

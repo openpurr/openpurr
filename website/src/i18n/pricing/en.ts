@@ -52,7 +52,7 @@ export const pricingEn = {
     swagCaption: "Posted on X, {date}. The “claim your own” link goes to their job board. {link}",
     swagLink: "See the post",
     /** {perDay} is like "10.4"; links to the CEO page with `ceoLinkLabel`. */
-    ceoLink: "RevenueCat's CEO posts on X about {perDay} times a day, every day.",
+    ceoLink: "Your 1% also pays for the CEO's social media: about {perDay} posts on X a day, every day.",
     ceoLinkLabel: "See the numbers →",
     /** Near the top of the page, under the intro. */
     ownersTitle: "Your 1% builds someone else's exit",

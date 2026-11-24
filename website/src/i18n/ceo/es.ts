@@ -5,14 +5,14 @@ export const ceoEs: CeoDict = {
   meta: {
     title: "El CEO de RevenueCat publica en X {perDay} veces al día - openpurr",
     description:
-      "En 90 días, el CEO de RevenueCat publicó {posts} veces en X, en {hours} horas distintas al día. Cerca del {pct} menciona RevenueCat. Tu 1 % financia su empresa.",
-    ogImageAlt: "El CEO de RevenueCat publica en X unas 10 veces al día, todos los días. Tu 1 % financia la empresa que dirige.",
+      "En 90 días, el CEO de RevenueCat publicó {posts} veces en X, en {hours} horas distintas al día. Cerca del {pct} menciona RevenueCat. Tu 1 % ayuda a pagar su tiempo en X.",
+    ogImageAlt: "El CEO de RevenueCat publica en X unas 10 veces al día, todos los días. Tu 1 % ayuda a pagarlo.",
   },
   hero: {
     crumb: "El CEO en X",
     eyebrow: "A dónde va tu 1 %",
     headline: "El CEO de RevenueCat publica en X {perDay} veces al día.",
-    headlineAccent: "Tu 1 % financia la empresa que dirige.",
+    headlineAccent: "Tu 1 % ayuda a pagarlo.",
     lede: "En los últimos {days} días, el CEO de RevenueCat, Jacob Eiting ({handle}), publicó {posts} veces en X. Son unas {perDay} publicaciones al día, repartidas en {hours} horas distintas cada día, en {active} de {days} días.",
     updated: "Actualizado el {date} - Contado a partir de publicaciones públicas",
   },
@@ -37,8 +37,8 @@ export const ceoEs: CeoDict = {
     about: "Sobre RevenueCat",
   },
   pays: {
-    title: "Lo que paga tu 1 %",
-    text: "RevenueCat se lleva el 1 % de todos tus ingresos en cuanto pasas de {threshold} al mes. Con ese dinero funciona la empresa, desde sus servidores hasta su dirección.",
+    title: "Tu 1 % también paga sus redes sociales",
+    text: "RevenueCat se lleva el 1 % de todos tus ingresos en cuanto pasas de {threshold} al mes. Con ese dinero funciona la empresa, incluido lo que paga a su CEO. Así que parte de tu 1 % paga {perDay} publicaciones al día en X.",
     link: "Mira a dónde va el resto de tu 1 % →",
     ctaKeep: "Quédate con tu 1 % →",
     ctaGithub: "openpurr en GitHub",

@@ -5,14 +5,14 @@ export const ceoId: CeoDict = {
   meta: {
     title: "CEO RevenueCat posting di X {perDay} kali sehari - openpurr",
     description:
-      "Dalam 90 hari, CEO RevenueCat memposting {posts} kali di X, di {hours} jam berbeda per hari. Sekitar {pct} menyebut RevenueCat. 1% Anda membiayai perusahaan yang ia pimpin.",
-    ogImageAlt: "CEO RevenueCat posting di X sekitar 10 kali sehari, setiap hari. 1% Anda membiayai perusahaan yang ia pimpin.",
+      "Dalam 90 hari, CEO RevenueCat memposting {posts} kali di X, di {hours} jam berbeda per hari. Sekitar {pct} menyebut RevenueCat. 1% Anda ikut membayar waktunya di X.",
+    ogImageAlt: "CEO RevenueCat posting di X sekitar 10 kali sehari, setiap hari. 1% Anda ikut membayarnya.",
   },
   hero: {
     crumb: "CEO di X",
     eyebrow: "Ke mana 1% Anda pergi",
     headline: "CEO RevenueCat posting di X {perDay} kali sehari.",
-    headlineAccent: "1% Anda membiayai perusahaan yang ia pimpin.",
+    headlineAccent: "1% Anda ikut membayarnya.",
     lede: "Dalam {days} hari terakhir, CEO RevenueCat, Jacob Eiting ({handle}), memposting {posts} kali di X. Itu sekitar {perDay} postingan sehari, tersebar di {hours} jam berbeda per hari, pada {active} dari {days} hari.",
     updated: "Diperbarui {date} - Dihitung dari postingan publik",
   },
@@ -37,8 +37,8 @@ export const ceoId: CeoDict = {
     about: "Tentang RevenueCat",
   },
   pays: {
-    title: "Apa yang dibayar 1% Anda",
-    text: "RevenueCat mengambil 1% dari seluruh pendapatan Anda begitu melewati {threshold} per bulan. Uang itulah yang menjalankan perusahaannya, dari server sampai jajaran pimpinannya.",
+    title: "1% Anda juga membayar media sosialnya",
+    text: "RevenueCat mengambil 1% dari seluruh pendapatan Anda begitu melewati {threshold} per bulan. Uang itu menjalankan perusahaan, termasuk gaji CEO-nya. Jadi sebagian 1% Anda membayar {perDay} postingan sehari di X.",
     link: "Lihat ke mana sisa 1% Anda pergi →",
     ctaKeep: "Simpan 1% Anda →",
     ctaGithub: "openpurr di GitHub",

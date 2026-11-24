@@ -5,14 +5,14 @@ export const ceoZhCn: CeoDict = {
   meta: {
     title: "RevenueCat CEO 每天在 X 上发帖 {perDay} 次 - openpurr",
     description:
-      "90 天里，RevenueCat 的 CEO 在 X 上发帖 {posts} 次，每天分布在 {hours} 个小时，约 {pct} 提到 RevenueCat。你的 1% 在为他的公司买单。",
-    ogImageAlt: "RevenueCat 的 CEO 每天在 X 上发帖约 10 次，天天如此。你的 1% 在为他掌管的公司买单。",
+      "90 天里，RevenueCat 的 CEO 在 X 上发帖 {posts} 次，每天分布在 {hours} 个小时，约 {pct} 提到 RevenueCat。你的 1% 也在为他在 X 上的时间买单。",
+    ogImageAlt: "RevenueCat 的 CEO 每天在 X 上发帖约 10 次，天天如此。你的 1% 也在为此买单。",
   },
   hero: {
     crumb: "CEO 的 X",
     eyebrow: "你的 1% 去了哪里",
     headline: "RevenueCat 的 CEO 每天在 X 上发帖 {perDay} 次。",
-    headlineAccent: "你的 1% 在为他掌管的公司买单。",
+    headlineAccent: "你的 1% 也在为此买单。",
     lede: "过去 {days} 天，RevenueCat 的 CEO Jacob Eiting（{handle}）在 X 上发帖 {posts} 次。平均每天约 {perDay} 条，每天分布在 {hours} 个不同的小时，{days} 天中有 {active} 天发了帖。",
     updated: "更新于 {date} - 根据公开帖子统计",
   },
@@ -37,8 +37,8 @@ export const ceoZhCn: CeoDict = {
     about: "与 RevenueCat 有关",
   },
   pays: {
-    title: "你的 1% 在为什么买单",
-    text: "月收入超过 {threshold} 后，RevenueCat 就抽走你全部收入的 1%。公司靠这笔钱运转，从服务器到管理层。",
+    title: "你的 1% 也在为他的社交媒体买单",
+    text: "月收入超过 {threshold} 后，RevenueCat 就抽走你全部收入的 1%。公司靠这笔钱运转，CEO 的薪酬也从这里出。所以你的 1% 有一部分，花在了他每天约 {perDay} 条 X 帖子上。",
     link: "看看你 1% 的其余部分去了哪里 →",
     ctaKeep: "留住你的 1% →",
     ctaGithub: "GitHub 上的 openpurr",

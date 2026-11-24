@@ -13,15 +13,15 @@ export const ceoEn = {
     title: "RevenueCat's CEO posts on X {perDay} times a day - openpurr",
     /** {posts} like "932", {hours} like "5.4", {pct} like "8%". */
     description:
-      "In 90 days, RevenueCat's CEO posted {posts} times on X, in {hours} different hours a day. About {pct} of it mentions RevenueCat. Your 1% pays for the company he runs.",
-    ogImageAlt: "RevenueCat's CEO posts on X about 10 times a day, every day. Your 1% pays for the company he runs.",
+      "In 90 days, RevenueCat's CEO posted {posts} times on X, in {hours} different hours a day. About {pct} of it mentions RevenueCat. Your 1% helps pay for his time on X.",
+    ogImageAlt: "RevenueCat's CEO posts on X about 10 times a day, every day. Your 1% pays for his social media.",
   },
   hero: {
     crumb: "CEO on X",
     eyebrow: "Where your 1% goes",
     /** {perDay} is like "10.4". */
     headline: "RevenueCat's CEO posts on X {perDay} times a day.",
-    headlineAccent: "Your 1% pays for the company he runs.",
+    headlineAccent: "Your 1% helps pay for it.",
     /** {days} "90", {handle} "@jeiting", {posts} "932", {perDay} "10.4", {hours} "5.4", {active} "89". */
     lede: "In the last {days} days, RevenueCat's CEO, Jacob Eiting ({handle}), posted {posts} times on X. That's about {perDay} posts a day, spread over {hours} different hours a day, on {active} of {days} days.",
     updated: "Updated {date} - Counted from public posts",
@@ -53,9 +53,9 @@ export const ceoEn = {
     about: "About RevenueCat",
   },
   pays: {
-    title: "What your 1% pays for",
-    /** {threshold} is "$2,500". */
-    text: "RevenueCat takes 1% of all your revenue once you pass {threshold} a month. That money runs the company, from its servers to its leadership.",
+    title: "Your 1% pays for his social media, too",
+    /** {threshold} is "$2,500"; {perDay} is like "10.4". */
+    text: "RevenueCat takes 1% of all your revenue once you pass {threshold} a month. That money runs the company, including what it pays its CEO. So part of your 1% pays for {perDay} posts a day on X.",
     link: "See where the rest of your 1% goes →",
     ctaKeep: "Keep your 1% →",
     ctaGithub: "openpurr on GitHub",

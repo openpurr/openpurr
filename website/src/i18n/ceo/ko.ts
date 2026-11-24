@@ -5,14 +5,14 @@ export const ceoKo: CeoDict = {
   meta: {
     title: "RevenueCat CEO는 X에 하루 {perDay}번 글을 올립니다 - openpurr",
     description:
-      "RevenueCat CEO는 90일간 X에 {posts}번, 하루 {hours}개 시간대에 글을 올렸습니다. RevenueCat 언급은 약 {pct}. 내 1%로 그의 회사가 돌아갑니다.",
-    ogImageAlt: "RevenueCat CEO는 매일 X에 하루 약 10번 글을 올립니다. 내 1%로 그가 이끄는 회사가 돌아갑니다.",
+      "RevenueCat CEO는 90일간 X에 {posts}번, 하루 {hours}개 시간대에 글을 올렸습니다. RevenueCat 언급은 약 {pct}. 그가 X에 쓰는 시간의 일부를 내 1%가 냅니다.",
+    ogImageAlt: "RevenueCat CEO는 매일 X에 하루 약 10번 글을 올립니다. 그 비용의 일부는 내 1%입니다.",
   },
   hero: {
     crumb: "X의 CEO",
     eyebrow: "내 1%가 가는 곳",
     headline: "RevenueCat CEO는 X에 하루 {perDay}번 글을 올립니다.",
-    headlineAccent: "내 1%로 그가 이끄는 회사가 돌아갑니다.",
+    headlineAccent: "그 비용의 일부는 내 1%입니다.",
     lede: "지난 {days}일 동안 RevenueCat CEO Jacob Eiting({handle})은 X에 {posts}번 글을 올렸습니다. 하루 약 {perDay}개를, 하루 {hours}개 시간대에 나눠, {days}일 중 {active}일 동안 올린 셈입니다.",
     updated: "{date} 업데이트 - 공개 게시물 기준 집계",
   },
@@ -37,8 +37,8 @@ export const ceoKo: CeoDict = {
     about: "RevenueCat 관련",
   },
   pays: {
-    title: "내 1%가 내는 비용",
-    text: "RevenueCat은 월 매출이 {threshold}를 넘으면 전체 매출의 1%를 가져갑니다. 그 돈으로 서버부터 경영진까지 회사가 돌아갑니다.",
+    title: "내 1%는 그의 소셜 미디어 비용이기도 합니다",
+    text: "RevenueCat은 월 매출이 {threshold}를 넘으면 전체 매출의 1%를 가져갑니다. 그 돈으로 회사가 돌아가고, CEO의 보수도 거기서 나옵니다. 결국 내 1%의 일부는 X에 하루 약 {perDay}개씩 올라오는 글값입니다.",
     link: "내 1%의 나머지가 어디로 가는지 보기 →",
     ctaKeep: "내 1% 지키기 →",
     ctaGithub: "GitHub에서 openpurr 보기",

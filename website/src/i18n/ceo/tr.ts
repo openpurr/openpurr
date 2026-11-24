@@ -5,14 +5,14 @@ export const ceoTr: CeoDict = {
   meta: {
     title: "RevenueCat CEO'su X'te günde {perDay} kez paylaşım yapıyor - openpurr",
     description:
-      "RevenueCat CEO'su 90 günde X'te {posts} kez paylaşım yaptı, günde {hours} farklı saatte. RevenueCat'ten bahsedenler yaklaşık {pct}. %1'iniz onun şirketini finanse ediyor.",
-    ogImageAlt: "RevenueCat CEO'su X'te günde yaklaşık 10 kez paylaşım yapıyor, her gün. %1'iniz onun yönettiği şirketi finanse ediyor.",
+      "RevenueCat CEO'su 90 günde X'te {posts} kez paylaşım yaptı, günde {hours} farklı saatte. RevenueCat'ten bahsedenler yaklaşık {pct}. %1'iniz onun X'te geçirdiği zamanı da ödüyor.",
+    ogImageAlt: "RevenueCat CEO'su X'te günde yaklaşık 10 kez paylaşım yapıyor, her gün. %1'iniz bunun parasını da ödüyor.",
   },
   hero: {
     crumb: "X'teki CEO",
     eyebrow: "%1'iniz nereye gidiyor",
     headline: "RevenueCat CEO'su X'te günde {perDay} kez paylaşım yapıyor.",
-    headlineAccent: "%1'iniz onun yönettiği şirketi finanse ediyor.",
+    headlineAccent: "%1'iniz bunun parasını da ödüyor.",
     lede: "Son {days} günde RevenueCat'in CEO'su Jacob Eiting ({handle}), X'te {posts} kez paylaşım yaptı. Bu, günde yaklaşık {perDay} paylaşım demek: her gün {hours} farklı saate yayılmış, {days} günün {active} gününde.",
     updated: "Güncellendi: {date} - Kamuya açık paylaşımlardan sayıldı",
   },
@@ -37,8 +37,8 @@ export const ceoTr: CeoDict = {
     about: "RevenueCat hakkında",
   },
   pays: {
-    title: "%1'iniz neyi ödüyor",
-    text: "Aylık {threshold} eşiğini geçtiğiniz anda RevenueCat tüm gelirinizin %1'ini alır. Şirket bu parayla döner, sunucularından yönetimine kadar.",
+    title: "%1'iniz onun sosyal medyasını da ödüyor",
+    text: "Aylık {threshold} eşiğini geçtiğiniz anda RevenueCat tüm gelirinizin %1'ini alır. Şirket bu parayla döner, CEO'suna ödediği maaş da buna dahil. Yani %1'inizin bir kısmı, X'te günde yaklaşık {perDay} paylaşımın parasını ödüyor.",
     link: "%1'inizin geri kalanının nereye gittiğini görün →",
     ctaKeep: "%1'iniz sizde kalsın →",
     ctaGithub: "GitHub'da openpurr",
