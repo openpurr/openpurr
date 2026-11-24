@@ -16,7 +16,6 @@ import { tp } from "../i18n/pricing";
 import { tc } from "../i18n/ceo";
 import { LEVELS, openpurrCost, revenueCatCost, RC } from "../savings";
 import {
-  engineerDayCost,
   FUNDING_USD,
   HEADCOUNT,
   INVESTOR_OWNERSHIP,
@@ -80,7 +79,6 @@ const swagDate = new Date(`${SWAG_POST.date}T00:00:00Z`).toLocaleDateString(`${t
 const checked = new Date(`${SOURCES_CHECKED}T00:00:00Z`).toLocaleDateString(`${tag}-u-nu-latn`, { year: "numeric", month: "long", day: "numeric", timeZone: "UTC" });
 const model = {
   teams: TEAMS.map((t) => ({ key: t.key, share: shareOf(t) })),
-  engineerDay: engineerDayCost(),
   investors: INVESTOR_OWNERSHIP,
   slider: SLIDER,
   tag,
@@ -269,7 +267,7 @@ const enHref = locale === "en" ? undefined : "en";
             </a>
           </div>
           <p class="punch">
-            <Fragment set:html={html(p.calc.punch, { days: out("days", num(Math.round(rest / engineerDayCost()))), infra: out("infra2", money(infra)) })} />{" "}
+            <Fragment set:html={html(p.calc.punch, { infra: out("infra2", money(infra)) })} />{" "}
             <strong set:html={html(p.calc.keep, { keep: `<span data-out="keep">${money(fee - infra)}</span>` })} />
           </p>
         </div>
@@ -906,7 +904,6 @@ const enHref = locale === "en" ? undefined : "en";
   if (root) {
     const model = JSON.parse(root.dataset.model!) as {
       teams: { key: string; share: number }[];
-      engineerDay: number;
       investors: number;
       slider: { min: number; max: number; initial: number };
       tag: string;
@@ -951,7 +948,6 @@ const enHref = locale === "en" ? undefined : "en";
       tween("fee", fee, (n) => usd.format(Math.round(n)));
       tween("infra", infra, (n) => usd.format(Math.round(n)));
       tween("infra2", infra, (n) => usd.format(Math.round(n)));
-      tween("days", rest / model.engineerDay, (n) => num.format(Math.round(n)));
       tween("vc", fee * model.investors, (n) => usd.format(Math.round(n)));
       tween("keep", fee - infra, (n) => usd.format(Math.round(n)));
       out("infraPct").textContent = pctFmt.format(infra / fee);

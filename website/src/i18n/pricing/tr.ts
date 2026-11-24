@@ -53,7 +53,7 @@ export const pricingTr: PricingDict = {
       "Risk sermayesi yatırımcıları beş turda RevenueCat'e yaklaşık {funding} yatırdı ve açıklanan değerlemelere göre şirketin yarısından fazlası onların. Her ödemeden pay almalarına gerek yok. Ödediğiniz her ücret, sahibi oldukları şirketin değerini artırır; şirket satıldığında parayı da onlar toplar. Hisse payı açısından, her yıl ödediğiniz tutarın yaklaşık {vc} kadarı onların kazancını büyütüyor.",
     investorsLabel: "RevenueCat'in yatırımcıları",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "%1'iniz RevenueCat'te yılda yaklaşık {days} mühendis-günü satın alır. Aynı işi kendiniz çalıştırmanın maliyeti ise {infra}.",
+    punch: "%1'iniz bunu satın alıyor. Aynı işi kendiniz çalıştırmanın maliyeti {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Kalan {keep} cebinizde kalsın.",
     ctaKeep: "%1'iniz sizde kalsın →",

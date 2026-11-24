@@ -53,7 +53,7 @@ export const pricingZhTw: PricingDict = {
       "創投分五輪向 RevenueCat 投入了約 {funding}，依報導的估值計算，他們擁有公司一半以上的股份。他們不需要從每筆付款裡抽成：你付的每一筆費用都在推高他們所持公司的價值，等公司出售時再一次收回。依持股比例算，你每年支付的費用中約有 {vc} 在替他們累積報酬。",
     investorsLabel: "RevenueCat 的投資人",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "你的 1% 每年能買到 RevenueCat 約 {days} 個工程師人日。同樣的工作自己跑，只要 {infra}。",
+    punch: "這就是你的 1% 買到的東西。同樣的工作自己跑，只要 {infra}。",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "剩下的 {keep}，留給自己。",
     ctaKeep: "留住你的 1% →",

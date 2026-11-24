@@ -53,7 +53,7 @@ export const pricingJa: PricingDict = {
       "ベンチャー投資家は 5 回のラウンドで約 {funding} を RevenueCat に投じ、報じられた評価額から見て会社の半分以上を保有しています。支払いのたびに取り分をもらう必要はありません。あなたが払う手数料のひとつひとつが、彼らの持つ会社の価値を押し上げ、売却時に回収されるからです。持ち分で換算すると、あなたが毎年払う額のうち約 {vc} が彼らのリターンになっています。",
     investorsLabel: "RevenueCat の投資家",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "あなたの 1% で買えるのは、RevenueCat のエンジニアの年間約 {days} 人日分。同じ仕事を自分で動かせば {infra} です。",
+    punch: "それが、あなたの 1% で買っているものです。同じ仕事を自分で動かせば {infra} です。",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "残りの {keep} は手元に。",
     ctaKeep: "1% を取り戻す →",

@@ -53,7 +53,7 @@ export const pricingPl: PricingDict = {
       "Inwestorzy VC włożyli w RevenueCat około {funding} w pięciu rundach i według podawanych wycen mają ponad połowę firmy. Nie potrzebują działki od każdej płatności. Każda opłata, którą płacisz, podnosi wartość firmy, do której należą, a pieniądze zgarniają przy sprzedaży. W przeliczeniu na udziały około {vc} z tego, co płacisz co roku, buduje ich zysk.",
     investorsLabel: "Inwestorzy RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "Twój 1% kupuje w RevenueCat około {days} dni pracy inżyniera rocznie. Ta sama robota na własnej infrastrukturze kosztuje {infra}.",
+    punch: "Za to płaci twój 1%. Ta sama praca u ciebie kosztuje {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Zatrzymaj pozostałe {keep}.",
     ctaKeep: "Zatrzymaj swój 1% →",

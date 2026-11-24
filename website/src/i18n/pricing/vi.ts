@@ -53,7 +53,7 @@ export const pricingVi: PricingDict = {
       "Các nhà đầu tư mạo hiểm đã rót khoảng {funding} vào RevenueCat qua năm vòng gọi vốn, và theo các mức định giá được báo cáo, họ sở hữu hơn một nửa công ty. Họ không cần cắt phần từ mỗi khoản thanh toán. Mỗi khoản phí bạn trả làm công ty của họ đáng giá hơn, và họ thu về khi công ty được bán. Xét theo tỷ lệ sở hữu, khoảng {vc} trong số bạn trả mỗi năm đang xây lợi nhuận cho họ.",
     investorsLabel: "Nhà đầu tư của RevenueCat",
     /** HTML. {days} is a number, {infra} an amount; both move with the slider. */
-    punch: "1% của bạn mua được khoảng {days} ngày công kỹ sư mỗi năm tại RevenueCat. Tự chạy cùng công việc đó chỉ tốn {infra}.",
+    punch: "Đó là những gì 1% của bạn mua. Tự chạy cùng công việc đó chỉ tốn {infra}.",
     /** HTML. {keep} is an amount that moves with the slider. */
     keep: "Giữ lại {keep} còn lại.",
     ctaKeep: "Giữ lại 1% của bạn →",
