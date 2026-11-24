@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoPl: CeoDict = {
   meta: {
-    title: "CEO RevenueCat publikuje na X {perDay} razy dziennie - openpurr",
+    title: "CEO RevenueCat Jacob Eiting publikuje na X {perDay} razy dziennie",
     description:
-      "W 90 dni CEO RevenueCat opublikował na X {posts} postów, w {hours} różnych godzinach dziennie. Około {pct} wspomina RevenueCat. Twój 1% pomaga płacić za jego czas na X.",
+      "CEO RevenueCat Jacob Eiting w 90 dni opublikował na X postów: {posts}, w {hours} różnych godzinach dziennie. Około {pct} wspomina RevenueCat. Twój 1% pomaga za to płacić.",
     ogImageAlt: "CEO RevenueCat publikuje na X około 10 razy dziennie, codziennie. Twój 1% pomaga za to płacić.",
   },
   hero: {
     crumb: "CEO na X",
     eyebrow: "Na co idzie twój 1%",
-    headline: "CEO RevenueCat publikuje na X {perDay} razy dziennie.",
+    headline: "CEO RevenueCat, Jacob Eiting, publikuje na X {perDay} razy dziennie.",
     headlineAccent: "Twój 1% pomaga za to płacić.",
     lede: "W ciągu ostatnich {days} dni CEO RevenueCat, Jacob Eiting ({handle}), opublikował na X {posts} postów. To około {perDay} postów dziennie, rozłożonych na {hours} różnych godzin dziennie, w {active} z {days} dni.",
     updated: "Zaktualizowano {date} - Policzone z publicznych postów",
@@ -42,6 +42,27 @@ export const ceoPl: CeoDict = {
     link: "Zobacz, na co idzie reszta twojego 1% →",
     ctaKeep: "Zatrzymaj swój 1% →",
     ctaGithub: "openpurr na GitHubie",
+  },
+  faq: {
+    title: "Częste pytania",
+    items: {
+      who: {
+        q: "Kto jest CEO RevenueCat?",
+        a: "Jacob Eiting jest współzałożycielem i CEO RevenueCat. Na X publikuje jako {handle}, gdzie liczba jego obserwujących to około {followers}.",
+      },
+      often: {
+        q: "Jak często CEO RevenueCat publikuje na X?",
+        a: "W ciągu {days} dni do {end} Jacob Eiting opublikował na X postów: {posts}, licząc odpowiedzi, ale nie reposty. To około {perDay} postów dziennie, rozłożonych na {hours} różnych godzin dziennie, w {active} z {days} dni.",
+      },
+      about: {
+        q: "O czym CEO RevenueCat publikuje na X?",
+        a: "Głównie o czymś innym niż RevenueCat. Według naszych reguł słów kluczowych {pct} jego postów wspomina RevenueCat lub jego biznes, wobec {basePct} we własnych postach {base}. Reguły pomijają część postów, więc traktuj {pct} jako dolną granicę.",
+      },
+      pays: {
+        q: "Czy z 1% prowizji RevenueCat opłacany jest jego CEO?",
+        a: "Częściowo. RevenueCat zabiera 1% wszystkich twoich przychodów, gdy tylko przekroczysz {threshold} miesięcznie, a z tych pieniędzy utrzymuje się firma, łącznie z wynagrodzeniami jej kierownictwa. RevenueCat nie ujawnia, ile płaci swoim menedżerom najwyższego szczebla.",
+      },
+    },
   },
   method: {
     title: "Jak liczyliśmy",

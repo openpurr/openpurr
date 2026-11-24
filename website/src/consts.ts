@@ -8,7 +8,7 @@ export const MIGRATION_UPDATED = "2026-11-21";
 /** The "Where your 1% goes" page: what RevenueCat's pricing pays for. */
 export const PRICING_PAGE = "/revenuecat-pricing/";
 /** How much RevenueCat's CEO posts on X; linked from the pricing page. */
-export const CEO_PAGE = "/revenuecat-pricing/ceo/";
+export const CEO_PAGE = "/revenuecat-ceo/";
 /** The guide for moving from Adapty (in the repo). */
 export const ADAPTY_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-adapty.md`;
 export const CONTRIBUTING_URL = `${REPO_URL}/blob/main/CONTRIBUTING.md`;

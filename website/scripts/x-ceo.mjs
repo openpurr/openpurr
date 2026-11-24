@@ -1,4 +1,4 @@
-// Measures how much RevenueCat's CEO posts on X, for the /revenuecat-pricing/ceo/ page. Read-only.
+// Measures how much RevenueCat's CEO posts on X, for the /revenuecat-ceo/ page. Read-only.
 //
 // It reads @jeiting's public posts from the last DAYS full days (UTC): original posts and replies,
 // not reposts. For each day it keeps two numbers, the posts and the "active hours" (clock hours

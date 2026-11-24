@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoEs: CeoDict = {
   meta: {
-    title: "El CEO de RevenueCat publica en X {perDay} veces al día - openpurr",
+    title: "El CEO de RevenueCat, Jacob Eiting, publica {perDay} veces al día en X",
     description:
-      "En 90 días, el CEO de RevenueCat publicó {posts} veces en X, en {hours} horas distintas al día. Cerca del {pct} menciona RevenueCat. Tu 1 % ayuda a pagar su tiempo en X.",
+      "El CEO de RevenueCat, Jacob Eiting, publicó {posts} veces en X en 90 días, en {hours} horas distintas al día. Cerca del {pct} menciona RevenueCat. Tu 1 % ayuda a pagarlo.",
     ogImageAlt: "El CEO de RevenueCat publica en X unas 10 veces al día, todos los días. Tu 1 % ayuda a pagarlo.",
   },
   hero: {
     crumb: "El CEO en X",
     eyebrow: "A dónde va tu 1 %",
-    headline: "El CEO de RevenueCat publica en X {perDay} veces al día.",
+    headline: "El CEO de RevenueCat, Jacob Eiting, publica en X {perDay} veces al día.",
     headlineAccent: "Tu 1 % ayuda a pagarlo.",
     lede: "En los últimos {days} días, el CEO de RevenueCat, Jacob Eiting ({handle}), publicó {posts} veces en X. Son unas {perDay} publicaciones al día, repartidas en {hours} horas distintas cada día, en {active} de {days} días.",
     updated: "Actualizado el {date} - Contado a partir de publicaciones públicas",
@@ -42,6 +42,27 @@ export const ceoEs: CeoDict = {
     link: "Mira a dónde va el resto de tu 1 % →",
     ctaKeep: "Quédate con tu 1 % →",
     ctaGithub: "openpurr en GitHub",
+  },
+  faq: {
+    title: "Lo que la gente pregunta",
+    items: {
+      who: {
+        q: "¿Quién es el CEO de RevenueCat?",
+        a: "Jacob Eiting es cofundador y CEO de RevenueCat. Publica en X como {handle}, donde lo siguen unas {followers} personas.",
+      },
+      often: {
+        q: "¿Con qué frecuencia publica en X el CEO de RevenueCat?",
+        a: "En los {days} días hasta el {end}, Jacob Eiting publicó {posts} veces en X, contando respuestas pero no reposts. Son unas {perDay} publicaciones al día, en {hours} horas distintas cada día, en {active} de {days} días.",
+      },
+      about: {
+        q: "¿Sobre qué publica en X el CEO de RevenueCat?",
+        a: "Sobre todo, de cosas que no son RevenueCat. Según nuestras reglas de palabras clave, el {pct} de sus publicaciones menciona RevenueCat o su negocio, frente al {basePct} de las publicaciones de la propia cuenta {base}. A las reglas se les escapan algunas publicaciones, así que toma el {pct} como un mínimo.",
+      },
+      pays: {
+        q: "¿La comisión del 1 % de RevenueCat paga a su CEO?",
+        a: "En parte. RevenueCat se lleva el 1 % de todos tus ingresos en cuanto pasas de {threshold} al mes, y con ese dinero funciona la empresa, incluido lo que paga a su equipo directivo. RevenueCat no publica cuánto paga a sus directivos.",
+      },
+    },
   },
   method: {
     title: "Cómo lo contamos",

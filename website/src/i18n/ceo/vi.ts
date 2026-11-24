@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoVi: CeoDict = {
   meta: {
-    title: "CEO RevenueCat đăng bài trên X {perDay} lần mỗi ngày - openpurr",
+    title: "CEO RevenueCat Jacob Eiting: {perDay} bài mỗi ngày trên X",
     description:
-      "Trong 90 ngày, CEO RevenueCat đăng {posts} bài trên X, trong {hours} khung giờ khác nhau mỗi ngày. Khoảng {pct} nhắc đến RevenueCat. 1% của bạn góp phần trả cho thời gian ông ấy dành cho X.",
+      "CEO RevenueCat Jacob Eiting đăng {posts} bài trên X trong 90 ngày, trong {hours} khung giờ khác nhau mỗi ngày. Khoảng {pct} nhắc đến RevenueCat. 1% của bạn góp phần trả cho việc đó.",
     ogImageAlt: "CEO RevenueCat đăng bài trên X khoảng 10 lần mỗi ngày, ngày nào cũng vậy. 1% của bạn góp phần trả cho việc đó.",
   },
   hero: {
     crumb: "CEO trên X",
     eyebrow: "1% của bạn đi đâu",
-    headline: "CEO RevenueCat đăng bài trên X {perDay} lần mỗi ngày.",
+    headline: "CEO RevenueCat, Jacob Eiting, đăng bài trên X {perDay} lần mỗi ngày.",
     headlineAccent: "1% của bạn góp phần trả cho việc đó.",
     lede: "Trong {days} ngày qua, CEO của RevenueCat, Jacob Eiting ({handle}), đã đăng {posts} bài trên X. Tức khoảng {perDay} bài mỗi ngày, rải trong {hours} khung giờ khác nhau mỗi ngày, vào {active} trên {days} ngày.",
     updated: "Cập nhật {date} - Đếm từ các bài đăng công khai",
@@ -42,6 +42,27 @@ export const ceoVi: CeoDict = {
     link: "Xem phần còn lại trong 1% của bạn đi đâu →",
     ctaKeep: "Giữ lại 1% của bạn →",
     ctaGithub: "openpurr trên GitHub",
+  },
+  faq: {
+    title: "Những câu hỏi thường gặp",
+    items: {
+      who: {
+        q: "CEO của RevenueCat là ai?",
+        a: "Jacob Eiting là đồng sáng lập kiêm CEO của RevenueCat. Ông ấy đăng bài trên X với tên {handle}, nơi có khoảng {followers} người theo dõi.",
+      },
+      often: {
+        q: "CEO RevenueCat đăng bài trên X thường xuyên đến mức nào?",
+        a: "Trong {days} ngày tính đến {end}, Jacob Eiting đã đăng {posts} bài trên X, tính cả trả lời nhưng không tính repost. Tức khoảng {perDay} bài mỗi ngày, trong {hours} khung giờ khác nhau mỗi ngày, vào {active} trên {days} ngày.",
+      },
+      about: {
+        q: "CEO RevenueCat đăng gì trên X?",
+        a: "Phần lớn là những chuyện khác ngoài RevenueCat. Theo các quy tắc từ khóa của chúng tôi, {pct} bài đăng của ông ấy nhắc đến RevenueCat hoặc việc kinh doanh của công ty, so với {basePct} trong chính các bài của {base}. Các quy tắc bỏ sót một số bài, nên hãy xem {pct} là mức tối thiểu.",
+      },
+      pays: {
+        q: "Phí 1% của RevenueCat có trả cho CEO không?",
+        a: "Một phần. RevenueCat lấy 1% trên toàn bộ doanh thu của bạn khi vượt {threshold} mỗi tháng, và số tiền đó vận hành công ty, kể cả khoản trả cho ban lãnh đạo. RevenueCat không công bố mức trả cho các giám đốc điều hành của mình.",
+      },
+    },
   },
   method: {
     title: "Cách chúng tôi đếm",

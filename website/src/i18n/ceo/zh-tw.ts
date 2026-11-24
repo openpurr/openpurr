@@ -3,15 +3,15 @@ import type { CeoDict } from "./en";
 
 export const ceoZhTw: CeoDict = {
   meta: {
-    title: "RevenueCat CEO 每天在 X 上發文 {perDay} 次 - openpurr",
+    title: "RevenueCat CEO Jacob Eiting 每天在 X 上發文 {perDay} 次",
     description:
-      "90 天內，RevenueCat 的 CEO 在 X 上發文 {posts} 次，每天分散在 {hours} 個小時，約 {pct} 提到 RevenueCat。你的 1% 也在為他在 X 上的時間買單。",
+      "RevenueCat CEO Jacob Eiting 90 天內在 X 上發文 {posts} 次，每天分散在 {hours} 個小時，約 {pct} 提到 RevenueCat。你的 1% 也在為此買單。",
     ogImageAlt: "RevenueCat 的 CEO 每天在 X 上發文約 10 次，天天如此。你的 1% 也在為此買單。",
   },
   hero: {
     crumb: "CEO 的 X",
     eyebrow: "你的 1% 去了哪裡",
-    headline: "RevenueCat 的 CEO 每天在 X 上發文 {perDay} 次。",
+    headline: "RevenueCat 的 CEO Jacob Eiting 每天在 X 上發文 {perDay} 次。",
     headlineAccent: "你的 1% 也在為此買單。",
     lede: "過去 {days} 天，RevenueCat 的 CEO Jacob Eiting（{handle}）在 X 上發文 {posts} 次。平均每天約 {perDay} 則，每天分散在 {hours} 個不同的小時，{days} 天中有 {active} 天發了文。",
     updated: "更新於 {date} - 根據公開貼文統計",
@@ -42,6 +42,27 @@ export const ceoZhTw: CeoDict = {
     link: "看看你 1% 的其餘部分去了哪裡 →",
     ctaKeep: "留住你的 1% →",
     ctaGithub: "GitHub 上的 openpurr",
+  },
+  faq: {
+    title: "常見問題",
+    items: {
+      who: {
+        q: "RevenueCat 的 CEO 是誰？",
+        a: "Jacob Eiting 是 RevenueCat 的共同創辦人兼 CEO。他在 X 上的帳號是 {handle}，約有 {followers} 人追蹤他。",
+      },
+      often: {
+        q: "RevenueCat 的 CEO 多常在 X 上發文？",
+        a: "截至 {end} 的 {days} 天內，Jacob Eiting 在 X 上發文 {posts} 次（含回覆，不含轉貼）。平均每天約 {perDay} 則，每天分散在 {hours} 個不同的小時，{days} 天中有 {active} 天發了文。",
+      },
+      about: {
+        q: "RevenueCat 的 CEO 在 X 上都發些什麼？",
+        a: "大多跟 RevenueCat 無關。依照我們的關鍵字規則，他的貼文中有 {pct} 提到 RevenueCat 或其業務，而 {base} 自己的貼文中是 {basePct}。規則會漏掉一些貼文，所以 {pct} 應視為下限。",
+      },
+      pays: {
+        q: "RevenueCat 的 1% 費用會付給它的 CEO 嗎？",
+        a: "部分會。月營收超過 {threshold} 後，RevenueCat 就抽走你全部營收的 1%，公司靠這筆錢運轉，管理層的薪酬也從這裡出。RevenueCat 沒有公開其高階主管的薪酬。",
+      },
+    },
   },
   method: {
     title: "我們如何統計",

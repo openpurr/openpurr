@@ -37,7 +37,7 @@ Paywalls, third-party analytics integrations, Customer Center, virtual currencie
 - [Migration guide](${MIGRATION_GUIDE_URL}): every step and command, including the customer import
 - [Moving from Adapty](${ADAPTY_GUIDE_URL}): an app update replaces the Adapty SDK with the Purchases SDK; App Store customers are imported from Adapty's event export
 - [RevenueCat pricing: where your 1% goes](${new URL(PRICING_PAGE, site)}): what RevenueCat's 1% revenue share pays for, estimated from public figures (teams, servers, investors)
-- [RevenueCat's CEO on X](${new URL(CEO_PAGE, site)}): how often RevenueCat's CEO posts on X, counted from 90 days of public posts
+- [RevenueCat CEO Jacob Eiting on X](${new URL(CEO_PAGE, site)}): how often RevenueCat's CEO posts on X, counted from 90 days of public posts, and how much of it is about RevenueCat
 - [Roadmap](${ROADMAP_URL}): what's done and what's next
 - [Releases](${REPO_URL}/releases): release notes
 - [Contributing](${CONTRIBUTING_URL}): how the code is organized, and how to run and test it
