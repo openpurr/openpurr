@@ -45,6 +45,12 @@ export const pricingEn = {
     teamMeta: "About {people} people · typical salary {salary}",
     /** Under the team list. */
     swag: "Also on the bill: light-up RevenueCat skateboards for the team, and the rest of the effort to look cool. Your 1% pays for that too.",
+    /** Describes the screenshot of the post, for screen readers. */
+    swagPostAlt: "A RevenueCat employee's post on X: “My RevenueCat skateboard arrived yesterday! Here's a link to claim your own free RevenueCat skateboard,” linking to RevenueCat's job board",
+    swagPhotoAlt: "A light-up RevenueCat skateboard",
+    /** HTML. {date} is the post's date; {link} becomes a link labelled with `swagLink`. */
+    swagCaption: "Posted on X, {date}. The “claim your own” link goes to their job board. {link}",
+    swagLink: "See the post",
     /** Near the top of the page, under the intro. */
     ownersTitle: "Your 1% builds someone else's exit",
     /** {pct} is like "55%". */

@@ -37,6 +37,10 @@ export const pricingPl: PricingDict = {
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Około {people} osób · typowa pensja {salary}",
     swag: "Również na rachunku: świecące deskorolki RevenueCat dla zespołu i cała reszta starań, żeby wyglądać cool. Za to też płaci Twój 1%.",
+    swagPostAlt: "Wpis pracownika RevenueCat na X: „Moja deskorolka RevenueCat przyszła wczoraj! Oto link, żeby odebrać własną darmową deskorolkę RevenueCat”, z linkiem do strony z ofertami pracy RevenueCat",
+    swagPhotoAlt: "Świecąca deskorolka RevenueCat",
+    swagCaption: "Opublikowano na X, {date}. Link „odbierz własną” prowadzi do ich ofert pracy. {link}",
+    swagLink: "Zobacz wpis",
     ownersTitle: "Twój 1% buduje cudzy exit",
     /** {pct} is like "55%". */
     ownersInvestors: "Inwestorzy VC · około {pct}",

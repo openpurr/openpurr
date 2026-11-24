@@ -37,6 +37,10 @@ export const pricingVi: PricingDict = {
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "Khoảng {people} người · lương phổ biến {salary}",
     swag: "Trong hóa đơn còn có: ván trượt RevenueCat phát sáng cho cả đội, và mọi nỗ lực khác để trông thật ngầu. 1% của bạn cũng trả cho những thứ đó.",
+    swagPostAlt: "Bài đăng của một nhân viên RevenueCat trên X: “Ván trượt RevenueCat của tôi đã đến hôm qua! Đây là liên kết để nhận ván trượt RevenueCat miễn phí của riêng bạn”, dẫn tới trang tuyển dụng của RevenueCat",
+    swagPhotoAlt: "Một ván trượt RevenueCat phát sáng",
+    swagCaption: "Đăng trên X ngày {date}. Liên kết “nhận ván của riêng bạn” dẫn tới trang tuyển dụng của họ. {link}",
+    swagLink: "Xem bài đăng",
     ownersTitle: "1% của bạn đang xây thương vụ exit cho người khác",
     /** {pct} is like "55%". */
     ownersInvestors: "Nhà đầu tư mạo hiểm · khoảng {pct}",

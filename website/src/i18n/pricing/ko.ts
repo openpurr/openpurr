@@ -37,6 +37,10 @@ export const pricingKo: PricingDict = {
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "약 {people}명 · 일반적인 연봉 {salary}",
     swag: "청구서에는 이것도 있습니다. 팀에 나눠 준 빛나는 RevenueCat 스케이트보드, 그리고 멋져 보이려는 나머지 모든 노력. 그 비용도 당신의 1%가 냅니다.",
+    swagPostAlt: "RevenueCat 직원의 X 게시물: “RevenueCat 스케이트보드가 어제 도착했어요! 무료 RevenueCat 스케이트보드를 받는 링크는 여기”라며 RevenueCat 채용 페이지로 연결",
+    swagPhotoAlt: "빛나는 RevenueCat 스케이트보드",
+    swagCaption: "{date} X에 게시. “직접 받기” 링크는 그들의 채용 페이지로 연결됩니다. {link}",
+    swagLink: "게시물 보기",
     ownersTitle: "내 1%가 남의 엑시트를 만듭니다",
     /** {pct} is like "55%". */
     ownersInvestors: "벤처 투자자 · 약 {pct}",

@@ -37,6 +37,10 @@ export const pricingZhCn: PricingDict = {
     /** {people} is a number, {salary} is like "$210K". */
     teamMeta: "约 {people} 人 · 典型薪资 {salary}",
     swag: "账单里还有：给团队发的发光 RevenueCat 滑板，以及为了显得很酷所做的其他一切。这些也由你的 1% 买单。",
+    swagPostAlt: "一名 RevenueCat 员工在 X 上的帖子：“我的 RevenueCat 滑板昨天到了！这是领取你自己的免费 RevenueCat 滑板的链接”，链接指向 RevenueCat 的招聘页面",
+    swagPhotoAlt: "一块发光的 RevenueCat 滑板",
+    swagCaption: "{date} 发布于 X。“领取你自己的”链接指向他们的招聘页面。{link}",
+    swagLink: "查看帖子",
     ownersTitle: "你的 1%，在为别人的退出铺路",
     /** {pct} is like "55%". */
     ownersInvestors: "风险投资人 · 约 {pct}",

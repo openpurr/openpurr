@@ -103,6 +103,9 @@ export const shareOf = (t: Team) => teamCost(t) / TOTAL_TEAM_COST;
 export const WORKDAYS = 230;
 export const engineerDayCost = () => (TEAMS.find((t) => t.key === "eng")!.salary * LOADED) / WORKDAYS;
 
+/** A RevenueCat employee's public post about their company skateboard (shown as a screenshot). */
+export const SWAG_POST = { date: "2026-11-24", url: "https://x.com/drbarnard" };
+
 /** The sources, in the order of i18n/pricing's `sources.items` labels. */
 export const SOURCES = [
   { url: "https://www.revenuecat.com/pricing/" },
