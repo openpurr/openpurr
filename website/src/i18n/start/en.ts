@@ -22,7 +22,7 @@ export const startEn = {
     /** {threshold} is "$2,500". */
     lede: "Most purchase backends take 1% of your revenue once you pass {threshold} a month, and the bill grows every time you do. It's easiest to avoid before your first sale. openpurr is a free, open-source backend for in-app purchases and subscriptions that you run yourself, with the same official SDK the big platforms use.",
     ctaStart: "Get started on GitHub",
-    ctaHow: "How it works",
+    ctaAi: "Copy a prompt for your AI assistant",
   },
   growth: {
     title: "Your 1%, from day one",
@@ -66,6 +66,14 @@ export const startEn = {
     ],
     /** Above the setup commands. */
     setupLabel: "Setup, on your machine",
+  },
+  /** A prompt to paste into an AI coding assistant. The prompt itself stays in English. */
+  ai: {
+    title: "Set it up with your AI coding assistant",
+    text: "Open your app's project in Claude Code, Codex, Cursor, Grok or any coding agent, and paste this prompt. It deploys openpurr, connects the stores and adds the SDK, asking you before anything that needs your login.",
+    copy: "Copy prompt",
+    copied: "Copied",
+    claudeTip: "Using Claude Code? Add the openpurr plugin first, for step-by-step help with each part:",
   },
   includes: {
     title: "What you get",

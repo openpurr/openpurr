@@ -16,7 +16,7 @@ export const startJa: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "多くの課金バックエンドは、月 {threshold} を超えると売上の 1% を取り、売上が伸びるたびに請求額も増えます。避けるなら、最初の売上の前がいちばん簡単です。openpurr は、自分で運用する無料・オープンソースのアプリ内課金とサブスクリプションのバックエンドです。大手のプラットフォームと同じ公式 SDK を使います。",
     ctaStart: "GitHub で始める",
-    ctaHow: "仕組みを見る",
+    ctaAi: "AI アシスタント用のプロンプトをコピー",
   },
   growth: {
     title: "あなたの 1%、初日から",
@@ -60,6 +60,13 @@ export const startJa: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "セットアップ（手元のマシンで）",
+  },
+  ai: {
+    title: "AI コーディングアシスタントでセットアップ",
+    text: "アプリのプロジェクトを Claude Code、Codex、Cursor、Grok などのコーディングエージェントで開き、このプロンプトを貼り付けてください。openpurr のデプロイ、ストアの接続、SDK の追加まで進め、ログインが必要な操作の前には確認します。",
+    copy: "プロンプトをコピー",
+    copied: "コピーしました",
+    claudeTip: "Claude Code をお使いなら、先に openpurr プラグインを追加すると、各手順をガイドしてくれます:",
   },
   includes: {
     title: "できること",

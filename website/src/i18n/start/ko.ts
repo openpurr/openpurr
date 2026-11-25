@@ -16,7 +16,7 @@ export const startKo: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "대부분의 결제 백엔드는 월 매출이 {threshold} 이상이 되면 매출의 1%를 가져가고, 매출이 늘 때마다 청구액도 커집니다. 피하기 가장 쉬운 때는 첫 판매 전입니다. openpurr는 직접 운영하는 무료 오픈소스 인앱 결제 및 구독 백엔드로, 큰 플랫폼들이 쓰는 것과 같은 공식 SDK를 사용합니다.",
     ctaStart: "GitHub에서 시작하기",
-    ctaHow: "작동 방식",
+    ctaAi: "AI 어시스턴트용 프롬프트 복사",
   },
   growth: {
     title: "내 1%, 첫날부터",
@@ -60,6 +60,13 @@ export const startKo: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "설정, 내 컴퓨터에서",
+  },
+  ai: {
+    title: "AI 코딩 어시스턴트로 설정하기",
+    text: "앱 프로젝트를 Claude Code, Codex, Cursor, Grok 등 코딩 에이전트에서 열고 이 프롬프트를 붙여넣으세요. openpurr 배포, 스토어 연결, SDK 추가까지 진행하며, 로그인이 필요한 작업 전에는 먼저 물어봅니다.",
+    copy: "프롬프트 복사",
+    copied: "복사됨",
+    claudeTip: "Claude Code를 쓰나요? 먼저 openpurr 플러그인을 추가하면 단계별로 도와줍니다:",
   },
   includes: {
     title: "제공되는 것",

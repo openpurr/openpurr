@@ -16,7 +16,7 @@ export const startId: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Sebagian besar backend pembelian mengambil 1% pendapatan Anda begitu melewati {threshold} per bulan, dan tagihannya ikut naik setiap kali Anda tumbuh. Paling mudah menghindarinya sebelum penjualan pertama. openpurr adalah backend gratis dan open source untuk pembelian dalam aplikasi dan langganan yang Anda jalankan sendiri, dengan SDK resmi yang sama yang dipakai platform-platform besar.",
     ctaStart: "Mulai di GitHub",
-    ctaHow: "Cara kerjanya",
+    ctaAi: "Salin prompt untuk asisten AI Anda",
   },
   growth: {
     title: "1% Anda, sejak hari pertama",
@@ -60,6 +60,13 @@ export const startId: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Setup, di komputer Anda",
+  },
+  ai: {
+    title: "Siapkan dengan asisten coding AI Anda",
+    text: "Buka proyek aplikasi Anda di Claude Code, Codex, Cursor, Grok, atau agen coding lain, lalu tempel prompt ini. Prompt ini men-deploy openpurr, menghubungkan store, dan menambahkan SDK, serta bertanya dulu sebelum langkah yang perlu login Anda.",
+    copy: "Salin prompt",
+    copied: "Tersalin",
+    claudeTip: "Pakai Claude Code? Tambahkan dulu plugin openpurr untuk panduan langkah demi langkah:",
   },
   includes: {
     title: "Yang Anda dapatkan",

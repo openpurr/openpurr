@@ -16,7 +16,7 @@ export const startTr: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Çoğu satın alma backend'i, aylık {threshold} eşiğini geçtiğiniz anda gelirinizin %1'ini alır ve siz büyüdükçe fatura da büyür. Bundan kaçınmanın en kolay zamanı ilk satıştan öncesidir. openpurr, uygulama içi satın almalar ve abonelikler için kendi çalıştırdığınız ücretsiz, açık kaynak bir backend'dir ve büyük platformların kullandığı resmi SDK ile çalışır.",
     ctaStart: "GitHub'da başlayın",
-    ctaHow: "Nasıl çalışır",
+    ctaAi: "Yapay zekâ asistanınız için bir prompt kopyalayın",
   },
   growth: {
     title: "%1'iniz, ilk günden itibaren",
@@ -60,6 +60,13 @@ export const startTr: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Kurulum, kendi bilgisayarınızda",
+  },
+  ai: {
+    title: "Yapay zekâ kodlama asistanınızla kurun",
+    text: "Uygulamanızın projesini Claude Code, Codex, Cursor, Grok veya başka bir kodlama ajanında açın ve bu prompt'u yapıştırın. openpurr'ü dağıtır, mağazaları bağlar ve SDK'yı ekler; giriş yapmanızı gerektiren her adımdan önce size sorar.",
+    copy: "Prompt'u kopyala",
+    copied: "Kopyalandı",
+    claudeTip: "Claude Code mu kullanıyorsunuz? Önce adım adım yardım eden openpurr eklentisini ekleyin:",
   },
   includes: {
     title: "Neler sunuyor",

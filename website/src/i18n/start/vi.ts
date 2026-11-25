@@ -16,7 +16,7 @@ export const startVi: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Phần lớn backend mua hàng lấy 1% doanh thu của bạn khi vượt {threshold} mỗi tháng, và hóa đơn tăng theo mỗi bước bạn lớn lên. Dễ tránh nhất là trước lần bán đầu tiên. openpurr là backend miễn phí, mã nguồn mở cho mua hàng trong ứng dụng và gói đăng ký mà bạn tự chạy, dùng cùng SDK chính thức mà các nền tảng lớn đang dùng.",
     ctaStart: "Bắt đầu trên GitHub",
-    ctaHow: "Cách hoạt động",
+    ctaAi: "Sao chép prompt cho trợ lý AI của bạn",
   },
   growth: {
     title: "1% của bạn, ngay từ ngày đầu",
@@ -60,6 +60,13 @@ export const startVi: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Setup, trên máy của bạn",
+  },
+  ai: {
+    title: "Thiết lập bằng trợ lý lập trình AI",
+    text: "Mở dự án ứng dụng của bạn trong Claude Code, Codex, Cursor, Grok hoặc bất kỳ agent lập trình nào và dán prompt này. Nó triển khai openpurr, kết nối các store và thêm SDK, đồng thời hỏi bạn trước mọi bước cần bạn đăng nhập.",
+    copy: "Sao chép prompt",
+    copied: "Đã sao chép",
+    claudeTip: "Dùng Claude Code? Hãy thêm plugin openpurr trước để được hướng dẫn từng bước:",
   },
   includes: {
     title: "Bạn nhận được gì",

@@ -12,6 +12,7 @@ import { PRICING_PAGE, REPO_URL, START_PAGE } from "../consts";
 import { allLocales, fill, langTag, localePath, type Locale } from "../i18n";
 import { ts } from "../i18n/start";
 import { openpurrCost, RC, revenueCatCost } from "../savings";
+import agentLogos from "../agent-logos.json";
 
 interface Props {
   locale: Locale;
@@ -110,6 +111,23 @@ const jsonLd = {
 };
 const jsonLdText = JSON.stringify(jsonLd).replace(/</g, "\\u003c");
 const model = { slider: SLIDER, months: MONTHS, w: W, h: H, tag };
+
+// The prompt for an AI coding assistant. It stays in English, which every assistant reads well, and
+// asks for answers in the page's language.
+const language = new Intl.DisplayNames(["en"], { type: "language" }).of(tag) ?? "English";
+const prompt = `Help me add in-app purchases and subscriptions to this app with openpurr (https://github.com/openpurr/openpurr), an open-source, self-hosted backend that works with the official RevenueCat Purchases SDK. I don't need a RevenueCat account, and there's no revenue share.
+
+1. Read openpurr's README, especially "Getting started" and "SDK compatibility".
+2. Deploy openpurr Lite to my Cloudflare account (the free plan is enough): clone the repo, run \`npx pnpm install\`, then in lite/ run \`npx wrangler login\` and \`npx pnpm run setup\`. Stop and ask me before anything that needs my login or a payment.
+3. Walk me through adding my app, products, entitlements and offerings in the openpurr dashboard, and setting up App Store Connect and the Google Play Console: store credentials and server notifications.
+4. Add the Purchases SDK to this project. Use the SDK key and SDK Worker URL from the dashboard (Configuration → Apps and products has ready-to-paste setup code), set the proxy URL before calling configure, and leave entitlement verification at its default (disabled).
+5. Add a simple paywall and an entitlement check, then help me test a sandbox purchase.
+6. Run \`npx @openpurr/cli login\` and \`npx @openpurr/cli doctor\`, and fix anything it reports.
+
+Explain each step briefly, and ask me before changing anything outside this project.${locale === "en" ? "" : ` Reply in ${language}.`}`;
+/** The coding assistants whose logos sit on the copy buttons (src/agent-logos.json, from LobeHub's MIT icon set). */
+const agents = Object.values(agentLogos);
+const claudeCommands = "/plugin marketplace add openpurr/openpurr\n/plugin install openpurr@openpurr";
 ---
 
 <Base
@@ -135,7 +153,10 @@ const model = { slider: SLIDER, months: MONTHS, w: W, h: H, tag };
         <p class="lede">{fill(c.hero.lede, { threshold: money(RC.threshold) })}</p>
         <div class="cta">
           <a class="btn btn-primary" href={startUrl}>{c.hero.ctaStart}</a>
-          <a class="btn btn-ghost" href="#how">{c.hero.ctaHow}</a>
+          <button class="agent-pill" type="button" data-copy data-copied={c.ai.copied}>
+            <span class="logos" aria-hidden="true">{agents.map((a) => <span class="logo" title={a.name}><svg viewBox="0 0 24 24" fill="currentColor" fill-rule={a.evenodd ? "evenodd" : undefined} set:html={a.svg} /></span>)}</span>
+            <span class="label">{c.hero.ctaAi}</span>
+          </button>
         </div>
       </div>
     </section>
@@ -201,6 +222,22 @@ cd lite && npx wrangler login
 npx pnpm run setup</code></pre>
           </div>
           <div><SdkSnippet locale={locale} /></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="ai" class="ai-section">
+      <div class="wrap">
+        <div class="ai card">
+          <h2>{c.ai.title}</h2>
+          <p class="muted">{c.ai.text}</p>
+          <button class="agent-pill big" type="button" data-copy data-copied={c.ai.copied} aria-label={`${c.ai.copy}: ${agents.map((a) => a.name).join(", ")}`}>
+            <span class="logos" aria-hidden="true">{agents.map((a) => <span class="logo" title={a.name}><svg viewBox="0 0 24 24" fill="currentColor" fill-rule={a.evenodd ? "evenodd" : undefined} set:html={a.svg} /></span>)}</span>
+            <span class="label">{c.ai.copy}</span>
+          </button>
+          <pre class="prompt" dir="ltr" data-prompt>{prompt}</pre>
+          <p class="claude-tip">{c.ai.claudeTip}</p>
+          <pre class="shell small" dir="ltr"><code>{claudeCommands}</code></pre>
         </div>
       </div>
     </section>
@@ -278,6 +315,31 @@ npx pnpm run setup</code></pre>
       }
     };
     input.addEventListener("input", () => render(valueAt(Number(input.value))));
+
+    // Copy the AI prompt.
+    const promptEl = root.querySelector<HTMLElement>("[data-prompt]");
+    for (const copy of root.querySelectorAll<HTMLButtonElement>("[data-copy]")) {
+      if (!promptEl) break;
+      const labelEl = copy.querySelector<HTMLElement>(".label")!;
+      const label = labelEl.textContent;
+      copy.addEventListener("click", async () => {
+        try {
+          await navigator.clipboard.writeText(promptEl.textContent ?? "");
+        } catch {
+          const range = document.createRange();
+          range.selectNodeContents(promptEl);
+          getSelection()?.removeAllRanges();
+          getSelection()?.addRange(range);
+          document.execCommand("copy");
+        }
+        labelEl.textContent = copy.dataset.copied ?? label;
+        copy.classList.add("done");
+        setTimeout(() => {
+          labelEl.textContent = label;
+          copy.classList.remove("done");
+        }, 2000);
+      });
+    }
 
     // Draw the chart in once it scrolls into view.
     const chart = root.querySelector<SVGElement>(".chart")!;
@@ -505,6 +567,99 @@ npx pnpm run setup</code></pre>
   }
   .shell .c {
     color: #8f88ad;
+  }
+  .ai-section {
+    padding-top: 0;
+  }
+  #how + .ai-section {
+    padding-top: 64px;
+  }
+  .ai {
+    max-width: 860px;
+    padding: 32px;
+  }
+  .ai h2 {
+    font-size: 1.6rem;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .agent-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 18px 8px 10px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: var(--card);
+    color: var(--ink);
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  }
+  .agent-pill:hover {
+    border-color: var(--purple);
+    box-shadow: 0 8px 20px -12px rgba(60, 40, 140, 0.45);
+    transform: translateY(-1px);
+  }
+  .agent-pill.done {
+    border-color: var(--ok);
+  }
+  .agent-pill.big {
+    margin-top: 18px;
+    padding: 10px 22px 10px 12px;
+    font-size: 1.05rem;
+  }
+  .logos {
+    display: inline-flex;
+  }
+  .logo {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid var(--card);
+    box-shadow: 0 0 0 1px var(--line);
+    color: #111;
+  }
+  .logo + .logo {
+    margin-inline-start: -8px;
+  }
+  .logo svg {
+    width: 18px;
+    height: 18px;
+  }
+  .agent-pill.big .logo {
+    width: 34px;
+    height: 34px;
+  }
+  .agent-pill.big .logo svg {
+    width: 20px;
+    height: 20px;
+  }
+  .prompt {
+    margin: 16px 0 0;
+    max-height: 260px;
+    overflow: auto;
+    padding: 18px 20px;
+    border-radius: var(--radius);
+    background: #17142a;
+    color: #e9e6f5;
+    font-size: 0.82rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .claude-tip {
+    margin-top: 18px;
+    font-size: 0.92rem;
+    color: var(--text);
+  }
+  .shell.small {
+    margin-top: 8px;
+    font-size: 0.8rem;
   }
   .narrow {
     max-width: 760px;

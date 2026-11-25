@@ -16,7 +16,7 @@ export const startZhCn: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "大多数购买后端在你的月收入超过 {threshold} 后抽走 1%，而且你每增长一次，账单就跟着涨一次。在第一笔销售之前避开它最容易。openpurr 是一个免费、开源、由你自己运行的应用内购买与订阅后端，使用的是大平台同款的官方 SDK。",
     ctaStart: "在 GitHub 上开始",
-    ctaHow: "工作原理",
+    ctaAi: "复制给 AI 助手的提示词",
   },
   growth: {
     title: "你的 1%，从第一天算起",
@@ -60,6 +60,13 @@ export const startZhCn: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "在你的电脑上安装",
+  },
+  ai: {
+    title: "用 AI 编程助手完成设置",
+    text: "在 Claude Code、Codex、Cursor、Grok 或任何编程智能体中打开你的应用项目，粘贴这段提示词。它会部署 openpurr、连接应用商店并添加 SDK，遇到需要你登录的步骤会先问你。",
+    copy: "复制提示词",
+    copied: "已复制",
+    claudeTip: "用 Claude Code？先添加 openpurr 插件，它会一步步带你完成：",
   },
   includes: {
     title: "你能得到什么",

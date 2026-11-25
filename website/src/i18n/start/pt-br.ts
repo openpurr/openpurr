@@ -16,7 +16,7 @@ export const startPtBr: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "A maioria dos backends de compras fica com 1% da sua receita assim que você passa de {threshold} por mês, e a conta cresce junto com você. O mais fácil é evitar isso antes da primeira venda. O openpurr é um backend gratuito e de código aberto para compras no app e assinaturas que você mesmo roda, com o mesmo SDK oficial que as grandes plataformas usam.",
     ctaStart: "Comece no GitHub",
-    ctaHow: "Como funciona",
+    ctaAi: "Copie um prompt para seu assistente de IA",
   },
   growth: {
     title: "O seu 1%, desde o primeiro dia",
@@ -60,6 +60,13 @@ export const startPtBr: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Configuração, na sua máquina",
+  },
+  ai: {
+    title: "Configure com seu assistente de programação com IA",
+    text: "Abra o projeto do seu app no Claude Code, Codex, Cursor, Grok ou qualquer agente de programação e cole este prompt. Ele faz o deploy do openpurr, conecta as lojas e adiciona o SDK, perguntando antes de qualquer etapa que precise do seu login.",
+    copy: "Copiar prompt",
+    copied: "Copiado",
+    claudeTip: "Usa o Claude Code? Adicione antes o plugin do openpurr, que ajuda passo a passo:",
   },
   includes: {
     title: "O que você ganha",
