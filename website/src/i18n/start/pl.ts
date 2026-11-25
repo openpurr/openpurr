@@ -17,6 +17,7 @@ export const startPl: StartDict = {
     lede: "Większość backendów zakupów zabiera 1% twoich przychodów, gdy tylko przekroczysz {threshold} miesięcznie, a rachunek rośnie razem z tobą. Najłatwiej tego uniknąć przed pierwszą sprzedażą. openpurr to darmowy, otwartoźródłowy backend do zakupów w aplikacji i subskrypcji, który utrzymujesz sam, z tym samym oficjalnym SDK, którego używają duże platformy.",
     ctaStart: "Zacznij na GitHubie",
     ctaHow: "Jak to działa",
+    ctaAi: "Skopiuj prompt dla asystenta AI",
   },
   growth: {
     title: "Twój 1%, od pierwszego dnia",
@@ -60,6 +61,13 @@ export const startPl: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Instalacja, na twoim komputerze",
+  },
+  ai: {
+    title: "Skonfiguruj to z asystentem AI do kodowania",
+    text: "Otwórz projekt aplikacji w Claude Code, Codex, Cursor, Grok lub innym agencie do kodowania i wklej ten prompt. Wdroży openpurr, podłączy sklepy i doda SDK, pytając cię przed każdym krokiem, który wymaga twojego logowania.",
+    copy: "Kopiuj prompt",
+    copied: "Skopiowano",
+    claudeTip: "Używasz Claude Code? Najpierw dodaj wtyczkę openpurr, która poprowadzi cię krok po kroku:",
   },
   includes: {
     title: "Co dostajesz",

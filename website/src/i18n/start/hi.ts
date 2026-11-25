@@ -17,6 +17,7 @@ export const startHi: StartDict = {
     lede: "ज़्यादातर purchase backends हर महीने {threshold} पार करते ही आपके revenue का 1% लेते हैं, और आप जितना बढ़ते हैं, bill भी उतना बढ़ता है। इससे बचना सबसे आसान पहली sale से पहले है। openpurr in-app purchases और subscriptions के लिए एक मुफ़्त, open-source backend है जिसे आप खुद चलाते हैं, और यह वही आधिकारिक SDK इस्तेमाल करता है जो बड़े platforms करते हैं।",
     ctaStart: "GitHub पर शुरू करें",
     ctaHow: "यह कैसे काम करता है",
+    ctaAi: "अपने AI assistant के लिए prompt copy करें",
   },
   growth: {
     title: "आपका 1%, पहले दिन से",
@@ -60,6 +61,13 @@ export const startHi: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Setup, आपकी machine पर",
+  },
+  ai: {
+    title: "अपने AI coding assistant से सेट करें",
+    text: "अपने app का project Claude Code, Codex, Cursor, Grok या किसी भी coding agent में खोलें और यह prompt paste करें। यह openpurr deploy करता है, stores जोड़ता है और SDK जोड़ता है, और जिस भी step में आपके login की ज़रूरत हो, उससे पहले आपसे पूछता है।",
+    copy: "Prompt copy करें",
+    copied: "Copy हो गया",
+    claudeTip: "Claude Code इस्तेमाल करते हैं? पहले openpurr plugin जोड़ें, जो हर step में मदद करता है:",
   },
   includes: {
     title: "आपको क्या मिलता है",

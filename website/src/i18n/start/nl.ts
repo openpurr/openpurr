@@ -17,6 +17,7 @@ export const startNl: StartDict = {
     lede: "De meeste aankoopbackends nemen 1% van je omzet zodra je boven {threshold} per maand komt, en de rekening groeit met elke stap die je zet. Dat vermijd je het makkelijkst vóór je eerste verkoop. openpurr is een gratis, open-source backend voor in-app-aankopen en abonnementen die je zelf draait, met dezelfde officiële SDK die de grote platforms gebruiken.",
     ctaStart: "Aan de slag op GitHub",
     ctaHow: "Zo werkt het",
+    ctaAi: "Kopieer een prompt voor je AI-assistent",
   },
   growth: {
     title: "Je 1%, vanaf dag één",
@@ -60,6 +61,13 @@ export const startNl: StartDict = {
     ],
     /** Above the setup commands. */
     setupLabel: "Setup, op je eigen computer",
+  },
+  ai: {
+    title: "Zet het op met je AI-codeerassistent",
+    text: "Open het project van je app in Claude Code, Codex, Cursor, Grok of een andere coding-agent en plak deze prompt. Hij deployt openpurr, koppelt de stores en voegt de SDK toe, en vraagt het je eerst bij alles waarvoor je moet inloggen.",
+    copy: "Prompt kopiëren",
+    copied: "Gekopieerd",
+    claudeTip: "Gebruik je Claude Code? Voeg eerst de openpurr-plugin toe, die je stap voor stap helpt:",
   },
   includes: {
     title: "Wat je krijgt",
