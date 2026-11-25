@@ -5,13 +5,13 @@ export const pricingId: PricingDict = {
   meta: {
     title: "Harga RevenueCat: ke mana sebenarnya 1% Anda - openpurr",
     description:
-      "RevenueCat memotong 1% pendapatan Anda. Server di balik aplikasi Anda nyaris tanpa biaya. Lihat untuk apa sisanya: gaji, tim sales, dan investor ventura.",
+      "Harga RevenueCat: gratis hingga {threshold} pendapatan terlacak per bulan, lalu 1% dari seluruhnya. Servernya nyaris tanpa biaya. Lihat untuk apa sisanya.",
     ogImageAlt: "RevenueCat mengambil 1% pendapatan Anda; servernya nyaris tanpa biaya. Untuk apa sisanya.",
   },
   hero: {
     crumb: "Harga RevenueCat",
     eyebrow: "Ke mana 1% Anda pergi",
-    headline: "Anda tidak membayar server.",
+    headline: "Harga RevenueCat: Anda tidak membayar server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Anda membayar perusahaan senilai {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingId: PricingDict = {
         q: "Berapa nilai RevenueCat?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat dilaporkan bervaluasi {valuation} saat menghimpun Series C senilai {round} pada 2025, dengan pendapatan tahunan sekitar {revenue} saat itu. Ini angka dari media dan analis, bukan pengungkapan resmi perusahaan.",
+      },
+      value: {
+        q: "Apakah RevenueCat sepadan dengan harganya?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Tergantung seberapa banyak yang Anda pakai. RevenueCat menambahkan paywall, eksperimen, integrasi, dan layanan dukungan di atas backend pembelian. Kalau yang Anda butuhkan hanya validasi pembelian dan status langganan yang selalu terkini, Anda membayar {fee} per tahun pada {m25k} per bulan untuk pekerjaan yang biaya servernya hanya sekitar {servers}. openpurr mengerjakan bagian itu tanpa bagi hasil pendapatan.",
       },
       alternative: {
         q: "Adakah alternatif RevenueCat tanpa bagi hasil pendapatan?",

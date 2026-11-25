@@ -5,13 +5,13 @@ export const pricingFr: PricingDict = {
   meta: {
     title: "Tarifs RevenueCat : où va vraiment votre 1 % - openpurr",
     description:
-      "RevenueCat prend 1 % de vos revenus. Vos serveurs coûtent une erreur d'arrondi. Le reste paie des salaires, des commerciaux et des investisseurs.",
+      "Tarifs RevenueCat : gratuit jusqu'à {threshold} de revenus suivis par mois, puis 1 % de la totalité. Les serveurs coûtent une erreur d'arrondi. Ce que paie le reste.",
     ogImageAlt: "RevenueCat prend 1 % de vos revenus ; les serveurs coûtent une erreur d'arrondi. Ce que paie le reste.",
   },
   hero: {
     crumb: "Tarifs RevenueCat",
     eyebrow: "Où va votre 1 %",
-    headline: "Vous ne payez pas des serveurs.",
+    headline: "Tarifs RevenueCat : vous ne payez pas des serveurs.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Vous payez une entreprise valorisée à {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingFr: PricingDict = {
         q: "Combien vaut RevenueCat ?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat aurait été valorisée à {valuation} lors de sa série C de {round} en 2025, avec environ {revenue} de revenus annuels à l'époque. Ce sont des chiffres de la presse et d'analystes, pas des données publiées par l'entreprise.",
+      },
+      value: {
+        q: "RevenueCat vaut-il le coup ?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Tout dépend de ce que vous en utilisez. RevenueCat ajoute paywalls, expérimentations, intégrations et support à un backend d'achats. Si vous avez juste besoin d'achats validés et d'abonnements à jour, vous paieriez {fee} par an à {m25k} par mois pour un travail dont les serveurs coûtent environ {servers}. openpurr fait cette partie sans part des revenus.",
       },
       alternative: {
         q: "Existe-t-il une alternative à RevenueCat sans part des revenus ?",

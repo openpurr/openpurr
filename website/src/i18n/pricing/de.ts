@@ -5,13 +5,13 @@ export const pricingDe: PricingDict = {
   meta: {
     title: "RevenueCat-Preise: Wohin deine 1 % wirklich gehen - openpurr",
     description:
-      "RevenueCat nimmt 1 % deines Umsatzes. Die Server hinter deiner App kosten fast nichts. Wofür der Rest draufgeht: Gehälter, Vertrieb und Risikokapitalgeber.",
+      "RevenueCat-Preise: kostenlos bis {threshold} erfasstem Umsatz im Monat, danach 1 % vom Gesamtumsatz. Die Server kosten einen Rundungsfehler. Wofür der Rest bezahlt.",
     ogImageAlt: "RevenueCat nimmt 1 % deines Umsatzes, die Server kosten einen Rundungsfehler. Wofür der Rest bezahlt.",
   },
   hero: {
     crumb: "RevenueCat-Preise",
     eyebrow: "Wohin deine 1 % gehen",
-    headline: "Du zahlst nicht für Server.",
+    headline: "RevenueCat-Preise: Du zahlst nicht für Server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Du zahlst für ein Unternehmen, das {valuation} wert ist.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingDe: PricingDict = {
         q: "Wie viel ist RevenueCat wert?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat wurde laut Berichten mit {valuation} bewertet, als es 2025 seine Series C über {round} abschloss, bei damals etwa {revenue} Jahresumsatz. Das sind Zahlen aus Presse und Analysen, keine Angaben des Unternehmens.",
+      },
+      value: {
+        q: "Ist RevenueCat sein Geld wert?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Das hängt davon ab, wie viel davon du nutzt. RevenueCat bietet zusätzlich zum Kauf-Backend Paywalls, Experimente, Integrationen und Support. Wenn du nur validierte Käufe und aktuelle Abos brauchst, zahlst du bei {m25k} Monatsumsatz {fee} im Jahr für einen Job, dessen Server etwa {servers} kosten. openpurr erledigt diesen Teil ohne Umsatzbeteiligung.",
       },
       alternative: {
         q: "Gibt es eine Alternative zu RevenueCat ohne Umsatzbeteiligung?",

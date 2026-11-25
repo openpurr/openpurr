@@ -158,7 +158,7 @@ export const zhCn: Dict = {
       colOp: "openpurr Lite（每月）",
       colSaved: "每年节省",
       methodSummary: "我们如何估算",
-      pricingLink: "RevenueCat 的 1% 花在了哪里？→",
+      pricingLink: "RevenueCat 定价，逐项拆解 →",
       method: [
         "RevenueCat：Pro 方案的标价，即从 2,500 美元起按每月跟踪收入的 1% 收费。跟踪收入会把年度订阅和一次性购买计入付款当月，因此可能高于 MRR。大客户可以协商 Enterprise 价格。",
         "openpurr Lite：Cloudflare 的 Workers 和 D1 价格。我们假设每位日活跃用户每月带来约 1.50 美元收入，每天发出约 10 个 SDK 请求。照此计算，免费套餐每天 100,000 个请求可覆盖约 {paidFrom} 的月收入，并留有余量。超过后按 Workers Paid 计算：每月 5 美元，超出 1,000 万个请求的部分每百万个请求 0.30 美元。",

@@ -96,6 +96,7 @@ const faq = [
   { q: fi.pays.q, a: fill(fi.pays.a, { servers: money(openpurrCost(25_000).cost * 12), fee: yearly(25_000), m25k: money(25_000), people: num(HEADCOUNT.used) }) },
   { q: fi.owns.q, a: fill(fi.owns.a, { funding: big(FUNDING_USD), investors: list(INVESTORS), pct }) },
   { q: fi.worth.q, a: fill(fi.worth.a, { valuation: big(VALUATION_2025), round: big(50_000_000), revenue: big(REVENUE_2025) }) },
+  { q: fi.value.q, a: fill(fi.value.a, { fee: yearly(25_000), m25k: money(25_000), servers: money(openpurrCost(25_000).cost * 12) }) },
   { q: fi.alternative.q, a: fi.alternative.a },
 ];
 
@@ -109,7 +110,7 @@ const jsonLd = {
       "@type": "Article",
       "@id": `${pageUrl}#article`,
       headline,
-      description: p.meta.description,
+      description: fill(p.meta.description, { threshold: money(RC.threshold) }),
       url: pageUrl,
       mainEntityOfPage: pageUrl,
       image: `${site}/og-revenuecat-pricing.png`,
@@ -148,7 +149,7 @@ const enHref = locale === "en" ? undefined : "en";
   locale={locale}
   alternates={allLocales(PRICING_PAGE)}
   title={p.meta.title}
-  description={p.meta.description}
+  description={fill(p.meta.description, { threshold: money(RC.threshold) })}
   ogType="article"
   ogImage="/og-revenuecat-pricing.png"
   ogImageAlt={p.meta.ogImageAlt}

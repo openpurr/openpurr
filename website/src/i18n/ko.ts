@@ -159,7 +159,7 @@ export const ko: Dict = {
       colOp: "openpurr Lite, 월",
       colSaved: "연간 절약액",
       methodSummary: "계산 방법",
-      pricingLink: "RevenueCat의 1%는 어디로 갈까요? →",
+      pricingLink: "RevenueCat 가격, 낱낱이 분석 →",
       method: [
         "RevenueCat: Pro 요금제의 정가로, $2,500부터 월 추적 매출의 1%입니다. 추적 매출은 연간 구독과 일회성 구매를 결제한 달에 집계하므로 MRR보다 클 수 있습니다. 대규모 계정은 Enterprise 가격을 협상할 수 있습니다.",
         "openpurr Lite: Workers와 D1에 대한 Cloudflare 요금입니다. 일간 활성 사용자 1명당 월 매출 약 $1.50, 하루 SDK 요청 약 10회를 가정합니다. 이 기준이면 무료 플랜의 하루 100,000회 요청으로 여유 있게 월 매출 약 {paidFrom}까지 감당합니다. 그 이상은 Workers Paid로 계산합니다. 월 $5에 1,000만 회를 넘는 요청은 100만 회당 $0.30이 추가됩니다.",

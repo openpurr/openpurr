@@ -5,13 +5,13 @@ export const pricingIt: PricingDict = {
   meta: {
     title: "Prezzi RevenueCat: dove finisce davvero il tuo 1% - openpurr",
     description:
-      "RevenueCat si prende l'1% dei tuoi ricavi. I server dietro la tua app costano spiccioli. Ecco cosa paga il resto: stipendi, vendite e investitori.",
+      "Prezzi di RevenueCat: gratis fino a {threshold} di ricavi tracciati al mese, poi l'1% di tutto. I server costano spiccioli. Ecco cosa paga il resto.",
     ogImageAlt: "RevenueCat si prende l'1% dei tuoi ricavi; i server costano spiccioli. Cosa paga il resto.",
   },
   hero: {
     crumb: "Prezzi di RevenueCat",
     eyebrow: "Dove finisce il tuo 1%",
-    headline: "Non stai pagando dei server.",
+    headline: "Prezzi di RevenueCat: non stai pagando dei server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Stai pagando un'azienda da {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingIt: PricingDict = {
         q: "Quanto vale RevenueCat?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "Secondo la stampa, RevenueCat era valutata {valuation} quando ha raccolto la sua Serie C da {round} nel 2025, con circa {revenue} di ricavi annuali all'epoca. Sono cifre di stampa e analisti, non dati comunicati dall'azienda.",
+      },
+      value: {
+        q: "Vale la pena pagare RevenueCat?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Dipende da quanto lo usi. RevenueCat aggiunge paywall, esperimenti, integrazioni e assistenza a un backend per gli acquisti. Se ti servono solo acquisti convalidati e abbonamenti aggiornati, pagheresti {fee} all'anno con {m25k} al mese per un lavoro i cui server costano circa {servers}. openpurr fa quella parte senza quota dei ricavi.",
       },
       alternative: {
         q: "Esiste un'alternativa a RevenueCat senza quota dei ricavi?",

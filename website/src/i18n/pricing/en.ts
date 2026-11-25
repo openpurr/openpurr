@@ -11,14 +11,16 @@
 export const pricingEn = {
   meta: {
     title: "RevenueCat pricing: where your 1% actually goes - openpurr",
+    /** {threshold} is "$2,500". */
     description:
-      "RevenueCat charges 1% of your revenue. The servers behind your app cost a rounding error. See what the rest pays for: payroll, sales and venture investors.",
+      "RevenueCat pricing: free up to {threshold} a month in tracked revenue, then 1% of all of it. The servers cost a rounding error. See what the rest pays for.",
     ogImageAlt: "RevenueCat takes 1% of your revenue; the servers cost a rounding error. What the rest pays for.",
   },
   hero: {
     crumb: "RevenueCat pricing",
     eyebrow: "Where your 1% goes",
-    headline: "You're not paying for servers.",
+    /** Starts with the page's subject, "RevenueCat pricing", for search. */
+    headline: "RevenueCat pricing: you're not paying for servers.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "You're paying for a {valuation} company.",
     /** {threshold} is "$2,500". */
@@ -132,6 +134,11 @@ export const pricingEn = {
         q: "How much is RevenueCat worth?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat was reported at a {valuation} valuation when it raised its {round} Series C in 2025, with about {revenue} in yearly revenue at the time. These are press and analyst figures, not company disclosures.",
+      },
+      value: {
+        q: "Is RevenueCat worth the price?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "It depends on how much of it you use. RevenueCat adds paywalls, experiments, integrations and support on top of a purchase backend. If what you need is purchases validated and subscriptions kept current, you'd pay {fee} a year at {m25k} a month for a job whose servers cost about {servers}. openpurr does that part with no revenue share.",
       },
       alternative: {
         q: "Is there a RevenueCat alternative without a revenue share?",

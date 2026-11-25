@@ -5,13 +5,13 @@ export const pricingHi: PricingDict = {
   meta: {
     title: "RevenueCat pricing: आपका 1% असल में कहाँ जाता है - openpurr",
     description:
-      "RevenueCat आपके revenue का 1% लेता है। आपके app के पीछे के servers का ख़र्च न के बराबर है। देखिए बाक़ी पैसा कहाँ जाता है: salaries, sales और VC investors।",
+      "RevenueCat pricing: हर महीने {threshold} तक tracked revenue पर मुफ़्त, उसके बाद पूरे revenue का 1%। Servers का ख़र्च न के बराबर है। देखिए बाक़ी पैसा किसमें जाता है।",
     ogImageAlt: "RevenueCat आपके revenue का 1% लेता है; servers का ख़र्च न के बराबर है। बाक़ी पैसा किसमें जाता है।",
   },
   hero: {
     crumb: "RevenueCat pricing",
     eyebrow: "आपका 1% कहाँ जाता है",
-    headline: "आप servers के पैसे नहीं दे रहे।",
+    headline: "RevenueCat pricing: आप servers के पैसे नहीं दे रहे।",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "आप {valuation} की company के पैसे दे रहे हैं।",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingHi: PricingDict = {
         q: "RevenueCat की value कितनी है?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "2025 में जब RevenueCat ने {round} का Series C जुटाया, तब इसकी valuation {valuation} बताई गई थी, और उस समय इसका सालाना revenue लगभग {revenue} था। ये press और analysts के आँकड़े हैं, company के disclosures नहीं।",
+      },
+      value: {
+        q: "क्या RevenueCat पैसा वसूल है?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "यह इस पर निर्भर करता है कि आप इसका कितना इस्तेमाल करते हैं। RevenueCat purchase backend के ऊपर paywalls, experiments, integrations और support भी देता है। अगर आपको बस purchases validate करवानी हैं और subscriptions up to date रखनी हैं, तो {m25k} महीने पर आप {fee} सालाना देंगे, एक ऐसे काम के लिए जिसके servers का ख़र्च लगभग {servers} है। openpurr यह हिस्सा बिना revenue share के करता है।",
       },
       alternative: {
         q: "क्या RevenueCat का कोई ऐसा विकल्प है जिसमें revenue share न हो?",

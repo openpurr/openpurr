@@ -5,13 +5,13 @@ export const pricingTr: PricingDict = {
   meta: {
     title: "RevenueCat fiyatları: %1'iniz nereye gidiyor? - openpurr",
     description:
-      "RevenueCat gelirinizin %1'ini alır. Uygulamanızın sunucuları ise devede kulak. Gerisinin neye gittiğini görün: maaşlar, satış ekibi ve risk sermayedarları.",
+      "RevenueCat fiyatları: aylık {threshold} izlenen gelire kadar ücretsiz, sonrasında tamamının %1'i. Sunucular devede kulak. Gerisinin neye gittiğini görün.",
     ogImageAlt: "RevenueCat gelirinizin %1'ini alıyor; sunucular devede kulak. Gerisi neye gidiyor?",
   },
   hero: {
     crumb: "RevenueCat fiyatları",
     eyebrow: "%1'iniz nereye gidiyor",
-    headline: "Sunuculara para ödemiyorsunuz.",
+    headline: "RevenueCat fiyatları: Sunuculara para ödemiyorsunuz.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "{valuation} değerinde bir şirkete ödüyorsunuz.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingTr: PricingDict = {
         q: "RevenueCat'in değeri ne kadar?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "Basında çıkan haberlere göre RevenueCat, 2025'te {round} tutarındaki Series C turunu topladığında {valuation} değerindeydi; o sırada yıllık geliri yaklaşık {revenue} idi. Bunlar şirket açıklamaları değil, basın ve analist rakamlarıdır.",
+      },
+      value: {
+        q: "RevenueCat parasına değer mi?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Ne kadarını kullandığınıza bağlı. RevenueCat, bir satın alma backend'inin üzerine paywall'lar, deneyler, entegrasyonlar ve destek ekliyor. İhtiyacınız satın almaların doğrulanması ve aboneliklerin güncel tutulmasıysa, ayda {m25k} gelirle, sunucuları yaklaşık {servers} tutan bir iş için yılda {fee} ödersiniz. openpurr bu kısmı gelir payı almadan yapar.",
       },
       alternative: {
         q: "Gelir payı almayan bir RevenueCat alternatifi var mı?",

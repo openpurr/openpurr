@@ -163,7 +163,7 @@ export const de: Dict = {
       colOp: "openpurr Lite, monatlich",
       colSaved: "Ersparnis pro Jahr",
       methodSummary: "So rechnen wir",
-      pricingLink: "Wohin gehen die 1 % von RevenueCat? →",
+      pricingLink: "RevenueCat-Preise, aufgeschlüsselt →",
       method: [
         "RevenueCat: der Listenpreis des Pro-Tarifs, 1 % des monatlich erfassten Umsatzes ab 2.500 $. Der erfasste Umsatz zählt Jahresabos und Einmalkäufe im Monat der Zahlung, kann also höher sein als die MRR. Große Kunden können Enterprise-Preise verhandeln.",
         "openpurr Lite: die Preise von Cloudflare für Workers und D1. Wir nehmen pro täglich aktivem Nutzer etwa 1,50 $ Monatsumsatz und etwa 10 SDK-Anfragen am Tag an. Damit decken die 100.000 Anfragen pro Tag des kostenlosen Tarifs bis etwa {paidFrom} Monatsumsatz ab, mit Reserve. Darüber rechnen wir mit Workers Paid: 5 $ im Monat plus 0,30 $ pro Million Anfragen über 10 Millionen.",

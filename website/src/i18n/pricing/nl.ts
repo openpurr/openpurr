@@ -5,13 +5,13 @@ export const pricingNl: PricingDict = {
   meta: {
     title: "RevenueCat-prijzen: waar je 1% écht naartoe gaat - openpurr",
     description:
-      "RevenueCat rekent 1% van je omzet. De servers achter je app kosten een schijntje. Zie waar de rest naartoe gaat: salarissen, sales en durfinvesteerders.",
+      "RevenueCat-prijzen: gratis tot {threshold} bijgehouden omzet per maand, daarna 1% van alles. De servers kosten een schijntje. Zie waar de rest voor betaalt.",
     ogImageAlt: "RevenueCat neemt 1% van je omzet; de servers kosten een schijntje. Hier gaat de rest naartoe.",
   },
   hero: {
     crumb: "RevenueCat-prijzen",
     eyebrow: "Waar je 1% naartoe gaat",
-    headline: "Je betaalt niet voor servers.",
+    headline: "RevenueCat-prijzen: je betaalt niet voor servers.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Je betaalt voor een bedrijf van {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingNl: PricingDict = {
         q: "Hoeveel is RevenueCat waard?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat werd volgens berichten gewaardeerd op {valuation} toen het in 2025 een Series C van {round} ophaalde, met op dat moment ongeveer {revenue} jaaromzet. Dit zijn cijfers uit de pers en van analisten, geen bekendmakingen van het bedrijf.",
+      },
+      value: {
+        q: "Is RevenueCat het geld waard?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Dat hangt af van hoeveel je ervan gebruikt. RevenueCat voegt paywalls, experimenten, integraties en support toe aan een aankoopbackend. Heb je alleen gevalideerde aankopen en actuele abonnementen nodig, dan betaal je bij {m25k} per maand {fee} per jaar voor werk waarvan de servers ongeveer {servers} kosten. openpurr doet dat deel zonder omzetaandeel.",
       },
       alternative: {
         q: "Is er een alternatief voor RevenueCat zonder omzetaandeel?",

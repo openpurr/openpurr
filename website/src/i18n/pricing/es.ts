@@ -5,13 +5,13 @@ export const pricingEs: PricingDict = {
   meta: {
     title: "Precios de RevenueCat: adónde va de verdad tu 1 % - openpurr",
     description:
-      "RevenueCat se lleva el 1 % de tus ingresos. Los servidores de tu app cuestan una miseria. Mira qué paga el resto: nóminas, ventas e inversores.",
+      "Precios de RevenueCat: gratis hasta {threshold} de ingresos registrados al mes; después, el 1 % del total. Los servidores cuestan una miseria. Qué paga el resto.",
     ogImageAlt: "RevenueCat se lleva el 1 % de tus ingresos; los servidores cuestan una miseria. Qué paga el resto.",
   },
   hero: {
     crumb: "Precios de RevenueCat",
     eyebrow: "A dónde va tu 1 %",
-    headline: "No estás pagando servidores.",
+    headline: "Precios de RevenueCat: no estás pagando servidores.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Estás pagando una empresa valorada en {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingEs: PricingDict = {
         q: "¿Cuánto vale RevenueCat?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "Según la prensa, RevenueCat estaba valorada en {valuation} cuando levantó su Serie C de {round} en 2025, con unos {revenue} de ingresos anuales en ese momento. Son cifras de prensa y analistas, no datos publicados por la empresa.",
+      },
+      value: {
+        q: "¿Vale la pena pagar RevenueCat?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Depende de cuánto partido le saques. RevenueCat añade paywalls, experimentos, integraciones y soporte sobre un backend de compras. Si lo que necesitas es validar compras y mantener las suscripciones al día, pagarías {fee} al año con {m25k} al mes por un trabajo cuyos servidores cuestan unos {servers}. openpurr hace esa parte sin reparto de ingresos.",
       },
       alternative: {
         q: "¿Hay alguna alternativa a RevenueCat sin reparto de ingresos?",
