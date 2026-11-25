@@ -1,7 +1,7 @@
 ---
 // One list feeds both the visible FAQ and the FAQPage structured data, so they can't drift. The
 // questions are in src/i18n/.
-import { ADAPTY_GUIDE_URL, MIGRATION_PAGE } from "../consts";
+import { ADAPTY_GUIDE_URL, MIGRATION_PAGE, START_PAGE } from "../consts";
 import { DEFAULT_LOCALE, dirOf, langTag, localePath, t, type Locale } from "../i18n";
 
 interface Props {
@@ -11,7 +11,8 @@ const { locale = DEFAULT_LOCALE } = Astro.props;
 const copy = t(locale).faq;
 const faqs = copy.items;
 /** Where an item's link goes: the migration page, or the Adapty guide in the repo. */
-const href = (linkTo?: string) => (linkTo === "adapty" ? ADAPTY_GUIDE_URL : localePath(locale, MIGRATION_PAGE));
+const href = (linkTo?: string) =>
+  linkTo === "adapty" ? ADAPTY_GUIDE_URL : localePath(locale, linkTo === "new" ? START_PAGE : MIGRATION_PAGE);
 
 const jsonLd = {
   "@context": "https://schema.org",

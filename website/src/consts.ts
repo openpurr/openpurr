@@ -3,6 +3,8 @@ export const ROADMAP_URL = `${REPO_URL}/blob/main/ROADMAP.md`;
 /** The step-by-step migration guide (in the repo), and the website's overview page. */
 export const MIGRATION_GUIDE_URL = `${REPO_URL}/blob/main/docs/migrating-from-revenuecat.md`;
 export const MIGRATION_PAGE = "/migrate-from-revenuecat/";
+/** Adding purchases to a new app, without a revenue share. */
+export const START_PAGE = "/add-in-app-purchases/";
 /** When the migration page last changed in substance: shown on it, and in its structured data and the sitemap. */
 export const MIGRATION_UPDATED = "2026-11-21";
 /** The "Where your 1% goes" page: what RevenueCat's pricing pays for. */

@@ -1,7 +1,7 @@
 // llms.txt (https://llmstxt.org): a plain-text summary of openpurr for AI assistants, with links to
 // the details. Keep it factual and in step with the homepage and the README.
 import type { APIRoute } from "astro";
-import { CEO_PAGE, PRICING_PAGE, ADAPTY_GUIDE_URL, CONTRIBUTING_URL, LICENSE_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
+import { CEO_PAGE, PRICING_PAGE, START_PAGE, ADAPTY_GUIDE_URL, CONTRIBUTING_URL, LICENSE_URL, MIGRATION_GUIDE_URL, MIGRATION_PAGE, RELEASE, REPO_URL, ROADMAP_URL } from "../consts";
 
 export const GET: APIRoute = ({ site }) => {
   const text = `# openpurr
@@ -36,6 +36,7 @@ Paywalls, third-party analytics integrations, Customer Center, virtual currencie
 - [Migrating from RevenueCat](${new URL(MIGRATION_PAGE, site)}): how moving an app from RevenueCat to openpurr works, and what moves
 - [Migration guide](${MIGRATION_GUIDE_URL}): every step and command, including the customer import
 - [Moving from Adapty](${ADAPTY_GUIDE_URL}): an app update replaces the Adapty SDK with the Purchases SDK; App Store customers are imported from Adapty's event export
+- [Add in-app purchases to a new app](${new URL(START_PAGE, site)}): for apps that haven't added purchases yet: the official Purchases SDK with an open-source backend you run yourself, no revenue share
 - [RevenueCat pricing: where your 1% goes](${new URL(PRICING_PAGE, site)}): what RevenueCat's 1% revenue share pays for, estimated from public figures (teams, servers, investors)
 - [RevenueCat CEO Jacob Eiting on X](${new URL(CEO_PAGE, site)}): how often RevenueCat's CEO posts on X, counted from 90 days of public posts, and how much of it is about RevenueCat
 - [Roadmap](${ROADMAP_URL}): what's done and what's next

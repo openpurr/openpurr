@@ -245,6 +245,12 @@ export const nl: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "Ik bouw een nieuwe app. Kan ik met openpurr beginnen?",
+        a: "Ja, en dit is het makkelijkste moment. Voeg de officiële Purchases SDK toe, richt hem op je openpurr-server en je begint nooit met het betalen van een omzetaandeel. Er valt later niets over te zetten.",
+        link: "In-app-aankopen toevoegen aan een nieuwe app",
+        linkTo: "new",
+      },
+      {
         q: "Welke platforms en stores ondersteunt openpurr?",
         a: "openpurr ondersteunt de Purchases SDK voor iOS, Android, Flutter en React Native, met aankopen uit de App Store en Google Play. Amazon en webbetalingen vallen voorlopig buiten scope.",
       },

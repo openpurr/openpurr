@@ -263,6 +263,12 @@ export const it: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "Sto creando una nuova app. Posso partire con openpurr?",
+        a: "Sì, ed è il momento più semplice per farlo. Aggiungi il Purchases SDK ufficiale, puntalo al tuo server openpurr e non inizierai mai a pagare una quota dei ricavi. Non ci sarà niente da migrare in futuro.",
+        link: "Aggiungere acquisti in-app a una nuova app",
+        linkTo: "new",
+      },
+      {
         q: "Quali piattaforme e store supporta openpurr?",
         a: "openpurr supporta il Purchases SDK per iOS, Android, Flutter e React Native, con acquisti dall'App Store e da Google Play. Amazon e i pagamenti web per ora sono fuori ambito.",
       },

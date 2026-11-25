@@ -7,8 +7,9 @@ import SavingsCalculator from "./SavingsCalculator.astro";
 import Faq from "./Faq.astro";
 import Providers from "./Providers.astro";
 import StructuredData from "./StructuredData.astro";
-import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE } from "../consts";
-import { allLocales, fill, t, type Locale } from "../i18n";
+import { REPO_URL, ROADMAP_URL, ISSUES_URL, SPONSOR_URL, RELEASE, START_PAGE } from "../consts";
+import { allLocales, dirOf, fill, localePath, t, type Locale } from "../i18n";
+import { ts } from "../i18n/start";
 
 interface Props {
   locale: Locale;
@@ -24,6 +25,9 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
   status: phaseStatus[i] ?? "later",
   items: p.items.map((it) => fill(it, { version: RELEASE.version })),
 }));
+// The link for developers who haven't added purchases yet: the new-app page's own headline.
+const start = ts(locale).hero;
+const startArrow = dirOf(locale) === "rtl" ? "←" : "→";
 ---
 
 <Base locale={locale} alternates={allLocales("/")}>
@@ -37,6 +41,9 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
           <a class="btn btn-primary" href={REPO_URL}>{h.hero.star}</a>
           <a class="btn btn-ghost" href="#how">{h.hero.how}</a>
         </div>
+        <p class="new-app rise" style="--d: 200ms">
+          <a href={localePath(locale, START_PAGE)}>{start.headline} <b>{start.headlineAccent}</b> {startArrow}</a>
+        </p>
         <div class="runs rise" style="--d: 220ms">
           <Providers label={h.hero.runsOn} />
         </div>
@@ -237,6 +244,21 @@ const roadmap = h.roadmap.phases.map((p, i) => ({
 </Base>
 
 <style>
+  .new-app {
+    margin: 18px 0 0;
+    font-size: 0.95rem;
+  }
+  .new-app a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .new-app a b {
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .new-app a:hover b {
+    text-decoration: underline;
+  }
   .hero {
     position: relative;
     isolation: isolate;

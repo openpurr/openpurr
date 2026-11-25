@@ -240,6 +240,12 @@ export const zhTw: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "我正在做一個新 App，可以一開始就用 openpurr 嗎？",
+        a: "可以，而且現在正是最容易的時候。加入官方的 Purchases SDK，把它指向你的 openpurr 伺服器，你就永遠不必開始支付營收分潤，以後也沒有什麼需要搬移的。",
+        link: "為新 App 加入 App 內購買",
+        linkTo: "new",
+      },
+      {
         q: "openpurr 支援哪些平台和商店？",
         a: "openpurr 支援 iOS、Android、Flutter 和 React Native 的 Purchases SDK，以及來自 App Store 和 Google Play 的購買。Amazon 和 Web 計費目前暫不支援。",
       },

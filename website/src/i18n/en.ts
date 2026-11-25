@@ -2,7 +2,8 @@
 // a translation missing a string (or with an extra one) fails `astro check`.
 //
 // A FAQ item's `link` is the label of a link to the migration page (MIGRATION_PAGE in consts.ts), or
-// with `linkTo: "adapty"`, to the guide for moving from Adapty (ADAPTY_GUIDE_URL).
+// with `linkTo: "adapty"`, to the guide for moving from Adapty (ADAPTY_GUIDE_URL), or with
+// `linkTo: "new"`, to the page for adding purchases to a new app (START_PAGE).
 //
 // Strings marked "HTML" are rendered with set:html, for the <span> and <code> inside them. Keep
 // product and API names (openpurr, RevenueCat, Purchases SDK, StoreKit, CustomerInfo, configure,
@@ -254,6 +255,12 @@ export const en = {
         a: "Yes, with an app update. Adapty's SDK can't be pointed at another server, so the update replaces it with the Purchases SDK, which openpurr works with. Your products stay the same in the stores. openpurr imports your App Store customers from Adapty's event export, the new version of your app brings everyone else over the first time it runs, and both backends stay up to date while people update.",
         link: "Read the Adapty guide",
         linkTo: "adapty",
+      },
+      {
+        q: "I'm building a new app. Can I start with openpurr?",
+        a: "Yes, and it's the easiest time to. Add the official Purchases SDK, point it at your openpurr server, and you never start paying a revenue share. There's nothing to migrate later.",
+        link: "Adding in-app purchases to a new app",
+        linkTo: "new",
       },
       {
         q: "Which platforms and stores does openpurr support?",

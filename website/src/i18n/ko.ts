@@ -241,6 +241,12 @@ export const ko: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "새 앱을 만들고 있습니다. openpurr로 시작할 수 있나요?",
+        a: "네, 지금이 가장 쉬운 때입니다. 공식 Purchases SDK를 추가하고 openpurr 서버를 가리키도록 설정하면, 수익 배분을 내기 시작할 일이 아예 없습니다. 나중에 마이그레이션할 것도 없습니다.",
+        link: "새 앱에 인앱 결제 추가하기",
+        linkTo: "new",
+      },
+      {
         q: "openpurr는 어떤 플랫폼과 스토어를 지원하나요?",
         a: "iOS, Android, Flutter, React Native용 Purchases SDK를 지원하며, App Store와 Google Play 구매를 처리합니다. Amazon과 웹 결제는 현재 지원 범위에 포함되지 않습니다.",
       },
