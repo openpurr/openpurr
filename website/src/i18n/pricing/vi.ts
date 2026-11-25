@@ -5,13 +5,13 @@ export const pricingVi: PricingDict = {
   meta: {
     title: "Giá RevenueCat: 1% của bạn thực ra đi đâu - openpurr",
     description:
-      "RevenueCat thu 1% doanh thu của bạn. Server đằng sau ứng dụng gần như chẳng tốn gì. Xem phần còn lại trả cho gì: lương, đội sales và nhà đầu tư mạo hiểm.",
+      "Giá RevenueCat: miễn phí đến {threshold} doanh thu được theo dõi mỗi tháng, sau đó 1% trên toàn bộ. Server gần như chẳng tốn gì. Xem phần còn lại trả cho gì.",
     ogImageAlt: "RevenueCat lấy 1% doanh thu của bạn; server gần như chẳng tốn gì. Phần còn lại trả cho những gì.",
   },
   hero: {
     crumb: "Giá RevenueCat",
     eyebrow: "1% của bạn đi đâu",
-    headline: "Bạn không trả tiền cho server.",
+    headline: "Giá RevenueCat: bạn không trả tiền cho server.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Bạn đang nuôi một công ty trị giá {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingVi: PricingDict = {
         q: "RevenueCat trị giá bao nhiêu?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat được báo cáo định giá {valuation} khi gọi vòng Series C {round} vào năm 2025, với doanh thu hằng năm khoảng {revenue} vào thời điểm đó. Đây là số liệu từ báo chí và giới phân tích, không phải công bố của công ty.",
+      },
+      value: {
+        q: "RevenueCat có đáng tiền không?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Còn tùy bạn dùng bao nhiêu phần của nó. RevenueCat bổ sung paywall, thử nghiệm, tích hợp và hỗ trợ bên trên một backend mua hàng. Nếu thứ bạn cần chỉ là xác thực giao dịch mua và giữ trạng thái gói đăng ký luôn cập nhật, bạn sẽ trả {fee} mỗi năm ở mức {m25k} mỗi tháng cho một việc mà server chỉ tốn khoảng {servers}. openpurr làm phần đó mà không chia doanh thu.",
       },
       alternative: {
         q: "Có giải pháp thay thế RevenueCat nào không chia doanh thu không?",

@@ -5,13 +5,13 @@ export const pricingPtBr: PricingDict = {
   meta: {
     title: "Preço do RevenueCat: para onde vai o seu 1% - openpurr",
     description:
-      "O RevenueCat cobra 1% da sua receita. Os servidores do seu app custam uma ninharia. Veja o que o resto paga: salários, vendas e investidores de risco.",
+      "Preço do RevenueCat: grátis até {threshold} de receita rastreada por mês; depois, 1% de tudo. Os servidores custam uma ninharia. Veja o que o resto paga.",
     ogImageAlt: "O RevenueCat fica com 1% da sua receita; os servidores custam uma ninharia. O que o resto paga.",
   },
   hero: {
     crumb: "Preço do RevenueCat",
     eyebrow: "Para onde vai o seu 1%",
-    headline: "Você não está pagando por servidores.",
+    headline: "Preço do RevenueCat: você não está pagando por servidores.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Está pagando por uma empresa de {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingPtBr: PricingDict = {
         q: "Quanto vale o RevenueCat?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "Segundo a imprensa, o RevenueCat foi avaliado em {valuation} quando captou sua Série C de {round} em 2025, com cerca de {revenue} de receita anual na época. São números da imprensa e de analistas, não divulgados pela empresa.",
+      },
+      value: {
+        q: "O RevenueCat vale a pena?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "Depende de quanto dele você usa. O RevenueCat adiciona paywalls, experimentos, integrações e suporte a um backend de compras. Se o que você precisa é validar compras e manter as assinaturas em dia, pagaria {fee} por ano com {m25k} por mês por um trabalho cujos servidores custam cerca de {servers}. O openpurr faz essa parte sem comissão sobre a receita.",
       },
       alternative: {
         q: "Existe uma alternativa ao RevenueCat sem comissão sobre a receita?",

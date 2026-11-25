@@ -163,7 +163,7 @@ export const hi: Dict = {
       colOp: "openpurr Lite, मासिक",
       colSaved: "हर साल की बचत",
       methodSummary: "हम इसका अनुमान कैसे लगाते हैं",
-      pricingLink: "RevenueCat का 1% कहाँ जाता है? →",
+      pricingLink: "RevenueCat pricing, पूरा हिसाब →",
       method: [
         "RevenueCat: Pro plan की list price, $2,500 से मासिक tracked revenue का 1%। Tracked revenue सालाना plans और एक बार की खरीदारी को भुगतान वाले महीने में गिनता है, इसलिए यह MRR से ज़्यादा हो सकता है। बड़े accounts Enterprise pricing पर बातचीत कर सकते हैं।",
         "openpurr Lite: Workers और D1 के लिए Cloudflare की कीमतें। हम हर daily active user पर लगभग $1.50 मासिक revenue और रोज़ लगभग 10 SDK requests मानते हैं। इस हिसाब से free plan की रोज़ की 100,000 requests लगभग {paidFrom} मासिक revenue तक काफ़ी हैं, कुछ गुंजाइश के साथ। उससे ऊपर हम Workers Paid गिनते हैं: $5 प्रति माह, और 1 करोड़ से ऊपर हर 10 लाख requests पर $0.30।",

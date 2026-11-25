@@ -5,13 +5,13 @@ export const pricingPl: PricingDict = {
   meta: {
     title: "Cennik RevenueCat: na co naprawdę idzie twój 1% - openpurr",
     description:
-      "RevenueCat pobiera 1% twoich przychodów. Serwery twojej aplikacji kosztują grosze. Zobacz, za co płaci reszta: pensje, sprzedaż i fundusze VC.",
+      "Cennik RevenueCat: za darmo do {threshold} śledzonych przychodów miesięcznie, potem 1% od całości. Serwery kosztują grosze. Zobacz, za co płaci reszta.",
     ogImageAlt: "RevenueCat zabiera 1% twoich przychodów; serwery kosztują grosze. Za co płaci reszta.",
   },
   hero: {
     crumb: "Cennik RevenueCat",
     eyebrow: "Na co idzie twój 1%",
-    headline: "Nie płacisz za serwery.",
+    headline: "Cennik RevenueCat: nie płacisz za serwery.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "Płacisz za firmę wartą {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingPl: PricingDict = {
         q: "Ile jest wart RevenueCat?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "Według doniesień RevenueCat był wyceniany na {valuation}, gdy w 2025 roku pozyskał {round} w rundzie Series C, przy rocznych przychodach rzędu {revenue}. To dane z prasy i od analityków, a nie informacje ujawnione przez firmę.",
+      },
+      value: {
+        q: "Czy warto płacić za RevenueCat?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "To zależy, z ilu jego funkcji korzystasz. RevenueCat dokłada do backendu zakupów paywalle, eksperymenty, integracje i wsparcie. Jeśli potrzebujesz tylko walidacji zakupów i aktualnych subskrypcji, przy {m25k} miesięcznie zapłacisz {fee} rocznie za robotę, której serwery kosztują około {servers}. openpurr robi tę część bez prowizji od przychodów.",
       },
       alternative: {
         q: "Czy istnieje alternatywa dla RevenueCat bez prowizji od przychodów?",

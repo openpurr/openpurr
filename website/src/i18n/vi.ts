@@ -167,7 +167,7 @@ export const vi: Dict = {
       colOp: "openpurr Lite, mỗi tháng",
       colSaved: "Tiết kiệm mỗi năm",
       methodSummary: "Cách chúng tôi ước tính",
-      pricingLink: "1% của RevenueCat đi đâu? →",
+      pricingLink: "Giá RevenueCat, phân tích chi tiết →",
       method: [
         "RevenueCat: giá niêm yết của gói Pro, 1% doanh thu được theo dõi hằng tháng từ 2.500 $. Doanh thu được theo dõi tính gói năm và giao dịch mua một lần vào tháng thanh toán, nên có thể cao hơn MRR. Tài khoản lớn có thể thương lượng giá Enterprise.",
         "openpurr Lite: giá của Cloudflare cho Workers và D1. Chúng tôi giả định khoảng 1,50 $ doanh thu hằng tháng và khoảng 10 yêu cầu SDK mỗi ngày cho mỗi người dùng hoạt động hằng ngày. Theo đó, 100.000 yêu cầu mỗi ngày của gói miễn phí đủ cho doanh thu hằng tháng đến khoảng {paidFrom}, vẫn còn dư. Trên mức đó, chúng tôi tính Workers Paid: 5 $ mỗi tháng, cộng 0,30 $ cho mỗi triệu yêu cầu vượt 10 triệu.",

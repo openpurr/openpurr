@@ -163,7 +163,7 @@ export const id: Dict = {
       colOp: "openpurr Lite, per bulan",
       colSaved: "Hemat per tahun",
       methodSummary: "Cara kami memperkirakannya",
-      pricingLink: "Ke mana larinya 1% RevenueCat? →",
+      pricingLink: "Harga RevenueCat, dirinci →",
       method: [
         "RevenueCat: harga daftar paket Pro, 1% dari pendapatan bulanan terlacak mulai $2.500. Pendapatan terlacak menghitung paket tahunan dan pembelian sekali bayar pada bulan pembayarannya, jadi bisa lebih tinggi dari MRR. Akun besar bisa menegosiasikan harga Enterprise.",
         "openpurr Lite: harga Cloudflare untuk Workers dan D1. Kami mengasumsikan sekitar $1,50 pendapatan bulanan dan sekitar 10 permintaan SDK per hari per pengguna aktif harian. Dengan asumsi itu, 100.000 permintaan per hari di paket gratis cukup hingga sekitar {paidFrom} pendapatan bulanan, dengan ruang cadangan. Di atasnya kami menghitung Workers Paid: $5 per bulan, ditambah $0,30 per juta permintaan di atas 10 juta.",

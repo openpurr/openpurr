@@ -5,13 +5,13 @@ export const pricingJa: PricingDict = {
   meta: {
     title: "RevenueCat の料金：1% の行き先 - openpurr",
     description:
-      "RevenueCat は売上の 1% を取ります。サーバー代は誤差程度。残りは給与、営業、ベンチャー投資家に消えています。",
+      "RevenueCat の料金：月間の追跡収益が {threshold} までは無料、超えると全体の 1%。サーバー代は誤差程度。残りが何に使われているかを見てみましょう。",
     ogImageAlt: "RevenueCat は売上の 1% を取り、サーバー代は誤差程度。残りは何に使われているのか。",
   },
   hero: {
     crumb: "RevenueCat の料金",
     eyebrow: "あなたの 1% の行き先",
-    headline: "払っているのは、サーバー代ではない。",
+    headline: "RevenueCat の料金：払っているのは、サーバー代ではない。",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "評価額 {valuation} の会社に払っている。",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingJa: PricingDict = {
         q: "RevenueCat の企業価値はいくらですか？",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat は 2025 年に {round} のシリーズ C を調達した際、評価額 {valuation}、当時の年間売上は約 {revenue} と報じられました。これらは報道やアナリストの数字で、会社による開示ではありません。",
+      },
+      value: {
+        q: "RevenueCat は料金に見合う価値がありますか？",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "どれだけ使うか次第です。RevenueCat は購入バックエンドに加えて、ペイウォール、実験、連携、サポートを提供しています。必要なのが購入の検証とサブスクリプションの最新化だけなら、月 {m25k} のアプリで年 {fee} を、サーバー代が約 {servers} の仕事に払うことになります。openpurr はその部分を、売上に応じた手数料なしで担います。",
       },
       alternative: {
         q: "売上に応じた手数料のない RevenueCat の代替はありますか？",

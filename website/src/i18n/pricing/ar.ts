@@ -5,13 +5,13 @@ export const pricingAr: PricingDict = {
   meta: {
     title: "تسعير RevenueCat: أين تذهب نسبة 1% فعلًا - openpurr",
     description:
-      "يأخذ RevenueCat نسبة 1% من إيراداتك، والخوادم وراء تطبيقك لا تكلّف شيئًا يُذكر. اعرف أين يذهب الباقي: الرواتب والمبيعات ومستثمرو رأس المال المغامر.",
+      "تسعير RevenueCat: مجاني حتى {threshold} من الإيرادات الشهرية المتتبَّعة، ثم 1% منها كلها. والخوادم لا تكلّف شيئًا يُذكر. اعرف أين يذهب الباقي.",
     ogImageAlt: "يأخذ RevenueCat نسبة 1% من إيراداتك، والخوادم لا تكلّف شيئًا يُذكر. إليك أين يذهب الباقي.",
   },
   hero: {
     crumb: "تسعير RevenueCat",
     eyebrow: "أين تذهب نسبة 1%",
-    headline: "أنت لا تدفع ثمن الخوادم.",
+    headline: "تسعير RevenueCat: أنت لا تدفع ثمن الخوادم.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "أنت تدفع ثمن شركة قيمتها {valuation}.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingAr: PricingDict = {
         q: "كم تبلغ قيمة RevenueCat؟",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "أفادت التقارير بأن قيمة RevenueCat بلغت {valuation} حين جمع جولة Series C بقيمة {round} في 2025، وكانت إيراداته السنوية آنذاك نحو {revenue}. هذه أرقام من الصحافة والمحللين، لا إفصاحات من الشركة.",
+      },
+      value: {
+        q: "هل يستحق RevenueCat سعره؟",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "يعتمد ذلك على مقدار ما تستخدمه منه. يضيف RevenueCat شاشات الدفع (paywalls) والتجارب والتكاملات والدعم فوق واجهة خلفية للمشتريات. وإن كان كل ما تحتاج إليه هو التحقق من المشتريات وإبقاء الاشتراكات محدّثة، فستدفع {fee} سنويًا عند {m25k} شهريًا مقابل مهمة تكلّف خوادمها نحو {servers}. ويؤدي openpurr هذا الجزء بلا حصة من الإيرادات.",
       },
       alternative: {
         q: "هل يوجد بديل لـ RevenueCat بلا حصة من الإيرادات؟",

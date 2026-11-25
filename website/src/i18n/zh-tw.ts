@@ -158,7 +158,7 @@ export const zhTw: Dict = {
       colOp: "openpurr Lite（每月）",
       colSaved: "每年省下",
       methodSummary: "我們如何估算",
-      pricingLink: "RevenueCat 的 1% 花在哪裡？→",
+      pricingLink: "RevenueCat 定價，逐項拆解 →",
       method: [
         "RevenueCat：Pro 方案的定價，即從 2,500 美元起按每月追蹤營收的 1% 收費。追蹤營收會把年訂閱和一次性購買計入付款當月，因此可能高於 MRR。大型帳戶可以議定 Enterprise 價格。",
         "openpurr Lite：Cloudflare 的 Workers 和 D1 價格。我們假設每位每日活躍使用者每月帶來約 1.50 美元營收，每天發出約 10 個 SDK 請求。照此計算，免費方案每天 100,000 個請求可涵蓋約 {paidFrom} 的月營收，並保留餘裕。超過後以 Workers Paid 計算：每月 5 美元，超出 1,000 萬個請求的部分每百萬個請求 0.30 美元。",

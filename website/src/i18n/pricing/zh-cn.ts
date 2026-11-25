@@ -5,13 +5,13 @@ export const pricingZhCn: PricingDict = {
   meta: {
     title: "RevenueCat 定价：你的 1% 去哪了 - openpurr",
     description:
-      "RevenueCat 抽走你 1% 的收入，服务器成本却几乎可以忽略。剩下的钱去了哪里：工资、销售和风险投资人。",
+      "RevenueCat 定价：每月跟踪收入 {threshold} 以内免费，超过后收取全部收入的 1%。服务器成本微不足道。看看剩下的钱花在了哪里。",
     ogImageAlt: "RevenueCat 抽走你 1% 的收入，服务器成本却微不足道。剩下的钱花在了哪里？",
   },
   hero: {
     crumb: "RevenueCat 定价",
     eyebrow: "你的 1% 去了哪里",
-    headline: "你付的不是服务器钱。",
+    headline: "RevenueCat 定价：你付的不是服务器钱。",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "你在供养一家估值 {valuation} 的公司。",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingZhCn: PricingDict = {
         q: "RevenueCat 值多少钱？",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "据报道，RevenueCat 在 2025 年完成 {round} 的 C 轮融资时估值 {valuation}，当时年收入约 {revenue}。这些是媒体和分析师的数据，并非公司披露。",
+      },
+      value: {
+        q: "RevenueCat 值得花这个钱吗？",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "取决于你用了它多少功能。RevenueCat 在购买后端之上还提供付费墙、实验、集成和客服支持。如果你需要的只是验证购买、让订阅状态保持最新，那么月收入 {m25k} 时，你每年要付 {fee}，而这份活的服务器成本只有约 {servers}。openpurr 不收收入分成，就能完成这部分工作。",
       },
       alternative: {
         q: "有没有不收收入分成的 RevenueCat 替代方案？",

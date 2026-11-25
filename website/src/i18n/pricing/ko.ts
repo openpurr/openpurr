@@ -5,13 +5,13 @@ export const pricingKo: PricingDict = {
   meta: {
     title: "RevenueCat 가격: 내 1%는 어디로 - openpurr",
     description:
-      "RevenueCat은 매출의 1%를 가져갑니다. 서버 비용은 푼돈입니다. 나머지는 급여, 영업, 벤처 투자자에게 갑니다.",
+      "RevenueCat 가격: 월 추적 매출 {threshold}까지 무료, 그 이상이면 전체의 1%. 서버 비용은 푼돈입니다. 나머지가 어디에 쓰이는지 확인하세요.",
     ogImageAlt: "RevenueCat은 매출의 1%를 가져가고, 서버 비용은 푼돈입니다. 나머지는 어디에 쓰일까요?",
   },
   hero: {
     crumb: "RevenueCat 가격",
     eyebrow: "내 1%가 가는 곳",
-    headline: "서버 비용을 내는 게 아닙니다.",
+    headline: "RevenueCat 가격: 서버 비용을 내는 게 아닙니다.",
     /** The headline's second, highlighted sentence. {valuation} is "$500 million". */
     headlineAccent: "기업가치 {valuation}짜리 회사에 돈을 대고 있습니다.",
     /** {threshold} is "$2,500". */
@@ -118,6 +118,11 @@ export const pricingKo: PricingDict = {
         q: "RevenueCat의 기업가치는 얼마인가요?",
         /** {valuation} "$500 million", {round} "$50 million", {revenue} "$30 million". */
         a: "RevenueCat은 2025년 {round} 규모의 시리즈 C를 유치할 때 기업가치 {valuation}, 당시 연 매출 약 {revenue}로 보도되었습니다. 언론과 애널리스트의 수치이며, 회사가 공개한 수치는 아닙니다.",
+      },
+      value: {
+        q: "RevenueCat은 그 가격만큼 가치가 있나요?",
+        /** {fee} the yearly fee at {m25k} ("$25,000") a month; {servers} what the servers for that app cost a year. */
+        a: "얼마나 쓰느냐에 달려 있습니다. RevenueCat은 결제 백엔드 위에 페이월, 실험, 연동, 고객 지원을 더합니다. 하지만 필요한 게 구매 검증과 구독 상태 유지뿐이라면, 월 매출 {m25k}에서 서버 비용이 약 {servers}인 일에 연 {fee}를 내는 셈입니다. openpurr는 그 부분을 수익 배분 없이 처리합니다.",
       },
       alternative: {
         q: "수익 배분 없는 RevenueCat 대안이 있나요?",
