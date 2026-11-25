@@ -15,7 +15,6 @@ export const startEs: StartDict = {
     headlineAccent: "Empieza sin reparto de ingresos.",
     lede: "La mayoría de los backends de compras se llevan el 1 % de tus ingresos en cuanto pasas de {threshold} al mes, y la factura crece cada vez que creces tú. Lo más fácil es evitarlo antes de tu primera venta. openpurr es un backend gratuito y de código abierto para compras in-app y suscripciones que ejecutas tú, con el mismo SDK oficial que usan las grandes plataformas.",
     ctaStart: "Empieza en GitHub",
-    ctaHow: "Cómo funciona",
     ctaAi: "Copia un prompt para tu asistente de IA",
   },
   growth: {

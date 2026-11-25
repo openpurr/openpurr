@@ -15,7 +15,6 @@ export const startDe: StartDict = {
     headlineAccent: "Starte ohne Umsatzbeteiligung.",
     lede: "Die meisten Kauf-Backends nehmen 1 % deines Umsatzes, sobald du {threshold} im Monat überschreitest, und die Rechnung wächst mit jedem Schritt mit. Am einfachsten umgehst du das vor deinem ersten Verkauf. openpurr ist ein kostenloses Open-Source-Backend für In-App-Käufe und Abos, das du selbst betreibst, mit demselben offiziellen SDK, das auch die großen Plattformen nutzen.",
     ctaStart: "Auf GitHub loslegen",
-    ctaHow: "So funktioniert's",
     ctaAi: "Prompt für deinen KI-Assistenten kopieren",
   },
   growth: {

@@ -16,7 +16,6 @@ export const startPtBr: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "A maioria dos backends de compras fica com 1% da sua receita assim que você passa de {threshold} por mês, e a conta cresce junto com você. O mais fácil é evitar isso antes da primeira venda. O openpurr é um backend gratuito e de código aberto para compras no app e assinaturas que você mesmo roda, com o mesmo SDK oficial que as grandes plataformas usam.",
     ctaStart: "Comece no GitHub",
-    ctaHow: "Como funciona",
     ctaAi: "Copie um prompt para seu assistente de IA",
   },
   growth: {

@@ -16,7 +16,6 @@ export const startJa: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "多くの課金バックエンドは、月 {threshold} を超えると売上の 1% を取り、売上が伸びるたびに請求額も増えます。避けるなら、最初の売上の前がいちばん簡単です。openpurr は、自分で運用する無料・オープンソースのアプリ内課金とサブスクリプションのバックエンドです。大手のプラットフォームと同じ公式 SDK を使います。",
     ctaStart: "GitHub で始める",
-    ctaHow: "仕組みを見る",
     ctaAi: "AI アシスタント用のプロンプトをコピー",
   },
   growth: {

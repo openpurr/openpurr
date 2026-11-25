@@ -16,7 +16,6 @@ export const startNl: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "De meeste aankoopbackends nemen 1% van je omzet zodra je boven {threshold} per maand komt, en de rekening groeit met elke stap die je zet. Dat vermijd je het makkelijkst vóór je eerste verkoop. openpurr is een gratis, open-source backend voor in-app-aankopen en abonnementen die je zelf draait, met dezelfde officiële SDK die de grote platforms gebruiken.",
     ctaStart: "Aan de slag op GitHub",
-    ctaHow: "Zo werkt het",
     ctaAi: "Kopieer een prompt voor je AI-assistent",
   },
   growth: {

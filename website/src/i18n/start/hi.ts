@@ -16,7 +16,6 @@ export const startHi: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "ज़्यादातर purchase backends हर महीने {threshold} पार करते ही आपके revenue का 1% लेते हैं, और आप जितना बढ़ते हैं, bill भी उतना बढ़ता है। इससे बचना सबसे आसान पहली sale से पहले है। openpurr in-app purchases और subscriptions के लिए एक मुफ़्त, open-source backend है जिसे आप खुद चलाते हैं, और यह वही आधिकारिक SDK इस्तेमाल करता है जो बड़े platforms करते हैं।",
     ctaStart: "GitHub पर शुरू करें",
-    ctaHow: "यह कैसे काम करता है",
     ctaAi: "अपने AI assistant के लिए prompt copy करें",
   },
   growth: {

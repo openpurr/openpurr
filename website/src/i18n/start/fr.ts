@@ -15,7 +15,6 @@ export const startFr: StartDict = {
     headlineAccent: "Lancez-la sans part des revenus.",
     lede: "La plupart des backends d'achats prennent 1 % de vos revenus dès que vous dépassez {threshold} par mois, et la facture grimpe à chaque palier franchi. Le plus simple est de l'éviter avant votre première vente. openpurr est un backend gratuit et open source pour les achats intégrés et les abonnements, que vous faites tourner vous-même, avec le même SDK officiel que les grandes plateformes.",
     ctaStart: "Commencer sur GitHub",
-    ctaHow: "Comment ça marche",
     ctaAi: "Copier un prompt pour votre assistant IA",
   },
   growth: {

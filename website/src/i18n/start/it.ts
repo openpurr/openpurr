@@ -15,7 +15,6 @@ export const startIt: StartDict = {
     headlineAccent: "Parti senza quota dei ricavi.",
     lede: "La maggior parte dei backend per gli acquisti si prende l'1% dei tuoi ricavi appena superi {threshold} al mese, e il conto cresce ogni volta che cresci tu. Il modo più semplice per evitarlo è farlo prima della tua prima vendita. openpurr è un backend gratuito e open source per acquisti in-app e abbonamenti che gestisci tu, con lo stesso SDK ufficiale usato dalle grandi piattaforme.",
     ctaStart: "Inizia su GitHub",
-    ctaHow: "Come funziona",
     ctaAi: "Copia un prompt per il tuo assistente IA",
   },
   growth: {

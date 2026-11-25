@@ -22,7 +22,6 @@ export const startEn = {
     /** {threshold} is "$2,500". */
     lede: "Most purchase backends take 1% of your revenue once you pass {threshold} a month, and the bill grows every time you do. It's easiest to avoid before your first sale. openpurr is a free, open-source backend for in-app purchases and subscriptions that you run yourself, with the same official SDK the big platforms use.",
     ctaStart: "Get started on GitHub",
-    ctaHow: "How it works",
     ctaAi: "Copy a prompt for your AI assistant",
   },
   growth: {

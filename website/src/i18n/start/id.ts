@@ -16,7 +16,6 @@ export const startId: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Sebagian besar backend pembelian mengambil 1% pendapatan Anda begitu melewati {threshold} per bulan, dan tagihannya ikut naik setiap kali Anda tumbuh. Paling mudah menghindarinya sebelum penjualan pertama. openpurr adalah backend gratis dan open source untuk pembelian dalam aplikasi dan langganan yang Anda jalankan sendiri, dengan SDK resmi yang sama yang dipakai platform-platform besar.",
     ctaStart: "Mulai di GitHub",
-    ctaHow: "Cara kerjanya",
     ctaAi: "Salin prompt untuk asisten AI Anda",
   },
   growth: {

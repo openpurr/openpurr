@@ -16,7 +16,6 @@ export const startKo: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "대부분의 결제 백엔드는 월 매출이 {threshold} 이상이 되면 매출의 1%를 가져가고, 매출이 늘 때마다 청구액도 커집니다. 피하기 가장 쉬운 때는 첫 판매 전입니다. openpurr는 직접 운영하는 무료 오픈소스 인앱 결제 및 구독 백엔드로, 큰 플랫폼들이 쓰는 것과 같은 공식 SDK를 사용합니다.",
     ctaStart: "GitHub에서 시작하기",
-    ctaHow: "작동 방식",
     ctaAi: "AI 어시스턴트용 프롬프트 복사",
   },
   growth: {

@@ -16,7 +16,6 @@ export const startTr: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Çoğu satın alma backend'i, aylık {threshold} eşiğini geçtiğiniz anda gelirinizin %1'ini alır ve siz büyüdükçe fatura da büyür. Bundan kaçınmanın en kolay zamanı ilk satıştan öncesidir. openpurr, uygulama içi satın almalar ve abonelikler için kendi çalıştırdığınız ücretsiz, açık kaynak bir backend'dir ve büyük platformların kullandığı resmi SDK ile çalışır.",
     ctaStart: "GitHub'da başlayın",
-    ctaHow: "Nasıl çalışır",
     ctaAi: "Yapay zekâ asistanınız için bir prompt kopyalayın",
   },
   growth: {

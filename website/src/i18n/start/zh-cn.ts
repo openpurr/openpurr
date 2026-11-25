@@ -16,7 +16,6 @@ export const startZhCn: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "大多数购买后端在你的月收入超过 {threshold} 后抽走 1%，而且你每增长一次，账单就跟着涨一次。在第一笔销售之前避开它最容易。openpurr 是一个免费、开源、由你自己运行的应用内购买与订阅后端，使用的是大平台同款的官方 SDK。",
     ctaStart: "在 GitHub 上开始",
-    ctaHow: "工作原理",
     ctaAi: "复制给 AI 助手的提示词",
   },
   growth: {

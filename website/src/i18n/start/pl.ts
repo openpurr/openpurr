@@ -16,7 +16,6 @@ export const startPl: StartDict = {
     /** {threshold} is "$2,500". */
     lede: "Większość backendów zakupów zabiera 1% twoich przychodów, gdy tylko przekroczysz {threshold} miesięcznie, a rachunek rośnie razem z tobą. Najłatwiej tego uniknąć przed pierwszą sprzedażą. openpurr to darmowy, otwartoźródłowy backend do zakupów w aplikacji i subskrypcji, który utrzymujesz sam, z tym samym oficjalnym SDK, którego używają duże platformy.",
     ctaStart: "Zacznij na GitHubie",
-    ctaHow: "Jak to działa",
     ctaAi: "Skopiuj prompt dla asystenta AI",
   },
   growth: {
