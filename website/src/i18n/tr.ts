@@ -250,6 +250,12 @@ export const tr: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "Yeni bir uygulama geliştiriyorum. openpurr ile başlayabilir miyim?",
+        a: "Evet, hem de en kolay zamanı bu. Resmi Purchases SDK'yı ekleyin, openpurr sunucunuza yönlendirin; böylece hiç gelir payı ödemeye başlamazsınız. Sonradan taşınacak bir şey de kalmaz.",
+        link: "Yeni bir uygulamaya uygulama içi satın alma eklemek",
+        linkTo: "new",
+      },
+      {
         q: "openpurr hangi platformları ve mağazaları destekliyor?",
         a: "openpurr, iOS, Android, Flutter ve React Native için Purchases SDK'yı, App Store ve Google Play'deki satın almalarla birlikte destekler. Amazon ve web üzerinden ödeme şimdilik kapsam dışıdır.",
       },

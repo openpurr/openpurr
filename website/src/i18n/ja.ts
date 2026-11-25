@@ -241,6 +241,12 @@ export const ja: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "新しいアプリを作っています。最初から openpurr を使えますか？",
+        a: "はい、むしろ今がいちばん簡単なタイミングです。公式の Purchases SDK を追加して接続先を openpurr のサーバーに向ければ、売上に応じた手数料を払い始めることはありません。あとで移行する必要もありません。",
+        link: "新しいアプリにアプリ内課金を導入する",
+        linkTo: "new",
+      },
+      {
         q: "openpurr はどのプラットフォームとストアに対応していますか？",
         a: "iOS、Android、Flutter、React Native 向けの Purchases SDK に対応し、App Store と Google Play での購入を扱います。Amazon と Web 決済は現時点では対象外です。",
       },

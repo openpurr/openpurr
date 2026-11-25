@@ -250,6 +250,12 @@ export const id: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "Saya sedang membuat aplikasi baru. Bisakah saya mulai dengan openpurr?",
+        a: "Bisa, dan inilah saat termudah untuk melakukannya. Tambahkan Purchases SDK resmi, arahkan ke server openpurr Anda, dan Anda tidak akan pernah mulai membayar bagi hasil pendapatan. Tidak ada yang perlu dimigrasi nanti.",
+        link: "Menambahkan pembelian dalam aplikasi ke aplikasi baru",
+        linkTo: "new",
+      },
+      {
         q: "Platform dan store apa saja yang didukung openpurr?",
         a: "openpurr mendukung Purchases SDK untuk iOS, Android, Flutter, dan React Native, dengan pembelian dari App Store dan Google Play. Amazon dan penagihan web belum termasuk untuk saat ini.",
       },

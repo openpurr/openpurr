@@ -1,0 +1,130 @@
+---
+// Till-style receipts of what an app's 1% buys when it keeps it: one per revenue level in RECEIPTS
+// (../one-percent.ts). Each adds up to that app's yearly RevenueCat fee, with the change shown. Used
+// on the pricing page and the new-app page; the copy is in src/i18n/pricing/ (`receipts`).
+import { fill, langTag, type Locale } from "../i18n";
+import { tp } from "../i18n/pricing";
+import { revenueCatCost } from "../savings";
+import { RECEIPTS } from "../one-percent";
+
+interface Props {
+  locale: Locale;
+}
+const { locale } = Astro.props;
+const p = tp(locale);
+const nf = (o: Intl.NumberFormatOptions) => new Intl.NumberFormat(`${langTag(locale)}-u-nu-latn`, o);
+const usd = nf({ style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const money = (n: number) => usd.format(Math.round(n));
+const num = (n: number) => nf({ maximumFractionDigits: 1 }).format(n);
+---
+
+<div class="receipts">
+  {
+    RECEIPTS.map((rc) => {
+      const kept = revenueCatCost(rc.revenue) * 12;
+      const total = rc.items.reduce((sum, i) => sum + i.usd, 0);
+      return (
+        <div class="receipt">
+          <p class="rc-head">{p.receipts.header}</p>
+          <p class="rc-sub">{fill(p.receipts.revenue, { revenue: money(rc.revenue) })}</p>
+          <hr />
+          <p class="rc-row rc-big"><span>{p.receipts.year}</span><span>{money(kept)}</span></p>
+          <hr />
+          <ul>
+            {rc.items.map((i) => (
+              <li class="rc-row"><span>{fill(p.receipts.items[i.key], { n: num(i.n ?? 0) })}</span><span>{money(i.usd)}</span></li>
+            ))}
+          </ul>
+          <hr />
+          <p class="rc-row"><span>{p.receipts.total}</span><span>{money(total)}</span></p>
+          <p class="rc-row"><span>{p.receipts.change}</span><span>{money(kept - total)}</span></p>
+          <hr />
+          <p class="rc-foot">{fill(p.receipts.shareLine, { zero: nf({ style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(0) })}<br />{p.receipts.thanks}</p>
+        </div>
+      );
+    })
+  }
+</div>
+<p class="receipts-note">{p.receipts.note}</p>
+
+<style>
+  .receipts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 16px;
+    align-items: start;
+  }
+  .receipt {
+    background: #fff;
+    color: #2a2540;
+    padding: 16px 16px 24px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    filter: drop-shadow(0 10px 14px rgba(60, 40, 140, 0.18));
+    -webkit-mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px repeat-x;
+    mask:
+      linear-gradient(#000 0 0) top / 100% calc(100% - 8px) no-repeat,
+      conic-gradient(from -45deg at bottom, #0000, #000 1deg 89deg, #0000 90deg) bottom / 12px 8px repeat-x;
+  }
+  .receipt:nth-child(1) { transform: rotate(-1.2deg); }
+  .receipt:nth-child(3) { transform: rotate(1deg); }
+  .receipt hr {
+    border: 0;
+    border-top: 1.5px dashed #cfc9e2;
+    margin: 8px 0;
+  }
+  .receipt ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .rc-head {
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .rc-sub,
+  .rc-foot {
+    text-align: center;
+    color: #6b6585;
+  }
+  .rc-foot {
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .rc-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin: 0;
+  }
+  .rc-row span:last-child {
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .rc-big {
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #5a3dd6;
+  }
+  .receipts-note {
+    margin-top: 12px;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  @media (max-width: 760px) {
+    .receipts {
+      grid-template-columns: 1fr;
+      max-width: 340px;
+    }
+    .receipt:nth-child(n) {
+      transform: none;
+    }
+  }
+</style>

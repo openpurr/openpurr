@@ -254,6 +254,12 @@ export const vi: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "Tôi đang làm một ứng dụng mới. Tôi có thể bắt đầu với openpurr không?",
+        a: "Có, và đây là lúc dễ nhất để làm điều đó. Thêm Purchases SDK chính thức, trỏ nó tới server openpurr của bạn, và bạn sẽ không bao giờ phải bắt đầu trả phí chia doanh thu. Sau này cũng không có gì phải chuyển đổi.",
+        link: "Thêm mua hàng trong ứng dụng cho ứng dụng mới",
+        linkTo: "new",
+      },
+      {
         q: "openpurr hỗ trợ những nền tảng và store nào?",
         a: "openpurr hỗ trợ Purchases SDK cho iOS, Android, Flutter và React Native, với giao dịch mua từ App Store và Google Play. Amazon và thanh toán trên web hiện nằm ngoài phạm vi.",
       },

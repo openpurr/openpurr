@@ -1,7 +1,7 @@
 // The sitemap, built with the site. Add each new page here. A page that exists in several languages
 // lists each version with xhtml:link alternates, as Google asks for translated pages.
 import type { APIRoute } from "astro";
-import { CEO_PAGE, MIGRATION_PAGE, MIGRATION_UPDATED, PRICING_PAGE } from "../consts";
+import { CEO_PAGE, MIGRATION_PAGE, MIGRATION_UPDATED, PRICING_PAGE, START_PAGE } from "../consts";
 import xCeo from "../data/x-ceo.json";
 import { SOURCES_CHECKED } from "../one-percent";
 import { allLocales, langTag, type Alternates, type Locale } from "../i18n";
@@ -10,6 +10,7 @@ import { allLocales, langTag, type Alternates, type Locale } from "../i18n";
 const PAGES: { path: string; alternates?: Alternates; lastmod?: string }[] = [
   { path: "/", alternates: allLocales("/") },
   { path: MIGRATION_PAGE, alternates: allLocales(MIGRATION_PAGE), lastmod: MIGRATION_UPDATED },
+  { path: START_PAGE, alternates: allLocales(START_PAGE) },
   { path: PRICING_PAGE, alternates: allLocales(PRICING_PAGE), lastmod: SOURCES_CHECKED },
   { path: CEO_PAGE, alternates: allLocales(CEO_PAGE), lastmod: xCeo.checked },
   { path: "/privacy/" },

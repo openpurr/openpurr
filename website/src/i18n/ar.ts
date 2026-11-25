@@ -246,6 +246,12 @@ export const ar: Dict = {
         linkTo: "adapty",
       },
       {
+        q: "أبني تطبيقًا جديدًا. هل يمكنني البدء بـ openpurr؟",
+        a: "نعم، وهذا أسهل وقت لذلك. أضف Purchases SDK الرسمي، ووجّهه إلى خادم openpurr الخاص بك، ولن تبدأ أبدًا في دفع حصة من الإيرادات. ولن يكون هناك ما تنقله لاحقًا.",
+        link: "إضافة المشتريات داخل التطبيق إلى تطبيق جديد",
+        linkTo: "new",
+      },
+      {
         q: "ما المنصات والمتاجر التي يدعمها openpurr؟",
         a: "يدعم openpurr حزمة Purchases SDK لأنظمة iOS وAndroid وFlutter وReact Native، مع عمليات الشراء من App Store وGoogle Play. أما Amazon والفوترة عبر الويب فهما خارج النطاق حاليًا.",
       },
