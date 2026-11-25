@@ -9,7 +9,7 @@
 
 export const startEn = {
   meta: {
-    title: "Add in-app purchases and subscriptions to your app, free - openpurr",
+    title: "Add in-app purchases and subscriptions, free - openpurr",
     description:
       "Starting a new app? Add in-app purchases and subscriptions with the official Purchases SDK and an open-source backend you run yourself. No revenue share, ever.",
     ogImageAlt: "Starting a new app? Start without a revenue share. Keep your 1% and invest it in your business.",
