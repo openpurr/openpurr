@@ -1,7 +1,9 @@
 // OAuth 2.1 for the MCP server, so clients that can't send a personal access token (Claude.ai
-// connectors) can connect: the MCP authorization spec (2025-11-25).
+// connectors) can connect: the MCP authorization spec (2025-11-25). The same flow signs in the iOS
+// app, whose tokens are issued for the admin API (/admin/v1) instead.
 //
 //   /.well-known/oauth-protected-resource[/mcp]   which authorization server protects /mcp (RFC 9728)
+//   /.well-known/oauth-protected-resource/admin/v1   the same for the admin API
 //   /.well-known/oauth-authorization-server       endpoints and capabilities (RFC 8414)
 //   /oauth/register                               Dynamic Client Registration (RFC 7591), public clients only
 //   /oauth/authorize                              checks the request, then hands off to the dashboard's consent screen
@@ -17,7 +19,8 @@
 // on the dashboard's own requests. The operator signs in there if needed, sees who is asking,
 // where the code goes and which scopes, and approves; the dashboard then redirects back.
 //
-// Tokens: access tokens (oat_..., 1 hour) work only at /mcp (the resource they were issued for);
+// Tokens: access tokens (oat_..., 1 hour) work only at the resource they were issued for (/mcp, or
+// /admin/v1 when the client asked for resource=<origin>/admin/v1);
 // refresh tokens (ort_..., 30 days) rotate on every use. Only SHA-256 hashes are stored. What a
 // token can do is the operator's role limited to the approved scopes, exactly like a personal
 // access token. Operators see and revoke their connected apps under Access tokens.
@@ -28,6 +31,7 @@ import type { AppEnv } from "../env";
 import { cloudflareRateLimiters } from "../lib/rate-limit";
 import { audit, type Operator } from "./auth";
 import { randomToken, sha256Hex } from "./auth-crypto";
+import { iosClient, iosClientId } from "./ios";
 import { can, type Permission, type Principal } from "./principal";
 
 export const OAUTH_SCOPES = ["read", "write:grants", "write:webhooks", "write:config"] as const;
@@ -53,6 +57,12 @@ const origin = (c: Ctx) => new URL(c.req.url).origin;
 /** The MCP server's canonical URI: tokens are issued for, and only accepted at, this resource. */
 export const mcpResource = (c: Ctx) => `${origin(c)}/mcp`;
 export const resourceMetadataUrl = (c: Ctx) => `${origin(c)}/.well-known/oauth-protected-resource/mcp`;
+/** The admin API as an OAuth resource: the iOS app's tokens. */
+export const adminResource = (c: Ctx) => `${origin(c)}/admin/v1`;
+export const adminResourceMetadataUrl = (c: Ctx) => `${origin(c)}/.well-known/oauth-protected-resource/admin/v1`;
+/** The resources tokens can be issued for, as a request names them; MCP when none is named. */
+const resourceFor = (c: Ctx, requested: string | undefined) =>
+  requested === undefined ? mcpResource(c) : [mcpResource(c), adminResource(c)].find((r) => sameResource(requested, r));
 
 /** Same URI, compared the way RFC 8707 asks: case-insensitive scheme and host, no trailing slash. */
 function sameResource(a: string, b: string) {
@@ -99,16 +109,17 @@ const oauthError = (c: Ctx, error: string, description: string, status: 400 | 40
 // ---- Discovery ----------------------------------------------------------------------------------
 
 export const wellKnown = new Hono<AppEnv>();
-const protectedResource = (c: Ctx) =>
+const protectedResource = (c: Ctx, resource = mcpResource(c)) =>
   json(c, {
-    resource: mcpResource(c),
+    resource,
     authorization_servers: [origin(c)],
     scopes_supported: [...OAUTH_SCOPES],
     bearer_methods_supported: ["header"],
     resource_name: "openpurr",
   });
-wellKnown.get("/oauth-protected-resource", protectedResource);
-wellKnown.get("/oauth-protected-resource/mcp", protectedResource);
+wellKnown.get("/oauth-protected-resource", (c) => protectedResource(c));
+wellKnown.get("/oauth-protected-resource/mcp", (c) => protectedResource(c));
+wellKnown.get("/oauth-protected-resource/admin/v1", (c) => protectedResource(c, adminResource(c)));
 wellKnown.get("/oauth-authorization-server", (c) =>
   json(c, {
     issuer: origin(c),
@@ -189,6 +200,13 @@ async function fetchMetadataDocument(c: Ctx, url: URL): Promise<Client> {
 /** The client for a client_id: a registered one, or a metadata document (cached for a day). */
 async function resolveClient(c: Ctx, clientId: string): Promise<Client | null> {
   const db = c.env.DB;
+  // This deployment's own iOS app (src/office/ios.ts): known without fetching anything. Saved like a
+  // fetched document, since requests and grants refer to the client's row.
+  if (clientId === iosClientId(c)) {
+    const client = iosClient(c);
+    await saveMetadataClient(db, client);
+    return client;
+  }
   const row = await db.prepare("SELECT id, kind, name, client_uri, redirect_uris, fetched_at FROM oauth_client WHERE id = ?").bind(clientId).first<{
     id: string;
     kind: Client["kind"];
@@ -203,15 +221,18 @@ async function resolveClient(c: Ctx, clientId: string): Promise<Client | null> {
   }
   if (!url) return null;
   const client = await fetchMetadataDocument(c, url);
-  await db
+  await saveMetadataClient(db, client);
+  return client;
+}
+
+const saveMetadataClient = (db: D1Database, client: Client) =>
+  db
     .prepare(
       `INSERT INTO oauth_client (id, kind, name, client_uri, redirect_uris, created_at, fetched_at) VALUES (?, 'metadata_document', ?, ?, ?, ?, ?)
        ON CONFLICT (id) DO UPDATE SET name = excluded.name, client_uri = excluded.client_uri, redirect_uris = excluded.redirect_uris, fetched_at = excluded.fetched_at`,
     )
     .bind(client.id, client.name, client.client_uri, JSON.stringify(client.redirect_uris), Date.now(), Date.now())
     .run();
-  return client;
-}
 
 // ---- Endpoints ----------------------------------------------------------------------------------
 
@@ -293,8 +314,8 @@ oauth.get("/authorize", async (c) => {
   if (q.response_type !== "code") return back({ error: "unsupported_response_type", error_description: "Only response_type=code is supported." });
   if (!q.code_challenge || q.code_challenge_method !== "S256") return back({ error: "invalid_request", error_description: "PKCE with code_challenge_method=S256 is required." });
   if (!/^[A-Za-z0-9_-]{43,128}$/.test(q.code_challenge)) return back({ error: "invalid_request", error_description: "code_challenge isn't a valid S256 challenge." });
-  const resource = q.resource ?? mcpResource(c);
-  if (!sameResource(resource, mcpResource(c))) return back({ error: "invalid_target", error_description: `This server only issues tokens for ${mcpResource(c)}.` });
+  const resource = resourceFor(c, q.resource);
+  if (!resource) return back({ error: "invalid_target", error_description: `This server only issues tokens for ${mcpResource(c)} and ${adminResource(c)}.` });
   const requested = q.scope ? q.scope.split(/\s+/).filter((s): s is OAuthScope => (OAUTH_SCOPES as readonly string[]).includes(s)) : [...OAUTH_SCOPES];
   if (!requested.length) return back({ error: "invalid_scope", error_description: `Scopes: ${OAUTH_SCOPES.join(" ")}.` });
 
@@ -303,7 +324,7 @@ oauth.get("/authorize", async (c) => {
   await c.env.DB.prepare(
     "INSERT INTO oauth_request (id, client_id, redirect_uri, state, code_challenge, scope, resource, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
   )
-    .bind(id, client.id, redirectUri, q.state ?? null, q.code_challenge, [...new Set(requested)].join(" "), mcpResource(c), now, now + REQUEST_TTL)
+    .bind(id, client.id, redirectUri, q.state ?? null, q.code_challenge, [...new Set(requested)].join(" "), resource, now, now + REQUEST_TTL)
     .run();
   return c.redirect(`/admin/oauth/consent?request=${encodeURIComponent(id)}`, 302);
 });
@@ -431,11 +452,11 @@ export async function oauthTokenOwner(db: D1Database, token: string, resource: s
 export async function pendingRequest(db: D1Database, id: string, principal: Principal) {
   const r = await db
     .prepare(
-      `SELECT r.id, r.redirect_uri, r.scope, r.expires_at, r.code_hash, c.id AS client_id, c.kind, c.name, c.client_uri
+      `SELECT r.id, r.redirect_uri, r.scope, r.resource, r.expires_at, r.code_hash, c.id AS client_id, c.kind, c.name, c.client_uri
        FROM oauth_request r JOIN oauth_client c ON c.id = r.client_id WHERE r.id = ?`,
     )
     .bind(id)
-    .first<{ id: string; redirect_uri: string; scope: string; expires_at: number; code_hash: string | null; client_id: string; kind: string; name: string; client_uri: string | null }>();
+    .first<{ id: string; redirect_uri: string; scope: string; resource: string; expires_at: number; code_hash: string | null; client_id: string; kind: string; name: string; client_uri: string | null }>();
   if (!r || r.code_hash || r.expires_at < Date.now()) return null;
   const redirect = new URL(r.redirect_uri);
   return {
@@ -443,6 +464,8 @@ export async function pendingRequest(db: D1Database, id: string, principal: Prin
     client: { name: r.name, uri: r.client_uri, kind: r.kind, metadata_url: r.kind === "metadata_document" ? r.client_id : null },
     redirect_host: redirect.host,
     redirect_uri: r.redirect_uri,
+    /** What the tokens are for: the MCP server, or the admin API (the iOS app). */
+    api: new URL(r.resource).pathname.replace(/\/+$/, "") === "/admin/v1" ? "admin" : "mcp",
     localhost: isLocalhost(r.redirect_uri),
     scopes: r.scope.split(" ").map((s) => ({ scope: s, label: SCOPE_INFO[s as OAuthScope]?.label ?? s, allowed: can(principal, SCOPE_INFO[s as OAuthScope]?.needs ?? "read") })),
   };

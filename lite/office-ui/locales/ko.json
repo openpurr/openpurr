@@ -2,6 +2,7 @@
   "(you)": "(나)",
   "{app} already has {product}.": "{app}에 이미 {product}이(가) 있습니다.",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "{app}이(가) 나({email}, {role})로서 openpurr의 MCP 서버를 사용하려고 합니다. 아래에서 허용한 작업만 할 수 있으며, 내 역할의 권한을 넘을 수 없습니다.",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "{app}이(가) 차트, 구매, 고객을 보여 주기 위해 나({email}, {role})로서 openpurr의 관리 API를 사용하려고 합니다. 아래에서 허용한 작업만 할 수 있으며, 내 역할의 권한을 넘을 수 없습니다.",
   "{id} (any base plan)": "{id} (모든 기본 요금제)",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}: 오늘 무료 플랜 한도의 {percent}%.",
   "{n} attempts": {

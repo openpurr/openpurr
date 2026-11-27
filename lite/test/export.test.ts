@@ -61,7 +61,7 @@ describe("export", () => {
     const ok = await get("/export", await tokenFor("owner", ["admin"]));
     expect(ok.status).toBe(200);
     expect(ok.body).toMatchObject({ format: "openpurr-export", version: 1, edition: "lite", now: expect.any(Number) });
-    expect(ok.body.schema).toMatch(/^0021_/);
+    expect(ok.body.schema).toMatch(/^0022_/);
     expect(ok.body.tables.map((t: { name: string }) => t.name)).toEqual(spec.tables.map((t) => t.name));
     expect(ok.body.tables.find((t: { name: string }) => t.name === "customer_alias")).toEqual({
       name: "customer_alias",

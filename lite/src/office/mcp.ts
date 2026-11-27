@@ -34,8 +34,8 @@ import { BadInput, searchCustomers } from "./customers";
 import { chooseProject, visibleProjects } from "./project";
 import { runChecks, summarize } from "./doctor";
 import { type Actor, GRANT_DURATIONS, GrantError, grantEntitlement, rebuildAfterGrant, revokeGrant } from "./grants";
-import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, oauthTokenOwner, resourceMetadataUrl } from "./oauth";
-import { ACCESS_TOKEN_PREFIX, can, canSeeApp, type Permission, type Principal, principalOf, type TokenScope, tokenPrincipal } from "./principal";
+import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, mcpResource, resourceMetadataUrl } from "./oauth";
+import { ACCESS_TOKEN_PREFIX, can, canSeeApp, oauthPrincipal, type Permission, type Principal, tokenPrincipal } from "./principal";
 import { guessSdkUrl, notificationUrl, storedSdkUrl } from "./setup";
 
 export const PROTOCOL_VERSIONS = ["2025-11-25", "2025-06-18", "2025-03-26"];
@@ -820,12 +820,7 @@ async function mcpPrincipal(c: Ctx, header: string): Promise<Principal | null> {
   const token = header.slice(7).trim();
   if (token.startsWith(ACCESS_TOKEN_PREFIX)) return tokenPrincipal(c, token);
   if (!token.startsWith(OAUTH_ACCESS_PREFIX)) return null;
-  const owner = await oauthTokenOwner(c.env.DB, token, mcpResource(c));
-  if (!owner) return null;
-  if (!owner.lastUsed || Date.now() - owner.lastUsed > 3600_000) {
-    c.executionCtx.waitUntil(c.env.DB.prepare("UPDATE oauth_grant SET last_used_at = ? WHERE id = ?").bind(Date.now(), owner.grantId).run());
-  }
-  return principalOf(owner.operator, "token", owner.grantId, owner.scopes as TokenScope[]);
+  return oauthPrincipal(c, token, mcpResource(c));
 }
 
 async function callTool(c: Ctx, principal: Principal, tool: Tool, args: Args) {

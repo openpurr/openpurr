@@ -178,6 +178,7 @@ func (s *server) route(w http.ResponseWriter, r *http.Request) {
 		s.settleInConformance()
 	case strings.HasPrefix(path, "/.well-known/"):
 		s.wellKnown(w, r)
+	case strings.HasPrefix(path, "/app/") && s.iosRoute(w, r):
 	case path == "/oauth" || strings.HasPrefix(path, "/oauth/"):
 		s.oauth(w, r)
 		s.settleInConformance()
@@ -201,7 +202,7 @@ func (s *server) settleInConformance() {
 func (s *server) deliverLater(cfg *config.Config, events []*webhooks.Prepared) {
 	var ids []string
 	for _, e := range events {
-		if e != nil {
+		if e.Delivers() {
 			ids = append(ids, e.ID)
 		}
 	}

@@ -93,9 +93,14 @@ func (q *adminReq) settings() (*jsobj.Object, error) {
 	if err != nil {
 		return nil, err
 	}
-	// sdk_url is what was set (null if nothing); sdk_url_guess is shown until then.
+	iosAppID, err := q.s.storedIOSAppID(q.ctx)
+	if err != nil {
+		return nil, err
+	}
+	// sdk_url is what was set (null if nothing); sdk_url_guess is shown until then. ios_app_id is
+	// the operator's own build of the iOS app ("<team ID>.<bundle ID>"; ios.go).
 	return jsobj.New("require_totp", required, "cloudflare_plan", plan, "sdk_url", strOrNull(sdkURL),
-		"sdk_url_guess", q.s.sdkURLGuess(q.r), "edition", Edition), nil
+		"sdk_url_guess", q.s.sdkURLGuess(q.r), "ios_app_id", strOrNull(iosAppID), "edition", Edition), nil
 }
 
 func adminSettings(q *adminReq) {
@@ -112,8 +117,9 @@ func adminPutSettings(q *adminReq) {
 	totp, totpSet := q.prop("require_totp")
 	plan, planSet := q.prop("cloudflare_plan")
 	sdkRaw, sdkSet := q.prop("sdk_url")
-	if !totpSet && !planSet && !sdkSet {
-		q.bad("Send require_totp, cloudflare_plan and/or sdk_url.")
+	iosRaw, iosSet := q.prop("ios_app_id")
+	if !totpSet && !planSet && !sdkSet && !iosSet {
+		q.bad("Send require_totp, cloudflare_plan, sdk_url and/or ios_app_id.")
 		return
 	}
 	if _, ok := totp.(bool); totpSet && !ok {
@@ -145,6 +151,23 @@ func adminPutSettings(q *adminReq) {
 			sdkURL = &origin
 		}
 	}
+	// ios_app_id: "<team ID>.<bundle ID>", or null or "" to remove it.
+	var iosAppID *string
+	if iosSet {
+		str, isStr := iosRaw.(string)
+		if iosRaw != nil && !isStr {
+			q.bad("ios_app_id must be a string or null.")
+			return
+		}
+		if isStr && jsobj.Trim(str) != "" {
+			appID, problem := parseIOSAppID(str)
+			if problem != "" {
+				q.bad(problem)
+				return
+			}
+			iosAppID = &appID
+		}
+	}
 	set := func(tx pgx.Tx, key, value string) error {
 		_, err := tx.Exec(q.ctx,
 			`INSERT INTO setting (key, value, updated_at) VALUES ($1, $2, $3)
@@ -152,6 +175,14 @@ func adminPutSettings(q *adminReq) {
 		return err
 	}
 	err := q.tx(func(tx pgx.Tx) error {
+		if iosSet {
+			if err := setIOSAppID(q.ctx, tx, iosAppID, q.now); err != nil {
+				return err
+			}
+			if err := q.audit(tx, "setting.ios_app_id", nil, jsobj.New("value", strOrNull(iosAppID))); err != nil {
+				return err
+			}
+		}
 		if totpSet {
 			value := "false"
 			if totp == true {

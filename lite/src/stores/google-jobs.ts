@@ -10,7 +10,7 @@ import type { AppConfig, Config } from "../config";
 import type { Deps, Env } from "../env";
 import type { TransactionRow } from "../ledger";
 import { invalidateSnapshot, refreshSnapshot } from "../snapshot";
-import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
+import { deliverNow, enqueueEvent, loadEventCustomer } from "../webhooks";
 import { googleRefundEvent } from "./google-events";
 import { acknowledge, googleClientFor } from "./google-sync";
 
@@ -97,12 +97,10 @@ async function pollApp(env: Env, deps: Deps, config: Config, app: AppConfig, now
       owners.add(tx.customer_id);
       const refunded = { ...tx, revoked_at: v.at } as TransactionRow;
       const event = googleRefundEvent(refunded);
-      if (webhooksFor(project, event.type, tx.environment).length) {
-        const customer = await loadEventCustomer(db, [tx.customer_id], tx.customer_id);
-        const { id, statements } = await enqueueEvent(db, project, { ...event, appId: app.id, environment: tx.environment, store: "play_store", customer, transaction: refunded, now });
-        eventIds.push(id);
-        writes.push(...statements);
-      }
+      const customer = await loadEventCustomer(db, [tx.customer_id], tx.customer_id);
+      const { id, statements } = await enqueueEvent(db, project, { ...event, appId: app.id, environment: tx.environment, store: "play_store", customer, transaction: refunded, now });
+      eventIds.push(id);
+      writes.push(...statements);
     }
     processed++;
   }

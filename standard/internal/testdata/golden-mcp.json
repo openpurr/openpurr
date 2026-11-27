@@ -7293,7 +7293,7 @@
    "body": null,
    "status": 302,
    "response_headers": {
-    "location": "https://claude.ai/api/mcp/auth_callback?error=invalid_target&error_description=This+server+only+issues+tokens+for+https%3A%2F%2Fopenpurr.test%2Fmcp.&state=xyz&iss=https%3A%2F%2Fopenpurr.test"
+    "location": "https://claude.ai/api/mcp/auth_callback?error=invalid_target&error_description=This+server+only+issues+tokens+for+https%3A%2F%2Fopenpurr.test%2Fmcp+and+https%3A%2F%2Fopenpurr.test%2Fadmin%2Fv1.&state=xyz&iss=https%3A%2F%2Fopenpurr.test"
    },
    "response_body": ""
   },
@@ -7307,7 +7307,7 @@
    "body": null,
    "status": 302,
    "response_headers": {
-    "location": "https://claude.ai/api/mcp/auth_callback?error=invalid_target&error_description=This+server+only+issues+tokens+for+https%3A%2F%2Fopenpurr.test%2Fmcp.&state=xyz&iss=https%3A%2F%2Fopenpurr.test"
+    "location": "https://claude.ai/api/mcp/auth_callback?error=invalid_target&error_description=This+server+only+issues+tokens+for+https%3A%2F%2Fopenpurr.test%2Fmcp+and+https%3A%2F%2Fopenpurr.test%2Fadmin%2Fv1.&state=xyz&iss=https%3A%2F%2Fopenpurr.test"
    },
    "response_body": ""
   },
@@ -7340,7 +7340,7 @@
    "response_headers": {
     "content-type": "application/json"
    },
-   "response_body": "{\"id\":\"req_golden_pending\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:grants\",\"label\":\"Grant and revoke promotional entitlements\",\"allowed\":true},{\"scope\":\"write:config\",\"label\":\"Change the configuration: apps, products, entitlements, offerings and webhooks\",\"allowed\":true}]}"
+   "response_body": "{\"id\":\"req_golden_pending\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"api\":\"mcp\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:grants\",\"label\":\"Grant and revoke promotional entitlements\",\"allowed\":true},{\"scope\":\"write:config\",\"label\":\"Change the configuration: apps, products, entitlements, offerings and webhooks\",\"allowed\":true}]}"
   },
   {
    "name": "consent view as viewer",
@@ -7357,7 +7357,7 @@
    "response_headers": {
     "content-type": "application/json"
    },
-   "response_body": "{\"id\":\"req_golden_pending\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:grants\",\"label\":\"Grant and revoke promotional entitlements\",\"allowed\":false},{\"scope\":\"write:config\",\"label\":\"Change the configuration: apps, products, entitlements, offerings and webhooks\",\"allowed\":false}]}"
+   "response_body": "{\"id\":\"req_golden_pending\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"api\":\"mcp\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:grants\",\"label\":\"Grant and revoke promotional entitlements\",\"allowed\":false},{\"scope\":\"write:config\",\"label\":\"Change the configuration: apps, products, entitlements, offerings and webhooks\",\"allowed\":false}]}"
   },
   {
    "name": "consent view metadata client",
@@ -7374,7 +7374,7 @@
    "response_headers": {
     "content-type": "application/json"
    },
-   "response_body": "{\"id\":\"req_golden_meta\",\"client\":{\"name\":\"Example MCP Client\",\"uri\":\"https://client.example\",\"kind\":\"metadata_document\",\"metadata_url\":\"https://client.example/oauth/metadata.json\"},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true}]}"
+   "response_body": "{\"id\":\"req_golden_meta\",\"client\":{\"name\":\"Example MCP Client\",\"uri\":\"https://client.example\",\"kind\":\"metadata_document\",\"metadata_url\":\"https://client.example/oauth/metadata.json\"},\"redirect_host\":\"claude.ai\",\"redirect_uri\":\"https://claude.ai/api/mcp/auth_callback\",\"api\":\"mcp\",\"localhost\":false,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true}]}"
   },
   {
    "name": "consent view localhost",
@@ -7391,7 +7391,7 @@
    "response_headers": {
     "content-type": "application/json"
    },
-   "response_body": "{\"id\":\"req_golden_local\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"localhost:8123\",\"redirect_uri\":\"http://localhost:8123/cb\",\"localhost\":true,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:webhooks\",\"label\":\"Replay webhook events\",\"allowed\":true}]}"
+   "response_body": "{\"id\":\"req_golden_local\",\"client\":{\"name\":\"Golden Client\",\"uri\":\"https://claude.ai\",\"kind\":\"registered\",\"metadata_url\":null},\"redirect_host\":\"localhost:8123\",\"redirect_uri\":\"http://localhost:8123/cb\",\"api\":\"mcp\",\"localhost\":true,\"scopes\":[{\"scope\":\"read\",\"label\":\"Look up customers, purchases, charts, webhook deliveries and the audit log\",\"allowed\":true},{\"scope\":\"write:webhooks\",\"label\":\"Replay webhook events\",\"allowed\":true}]}"
   },
   {
    "name": "consent view expired",
@@ -8060,9 +8060,10 @@
    "body": null,
    "status": 401,
    "response_headers": {
-    "content-type": "application/json"
+    "content-type": "application/json",
+    "www-authenticate": "Bearer resource_metadata=\"https://openpurr.test/.well-known/oauth-protected-resource/admin/v1\", error=\"invalid_token\""
    },
-   "response_body": "{\"code\":\"invalid_token\",\"message\":\"OAuth access tokens only work at /mcp. Use a personal access token for the admin API.\"}"
+   "response_body": "{\"code\":\"invalid_token\",\"message\":\"Invalid, expired or revoked access token, or one issued for another resource (such as /mcp).\"}"
   },
   {
    "name": "refresh missing client",

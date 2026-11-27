@@ -2,6 +2,7 @@
   "(you)": "(tu)",
   "{app} already has {product}.": "{app} ha già {product}.",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "{app} vuole usare il server MCP di openpurr a tuo nome, {email} ({role}). Potrà fare solo ciò che consenti qui sotto, e mai più di quanto permetta il tuo ruolo.",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "{app} vuole usare l'API di amministrazione di openpurr a tuo nome, {email} ({role}), per mostrare grafici, acquisti e clienti. Potrà fare solo ciò che consenti qui sotto, e mai più di quanto permetta il tuo ruolo.",
   "{id} (any base plan)": "{id} (qualsiasi piano base)",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}: {percent}% del limite giornaliero del piano gratuito di oggi.",
   "{n} attempts": {

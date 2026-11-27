@@ -39,7 +39,7 @@ import { AppleApiError } from "../stores/apple-api";
 import { receiptPurchaseEvents } from "../stores/apple-events";
 import { SECRET_KEY_PREFIX, touchSecretKey, verifySecretKey } from "../secret-keys";
 import { invalidateSnapshot, readCustomerInfo, refreshSnapshot } from "../snapshot";
-import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
+import { deliverNow, enqueueEvent, loadEventCustomer } from "../webhooks";
 import { InvalidReceiptError, parseAppReceipt, transactionIdFromAppReceipt } from "../stores/apple-receipt";
 import { GoogleMappingError } from "../stores/google";
 import { GoogleApiError } from "../stores/google-api";
@@ -253,19 +253,17 @@ async function recordForCustomer(
   const affected = new Set([customer.id, ...[...owners.values()].map((o) => o.id)]);
   for (const id of affected) if (!merged.has(id)) writes.push(invalidateSnapshot(db, id));
 
-  // Webhook events, in the same batch: purchase events for recent transactions, and TRANSFER
-  // when a named user loses a purchase to this customer.
+  // Events (the event list, and webhooks where configured), in the same batch: purchase events for
+  // recent transactions, and TRANSFER when a named user loses a purchase to this customer.
   const eventIds: string[] = [];
   const config = project;
   const app = c.get("app");
-  if (config.webhooks.length && transactions.length) {
+  if (transactions.length) {
     const now = Date.now();
     const planned = transactions.flatMap((t) => receiptPurchaseEvents(t, now).map((e) => ({ e, t })));
     const losers = [...new Map([...owners.values()].filter((o) => o.id !== customer.id && !o.anonymousOnly).map((o) => [o.id, o])).values()];
     const env = transactions[0]!.environment;
-    const wantsTransfer = losers.length > 0 && webhooksFor(config, "TRANSFER", env).length > 0;
-    const wanted = planned.filter(({ e, t }) => webhooksFor(config, e.type, t.environment).length);
-    if (wanted.length || wantsTransfer) {
+    if (planned.length || losers.length) {
       // Customer details as they'll be once this batch lands (anonymous owners merged in).
       const eventCustomer = await loadEventCustomer(db, [customer.id, ...merged], customer.id, appUserId);
       // Attributes sent with this receipt are written in the same batch, so apply them here too.
@@ -275,12 +273,12 @@ async function recordForCustomer(
         if (u.value === null) delete eventCustomer.attributes[key];
         else eventCustomer.attributes[key] = { value: u.value, updated_at_ms: u.updatedAt };
       }
-      for (const { e, t } of wanted) {
+      for (const { e, t } of planned) {
         const { id, statements } = await enqueueEvent(db, config, { ...e, appId: app.id, environment: t.environment, store: t.store, customer: eventCustomer, transaction: t, now });
         eventIds.push(id);
         writes.push(...statements);
       }
-      for (const loser of wantsTransfer ? losers : []) {
+      for (const loser of losers) {
         const from = await loadEventCustomer(db, [loser.id], loser.id);
         const { id, statements } = await enqueueEvent(db, config, {
           type: "TRANSFER",

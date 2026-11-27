@@ -383,11 +383,11 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 		}
 	}
 
-	// Webhook events, built from the data as it is before the writes (as Lite builds them before
-	// its batch): purchase events for recent transactions, and TRANSFER when a named user loses a
-	// purchase to this customer.
+	// Events (the event list, and webhooks where configured), built from the data as it is before
+	// the writes (as Lite builds them before its batch): purchase events for recent transactions,
+	// and TRANSFER when a named user loses a purchase to this customer.
 	var events []*webhooks.Prepared
-	if len(project.Webhooks) > 0 && len(transactions) > 0 {
+	if len(transactions) > 0 {
 		type planned struct {
 			e apple.PlannedEvent
 			t *ledger.Transaction
@@ -396,9 +396,7 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 		for i := range transactions {
 			t := &transactions[i].Transaction
 			for _, e := range apple.ReceiptPurchaseEvents(t, now) {
-				if len(webhooks.For(project, e.Type, t.Environment)) > 0 {
-					wanted = append(wanted, planned{e, t})
-				}
+				wanted = append(wanted, planned{e, t})
 			}
 		}
 		var losers []ledger.Owner
@@ -408,7 +406,7 @@ func (s *server) recordForCustomer(q *sdkRequest, appUserID string, transactions
 			}
 		}
 		env := transactions[0].Environment
-		wantsTransfer := len(losers) > 0 && len(webhooks.For(project, "TRANSFER", env)) > 0
+		wantsTransfer := len(losers) > 0
 		if len(wanted) > 0 || wantsTransfer {
 			// Customer details as they'll be once the writes land (anonymous owners merged in).
 			eventCustomer, err := webhooks.LoadCustomer(ctx, s.Pool, append([]string{customer.ID}, merged...), customer.ID, appUserID)

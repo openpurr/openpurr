@@ -146,7 +146,7 @@ describe("the authorization code flow", () => {
     expect(listed.status).toBe(200);
     expect(listed.body.result.tools.map((t: { name: string }) => t.name)).toEqual(expect.arrayContaining(["explain_entitlement", "grant_entitlement"]));
     expect(listed.body.result.tools.map((t: { name: string }) => t.name)).not.toContain("replay_webhook"); // not approved
-    // OAuth tokens are only for /mcp.
+    // Tokens issued for /mcp don't work at the admin API.
     expect((await request("/admin/v1/me", { headers: { authorization: `Bearer ${tokens.access_token}` } })).status).toBe(401);
 
     const refreshed = await jsonOf(await exchange({ grant_type: "refresh_token", refresh_token: tokens.refresh_token, client_id: clientId }));
@@ -321,6 +321,116 @@ describe("the authorization code flow", () => {
     const t = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: p.verifier }));
     expect((await request("/oauth/revoke", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: `token=${t.refresh_token}` })).status).toBe(200);
     expect((await mcpCall(t.access_token)).status).toBe(401);
+  });
+});
+
+describe("tokens for the admin API (the iOS app)", () => {
+  const ADMIN = `${ORIGIN}/admin/v1`;
+
+  async function adminCode(clientId: string, session: string, challenge: string, scope = "read") {
+    const start = await request(authorizeUrl(clientId, challenge, { resource: ADMIN, scope }));
+    expect(start.status).toBe(302);
+    const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+    const pending = await jsonOf(await request(`/admin/v1/oauth/requests/${id}`, { session }));
+    expect(pending.api).toBe("admin");
+    const decided = await request(`/admin/v1/oauth/requests/${id}/approve`, { method: "POST", session, headers: { origin: ORIGIN, "content-type": "application/json" }, body: "{}" });
+    return new URL((await jsonOf(decided)).redirect).searchParams.get("code")!;
+  }
+
+  it("issues tokens for resource=<origin>/admin/v1 that work at /admin/v1 and not at /mcp", async () => {
+    const prm = await jsonOf(await request("/.well-known/oauth-protected-resource/admin/v1"));
+    expect(prm).toMatchObject({ resource: ADMIN, authorization_servers: [ORIGIN] });
+
+    const { client_id: clientId } = await jsonOf(await register({ client_name: "openpurr for iOS" }));
+    const viewer = await signedIn("viewer");
+    const { verifier, challenge } = await pkce();
+    const code = await adminCode(clientId, viewer.session, challenge);
+    const tokens = await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier, redirect_uri: CALLBACK, resource: ADMIN }));
+    expect(tokens.access_token).toMatch(/^oat_/);
+
+    const me = await request("/admin/v1/me", { headers: { authorization: `Bearer ${tokens.access_token}` } });
+    expect(me.status).toBe(200);
+    expect((await request("/admin/v1/events?environment=sandbox", { headers: { authorization: `Bearer ${tokens.access_token}` } })).status).toBe(200);
+    // The role still applies: a viewer's token can't manage operators.
+    expect((await request("/admin/v1/operators", { method: "POST", headers: { authorization: `Bearer ${tokens.access_token}`, "content-type": "application/json" }, body: "{}" })).status).toBe(403);
+    // Issued for the admin API, so refused at /mcp.
+    expect((await mcpCall(tokens.access_token)).status).toBe(401);
+
+    // Refreshing keeps the resource.
+    const refreshed = await jsonOf(await exchange({ grant_type: "refresh_token", refresh_token: tokens.refresh_token, client_id: clientId }));
+    expect((await request("/admin/v1/me", { headers: { authorization: `Bearer ${refreshed.access_token}` } })).status).toBe(200);
+
+    // Revoked: a 401 that points at the admin API's metadata.
+    await request("/oauth/revoke", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: new URLSearchParams({ token: refreshed.access_token }).toString() });
+    const after = await request("/admin/v1/me", { headers: { authorization: `Bearer ${refreshed.access_token}` } });
+    expect(after.status).toBe(401);
+    expect(after.headers.get("www-authenticate")).toBe(`Bearer resource_metadata="${ORIGIN}/.well-known/oauth-protected-resource/admin/v1", error="invalid_token"`);
+  });
+
+  it("refuses a resource that is neither /mcp nor /admin/v1, and a token exchange naming the other one", async () => {
+    const { client_id: clientId } = await jsonOf(await register());
+    const { challenge } = await pkce();
+    const other = await request(authorizeUrl(clientId, challenge, { resource: `${ORIGIN}/admin/v1/events` }));
+    expect(new URL(other.headers.get("location")!).searchParams.get("error")).toBe("invalid_target");
+
+    const owner = await signedIn("owner");
+    const { verifier, challenge: c2 } = await pkce();
+    const code = await adminCode(clientId, owner.session, c2);
+    expect(await jsonOf(await exchange({ grant_type: "authorization_code", code, client_id: clientId, code_verifier: verifier, redirect_uri: CALLBACK, resource: MCP }))).toMatchObject({ error: "invalid_target" });
+  });
+});
+
+describe("the iOS app's client", () => {
+  const CLIENT = `${ORIGIN}/app/ios-client.json`;
+  const IOS_CALLBACK = `${ORIGIN}/app/oauth-callback`;
+
+  it("serves its client document and signs in without fetching anything", async () => {
+    const doc = await jsonOf(await request("/app/ios-client.json"));
+    expect(doc).toMatchObject({ client_id: CLIENT, client_name: "openpurr for iOS", redirect_uris: [IOS_CALLBACK], token_endpoint_auth_method: "none" });
+
+    const owner = await signedIn("owner");
+    const { verifier, challenge } = await pkce();
+    const q = new URLSearchParams({ response_type: "code", client_id: CLIENT, redirect_uri: IOS_CALLBACK, code_challenge: challenge, code_challenge_method: "S256", state: "s", scope: "read", resource: `${ORIGIN}/admin/v1` });
+    const start = await request(`/oauth/authorize?${q}`);
+    expect(start.status).toBe(302); // fakeFetch knows nothing of openpurr.test: the client was resolved locally
+    const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+    const pending = await jsonOf(await request(`/admin/v1/oauth/requests/${id}`, { session: owner.session }));
+    expect(pending).toMatchObject({ client: { name: "openpurr for iOS" }, api: "admin", redirect_uri: IOS_CALLBACK });
+    const decided = await jsonOf(await request(`/admin/v1/oauth/requests/${id}/approve`, { method: "POST", session: owner.session, headers: { origin: ORIGIN, "content-type": "application/json" }, body: "{}" }));
+    const back = new URL(decided.redirect);
+    expect(back.origin + back.pathname).toBe(IOS_CALLBACK);
+    const tokens = await jsonOf(await exchange({ grant_type: "authorization_code", code: back.searchParams.get("code")!, client_id: CLIENT, code_verifier: verifier, redirect_uri: IOS_CALLBACK }));
+    expect((await request("/admin/v1/me", { headers: { authorization: `Bearer ${tokens.access_token}` } })).status).toBe(200);
+
+    const page = await request("/app/oauth-callback?code=x");
+    expect(page.status).toBe(200);
+    expect(page.headers.get("referrer-policy")).toBe("no-referrer");
+  });
+
+  it("serves apple-app-site-association once an owner sets ios_app_id", async () => {
+    await env.DB.prepare("DELETE FROM setting WHERE key = 'ios_app_id'").run();
+    expect((await request("/.well-known/apple-app-site-association")).status).toBe(404);
+
+    const owner = await signedIn("owner");
+    const developer = await signedIn("developer");
+    const put = (session: string, value: unknown) =>
+      request("/admin/v1/settings", { method: "PUT", session, headers: { origin: ORIGIN, "content-type": "application/json" }, body: JSON.stringify({ ios_app_id: value }) });
+    expect((await put(developer.session, "ABCDE12345.com.example.purr")).status).toBe(403);
+    expect((await put(owner.session, "com.example.purr")).status).toBe(400);
+    const saved = await put(owner.session, " ABCDE12345.com.example.purr ");
+    expect(saved.status).toBe(200);
+    expect((await jsonOf(saved)).ios_app_id).toBe("ABCDE12345.com.example.purr");
+
+    const aasa = await request("/.well-known/apple-app-site-association");
+    expect(aasa.status).toBe(200);
+    expect(aasa.headers.get("content-type")).toMatch(/^application\/json/);
+    expect(await jsonOf(aasa)).toEqual({
+      applinks: { details: [{ appIDs: ["ABCDE12345.com.example.purr"], components: [{ "/": "/app/oauth-callback" }] }] },
+      webcredentials: { apps: ["ABCDE12345.com.example.purr"] },
+    });
+
+    expect((await put(owner.session, null)).status).toBe(200);
+    expect((await request("/.well-known/apple-app-site-association")).status).toBe(404);
   });
 });
 

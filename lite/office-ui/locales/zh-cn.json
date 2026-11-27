@@ -2,6 +2,7 @@
   "(you)": "（你）",
   "{app} already has {product}.": "{app} 已有 {product}。",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "{app} 想以你的身份（{email}，{role}）使用 openpurr 的 MCP 服务器。它只能执行你在下方允许的操作，且权限永远不会超过你的角色。",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "{app} 想以你的身份（{email}，{role}）使用 openpurr 的管理 API，用于显示图表、购买和客户。它只能执行你在下方允许的操作，且权限永远不会超过你的角色。",
   "{id} (any base plan)": "{id}（任意基础方案）",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}：已达今日免费套餐限额的 {percent}%。",
   "{n} attempts": {

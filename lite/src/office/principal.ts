@@ -2,7 +2,8 @@
 //
 // Two ways in:
 //   - the dashboard session cookie (full and recovery sessions, not setup; changes must be same-origin, see auth.ts);
-//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and the MCP server (/mcp).
+//   - "Authorization: Bearer pat_..." personal access tokens, for the CLI and the MCP server (/mcp);
+//   - "Authorization: Bearer oat_..." OAuth access tokens issued for /admin/v1 (the iOS app).
 //
 // Permission = the operator's ROLE, further limited by the token's SCOPES when a token is used:
 //   viewer     read
@@ -15,6 +16,7 @@ import type { Context, MiddlewareHandler } from "hono";
 import type { AppEnv } from "../env";
 import { type Operator, requireTotpForEveryone, sameOrigin, sessionFor } from "./auth";
 import { sha256Hex } from "./auth-crypto";
+import { ACCESS_PREFIX as OAUTH_ACCESS_PREFIX, adminResource, adminResourceMetadataUrl, oauthTokenOwner } from "./oauth";
 
 export type Permission =
   | "read"
@@ -97,13 +99,32 @@ export async function tokenPrincipal(c: Ctx, token: string): Promise<Principal |
   return principalOf(operator as Operator, "token", token_id, JSON.parse(scopes) as TokenScope[]);
 }
 
+/** The principal for an OAuth access token ("oat_..."), if it was issued for `resource` and is still valid. */
+export async function oauthPrincipal(c: Ctx, token: string, resource: string): Promise<Principal | null> {
+  const owner = await oauthTokenOwner(c.env.DB, token, resource);
+  if (!owner) return null;
+  if (!owner.lastUsed || Date.now() - owner.lastUsed > LAST_USED_EVERY_MS) {
+    c.executionCtx.waitUntil(c.env.DB.prepare("UPDATE oauth_grant SET last_used_at = ? WHERE id = ?").bind(Date.now(), owner.grantId).run());
+  }
+  return principalOf(owner.operator, "token", owner.grantId, owner.scopes as TokenScope[]);
+}
+
 /** Authenticates every /admin/v1 request except /admin/v1/auth/*. Sets c.var.principal. */
 export const adminAuth: MiddlewareHandler<AppEnv> = async (c, next) => {
   if (c.req.path.startsWith("/admin/v1/auth/")) return next();
   const header = c.req.header("authorization") ?? "";
 
-  // OAuth access tokens are issued for the MCP server only (their audience is /mcp).
-  if (header.startsWith("Bearer oat_")) return deny(c, 401, "invalid_token", "OAuth access tokens only work at /mcp. Use a personal access token for the admin API.");
+  // OAuth access tokens work here only if they were issued for the admin API (the iOS app); tokens
+  // issued for /mcp are refused, whatever their scopes.
+  if (header.startsWith(`Bearer ${OAUTH_ACCESS_PREFIX}`)) {
+    const principal = await oauthPrincipal(c, header.slice(7).trim(), adminResource(c));
+    if (!principal) {
+      c.header("WWW-Authenticate", `Bearer resource_metadata="${adminResourceMetadataUrl(c)}", error="invalid_token"`);
+      return deny(c, 401, "invalid_token", "Invalid, expired or revoked access token, or one issued for another resource (such as /mcp).");
+    }
+    c.set("principal", principal);
+    return next();
+  }
   if (header.startsWith(`Bearer ${ACCESS_TOKEN_PREFIX}`)) {
     const principal = await tokenPrincipal(c, header.slice(7).trim());
     if (!principal) return deny(c, 401, "invalid_token", "Invalid, expired or revoked access token.");

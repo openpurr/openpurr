@@ -267,3 +267,59 @@ describe("Client ID Metadata Documents", () => {
     expect((await request("GET", authorizeUrl("https://10.0.0.1/meta.json", challenge))).status).toBe(400);
   });
 });
+
+describe("tokens for the admin API (the iOS app)", () => {
+  const ADMIN = `${ORIGIN}/admin/v1`;
+  const IOS_CLIENT = `${ORIGIN}/app/ios-client.json`;
+  const IOS_CALLBACK = `${ORIGIN}/app/oauth-callback`;
+  const bearer = (token: string) => ({ token, none: false });
+
+  /** The iOS app's sign-in, approved by `session`: its client is the deployment's own document. */
+  async function iosTokens(session: string) {
+    const { verifier, challenge } = await pkce();
+    const q = new URLSearchParams({ response_type: "code", client_id: IOS_CLIENT, redirect_uri: IOS_CALLBACK, code_challenge: challenge, code_challenge_method: "S256", state: "s", scope: "read", resource: ADMIN });
+    const start = await request("GET", `/oauth/authorize?${q}`);
+    expect(start.status).toBe(302);
+    const id = new URL(start.headers.get("location")!, ORIGIN).searchParams.get("request")!;
+    const pending = await admin("GET", `/oauth/requests/${id}`, { session });
+    expect(pending.body).toMatchObject({ client: { name: "openpurr for iOS" }, api: "admin", redirect_uri: IOS_CALLBACK });
+    const decided = await admin("POST", `/oauth/requests/${id}/approve`, { session }, { body: {} });
+    const back = new URL(decided.body.redirect);
+    expect(back.origin + back.pathname).toBe(IOS_CALLBACK);
+    const res = await exchange({ grant_type: "authorization_code", code: back.searchParams.get("code")!, client_id: IOS_CLIENT, code_verifier: verifier, redirect_uri: IOS_CALLBACK });
+    expect(res.status).toBe(200);
+    return res.body;
+  }
+
+  it("issues tokens for resource=<origin>/admin/v1 that work at /admin/v1 and not at /mcp", async () => {
+    expect((await request("GET", "/.well-known/oauth-protected-resource/admin/v1")).body).toMatchObject({ resource: ADMIN, authorization_servers: [ORIGIN] });
+
+    const viewer = await signedIn("viewer");
+    const tokens = await iosTokens(viewer.session);
+    expect((await admin("GET", "/me", bearer(tokens.access_token))).status).toBe(200);
+    expect((await admin("GET", "/events?environment=sandbox", bearer(tokens.access_token))).status).toBe(200);
+    // The role still applies.
+    expect((await admin("POST", "/operators", bearer(tokens.access_token), { body: {}, origin: null })).status).toBe(403);
+    // Issued for the admin API, so refused at /mcp; and an MCP token is refused here.
+    expect((await mcpCall(tokens.access_token)).status).toBe(401);
+    const mcp = await connected();
+    expect((await admin("GET", "/me", bearer(mcp.tokens.access_token))).status).toBe(401);
+
+    // Refreshing keeps the resource.
+    const refreshed = (await exchange({ grant_type: "refresh_token", refresh_token: tokens.refresh_token, client_id: IOS_CLIENT })).body;
+    expect((await admin("GET", "/me", bearer(refreshed.access_token))).status).toBe(200);
+
+    // Revoked: a 401 that points at the admin API's metadata.
+    await request("POST", "/oauth/revoke", { rawBody: new URLSearchParams({ token: refreshed.access_token }).toString(), headers: { "content-type": "application/x-www-form-urlencoded" } });
+    const after = await admin("GET", "/me", bearer(refreshed.access_token));
+    expect(after.status).toBe(401);
+    expect(after.headers.get("www-authenticate")).toBe(`Bearer resource_metadata="${ORIGIN}/.well-known/oauth-protected-resource/admin/v1", error="invalid_token"`);
+  });
+
+  it("refuses a resource that is neither /mcp nor /admin/v1", async () => {
+    const { client_id: clientId } = (await register()).body;
+    const { challenge } = await pkce();
+    const other = await request("GET", authorizeUrl(clientId, challenge, { resource: `${ORIGIN}/admin/v1/events` }));
+    expect(new URL(other.headers.get("location")!).searchParams.get("error")).toBe("invalid_target");
+  });
+});

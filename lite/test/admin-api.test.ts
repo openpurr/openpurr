@@ -468,6 +468,78 @@ describe("webhooks", () => {
   });
 });
 
+describe("events", () => {
+  it("lists every purchase event, newest first, even with no webhooks configured", async () => {
+    await postAppleTransaction("events-a", { productId: "pro_monthly", price: 9990, currency: "USD", storefront: "USA" });
+    await postAppleTransaction("events-a", { productId: "coins_100", type: "Consumable", expiresDate: undefined, inAppOwnershipType: "FAMILY_SHARED" });
+    const owner = await operator("owner");
+
+    // Production is the default; the test purchases are sandbox.
+    expect((await api("GET", "/events", { session: owner.session })).body.events.filter((e: any) => e.app_user_id === "events-a")).toEqual([]);
+
+    const { status, body } = await api("GET", "/events?environment=sandbox&limit=200", { session: owner.session });
+    expect(status).toBe(200);
+    const mine = body.events.filter((e: any) => e.app_user_id === "events-a");
+    expect(mine.map((e: any) => [e.type, e.product_id])).toEqual([
+      ["NON_RENEWING_PURCHASE", "coins_100"],
+      ["INITIAL_PURCHASE", "pro_monthly"],
+    ]);
+    expect(mine[1]).toMatchObject({
+      app_id: "ios",
+      project_id: "default",
+      environment: "sandbox",
+      store: "APP_STORE",
+      price: 9.99,
+      price_in_purchased_currency: 9.99,
+      currency: "USD",
+      country_code: "US",
+      is_family_share: false,
+      period_type: "NORMAL",
+    });
+    expect(mine[0].is_family_share).toBe(true);
+
+    const detail = await api("GET", `/events/${mine[1].id}`, { session: owner.session });
+    expect(detail.status).toBe(200);
+    expect(detail.body.body.event).toMatchObject({ id: mine[1].id, type: "INITIAL_PURCHASE", app_user_id: "events-a" });
+    expect((await api("GET", "/events/no-such-event", { session: owner.session })).status).toBe(404);
+  });
+
+  it("pages with a cursor and filters by type and app", async () => {
+    for (let i = 0; i < 3; i++) await postAppleTransaction(`events-page-${i}`);
+    const owner = await operator("owner");
+    const first = await api("GET", "/events?environment=sandbox&limit=2", { session: owner.session });
+    expect(first.body.events).toHaveLength(2);
+    expect(first.body.next_cursor).toEqual(expect.any(String));
+    const second = await api("GET", `/events?environment=sandbox&limit=2&cursor=${first.body.next_cursor}`, { session: owner.session });
+    const seen = new Set(first.body.events.map((e: any) => e.id));
+    expect(second.body.events.some((e: any) => seen.has(e.id))).toBe(false);
+    expect(second.body.events[0].created_at).toBeLessThanOrEqual(first.body.events[1].created_at);
+
+    const purchases = await api("GET", "/events?environment=sandbox&limit=200&type=INITIAL_PURCHASE", { session: owner.session });
+    expect(purchases.body.events.length).toBeGreaterThanOrEqual(3);
+    expect(purchases.body.events.every((e: any) => e.type === "INITIAL_PURCHASE")).toBe(true);
+    const android = await api("GET", "/events?environment=sandbox&app=android", { session: owner.session });
+    expect(android.body.events.every((e: any) => e.app_id === "android")).toBe(true);
+
+    expect((await api("GET", "/events?type=NOT_A_TYPE", { session: owner.session })).status).toBe(400);
+    expect((await api("GET", "/events?cursor=%%%", { session: owner.session })).status).toBe(400);
+    expect((await api("GET", "/events?environment=staging", { session: owner.session })).status).toBe(400);
+  });
+
+  it("shows an operator limited to some apps only those apps' events", async () => {
+    await postAppleTransaction("events-scoped");
+    const androidOnly = await operator("viewer", { apps: ["android"] });
+    const list = await api("GET", "/events?environment=sandbox&limit=200", { session: androidOnly.session });
+    expect(list.status).toBe(200);
+    expect(list.body.events.every((e: any) => e.app_id === "android")).toBe(true);
+    expect((await api("GET", "/events?environment=sandbox&app=ios", { session: androidOnly.session })).status).toBe(404);
+
+    const owner = await operator("owner");
+    const ios = (await api("GET", "/events?environment=sandbox&limit=200", { session: owner.session })).body.events.find((e: any) => e.app_user_id === "events-scoped");
+    expect((await api("GET", `/events/${ios.id}`, { session: androidOnly.session })).status).toBe(404);
+  });
+});
+
 describe("audit log and settings", () => {
   it("records admin writes with who and how, readable by admins", async () => {
     const owner = await operator("owner", { totp: true });
