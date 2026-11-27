@@ -1,0 +1,28 @@
+// Your build of the openpurr iOS app.
+//
+// There's no App Store build: you build the app under your own Apple Developer team, and your
+// deployment serves the matching apple-app-site-association. Put your values in Local.xcconfig
+// next to this file (git-ignored), for example:
+//
+//   OPENPURR_TEAM_ID = ABCDE12345
+//   OPENPURR_BUNDLE_ID = com.example.purr
+//   OPENPURR_DEPLOYMENT_HOST = admin.example.com
+//
+// then tell the deployment about this app (an owner, once):
+//
+//   curl -X PUT https://admin.example.com/admin/v1/settings \
+//     -H "Authorization: Bearer pat_..." -H "Content-Type: application/json" \
+//     -d '{"ios_app_id": "ABCDE12345.com.example.purr"}'
+//
+// OPENPURR_DEPLOYMENT_HOST is the deployment the app signs in to: iOS only returns sign-in to this
+// app from domains listed at build time. Use the address you open the dashboard at: on Lite that's
+// the back office's custom domain (OPENPURR_OFFICE_DOMAIN), not the SDK's; on Standard, the server's.
+
+OPENPURR_TEAM_ID =
+OPENPURR_BUNDLE_ID = dev.openpurr.app.local
+OPENPURR_DEPLOYMENT_HOST = admin.example.com
+
+#include? "Local.xcconfig"
+
+DEVELOPMENT_TEAM = $(OPENPURR_TEAM_ID)
+PRODUCT_BUNDLE_IDENTIFIER = $(OPENPURR_BUNDLE_ID)

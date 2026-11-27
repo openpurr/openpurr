@@ -50,6 +50,28 @@ jobs:
       - name: Dashboard translations
         run: node lite/scripts/office-strings.mjs
 
+  ios:
+    name: iOS app (OpenpurrKit tests, simulator build)
+    runs-on: macos-15
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/ios
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      # The app's non-UI code (API client, sign-in, formatting), on macOS.
+      - name: Test OpenpurrKit
+        run: swift test --package-path OpenpurrKit
+
+      # Unsigned, so no Apple team is needed; signing is each operator's (Config/Openpurr.xcconfig).
+      - name: Build for the simulator
+        run: >
+          xcodebuild build -project Openpurr.xcodeproj -scheme Openpurr
+          -destination 'generic/platform=iOS Simulator' CODE_SIGNING_ALLOWED=NO
+
   standard:
     name: Standard (vet, tests on Postgres)
     runs-on: ubuntu-latest

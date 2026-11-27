@@ -1,0 +1,420 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		225286DA6FA0994BF1DE3A6F /* Components.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7C40C2AA7B07827F4544D5 /* Components.swift */; };
+		51B0DBEFAD9940CD88C61A81 /* OpenpurrKit in Frameworks */ = {isa = PBXBuildFile; productRef = 09462E26212FFE237A5FE9BE /* OpenpurrKit */; };
+		570CA0B232E397E1E0B200C0 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056DC5D1E649B7843FDB63BF /* RootView.swift */; };
+		62BB93695A1DCE7C7B2B08AC /* OpenpurrApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFD26EB356BB3CCD93066B19 /* OpenpurrApp.swift */; };
+		702D22387A7C3083E7278019 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 91C53430184082A63A72A62A /* Assets.xcassets */; };
+		83F532A93C540B50B7555448 /* ConnectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 539244840069F16A2E3E4E18 /* ConnectView.swift */; };
+		A0F682E128F1682902721A81 /* ChartsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A83DB4DFDFAFFBBDFE5658DA /* ChartsView.swift */; };
+		ACF63AE5F2ACD3B90900A5D3 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C6733E0F4DE967033D5B646E /* FeedView.swift */; };
+		B44E8BBB0B38775C2873F690 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20CBDFE436491C1BF60A8DB0 /* AppModel.swift */; };
+		B6934C70A4B44DF00CFFC9F3 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3C94C72A09191745D9D22DA4 /* EventDetailView.swift */; };
+		D7C2EFDFDA1EEC75FBDB57CF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA8B48AB64F89308EE217211 /* SettingsView.swift */; };
+		DDAD747C5CEEF0281BDFF99F /* OverviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8056D66EF5A86C97D9B45286 /* OverviewView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		056DC5D1E649B7843FDB63BF /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		0B8E06FF5609B241BE02004C /* Openpurr.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Openpurr.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		20CBDFE436491C1BF60A8DB0 /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		30C94B3BA224E48BE74C66E1 /* Openpurr.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Openpurr.xcconfig; sourceTree = "<group>"; };
+		3C94C72A09191745D9D22DA4 /* EventDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventDetailView.swift; sourceTree = "<group>"; };
+		539244840069F16A2E3E4E18 /* ConnectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectView.swift; sourceTree = "<group>"; };
+		5F3ABDF9E65CDC9C2EFCE915 /* OpenpurrKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = OpenpurrKit; path = OpenpurrKit; sourceTree = SOURCE_ROOT; };
+		6B7C40C2AA7B07827F4544D5 /* Components.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Components.swift; sourceTree = "<group>"; };
+		8056D66EF5A86C97D9B45286 /* OverviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverviewView.swift; sourceTree = "<group>"; };
+		91C53430184082A63A72A62A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A83DB4DFDFAFFBBDFE5658DA /* ChartsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartsView.swift; sourceTree = "<group>"; };
+		AA8B48AB64F89308EE217211 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		BAEC2FDF3DDD030517F930B9 /* Openpurr.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Openpurr.entitlements; sourceTree = "<group>"; };
+		C6733E0F4DE967033D5B646E /* FeedView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedView.swift; sourceTree = "<group>"; };
+		EFD26EB356BB3CCD93066B19 /* OpenpurrApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OpenpurrApp.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		FC96947AAE57A40AA569BCD5 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				51B0DBEFAD9940CD88C61A81 /* OpenpurrKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0AC478F550D6396975C3AC74 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				30C94B3BA224E48BE74C66E1 /* Openpurr.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		2B4844CC783B29F95DF10DD3 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				5F3ABDF9E65CDC9C2EFCE915 /* OpenpurrKit */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		5DD23B8E6C2634A51928F429 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				0B8E06FF5609B241BE02004C /* Openpurr.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8DB4A42509FC1AF76DB6D887 /* Openpurr */ = {
+			isa = PBXGroup;
+			children = (
+				20CBDFE436491C1BF60A8DB0 /* AppModel.swift */,
+				91C53430184082A63A72A62A /* Assets.xcassets */,
+				BAEC2FDF3DDD030517F930B9 /* Openpurr.entitlements */,
+				EFD26EB356BB3CCD93066B19 /* OpenpurrApp.swift */,
+				8F4E9C841122AFD0A1D96D23 /* Views */,
+			);
+			path = Openpurr;
+			sourceTree = "<group>";
+		};
+		8F4E9C841122AFD0A1D96D23 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				A83DB4DFDFAFFBBDFE5658DA /* ChartsView.swift */,
+				6B7C40C2AA7B07827F4544D5 /* Components.swift */,
+				539244840069F16A2E3E4E18 /* ConnectView.swift */,
+				3C94C72A09191745D9D22DA4 /* EventDetailView.swift */,
+				C6733E0F4DE967033D5B646E /* FeedView.swift */,
+				8056D66EF5A86C97D9B45286 /* OverviewView.swift */,
+				056DC5D1E649B7843FDB63BF /* RootView.swift */,
+				AA8B48AB64F89308EE217211 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		C0E3F5EC0AAD4C7E3924F89E = {
+			isa = PBXGroup;
+			children = (
+				0AC478F550D6396975C3AC74 /* Config */,
+				8DB4A42509FC1AF76DB6D887 /* Openpurr */,
+				2B4844CC783B29F95DF10DD3 /* Packages */,
+				5DD23B8E6C2634A51928F429 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4222DE982AE9742864FBF7CC /* Openpurr */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 598667D102872A55BCB46390 /* Build configuration list for PBXNativeTarget "Openpurr" */;
+			buildPhases = (
+				23A71854907B0A3F74E479C3 /* Sources */,
+				223525209A304F158E1545F7 /* Resources */,
+				FC96947AAE57A40AA569BCD5 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Openpurr;
+			packageProductDependencies = (
+				09462E26212FFE237A5FE9BE /* OpenpurrKit */,
+			);
+			productName = Openpurr;
+			productReference = 0B8E06FF5609B241BE02004C /* Openpurr.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		01B73C3D6B6EC57404E38739 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					4222DE982AE9742864FBF7CC = {
+						DevelopmentTeam = "$(OPENPURR_TEAM_ID)";
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 46C19AF0E056427B12083358 /* Build configuration list for PBXProject "Openpurr" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C0E3F5EC0AAD4C7E3924F89E;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				809AF28ED1844BB755CFFBCD /* XCLocalSwiftPackageReference "OpenpurrKit" */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 5DD23B8E6C2634A51928F429 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				4222DE982AE9742864FBF7CC /* Openpurr */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		223525209A304F158E1545F7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				702D22387A7C3083E7278019 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		23A71854907B0A3F74E479C3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B44E8BBB0B38775C2873F690 /* AppModel.swift in Sources */,
+				A0F682E128F1682902721A81 /* ChartsView.swift in Sources */,
+				225286DA6FA0994BF1DE3A6F /* Components.swift in Sources */,
+				83F532A93C540B50B7555448 /* ConnectView.swift in Sources */,
+				B6934C70A4B44DF00CFFC9F3 /* EventDetailView.swift in Sources */,
+				ACF63AE5F2ACD3B90900A5D3 /* FeedView.swift in Sources */,
+				62BB93695A1DCE7C7B2B08AC /* OpenpurrApp.swift in Sources */,
+				DDAD747C5CEEF0281BDFF99F /* OverviewView.swift in Sources */,
+				570CA0B232E397E1E0B200C0 /* RootView.swift in Sources */,
+				D7C2EFDFDA1EEC75FBDB57CF /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		4D77966C5F35532777ECE4DC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Openpurr/Openpurr.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = openpurr;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		DE5498874EE9D511214A2896 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 30C94B3BA224E48BE74C66E1 /* Openpurr.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		E01142819E984F79F5744416 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Openpurr/Openpurr.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = openpurr;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 0.1.0;
+				SDKROOT = iphoneos;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		E11B38197119BC0FB3821ED2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 30C94B3BA224E48BE74C66E1 /* Openpurr.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.4;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		46C19AF0E056427B12083358 /* Build configuration list for PBXProject "Openpurr" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE5498874EE9D511214A2896 /* Debug */,
+				E11B38197119BC0FB3821ED2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		598667D102872A55BCB46390 /* Build configuration list for PBXNativeTarget "Openpurr" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4D77966C5F35532777ECE4DC /* Debug */,
+				E01142819E984F79F5744416 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		809AF28ED1844BB755CFFBCD /* XCLocalSwiftPackageReference "OpenpurrKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = OpenpurrKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		09462E26212FFE237A5FE9BE /* OpenpurrKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenpurrKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 01B73C3D6B6EC57404E38739 /* Project object */;
+}
