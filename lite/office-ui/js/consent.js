@@ -1,5 +1,5 @@
 // The OAuth consent screen (/admin/oauth/consent?request=…): an app such as Claude.ai asks to use
-// openpurr's MCP server as the signed-in operator. Shown full screen, like sign-in. The operator
+// openpurr's MCP server, or the iOS app asks to use the admin API, as the signed-in operator. Shown full screen, like sign-in. The operator
 // sees who is asking, where the approval is sent, and which permissions, limited to their role.
 import { get, post } from "./api.js";
 import { h, replace } from "./dom.js";
@@ -37,6 +37,7 @@ export async function renderConsent(root, operator) {
       },
       errors,
     );
+  const who = { app: appHost ? `${req.client.name} (${appHost})` : req.client.name, email: operator.email, role: operator.role };
   const allow = button(t("Allow"), {});
   const deny = button(t("Deny"), { variant: "outline" });
   allow.addEventListener("click", () => decide(true, allow));
@@ -47,11 +48,9 @@ export async function renderConsent(root, operator) {
     h(
       "p",
       { class: "auth-sub" },
-      t("{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.", {
-        app: appHost ? `${req.client.name} (${appHost})` : req.client.name,
-        email: operator.email,
-        role: operator.role,
-      }),
+      (req.api === "admin"
+        ? t("{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.", who)
+        : t("{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.", who)),
     ),
     h(
       "div",

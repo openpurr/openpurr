@@ -275,21 +275,16 @@ func (s *server) handleGoogleNotification(w http.ResponseWriter, r *http.Request
 		inherit = owner != nil
 	}
 
-	// 5. Webhook events (only with an owner: there's no app user to report otherwise).
+	// 5. Events: the event list, and webhooks where configured (only with an owner: there's no app
+	// user to report otherwise).
 	var events []*webhooks.Prepared
 	if owner != nil && p.row != nil {
-		var wanted []apple.PlannedEvent
-		for _, e := range p.planned {
-			if len(webhooks.For(project, e.Type, p.row.Environment)) > 0 {
-				wanted = append(wanted, e)
-			}
-		}
-		if len(wanted) > 0 {
+		if len(p.planned) > 0 {
 			customer, err := webhooks.LoadCustomer(ctx, s.Pool, []string{owner.ID}, owner.ID, "")
 			if err != nil {
 				return err
 			}
-			for _, e := range wanted {
+			for _, e := range p.planned {
 				prepared, err := webhooks.Prepare(ctx, s.Pool, project, webhooks.Input{
 					Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: p.row.Environment, Store: "play_store",
 					Customer: customer, Transaction: &p.row.Transaction, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,

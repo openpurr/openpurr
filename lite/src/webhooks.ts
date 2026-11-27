@@ -7,6 +7,8 @@
 // allow for unknown prices.
 //
 // Delivery:
+//   - Every event is recorded, whether or not an endpoint wants it: the event list (the admin API's
+//     /events, the iOS app's feed) reads the same table. Deliveries exist only for endpoints.
 //   - The event and one delivery row per matching endpoint are written in the SAME D1 batch as
 //     the ledger change that caused them (enqueueEvent returns statements), so an event exists
 //     exactly when its change does. A dedupe key makes each fact produce one event, whichever
@@ -118,7 +120,8 @@ export function eventBody(config: ProjectConfig, input: EventInput, id: string) 
 
 /**
  * Statements that record the event and its deliveries. Add them to the same batch as the
- * ledger change. Empty if no endpoint wants this event. If the dedupe key was already used,
+ * ledger change. The event is always recorded (it's the event list too); `id` is "" when no
+ * endpoint wants it, so there's nothing for deliverNow to do. If the dedupe key was already used,
  * the event insert is ignored and so are its deliveries.
  */
 export async function enqueueEvent(
@@ -127,7 +130,6 @@ export async function enqueueEvent(
   input: EventInput,
 ): Promise<{ id: string; statements: D1PreparedStatement[] }> {
   const endpoints = webhooksFor(config, input.type, input.environment);
-  if (!endpoints.length) return { id: "", statements: [] };
   const id = crypto.randomUUID();
   const now = input.now ?? Date.now();
   const t = input.transaction;
@@ -136,15 +138,17 @@ export async function enqueueEvent(
     input = { ...input, priceUsd: await toUsd(db, amount, t.currency, t.purchased_at) };
   }
   const body = JSON.stringify(eventBody(config, input, id));
+  const event = db
+    .prepare(
+      `INSERT INTO webhook_event (id, dedupe_key, type, app_id, customer_id, environment, body, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (dedupe_key) DO NOTHING`,
+    )
+    .bind(id, input.dedupeKey, input.type, input.appId, input.customer.id, input.environment, body, now);
+  if (!endpoints.length) return { id: "", statements: [event] };
   return {
     id,
     statements: [
-      db
-        .prepare(
-          `INSERT INTO webhook_event (id, dedupe_key, type, app_id, customer_id, environment, body, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT (dedupe_key) DO NOTHING`,
-        )
-        .bind(id, input.dedupeKey, input.type, input.appId, input.customer.id, input.environment, body, now),
+      event,
       // Inserted only if the event above was (a reused dedupe key leaves no event with this id).
       db
         .prepare(

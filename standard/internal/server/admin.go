@@ -85,6 +85,9 @@ func buildAdminRoutes() *adminRouter {
 
 	rt.add(get, "/doctor", permRead, adminDoctor)
 
+	rt.add(get, "/events", permRead, adminEvents)
+	rt.add(get, "/events/:id", permRead, adminEvent)
+
 	rt.add(get, "/webhooks/deliveries", permRead, adminDeliveries)
 	rt.add(post, "/webhooks/events/:id/replay", permWebhooksReplay, adminReplay)
 
@@ -146,10 +149,21 @@ func (s *server) admin(w http.ResponseWriter, r *http.Request) {
 func (s *server) adminAuthenticate(q *adminReq) bool {
 	r := q.r
 	header := r.Header.Get("Authorization")
-	// OAuth access tokens are issued for the MCP server only (their audience is /mcp).
-	if strings.HasPrefix(header, "Bearer oat_") {
-		q.fail(http.StatusUnauthorized, "invalid_token", "OAuth access tokens only work at /mcp. Use a personal access token for the admin API.")
-		return false
+	// OAuth access tokens work here only if they were issued for the admin API (the iOS app);
+	// tokens issued for /mcp are refused, whatever their scopes.
+	if strings.HasPrefix(header, "Bearer "+OAuthAccessPrefix) {
+		p, err := s.oauthTokenOwner(q.ctx, jsobj.Trim(header[7:]), s.adminResource(r), q.now)
+		if err != nil {
+			q.internal(err)
+			return false
+		}
+		if p == nil {
+			q.w.Header().Set("WWW-Authenticate", `Bearer resource_metadata="`+s.adminResourceMetadataURL(r)+`", error="invalid_token"`)
+			q.fail(http.StatusUnauthorized, "invalid_token", "Invalid, expired or revoked access token, or one issued for another resource (such as /mcp).")
+			return false
+		}
+		q.p = p
+		return true
 	}
 	if strings.HasPrefix(header, "Bearer "+AccessTokenPrefix) {
 		p, err := s.tokenPrincipal(q.ctx, jsobj.Trim(header[7:]), q.now)

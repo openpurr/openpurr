@@ -2,6 +2,7 @@
   "(you)": "（自分）",
   "{app} already has {product}.": "{app} にはすでに {product} があります。",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "{app} が、あなた（{email}、{role}）として openpurr の MCP サーバーを使おうとしています。下で許可した操作だけが可能で、あなたのロールを超えることはありません。",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "{app} が、グラフ・購入・顧客を表示するために、あなた（{email}、{role}）として openpurr の管理 API を使おうとしています。下で許可した操作だけが可能で、あなたのロールを超えることはありません。",
   "{id} (any base plan)": "{id}（すべての基本プラン）",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}：本日の無料プラン上限の {percent}%。",
   "{n} attempts": {

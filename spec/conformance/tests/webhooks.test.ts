@@ -85,7 +85,7 @@ describe("delivery", () => {
     expect(Math.abs(Number(t) * 1000 - now())).toBeLessThan(60_000);
   });
 
-  it("sends nothing when no webhook is configured", async () => {
+  it("sends nothing when no webhook is configured, but still records the event (the event list)", async () => {
     await reset(testConfig());
     const { jws } = await signTransaction();
     await receipt({ app_user_id: "wh-none", fetch_token: jws });
@@ -93,7 +93,7 @@ describe("delivery", () => {
     expect(fake.received()).toHaveLength(0);
     expect(await deliveries()).toEqual([]);
     const customer = (await admin("GET", "/customers/wh-none")).body;
-    expect(customer.webhook_events).toEqual([]);
+    expect(customer.webhook_events.map((e: { type: string }) => e.type)).toEqual(["INITIAL_PURCHASE"]);
   });
 
   it("filters by environment and event type", async () => {

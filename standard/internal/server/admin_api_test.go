@@ -443,7 +443,7 @@ func TestAdminWebhooksAuditSettings(t *testing.T) {
 			return env.Admin("PUT", "/settings", tu.Auth{Session: session}, jsobj.New("sdk_url", v))
 		}
 		got := jsobj.Stringify(env.Admin("GET", "/settings", tu.Auth{Session: viewer.Session}, nil).JSON(t))
-		if got != `{"require_totp":false,"cloudflare_plan":"free","sdk_url":null,"sdk_url_guess":"`+env.Server.URL+`","edition":"standard"}` {
+		if got != `{"require_totp":false,"cloudflare_plan":"free","sdk_url":null,"sdk_url_guess":"`+env.Server.URL+`","ios_app_id":null,"edition":"standard"}` {
 			t.Errorf("%s", got)
 		}
 		for in, want := range map[string]string{"https://Purchases.Example.com:443/": "https://purchases.example.com", "http://localhost:8080": "http://localhost:8080", " https://x.example.com:8443 ": "https://x.example.com:8443"} {

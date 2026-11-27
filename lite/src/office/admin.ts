@@ -5,7 +5,7 @@
 import type { Context } from "hono";
 import { Hono } from "hono/tiny";
 import { readAttributes } from "../attributes";
-import { type AppConfig, ConfigError, parseConfig, type ProjectConfig } from "../config";
+import { type AppConfig, type Config, ConfigError, parseConfig, type ProjectConfig, WEBHOOK_EVENT_TYPES } from "../config";
 import { changeProblems, ConfigConflict, currentVersion, getVersion, listVersions, saveConfig } from "../config-store";
 import type { AppEnv } from "../env";
 import { findCustomer, loadCustomer } from "../ledger";
@@ -27,6 +27,7 @@ import { ACCESS_TOKEN_PREFIX, adminAuth, can, canSeeApp, type Principal, require
 import { chooseProject, visibleProjects } from "./project";
 import { isOfficeLocale, OFFICE_LOCALES } from "./locales";
 import { guessSdkUrl, parseSdkUrl, storedSdkUrl } from "./setup";
+import { iosAppIdSetting, parseIosAppId, storedIosAppId } from "./ios";
 import { exportCustomerInfo, exportDenied, exportInfo, exportTable } from "./export";
 
 export const admin = new Hono<AppEnv>();
@@ -816,6 +817,99 @@ admin.post("/oauth/grants/:id/revoke", async (c) => {
   return (await revokeGrantFor(c, p(c).operator, c.req.param("id"))) ? c.json({ revoked: c.req.param("id") }) : notFound(c, "Connected app");
 });
 
+// --- events --------------------------------------------------------------------------------------
+// Every purchase event, newest first: the iOS app's feed. The same RevenueCat-shaped events the
+// webhooks send, recorded whether or not an endpoint wants them (src/webhooks.ts).
+
+const EVENT_FIELDS = `e.id, e.type, e.app_id, e.environment, e.created_at,
+  json_extract(e.body, '$.event.app_user_id') AS app_user_id,
+  json_extract(e.body, '$.event.store') AS store,
+  json_extract(e.body, '$.event.product_id') AS product_id,
+  json_extract(e.body, '$.event.period_type') AS period_type,
+  json_extract(e.body, '$.event.is_family_share') AS is_family_share,
+  json_extract(e.body, '$.event.price') AS price,
+  json_extract(e.body, '$.event.price_in_purchased_currency') AS price_in_purchased_currency,
+  json_extract(e.body, '$.event.currency') AS currency,
+  json_extract(e.body, '$.event.country_code') AS country_code,
+  json_extract(e.body, '$.event.new_product_id') AS new_product_id,
+  json_extract(e.body, '$.event.cancel_reason') AS cancel_reason,
+  json_extract(e.body, '$.event.expiration_reason') AS expiration_reason`;
+
+interface EventRow {
+  id: string;
+  type: string;
+  app_id: string;
+  environment: string;
+  created_at: number;
+  is_family_share: number | null;
+  [field: string]: unknown;
+}
+
+function listedEvent(config: Config, row: EventRow) {
+  const { is_family_share, ...rest } = row;
+  return { ...rest, project_id: config.apps.get(row.app_id)?.projectId ?? null, is_family_share: is_family_share === null ? null : !!is_family_share };
+}
+
+const encodeCursor = (row: { created_at: number; id: string }) => btoa(`${row.created_at}:${row.id}`).replace(/=+$/, "");
+function decodeCursor(cursor: string) {
+  try {
+    const [at, id] = atob(cursor).split(":");
+    const createdAt = Number(at);
+    return Number.isSafeInteger(createdAt) && id ? { createdAt, id } : null;
+  } catch {
+    return null;
+  }
+}
+
+admin.get("/events", requirePermission("read"), async (c) => {
+  const principal = p(c);
+  const config = c.get("config");
+  const environment = c.req.query("environment") ?? "production";
+  if (environment !== "production" && environment !== "sandbox") return bad(c, "environment must be production or sandbox.");
+  const types = c.req.query("type")?.split(",").filter(Boolean);
+  const unknown = types?.find((t) => !(WEBHOOK_EVENT_TYPES as readonly string[]).includes(t));
+  if (unknown) return bad(c, `Unknown event type ${unknown}.`);
+  const cursorParam = c.req.query("cursor");
+  const cursor = cursorParam ? decodeCursor(cursorParam) : null;
+  if (cursorParam && !cursor) return bad(c, "cursor isn't one this API returned.");
+  const limit = pageLimit(c, 50, 200);
+
+  // Which apps: the caller's, narrowed by ?project= and ?app=. null = every app.
+  let apps: string[] | null = principal.apps;
+  if (c.req.query("project")) {
+    const project = projectOf(c);
+    if (project instanceof Response) return project;
+    apps = [...project.apps.keys()].filter((id) => canSeeApp(principal, id));
+  }
+  const app = c.req.query("app");
+  if (app) {
+    if (!config.apps.has(app) || !canSeeApp(principal, app) || (apps !== null && !apps.includes(app))) return notFound(c, "App");
+    apps = [app];
+  }
+
+  const where = ["e.environment = ?"];
+  const binds: unknown[] = [environment];
+  if (apps !== null) where.push("e.app_id IN (SELECT value FROM json_each(?))"), binds.push(JSON.stringify(apps));
+  if (types?.length) where.push("e.type IN (SELECT value FROM json_each(?))"), binds.push(JSON.stringify(types));
+  if (cursor) where.push("(e.created_at < ? OR (e.created_at = ? AND e.id < ?))"), binds.push(cursor.createdAt, cursor.createdAt, cursor.id);
+  const { results } = await c.env.DB.prepare(
+    `SELECT ${EVENT_FIELDS} FROM webhook_event e WHERE ${where.join(" AND ")} ORDER BY e.created_at DESC, e.id DESC LIMIT ${limit + 1}`,
+  )
+    .bind(...binds)
+    .all<EventRow>();
+  const page = results.slice(0, limit);
+  return c.json({ events: page.map((row) => listedEvent(config, row)), next_cursor: results.length > limit ? encodeCursor(page.at(-1)!) : null });
+});
+
+admin.get("/events/:id", requirePermission("read"), async (c) => {
+  const row = await c.env.DB.prepare(`SELECT ${EVENT_FIELDS}, e.body FROM webhook_event e WHERE e.id = ?`)
+    .bind(c.req.param("id"))
+    .first<EventRow & { body: string }>();
+  if (!row || !canSeeApp(p(c), row.app_id)) return notFound(c, "Event");
+  const { body: raw, ...fields } = row;
+  return c.json({ ...listedEvent(c.get("config"), fields), body: JSON.parse(raw) });
+});
+
 // --- webhooks ------------------------------------------------------------------------------------
 
 admin.get("/webhooks/deliveries", requirePermission("read"), async (c) => {
@@ -943,10 +1037,23 @@ admin.post("/config/versions/:id/restore", requirePermission("config:manage"), a
 // --- settings ------------------------------------------------------------------------------------
 
 async function settingsOf(c: Ctx) {
-  const [requireTotp, plan, sdkUrl] = await Promise.all([requireTotpForEveryone(c.env.DB), cloudflarePlan(c.env.DB), storedSdkUrl(c.env.DB)]);
+  const [requireTotp, plan, sdkUrl, iosAppId] = await Promise.all([
+    requireTotpForEveryone(c.env.DB),
+    cloudflarePlan(c.env.DB),
+    storedSdkUrl(c.env.DB),
+    storedIosAppId(c.env.DB),
+  ]);
   // sdk_url is what was set (null if nothing); sdk_url_guess is the workers.dev guess shown until then.
   // edition tells the shared dashboard which server it's on (Standard says "standard").
-  return { require_totp: requireTotp, cloudflare_plan: plan, sdk_url: sdkUrl, sdk_url_guess: guessSdkUrl(new URL(c.req.url).origin), edition: EDITION };
+  // ios_app_id is the operator's own build of the iOS app ("<team ID>.<bundle ID>"; src/office/ios.ts).
+  return {
+    require_totp: requireTotp,
+    cloudflare_plan: plan,
+    sdk_url: sdkUrl,
+    sdk_url_guess: guessSdkUrl(new URL(c.req.url).origin),
+    ios_app_id: iosAppId,
+    edition: EDITION,
+  };
 }
 
 admin.get("/settings", requirePermission("read"), async (c) => c.json(await settingsOf(c)));
@@ -958,8 +1065,10 @@ const setSetting = (c: Ctx, key: string, value: string) =>
 
 // Send only the settings to change.
 admin.put("/settings", requirePermission("settings:manage"), async (c) => {
-  const b = await body<{ require_totp: boolean; cloudflare_plan: Plan; sdk_url: string | null }>(c);
-  if (b.require_totp === undefined && b.cloudflare_plan === undefined && b.sdk_url === undefined) return bad(c, "Send require_totp, cloudflare_plan and/or sdk_url.");
+  const b = await body<{ require_totp: boolean; cloudflare_plan: Plan; sdk_url: string | null; ios_app_id: string | null }>(c);
+  if (b.require_totp === undefined && b.cloudflare_plan === undefined && b.sdk_url === undefined && b.ios_app_id === undefined) {
+    return bad(c, "Send require_totp, cloudflare_plan, sdk_url and/or ios_app_id.");
+  }
   if (b.require_totp !== undefined && typeof b.require_totp !== "boolean") return bad(c, "require_totp must be true or false.");
   if (b.cloudflare_plan !== undefined && b.cloudflare_plan !== "free" && b.cloudflare_plan !== "paid") return bad(c, "cloudflare_plan must be free or paid.");
   if (b.require_totp && !p(c).operator.totp_enabled) return forbidden(c, "Turn on two-step sign-in for yourself first.");
@@ -974,7 +1083,19 @@ admin.put("/settings", requirePermission("settings:manage"), async (c) => {
       sdkUrl = parsed.url;
     }
   }
+  // ios_app_id: "<team ID>.<bundle ID>", or null or "" to remove it.
+  let iosAppId: string | null | undefined;
+  if (b.ios_app_id !== undefined) {
+    if (b.ios_app_id !== null && typeof b.ios_app_id !== "string") return bad(c, "ios_app_id must be a string or null.");
+    if (!b.ios_app_id?.trim()) iosAppId = null;
+    else {
+      const parsed = parseIosAppId(b.ios_app_id);
+      if ("error" in parsed) return bad(c, parsed.error);
+      iosAppId = parsed.appId;
+    }
+  }
   const writes: D1PreparedStatement[] = [];
+  if (iosAppId !== undefined) writes.push(iosAppIdSetting(c.env.DB, iosAppId), auditBy(c, "setting.ios_app_id", null, { value: iosAppId }));
   if (b.require_totp !== undefined) writes.push(setSetting(c, "require_totp", String(b.require_totp)), auditBy(c, "setting.require_totp", null, { value: b.require_totp }));
   if (b.cloudflare_plan !== undefined) writes.push(setSetting(c, "cloudflare_plan", b.cloudflare_plan), auditBy(c, "setting.cloudflare_plan", null, { value: b.cloudflare_plan }));
   if (sdkUrl !== undefined) {

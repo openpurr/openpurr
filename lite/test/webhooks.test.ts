@@ -87,10 +87,12 @@ describe("delivery", () => {
     );
   });
 
-  it("sends nothing when no webhook is configured", async () => {
+  it("sends nothing when no webhook is configured, but still records the event (the event list)", async () => {
     const { jws } = await signTransaction();
     await call("/v1/receipts", { body: { app_user_id: "wh-none", fetch_token: jws } });
-    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM webhook_event WHERE body LIKE '%wh-none%'").first<{ n: number }>())!;
+    const events = await env.DB.prepare("SELECT id, type FROM webhook_event WHERE body LIKE '%wh-none%'").all<{ id: string; type: string }>();
+    expect(events.results.map((e) => e.type)).toEqual(["INITIAL_PURCHASE"]);
+    const { n } = (await env.DB.prepare("SELECT count(*) AS n FROM webhook_delivery WHERE event_id = ?").bind(events.results[0]!.id).first<{ n: number }>())!;
     expect(n).toBe(0);
   });
 

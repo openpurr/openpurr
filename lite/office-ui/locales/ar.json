@@ -2,6 +2,7 @@
   "(you)": "(أنت)",
   "{app} already has {product}.": "لدى {app} المنتج {product} بالفعل.",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "يريد {app} استخدام خادم MCP الخاص بـ openpurr باسمك، {email} ({role}). لا يمكنه إلا ما تسمح به أدناه، ولا يتجاوز دورك أبدًا.",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "يريد {app} استخدام واجهة الإدارة البرمجية الخاصة بـ openpurr باسمك، {email} ({role})، لعرض الرسوم البيانية والمشتريات والعملاء. لا يمكنه إلا ما تسمح به أدناه، ولا يتجاوز دورك أبدًا.",
   "{id} (any base plan)": "{id} (أي خطة أساسية)",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}: {percent}% من حد الخطة المجانية لليوم.",
   "{n} attempts": {

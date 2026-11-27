@@ -168,14 +168,15 @@ func (s *server) handleAppleNotification(w http.ResponseWriter, r *http.Request)
 		state = &st
 	}
 
-	// Webhook events, written with the ledger change. A purchase nobody owns yet has no app user to
-	// report; the SDK's POST /v1/receipts produces its purchase event when it arrives.
+	// Events (the event list, and webhooks where configured), written with the ledger change. A
+	// purchase nobody owns yet has no app user to report; the SDK's POST /v1/receipts produces its
+	// purchase event when it arrives.
 	var events []*webhooks.Prepared
 	var project *config.Project
 	if app != nil {
 		project = all.Projects[app.ProjectID]
 	}
-	if row != nil && project != nil && len(project.Webhooks) > 0 {
+	if row != nil && project != nil {
 		owner, err := ledger.PurchaseOwner(ctx, s.Pool, "app_store", row.OriginalTransactionID)
 		if err != nil {
 			return err
@@ -189,18 +190,12 @@ func (s *server) handleAppleNotification(w http.ResponseWriter, r *http.Request)
 			}
 		}
 		planned := apple.NotificationEvents(apple.Notification{Type: ntype, Subtype: subtype, UUID: uuid}, &row.Transaction, renewal, previous)
-		var wanted []apple.PlannedEvent
-		for _, e := range planned {
-			if len(webhooks.For(project, e.Type, row.Environment)) > 0 {
-				wanted = append(wanted, e)
-			}
-		}
-		if owner != nil && len(wanted) > 0 {
+		if owner != nil && len(planned) > 0 {
 			customer, err := webhooks.LoadCustomer(ctx, s.Pool, []string{owner.ID}, owner.ID, "")
 			if err != nil {
 				return err
 			}
-			for _, e := range wanted {
+			for _, e := range planned {
 				p, err := webhooks.Prepare(ctx, s.Pool, project, webhooks.Input{
 					Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: row.Environment, Store: "app_store",
 					Customer: customer, Transaction: &row.Transaction, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,

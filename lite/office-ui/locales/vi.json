@@ -2,6 +2,7 @@
   "(you)": "(bạn)",
   "{app} already has {product}.": "{app} đã có {product}.",
   "{app} wants to use openpurr's MCP server as you, {email} ({role}). It can only do what you allow below, and never more than your role.": "{app} muốn dùng MCP server của openpurr với danh nghĩa của bạn, {email} ({role}). Ứng dụng chỉ làm được những gì bạn cho phép bên dưới, và không bao giờ vượt quá vai trò của bạn.",
+  "{app} wants to use openpurr's admin API as you, {email} ({role}), to show charts, purchases and customers. It can only do what you allow below, and never more than your role.": "{app} muốn dùng admin API của openpurr với danh nghĩa của bạn, {email} ({role}), để hiển thị biểu đồ, giao dịch mua và khách hàng. Ứng dụng chỉ làm được những gì bạn cho phép bên dưới, và không bao giờ vượt quá vai trò của bạn.",
   "{id} (any base plan)": "{id} (mọi base plan)",
   "{metric}: {percent}% of today's free-plan limit.": "{metric}: {percent}% giới hạn gói miễn phí hôm nay.",
   "{n} attempts": {

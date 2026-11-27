@@ -93,11 +93,11 @@ func TestWebhookEventsFromReceipts(t *testing.T) {
 		}
 	})
 
-	t.Run("nothing when no webhook is configured", func(t *testing.T) {
+	t.Run("no deliveries when no webhook is configured, but the event is recorded (the event list)", func(t *testing.T) {
 		env := tu.Start(t, tu.Options{})
 		env.PostAppleTransaction("wh-none", nil)
-		if env.Count("webhook_event") != 0 {
-			t.Fatal("no events without webhooks")
+		if env.Count("webhook_event") != 1 || env.Count("webhook_delivery") != 0 {
+			t.Fatal("want one event and no deliveries")
 		}
 	})
 
@@ -106,8 +106,9 @@ func TestWebhookEventsFromReceipts(t *testing.T) {
 		env.PostAppleTransaction("wh-filter", nil) // a sandbox purchase
 		env2 := tu.Start(t, tu.Options{Config: withWebhook("events", []any{"RENEWAL"})})
 		env2.PostAppleTransaction("wh-filter-2", nil) // INITIAL_PURCHASE
-		if env.Count("webhook_event") != 0 || env2.Count("webhook_event") != 0 {
-			t.Fatal("filtered events were recorded")
+		// The events are recorded (the event list), but no endpoint gets them.
+		if env.Count("webhook_delivery") != 0 || env2.Count("webhook_delivery") != 0 {
+			t.Fatal("filtered events were queued for delivery")
 		}
 	})
 

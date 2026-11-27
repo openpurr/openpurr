@@ -42,7 +42,7 @@ import {
 } from "../stores/apple";
 import { invalidateOwnerSnapshot, refreshSnapshot } from "../snapshot";
 import { appleNotificationEvents } from "../stores/apple-events";
-import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
+import { deliverNow, enqueueEvent, loadEventCustomer } from "../webhooks";
 
 export const notifications = new Hono<AppEnv>();
 
@@ -106,12 +106,13 @@ notifications.post("/apple", async (c) => {
     }
   }
 
-  // Webhook events, in the same batch as the ledger change. A purchase nobody owns yet has no
-  // app user to report; the SDK's POST /v1/receipts produces its purchase event when it arrives.
+  // Events (the event list, and webhooks where configured), in the same batch as the ledger change.
+  // A purchase nobody owns yet has no app user to report; the SDK's POST /v1/receipts produces its
+  // purchase event when it arrives.
   const eventIds: string[] = [];
   const all = c.get("config");
   const config = app ? all.projects.get(app.projectId) : undefined;
-  if (row && app && config?.webhooks.length) {
+  if (row && app && config) {
     const owner = await purchaseOwner(db, "app_store", row.original_transaction_id);
     const previous =
       notification.notificationType === "DID_RENEW" || notification.subtype === "RESUBSCRIBE"
@@ -124,10 +125,9 @@ notifications.post("/apple", async (c) => {
             .first<{ period_type: string }>()
         : null;
     const planned = appleNotificationEvents(notification, row, renewal, { previousPeriodType: previous?.period_type });
-    const wanted = planned.filter((e) => webhooksFor(config, e.type, row!.environment).length);
-    if (owner && wanted.length) {
+    if (owner && planned.length) {
       const customer = await loadEventCustomer(db, [owner.id], owner.id);
-      for (const e of wanted) {
+      for (const e of planned) {
         const { id, statements } = await enqueueEvent(db, config, {
           ...e,
           appId: app.id,

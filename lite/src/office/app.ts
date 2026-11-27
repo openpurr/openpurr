@@ -8,6 +8,7 @@ import { googleNotifications } from "../routes/google-notifications";
 import { notifications } from "../routes/notifications";
 import { admin } from "./admin";
 import { auth } from "./auth";
+import { mountIos } from "./ios";
 import { mcp } from "./mcp";
 import { oauth, wellKnown } from "./oauth";
 
@@ -15,6 +16,7 @@ export function mountOffice(app: Hono<AppEnv>) {
   app.route("/admin/v1/auth", auth);
   app.route("/admin/v1", admin);
   app.route("/mcp", mcp);
+  mountIos(app);
   app.route("/.well-known", wellKnown);
   app.route("/oauth", oauth);
   app.route("/notifications/google", googleNotifications);

@@ -187,7 +187,8 @@ func upper(s string) string {
 	return string(b)
 }
 
-// Prepared is an event ready to write: its ID, body and the endpoints that want it.
+// Prepared is an event ready to write: its ID, body and the endpoints that want it (maybe none:
+// every event is recorded, since the admin API's event list reads the same table).
 type Prepared struct {
 	ID        string
 	in        Input
@@ -195,14 +196,11 @@ type Prepared struct {
 	endpoints []string
 }
 
-// Prepare builds an event's body (looking up its USD price) from the database as it is now. It
-// returns nil when no endpoint wants the event. Lite builds event bodies before the batch that
-// writes the change; Prepare is that step, and Write runs inside the transaction.
+// Prepare builds an event's body (looking up its USD price) from the database as it is now. Lite
+// builds event bodies before the batch that writes the change; Prepare is that step, and Write runs
+// inside the transaction. The event is recorded whether or not an endpoint wants it.
 func Prepare(ctx context.Context, db ledger.DB, project *config.Project, in Input) (*Prepared, error) {
 	endpoints := For(project, in.Type, in.Environment)
-	if len(endpoints) == 0 {
-		return nil, nil
-	}
 	id := ledger.NewUUID()
 	var priceUSD *float64
 	if t := in.Transaction; t != nil && t.PriceMicros != nil {
@@ -226,6 +224,9 @@ func Prepare(ctx context.Context, db ledger.DB, project *config.Project, in Inpu
 	return &Prepared{ID: id, in: in, body: jsobj.Stringify(Body(project, in, id, priceUSD)), endpoints: names}, nil
 }
 
+// Delivers says whether any endpoint wants the event (so there's something for DeliverNow to do).
+func (p *Prepared) Delivers() bool { return p != nil && len(p.endpoints) > 0 }
+
 // Write records the event and one pending delivery per endpoint. If the dedupe key was already
 // used, nothing is written.
 func (p *Prepared) Write(ctx context.Context, tx ledger.DB) error {
@@ -235,6 +236,9 @@ func (p *Prepared) Write(ctx context.Context, tx ledger.DB) error {
 		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) ON CONFLICT (dedupe_key) DO NOTHING`,
 		p.ID, in.DedupeKey, in.Type, in.AppID, in.Customer.ID, in.Environment, p.body, in.Now); err != nil {
 		return err
+	}
+	if len(p.endpoints) == 0 {
+		return nil
 	}
 	// Inserted only if the event above was. The retry job doesn't pick a delivery up until the
 	// first, immediate attempt has had time to run.

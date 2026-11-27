@@ -34,7 +34,7 @@ import { GoogleMappingError, googleProductRow, googleSubscriptionRow, googleSubs
 import { GoogleApiError } from "../stores/google-api";
 import { googleOneTimePurchaseEvent, googleRefundEvent, googleSubscriptionEvents, PLAY_SUB } from "../stores/google-events";
 import { acknowledge, GoogleApiNotConfigured, googleClientFor, markReplaced, type PlayAck } from "../stores/google-sync";
-import { deliverNow, enqueueEvent, loadEventCustomer, webhooksFor } from "../webhooks";
+import { deliverNow, enqueueEvent, loadEventCustomer } from "../webhooks";
 
 export const googleNotifications = new Hono<AppEnv>();
 
@@ -220,12 +220,12 @@ googleNotifications.post("/", async (c) => {
   }
   writes.push(invalidateOwnerSnapshot(db, "play_store", token));
 
-  // 5. Webhook events (only with an owner: there's no app user to report otherwise).
+  // 5. Events: the event list, and webhooks where configured (only with an owner: there's no app
+  // user to report otherwise).
   const eventIds: string[] = [];
-  const wanted = row ? planned.filter((e) => webhooksFor(config, e.type, row!.environment).length) : [];
-  if (owner && row && wanted.length) {
+  if (owner && row && planned.length) {
     const customer = await loadEventCustomer(db, [owner.id], owner.id);
-    for (const e of wanted) {
+    for (const e of planned) {
       const { id, statements } = await enqueueEvent(db, config, {
         ...e,
         appId: app.id,

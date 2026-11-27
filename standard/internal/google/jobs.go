@@ -170,18 +170,16 @@ func pollApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, app *c
 			refunded := *tx
 			refunded.RevokedAt = &r.at
 			e := RefundEvent(&refunded)
-			if len(webhooks.For(project, e.Type, tx.Environment)) > 0 {
-				customer, err := webhooks.LoadCustomer(ctx, pool, []string{owner}, owner, "")
-				if err != nil {
-					return 0, err
-				}
-				r.event, err = webhooks.Prepare(ctx, pool, project, webhooks.Input{
-					Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: tx.Environment, Store: "play_store",
-					Customer: customer, Transaction: &refunded, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,
-				})
-				if err != nil {
-					return 0, err
-				}
+			customer, err := webhooks.LoadCustomer(ctx, pool, []string{owner}, owner, "")
+			if err != nil {
+				return 0, err
+			}
+			r.event, err = webhooks.Prepare(ctx, pool, project, webhooks.Input{
+				Type: e.Type, DedupeKey: e.DedupeKey, AppID: app.ID, Environment: tx.Environment, Store: "play_store",
+				Customer: customer, Transaction: &refunded, Extra: e.Extra, NegativePrice: e.NegativePrice, Now: now,
+			})
+			if err != nil {
+				return 0, err
 			}
 		}
 		refunds = append(refunds, r)
@@ -226,7 +224,7 @@ func pollApp(ctx context.Context, pool *pgxpool.Pool, cfg *config.Config, app *c
 	if env.Deliver != nil {
 		var ids []string
 		for _, r := range refunds {
-			if r.event != nil {
+			if r.event.Delivers() {
 				ids = append(ids, r.event.ID)
 			}
 		}

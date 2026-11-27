@@ -5,6 +5,7 @@ package server
 // lite/src/office/oauth.ts.
 //
 //	/.well-known/oauth-protected-resource[/mcp]   which authorization server protects /mcp (RFC 9728)
+//	/.well-known/oauth-protected-resource/admin/v1   the same for the admin API (the iOS app's tokens)
 //	/.well-known/oauth-authorization-server       endpoints and capabilities (RFC 8414)
 //	/oauth/register                               Dynamic Client Registration (RFC 7591), public clients only
 //	/oauth/authorize                              checks the request, then hands off to the dashboard's consent screen
@@ -19,7 +20,8 @@ package server
 // the session cookie is SameSite=Strict, so it isn't sent on the cross-site navigation from the
 // client, but it is on the dashboard's own requests.
 //
-// Tokens: access tokens (oat_..., 1 hour) work only at /mcp (the resource they were issued for);
+// Tokens: access tokens (oat_..., 1 hour) work only at the resource they were issued for (/mcp, or
+// /admin/v1 when the client asked for resource=<origin>/admin/v1);
 // refresh tokens (ort_..., 30 days) rotate on every use. Only SHA-256 hashes are stored. What a
 // token can do is the operator's role limited to the approved scopes, exactly like a personal
 // access token.
@@ -79,6 +81,27 @@ func (s *server) mcpResource(r *http.Request) string { return s.requestOrigin(r)
 
 func (s *server) resourceMetadataURL(r *http.Request) string {
 	return s.requestOrigin(r) + "/.well-known/oauth-protected-resource/mcp"
+}
+
+// adminResource is the admin API as an OAuth resource: the iOS app's tokens.
+func (s *server) adminResource(r *http.Request) string { return s.requestOrigin(r) + "/admin/v1" }
+
+func (s *server) adminResourceMetadataURL(r *http.Request) string {
+	return s.requestOrigin(r) + "/.well-known/oauth-protected-resource/admin/v1"
+}
+
+// resourceFor is the resource a request names, if tokens can be issued for it: MCP when none is
+// named. "" when it's neither /mcp nor /admin/v1.
+func (s *server) resourceFor(r *http.Request, requested string, named bool) string {
+	if !named {
+		return s.mcpResource(r)
+	}
+	for _, res := range []string{s.mcpResource(r), s.adminResource(r)} {
+		if sameResource(requested, res) {
+			return res
+		}
+	}
+	return ""
 }
 
 // --- URLs, the WHATWG way where it matters --------------------------------------------------------
@@ -148,6 +171,14 @@ func sameResource(a, b string) bool {
 		return false
 	}
 	return urlOrigin(x) == urlOrigin(y) && strings.TrimRight(x.EscapedPath(), "/") == strings.TrimRight(y.EscapedPath(), "/") && x.Fragment == ""
+}
+
+// oauthAPI names what a resource's tokens are for: "admin" (the admin API) or "mcp".
+func oauthAPI(resource string) string {
+	if u, ok := webURL(resource); ok && strings.TrimRight(u.EscapedPath(), "/") == "/admin/v1" {
+		return "admin"
+	}
+	return "mcp"
 }
 
 var localhostNames = []string{"localhost", "127.0.0.1", "[::1]"}
@@ -325,9 +356,15 @@ func (s *server) wellKnown(w http.ResponseWriter, r *http.Request) {
 	}
 	origin := s.requestOrigin(r)
 	switch path {
-	case "/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp":
+	case "/.well-known/apple-app-site-association":
+		s.appleAppSiteAssociation(w, r)
+	case "/.well-known/oauth-protected-resource", "/.well-known/oauth-protected-resource/mcp", "/.well-known/oauth-protected-resource/admin/v1":
+		resource := s.mcpResource(r)
+		if path == "/.well-known/oauth-protected-resource/admin/v1" {
+			resource = s.adminResource(r)
+		}
 		oauthJSON(w, http.StatusOK, jsobj.New(
-			"resource", s.mcpResource(r),
+			"resource", resource,
 			"authorization_servers", []any{origin},
 			"scopes_supported", stringsToAny(OAuthScopes),
 			"bearer_methods_supported", []any{"header"},
@@ -470,7 +507,16 @@ func clientURIOf(doc any) *string {
 
 // resolveClient is the client for a client_id: a registered one, or a metadata document (cached
 // for a day). Nil when it's neither.
-func (s *server) resolveClient(ctx context.Context, clientID string, now int64) (*oauthClient, error) {
+func (s *server) resolveClient(ctx context.Context, origin, clientID string, now int64) (*oauthClient, error) {
+	// This deployment's own iOS app (ios.go): known without fetching anything. Saved like a fetched
+	// document, since requests and grants refer to the client's row.
+	if clientID == iosClientID(origin) {
+		client := iosClient(origin)
+		if err := s.saveMetadataClient(ctx, client, now); err != nil {
+			return nil, err
+		}
+		return client, nil
+	}
 	var c oauthClient
 	var redirects string
 	var fetchedAt *int64
@@ -492,13 +538,18 @@ func (s *server) resolveClient(ctx context.Context, clientID string, now int64) 
 	if err != nil {
 		return nil, err
 	}
-	if _, err := s.Pool.Exec(ctx,
-		`INSERT INTO oauth_client (id, kind, name, client_uri, redirect_uris, created_at, fetched_at) VALUES ($1, 'metadata_document', $2, $3, $4, $5, $5)
-		 ON CONFLICT (id) DO UPDATE SET name = excluded.name, client_uri = excluded.client_uri, redirect_uris = excluded.redirect_uris, fetched_at = excluded.fetched_at`,
-		client.id, client.name, client.clientURI, jsobj.Stringify(stringsToAny(client.redirectURIs)), now); err != nil {
+	if err := s.saveMetadataClient(ctx, client, now); err != nil {
 		return nil, err
 	}
 	return client, nil
+}
+
+func (s *server) saveMetadataClient(ctx context.Context, client *oauthClient, now int64) error {
+	_, err := s.Pool.Exec(ctx,
+		`INSERT INTO oauth_client (id, kind, name, client_uri, redirect_uris, created_at, fetched_at) VALUES ($1, 'metadata_document', $2, $3, $4, $5, $5)
+		 ON CONFLICT (id) DO UPDATE SET name = excluded.name, client_uri = excluded.client_uri, redirect_uris = excluded.redirect_uris, fetched_at = excluded.fetched_at`,
+		client.id, client.name, client.clientURI, jsobj.Stringify(stringsToAny(client.redirectURIs)), now)
+	return err
 }
 
 func parseStringList(raw string) []string {
@@ -672,7 +723,7 @@ func (s *server) oauthAuthorize(w http.ResponseWriter, r *http.Request) {
 		page("client_id is missing.")
 		return
 	}
-	client, err := s.resolveClient(ctx, clientID, now)
+	client, err := s.resolveClient(ctx, s.requestOrigin(r), clientID, now)
 	if err != nil {
 		var ce *clientError
 		if errors.As(err, &ce) {
@@ -715,9 +766,9 @@ func (s *server) oauthAuthorize(w http.ResponseWriter, r *http.Request) {
 		back("error", "invalid_request", "error_description", "code_challenge isn't a valid S256 challenge.")
 		return
 	}
-	resource := s.mcpResource(r)
-	if has("resource") && !sameResource(q.Get("resource"), resource) {
-		back("error", "invalid_target", "error_description", "This server only issues tokens for "+resource+".")
+	resource := s.resourceFor(r, q.Get("resource"), has("resource"))
+	if resource == "" {
+		back("error", "invalid_target", "error_description", "This server only issues tokens for "+s.mcpResource(r)+" and "+s.adminResource(r)+".")
 		return
 	}
 	var requested []string
@@ -968,13 +1019,13 @@ func (s *server) oauthTokenOwner(ctx context.Context, token, resource string, no
 
 // pendingOAuth is the consent screen's view of a pending authorization (nil when there's none).
 func (q *adminReq) pendingOAuth(id string) (*jsobj.Object, string, error) {
-	var reqID, redirectURI, scope, clientID, kind, name string
+	var reqID, redirectURI, scope, resource, clientID, kind, name string
 	var expiresAt int64
 	var codeHash, clientURI *string
 	err := q.s.Pool.QueryRow(q.ctx,
-		`SELECT r.id, r.redirect_uri, r.scope, r.expires_at, r.code_hash, c.id, c.kind, c.name, c.client_uri
+		`SELECT r.id, r.redirect_uri, r.scope, r.resource, r.expires_at, r.code_hash, c.id, c.kind, c.name, c.client_uri
 		 FROM oauth_request r JOIN oauth_client c ON c.id = r.client_id WHERE r.id = $1`, id).
-		Scan(&reqID, &redirectURI, &scope, &expiresAt, &codeHash, &clientID, &kind, &name, &clientURI)
+		Scan(&reqID, &redirectURI, &scope, &resource, &expiresAt, &codeHash, &clientID, &kind, &name, &clientURI)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, "", nil
 	}
@@ -1006,6 +1057,8 @@ func (q *adminReq) pendingOAuth(id string) (*jsobj.Object, string, error) {
 		"client", jsobj.New("name", name, "uri", strOrNull(clientURI), "kind", kind, "metadata_url", metadataURL),
 		"redirect_host", host,
 		"redirect_uri", redirectURI,
+		// What the tokens are for: the MCP server, or the admin API (the iOS app).
+		"api", oauthAPI(resource),
 		"localhost", isLocalhost(redirectURI),
 		"scopes", scopes,
 	), name, nil
